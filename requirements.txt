@@ -1,4 +1,5 @@
 Flask
+waitress
 pyjwt
 colorama
 requests
