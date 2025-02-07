@@ -391,6 +391,50 @@ def cpf():
 
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
+@app.route('/cpfdata', methods=['GET', 'POST'])
+def cpf():
+    if 'user_id' not in g:  # Ensure user is logged in
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = ""
+
+    if request.method == 'POST':
+        try:
+            cpf = request.form.get('cpf', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not cpf or not token:
+                    flash('CPF ou Token não fornecido.', 'error')
+                    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=cpfDatasus&query={cpf}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado', {}).get('status') == 'OK':
+                result = data['resultado']
+            else:
+                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
 
 @app.route('/cpf2', methods=['GET', 'POST'])
 def cpf2():
