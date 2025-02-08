@@ -7,14 +7,21 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background: #f4f4f4;
+            background: linear-gradient(to bottom right, #4e54c8, #8f94fb);
             animation: fadeIn 1s ease-in-out;
         }
 
@@ -26,45 +33,36 @@
         .login-container {
             background: #ffffff;
             border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             padding: 40px;
-            width: 320px;
+            width: 100%;
+            max-width: 400px;
             text-align: center;
             position: relative;
             overflow: hidden;
+            animation: slideUp 0.8s ease-in-out;
         }
 
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to bottom right, #4e54c8, #8f94fb);
-            animation: rotate 4s ease-in-out infinite;
-            transform: rotate(45deg);
-            z-index: -1;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(45deg); }
-            100% { transform: rotate(405deg); }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         h2 {
             color: #333;
             margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 600;
         }
 
         .form-group {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: none;
             border-bottom: 2px solid #ccc;
             background: transparent;
@@ -80,7 +78,7 @@
 
         .form-group label {
             position: absolute;
-            top: 10px;
+            top: 12px;
             left: 0;
             color: #999;
             pointer-events: none;
@@ -108,7 +106,7 @@
 
         .button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
         .button:active {
@@ -117,9 +115,10 @@
 
         .alert {
             padding: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             border-radius: 4px;
             text-align: left;
+            font-size: 14px;
         }
 
         .alert-error {
@@ -127,10 +126,15 @@
             color: #a94442;
         }
 
-        /* Estilo para o texto abaixo do botão de login */
+        .alert-success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
         .signup-text {
             margin-top: 20px;
             font-size: 14px;
+            color: #666;
         }
 
         .signup-text a {
@@ -142,11 +146,37 @@
         .signup-text a:hover {
             text-decoration: underline;
         }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px;
+                border-radius: 10px;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+
+            .form-group input {
+                font-size: 14px;
+            }
+
+            .button {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .signup-text {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <h2>Entrar</h2>
+        <!-- Exibição de mensagens de erro/sucesso -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -167,7 +197,7 @@
         </form>
         <!-- Texto abaixo do botão de login -->
         <div class="signup-text">
-            Ainda Não tem Acesso? <a href="/planos">Veja Nossos Planos</a>
+            Ainda não tem acesso? <a href="/planos">Veja nossos planos</a>
         </div>
     </div>
 </body>
