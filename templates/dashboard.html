@@ -291,7 +291,7 @@
         <div class="notification-list">
             {% for notification in notifications.get(g.user_id, []) %}
             <div class="notification-item">
-                <div class="notification-dot" style="background: {{ notification.color }}"></div>
+                <span class="notification-dot" style="background: {{ notification.color }}"></span>
                 <p>{{ notification.message }}</p>
             </div>
             {% endfor %}
