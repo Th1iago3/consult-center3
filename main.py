@@ -523,7 +523,7 @@ def tellv():
 
             if data.get('resultado', {}).get('status') == 'OK':
                 dt = data['resultado']
-                result = dt['data']
+                result = dt['identificacao']
                 
             else:
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
