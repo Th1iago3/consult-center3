@@ -349,7 +349,7 @@ def cpf():
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf&query={cpf}"
@@ -414,7 +414,7 @@ def datanome():
             except ValueError:
                 flash('Formato de data inválido.', 'error')
 
-    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome, datanasc=datanasc, token=token)
+    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome, datanasc=datanasc, token=session.get('token'))
 
 @app.route('/cpflv', methods=['GET', 'POST'])
 def cpflv():
@@ -437,7 +437,7 @@ def cpflv():
 
                 if not cpf or not token:
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
@@ -486,7 +486,7 @@ def placalv():
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=session.get('token'))
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=token)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placaLv&query={placa}"
@@ -531,7 +531,7 @@ def tellv():
 
                 if not is_admin and token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
+                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
 
             # API Call for telephone lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telefoneLv&query={telefone}"
