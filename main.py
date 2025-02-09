@@ -304,48 +304,7 @@ def logout():
     resp.set_cookie('auth_token', '', expires=0)
     return resp
 
-@app.route('/likes')
-def likes():
-    return jsonify({'message': '! In Maintenance...[404]'})
 
-@app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    if 'user_id' not in g:  # Ensure user is logged in
-        flash('Você precisa estar logado para acessar esta página.', 'error')
-        return redirect('/')
-
-    users = load_data('users.json')
-    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
-    user_notifications = len(notifications.get(g.user_id, []))
-
-    if request.method == 'POST':
-        try:
-            user_id = request.form.get('id')
-            token = request.form.get('token')
-
-            if not is_admin:
-                if not user_id or not token:
-                    flash('ID ou Token não fornecido.', 'error')
-                    return render_template('view_profile.html', is_admin=is_admin, notifications=user_notifications)
-
-                if token != users[g.user_id]['token']:
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('view_profile.html', is_admin=is_admin, notifications=user_notifications)
-
-            api_url = f"https://freefireinfo.vercel.app/profile?region=br&uid={user_id}&key=Starexx"
-            response = requests.get(api_url)
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            profile_data = response.json()
-            if profile_data.get('status') == 'success':
-                return render_template('view_profile.html', profile=profile_data, is_admin=is_admin, notifications=user_notifications)
-            else:
-                flash('Falha ao obter dados do perfil.', 'error')
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
-    return render_template('view_profile.html', is_admin=is_admin, notifications=user_notifications)
 
 @app.route('/cpf', methods=['GET', 'POST'])
 def cpf():
@@ -390,6 +349,138 @@ def cpf():
             flash('Resposta da API inválida.', 'error')
 
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+@app.route('/cpflv', methods=['GET', 'POST'])
+def cpflv():
+    if 'user_id' not in g:  # Ensure user is logged in
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = ""
+
+    if request.method == 'POST':
+        try:
+            cpf = request.form.get('cpf', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not cpf or not token:
+                    flash('CPF ou Token não fornecido.', 'error')
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfLv&query={cpf}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado', {}).get('status') == 'OK':
+                result = data['resultado']
+            else:
+                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+@app.route('/placalv', methods=['GET', 'POST'])
+def placalv():
+    if 'user_id' not in g:  # Ensure user is logged in
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    placa = ""
+
+    if request.method == 'POST':
+        try:
+            placa = request.form.get('placa', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not cpf or not token:
+                    flash('PLACA ou Token não fornecido.', 'error')
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placaLv&query={placa}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado', {}).get('status') == 'OK':
+                result = data['resultado']
+            else:
+                flash('Nenhum resultado encontrado para a PLACA fornecida.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+
+@app.route('/telLv', methods=['GET', 'POST'])
+def tellv():
+    if 'user_id' not in g:  # Ensure user is logged in
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    telefone = ""
+
+    if request.method == 'POST':
+        try:
+            telefone = request.form.get('telefone', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not cpf or not token:
+                    flash('CPF ou Token não fornecido.', 'error')
+                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
+
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telLv&query={telefone}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado', {}).get('status') == 'OK':
+                result = data['resultado']
+            else:
+                flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
 
 @app.route('/cpfdata', methods=['GET', 'POST'])
 def cpf4():
