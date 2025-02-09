@@ -432,7 +432,8 @@ def cpflv():
             data = response.json()
 
             if data.get('resultado', {}).get('status') == 'OK':
-                result = data['resultado']
+                ahahaah = data['resultado']
+                result = ahahaah['data']
             else:
                 flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
         except requests.RequestException:
@@ -520,7 +521,8 @@ def tellv():
             data = response.json()
 
             if data.get('resultado', {}).get('status') == 'OK':
-                result = data['resultado']
+                ahahaah = data['resultado']
+                result = ahahaah['data']
             else:
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
         except requests.RequestException:
