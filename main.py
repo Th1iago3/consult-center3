@@ -527,7 +527,7 @@ def tellv():
                 
             else:
                 flash('Nenhum resultado encontrado. Ou, formato inválido.', 'error')
-                    flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566 ', 'error')
+                flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566 ', 'error')
         except requests.RequestException:
             flash('Erro ao conectar com o servidor da API.', 'error')
         except json.JSONDecodeError:
