@@ -350,7 +350,7 @@ def cpf():
 
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-@app.route('/datanome', methods=['POST'])
+@app.route('/datanome', methods=['GET', 'POST'])
 def datnasc():
     if 'user_id' not in g:  # Ensure user is logged in
         flash('Você precisa estar logado para acessar esta página.', 'error')
