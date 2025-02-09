@@ -23,7 +23,6 @@
             to { opacity: 1; }
         }
 
-        /* Existing styles for container, h2, form-group, input, button, alert, etc. remain the same */
         .container {
             background: #ffffff;
             border-radius: 20px;
@@ -133,7 +132,7 @@
             </div>
             {% if not is_admin %}
                 <div class="form-group">
-                    <input type="text" name="token" placeholder="Digite seu token..." required>
+                    <input type="hidden" name="token" value="{{ token }}">
                 </div>
             {% endif %}
             <button type="submit" class="button">Consultar</button>
@@ -168,4 +167,5 @@
         {% endif %}
     </div>
 </body>
+</html>
 </html>
