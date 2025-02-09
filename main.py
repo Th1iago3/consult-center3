@@ -506,12 +506,12 @@ def tellv():
                 token = request.form.get('token')
 
                 if not cpf or not token:
-                    flash('CPF ou Token não fornecido.', 'error')
+                    flash('TELEFONE ou Token não fornecido.', 'error')
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
+                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telLv&query={telefone}"
