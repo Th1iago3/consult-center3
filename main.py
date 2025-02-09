@@ -430,9 +430,10 @@ def cpflv():
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
+            result = data['resultado']
 
-            if data is not None:
-                result = data['resultado']
+            if not result:
+                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
             else:
                 flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
         except requests.RequestException:
@@ -474,9 +475,10 @@ def placalv():
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
+            result = data['resultado']
 
-            if data.get('resultado', {}).get('status') == 'OK':
-                result = data['resultado']
+            if not result:
+                flash('Nenhum resultado encontrado para a PLACA fornecido.', 'error')
             else:
                 flash('Nenhum resultado encontrado para a PLACA fornecida.', 'error')
         except requests.RequestException:
@@ -518,12 +520,14 @@ def tellv():
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
+            result = data['resultado']
 
-            if data is not None:
-                result = data['resultado']
+            if not result:
+                flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
                 
             else:
-                flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
+                flash('Nenhum resultado encontrado. Ou, formato inválido.', 'error')
+                    flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566 ', 'error')
         except requests.RequestException:
             flash('Erro ao conectar com o servidor da API.', 'error')
         except json.JSONDecodeError:
@@ -563,9 +567,10 @@ def cpf4():
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
+            result = data['resultado']
 
-            if data is not None:
-                result = data['resultado']
+            if not result:
+                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
             else:
                 flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
         except requests.RequestException:
