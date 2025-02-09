@@ -432,9 +432,7 @@ def cpflv():
             data = response.json()
 
             if data.get('resultado', {}).get('status') == 'OK':
-                dt = data['data']
-                ps = dt['pessoa']
-                result = data['identificacao']
+                result = data['resultado']
             else:
                 flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
         except requests.RequestException:
@@ -478,7 +476,7 @@ def placalv():
             data = response.json()
 
             if data.get('resultado', {}).get('status') == 'OK':
-                result = data['data']
+                result = data['resultado']
             else:
                 flash('Nenhum resultado encontrado para a PLACA fornecida.', 'error')
         except requests.RequestException:
@@ -522,8 +520,7 @@ def tellv():
             data = response.json()
 
             if data.get('resultado', {}).get('status') == 'OK':
-                dt = data['resultado']
-                result = dt['identificacao']
+                result = data['resultado']
                 
             else:
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
