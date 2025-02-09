@@ -375,7 +375,7 @@ def cpf():
                     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=cpf&query={cpf}"
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -419,7 +419,7 @@ def cpf4():
                     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=cpfDatasus&query={cpf}"
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfDatasus&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -464,7 +464,7 @@ def cpf2():
                     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=cpf1&query={cpf}"
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf1&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             app.logger.info(f"API response status: {response.status_code}")
@@ -511,7 +511,7 @@ def nome2():
                     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
 
             # API Call for name lookup
-            url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=nomeData&query={nome}"
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nomeData&query={nome}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -558,7 +558,7 @@ def nome():
                     return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
 
             # API Call for name lookup
-            url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=nome&query={nome}"
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nome&query={nome}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -602,7 +602,7 @@ def tel():
                         return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel)
 
                 # API Call for telephone lookup
-                url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=telcredlink&query={tel}"
+                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telcredlink&query={tel}"
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
@@ -649,7 +649,7 @@ def placa():
                         return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
                 # API Call for plate lookup
-                url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=placa&query={placa}"
+                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placa&query={placa}"
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
@@ -754,11 +754,13 @@ def foto():
                         return render_template('foto.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
 
                 # API Call for photo lookup based on the selected state
-                token = "7e0f52ee17f22ffdd1b10afff1490ttj"
+                token = "a72566c8fac76174cb917c1501d94856"
                 if selected_option == "fotoba":
                     url = f"https://apibr.lat/painel/api.php?token={token}&base=fotoba&query={documento}"
-                else:
+                elif selected_option == "fotorj":
                     url = f"https://apibr.lat/painel/api.php?token={token}&base=fotorj&query={documento}"
+                else: 
+                    url = f"https://apibr.lat/painel/api.php?token={token}&base=fotosp&query={documento}"
 
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
@@ -803,7 +805,7 @@ def cpf3():
 
     try:
         # API Call for CPF lookup
-        url = f"https://apibr.lat/painel/api.php?token=7e0f52ee17f22ffdd1b10afff1490ttj&base=cpfSipni&query={cpf}"
+        url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfSipni&query={cpf}"
         response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
         response.raise_for_status()  # Raises HTTPError for bad responses
         data = response.json()
