@@ -507,31 +507,37 @@ def tellv():
             if not is_admin:
                 token = request.form.get('token')
 
-                if not telefone or not token:
+                if not telefone or (not is_admin and not token):
                     flash('TELEFONE ou Token não fornecido.', 'error')
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
 
-                if token != users.get(g.user_id, {}).get('token'):
+                if not is_admin and token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
 
-            # API Call for CPF lookup
+            # API Call for telephone lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telefoneLv&query={telefone}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
-
-            if result:
+            
+            if 'resultado' in data and data['resultado']:
+                # If there's a result, return it directly
                 result = data['resultado']
-                
             else:
-                flash('Nenhum resultado encontrado. Ou, formato inválido.', 'error')
-                flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566 ', 'error')
+                # If no result or 'resultado' key does not exist or is empty
+                if 'error' in data:
+                    flash(data['error'], 'error')  # Assuming the API returns an error message
+                else:
+                    flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
+                    flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566', 'error')
+                
         except requests.RequestException:
             flash('Erro ao conectar com o servidor da API.', 'error')
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
+    # If GET request or POST without result, render the page
     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
 
 @app.route('/cpfdata', methods=['GET', 'POST'])
