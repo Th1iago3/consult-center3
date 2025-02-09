@@ -520,10 +520,9 @@ def tellv():
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
-            result = data['resultado']
 
-            if not result:
-                flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
+            if result:
+                result = data['resultado']
                 
             else:
                 flash('Nenhum resultado encontrado. Ou, formato inválido.', 'error')
