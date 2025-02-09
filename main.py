@@ -350,6 +350,47 @@ def cpf():
 
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
+@app.route('/datanome', methods=['POST'])
+def datnasc():
+    if 'user_id' not in g:  # Ensure user is logged in
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+
+    nome = request.form.get('nome', '')
+    result = None
+
+    if not nome:
+        flash('Nome não fornecido.', 'error')
+    else:
+        try:
+            # API Call for name lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nome&query={nome}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado') and len(data['resultado']) > 0:
+                # Extract only the birth date from the result
+                for item in data['resultado']:
+                    if 'nascimento' in item:
+                        result = item['nascimento']
+                        break
+                if not result:
+                    flash('Data de nascimento não encontrada para o nome fornecido.', 'error')
+            else:
+                flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('datnasc.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome)
+    
 @app.route('/cpflv', methods=['GET', 'POST'])
 def cpflv():
     if 'user_id' not in g:  # Ensure user is logged in
