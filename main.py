@@ -389,7 +389,7 @@ def datnasc():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('datnasc.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome)
+    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome)
     
 @app.route('/cpflv', methods=['GET', 'POST'])
 def cpflv():
