@@ -1,4 +1,3 @@
-
 from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response, session
 import json
 import os
@@ -198,7 +197,7 @@ def dashboard():
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
             return resp
-    return render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users)
+    return render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, token=session.get('token'))
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
@@ -248,8 +247,6 @@ def admin_panel():
 
                 # Add 'devices' key only if the role is 'user'
                 if role == 'user':
-                    new_user['devices'] = []
-                elif role == 'admin':
                     new_user['devices'] = []
 
                 users[user_input] = new_user
@@ -313,7 +310,7 @@ def admin_panel():
             else:
                 return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
 
-    return render_template('admin.html', users=users)
+    return render_template('admin.html', users=users, token=session.get('token'))
 
 @app.route('/logout')
 def logout():
@@ -348,11 +345,11 @@ def cpf():
 
                 if not cpf or not token:
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf&query={cpf}"
@@ -369,7 +366,7 @@ def cpf():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
 @app.route('/datanome', methods=['GET', 'POST'])
 def datanome():
@@ -417,7 +414,7 @@ def datanome():
             except ValueError:
                 flash('Formato de data inválido.', 'error')
 
-    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome, datanasc=datanasc)
+    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome, datanasc=datanasc, token=token)
 
 @app.route('/cpflv', methods=['GET', 'POST'])
 def cpflv():
@@ -440,11 +437,11 @@ def cpflv():
 
                 if not cpf or not token:
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfLv&query={cpf}"
@@ -462,7 +459,7 @@ def cpflv():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/placalv', methods=['GET', 'POST'])
 def placalv():
@@ -485,11 +482,11 @@ def placalv():
 
                 if not placa or not token:
                     flash('PLACA ou Token não fornecido.', 'error')
-                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=token)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=session.get('token'))
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placaLv&query={placa}"
@@ -507,7 +504,7 @@ def placalv():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=session.get('token'))
 
 @app.route('/telLv', methods=['GET', 'POST'])
 def tellv():
@@ -530,11 +527,11 @@ def tellv():
 
                 if not telefone or (not is_admin and not token):
                     flash('TELEFONE ou Token não fornecido.', 'error')
-                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
+                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
 
                 if not is_admin and token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
+                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
 
             # API Call for telephone lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telefoneLv&query={telefone}"
@@ -559,7 +556,7 @@ def tellv():
             flash('Resposta da API inválida.', 'error')
 
     # If GET request or POST without result, render the page
-    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
+    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
 
 @app.route('/cpfdata', methods=['GET', 'POST'])
 def cpf4():
@@ -582,11 +579,11 @@ def cpf4():
 
                 if not cpf or not token:
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfDatasus&query={cpf}"
@@ -604,7 +601,7 @@ def cpf4():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 
 @app.route('/cpf2', methods=['GET', 'POST'])
@@ -627,12 +624,12 @@ def cpf2():
 
                 if not cpf or (not is_admin and not token):
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
                 users = load_data('users.json')
                 if not is_admin and token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf1&query={cpf}"
@@ -652,7 +649,7 @@ def cpf2():
             app.logger.error(f"Request failed for CPF: {str(e)}")
             flash('Erro ao conectar com o servidor da API.', 'error')
 
-    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/nome2', methods=['GET', 'POST'])
 def nome2():
@@ -674,12 +671,12 @@ def nome2():
 
                 if not nome or (not is_admin and not token):
                     flash('Nome ou Token não fornecido.', 'error')
-                    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
+                    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
                 users = load_data('users.json')
                 if not is_admin and token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
+                    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
             # API Call for name lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nomeData&query={nome}"
@@ -698,7 +695,7 @@ def nome2():
             app.logger.error("JSON decoding error in nome API response")
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
+    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
 
 @app.route('/nome', methods=['GET', 'POST'])
@@ -722,11 +719,11 @@ def nome():
 
                 if not nome or not token:
                     flash('Nome ou Token não fornecido.', 'error')
-                    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
+                    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
+                    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
             # API Call for name lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nome&query={nome}"
@@ -743,7 +740,7 @@ def nome():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
+    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
 @app.route('/tel', methods=['GET', 'POST'])
 def tel():
@@ -766,11 +763,11 @@ def tel():
                     token = request.args.get('token')
                     if not token:
                         flash('Token não fornecido.', 'error')
-                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel)
+                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
 
                     if token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel)
+                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
 
                 # API Call for telephone lookup
                 url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telcredlink&query={tel}"
@@ -790,7 +787,7 @@ def tel():
                 app.logger.error("JSON decoding error in telefone API response")
                 flash('Resposta da API inválida.', 'error')
 
-    return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel)
+    return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
 
 @app.route('/placa', methods=['GET', 'POST'])
 def placa():
@@ -813,11 +810,11 @@ def placa():
                     token = request.form.get('token')
                     if not token:
                         flash('Token não fornecido.', 'error')
-                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=token)
 
                     if token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=token)
 
                 # API Call for plate lookup
                 url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placa&query={placa}"
@@ -837,7 +834,7 @@ def placa():
                 app.logger.error("JSON decoding error in placa API response")
                 flash('Resposta da API inválida.', 'error')
 
-    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=session.get('token'))
 
 @app.route('/ip', methods=['GET', 'POST'])
 def ip():
@@ -860,11 +857,11 @@ def ip():
                     token = request.form.get('token')
                     if not token:
                         flash('Token não fornecido.', 'error')
-                        return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address)
+                        return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=token)
 
                     if token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address)
+                        return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=token)
 
                 # Fetch IP information from ipwho.is
                 import requests
@@ -893,7 +890,7 @@ def ip():
                 app.logger.error("JSON decoding error in IP API response")
                 flash('Resposta da API inválida.', 'error')
 
-    return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address)
+    return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=session.get('token'))
 
 @app.route('/fotor', methods=['GET', 'POST'])
 def foto():
@@ -918,11 +915,11 @@ def foto():
                     token = request.form.get('token')
                     if not token:
                         flash('Token não fornecido.', 'error')
-                        return render_template('foto.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
+                        return render_template('foto.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=token)
 
                     if token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('foto.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
+                        return render_template('foto.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=token)
 
                 # API Call for photo lookup based on the selected state
                 token = "a72566c8fac76174cb917c1501d94856"
@@ -948,7 +945,7 @@ def foto():
                 app.logger.error("JSON decoding error in foto API response")
                 flash('Resposta da API inválida.', 'error')
 
-    return render_template('foto.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
+    return render_template('foto.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
 
 
 @app.route('/cpf3', methods=['GET', 'POST'])
@@ -968,11 +965,11 @@ def cpf3():
         token = request.form.get('token', '')
         if not token or token != users.get(g.user_id, {}).get('token'):
             flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+            return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
     if not cpf:
         flash('CPF não fornecido.', 'error')
-        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
     try:
         # API Call for CPF lookup
@@ -990,7 +987,7 @@ def cpf3():
     except json.JSONDecodeError:
         flash('Resposta da API inválida.', 'error')
 
-    return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 
 if __name__ == '__main__':
