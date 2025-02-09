@@ -131,12 +131,12 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <form method="POST" action="/datnasc">
+        <form method="POST" action="/datanome">
             <div class="form-group">
                 <input type="text" name="nome" placeholder="Digite o Nome..." value="{{ nome }}" required>
             </div>
             <div class="form-group">
-                <input type="date" name="datanasc" placeholder="Data de Nascimento" required>
+                <input type="date" name="datanasc" placeholder="Data de Nascimento" value="{{ datanasc }}" required>
             </div>
             {% if not is_admin %}
                 <div class="form-group">
@@ -146,9 +146,14 @@
             <button type="submit" class="button">Consultar</button>
         </form>
         {% if result %}
+            {% for item in result %}
             <div class="profile-info">
-                <p><strong>Resultado:</strong> {{ result }}</p>
+                <p><strong>Nome:</strong> {{ item.nome }}</p>
+                <p><strong>CPF:</strong> {{ item.cpf }}</p>
+                <p><strong>Sexo:</strong> {{ item.sexo }}</p>
+                <p><strong>Nascimento:</strong> {{ item.nascimento }}</p>
             </div>
+            {% endfor %}
         {% endif %}
     </div>
 </body>
