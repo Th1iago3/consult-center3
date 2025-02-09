@@ -432,7 +432,9 @@ def cpflv():
             data = response.json()
 
             if data.get('resultado', {}).get('status') == 'OK':
-                result = data['data']
+                dt = data['data']
+                ps = dt['pessoa']
+                result = data['identificacao']
             else:
                 flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
         except requests.RequestException:
@@ -461,7 +463,7 @@ def placalv():
             if not is_admin:
                 token = request.form.get('token')
 
-                if not cpf or not token:
+                if not placa or not token:
                     flash('PLACA ou Token não fornecido.', 'error')
                     return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
@@ -505,7 +507,7 @@ def tellv():
             if not is_admin:
                 token = request.form.get('token')
 
-                if not cpf or not token:
+                if not telefone or not token:
                     flash('TELEFONE ou Token não fornecido.', 'error')
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
 
@@ -514,13 +516,15 @@ def tellv():
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone)
 
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telLv&query={telefone}"
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telefoneLv&query={telefone}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
 
             if data.get('resultado', {}).get('status') == 'OK':
-                result = data['data']
+                dt = data['resultado']
+                result = dt['data']
+                
             else:
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
         except requests.RequestException:
@@ -555,7 +559,7 @@ def cpf4():
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfDatasus&query={cpf}"
