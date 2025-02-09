@@ -431,7 +431,7 @@ def cpflv():
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
 
-            if data.get('resultado', {}).get('status') == 'OK':
+            if data is not None:
                 result = data['resultado']
             else:
                 flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
@@ -519,7 +519,7 @@ def tellv():
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
 
-            if data.get('resultado', {}).get('status') == 'OK':
+            if data is not None:
                 result = data['resultado']
                 
             else:
@@ -564,7 +564,7 @@ def cpf4():
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
 
-            if data.get('resultado', {}).get('status') == 'OK':
+            if data is not None:
                 result = data['resultado']
             else:
                 flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
