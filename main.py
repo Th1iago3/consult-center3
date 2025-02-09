@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response
+
+from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response, session
 import json
 import os
 import secrets
@@ -50,9 +51,18 @@ def decode_token(token):
     except jwt.InvalidTokenError:
         return None
 
-def log_access(endpoint, ip, message=''):
+def log_access(endpoint, message=''):
+    try:
+        # Fetch local IP using an external API
+        response = requests.get('https://api64.ipify.org?format=json', timeout=5)
+        response.raise_for_status()
+        ip_info = response.json()
+        local_ip = ip_info['ip']
+    except (requests.RequestException, json.JSONDecodeError):
+        local_ip = request.remote_addr  # Use remote addr as fallback
+
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} acessou {endpoint}. {message}")
+    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {local_ip} - {now} acessou {endpoint}. {message}")
 
 def load_notifications():
     return load_data('notifications.json')
@@ -91,23 +101,23 @@ def is_behind_proxy(ip_address):
         if re.match(pattern, ip_address):
             return True
     return False
-    
+
 @app.before_request
-def check_user_existence():
+def manage_session():
     token = request.cookies.get('auth_token')
     if request.endpoint not in ['login', 'planos', 'static']:
         if not token:
-            log_access(request.endpoint, request.remote_addr, "Usuário não autenticado.")
+            log_access(request.endpoint, "Usuário não autenticado.")
             return redirect('/')
 
         user_id = decode_token(token)
         if user_id is None:
-            log_access(request.endpoint, request.remote_addr, "Token inválido.")
+            log_access(request.endpoint, "Token inválido.")
             flash('Por favor, faça login novamente.', 'error')
             return redirect('/')
 
         if user_id == "expired":
-            log_access(request.endpoint, request.remote_addr, "Token expirado.")
+            log_access(request.endpoint, "Token expirado.")
             flash('Sua sessão expirou. Por favor, faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
@@ -115,14 +125,16 @@ def check_user_existence():
 
         users = load_data('users.json')
         if user_id not in users:
-            log_access(request.endpoint, request.remote_addr, "Usuário não encontrado no JSON, deslogando.")
+            log_access(request.endpoint, "Usuário não encontrado no JSON, deslogando.")
             flash('Sua sessão expirou ou foi removida. Por favor, faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
             return resp
 
         g.user_id = user_id
-    log_access(request.endpoint, request.remote_addr)
+        if 'token' not in session:
+            session['token'] = users[user_id]['token']  # Store the user's token in the session if not already there
+    log_access(request.endpoint)
 
 @app.route('/planos')
 def planos():
@@ -140,8 +152,11 @@ def login():
             expiration_date = datetime.strptime(users[user]['expiration'], '%Y-%m-%d')
             if datetime.now() < expiration_date:
                 token = generate_token(user)
-                resp = redirect('/dashboard')
+                session['token'] = users[user]['token']  # Store token in session
+                resp = make_response(redirect('/dashboard'))
                 resp.set_cookie('auth_token', token)
+                resp.set_cookie('user-agent', user_agent)  # Store user-agent in a cookie
+                resp.set_cookie('connect.sid', secrets.token_hex(16))  # Generate and set connect.sid cookie
 
                 # Check for device restrictions
                 if 'devices' in users[user]:
@@ -167,7 +182,7 @@ def login():
         else:
             flash('Usuário ou senha incorretos.', 'error')
     return render_template('login.html')
-    
+
 @app.route('/dashboard')
 def dashboard():
     users = load_data('users.json')
@@ -233,6 +248,8 @@ def admin_panel():
 
                 # Add 'devices' key only if the role is 'user'
                 if role == 'user':
+                    new_user['devices'] = []
+                elif role == 'admin':
                     new_user['devices'] = []
 
                 users[user_input] = new_user
@@ -300,9 +317,13 @@ def admin_panel():
 
 @app.route('/logout')
 def logout():
-    resp = redirect('/')
+    session.pop('token', None)  # Remove token from session
+    resp = make_response(redirect('/'))
     resp.set_cookie('auth_token', '', expires=0)
+    resp.set_cookie('user-agent', '', expires=0)
+    resp.set_cookie('connect.sid', '', expires=0)
     return resp
+
 
 
 
