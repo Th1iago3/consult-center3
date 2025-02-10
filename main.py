@@ -118,7 +118,7 @@ def not_found(e):
 @app.before_request
 def check_user_existence():
     token = request.cookies.get('auth_token')
-    if request.endpoint not in ['login', 'static']:
+    if request.endpoint not in ['login', 'planos', 'static']:
         if not token:
             log_access(request.endpoint, request.remote_addr, "Usuário não autenticado.")
             return redirect('/')
@@ -172,6 +172,11 @@ def login():
             flash('Usuário ou senha incorretos.', 'error')
     return render_template('login.html')
 
+
+@app.route('/planos', methods=['GET'])
+def planos():
+    return render_template('planos.html')
+    
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     users = load_data('users.json')
