@@ -21,7 +21,7 @@
         "password": "@th2x_lkj",
         "token": "20DIAS",
         "expiration": "2025-02-24",
-        "role": "user_semanal",
+        "role": "user_mensal",
         "modules": {
             "cpf": 0,
             "cpf2": 0,
