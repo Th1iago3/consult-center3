@@ -178,7 +178,7 @@ def login():
             flash('Usuário ou senha incorretos.', 'error')
     return render_template('login.html')
 
-@app.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard', methods=['GET')
 def dashboard():
     users = load_data('users.json')
     notifications = load_data('notifications.json')
