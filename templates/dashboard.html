@@ -556,43 +556,42 @@
             }, 500);
         });
     </script>
-
     <script>
-    
         document.addEventListener('DOMContentLoaded', () => {
             const modules = document.querySelectorAll('.module-card');
+            const user = {{ g.user_id | tojson | safe }};
+            let observer;
 
-            modules.forEach(module => {
-                const moduleId = module.getAttribute('data-module-id');
-                fetchModuleRequestCount(moduleId, module);
-            });
+            // Função para buscar dados de cada módulo
             function fetchModuleRequestCount(moduleId, moduleElement) {
-                const user = {{ g.user_id | tojson | safe }};
-            fetch('/dashboard', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=view_modules&user=${user}&module=${moduleId}`
-            })
+                fetch('/dashboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=view_modules&user=${user}&module=${moduleId}`
+                })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Data fetched:', data); // Debugging
                     if (data.modules && data.modules[moduleId] !== undefined) {
                         const requestsMade = data.modules[moduleId];
-                        const maxRequests = data.maxRequests || 10; // Default to 10 if not provided
+                        const maxRequests = data.maxRequests || 10;
                         const remaining = maxRequests - requestsMade;
+
                         const requestCountSpan = moduleElement.querySelector('.request-count');
                         const requestBar = moduleElement.querySelector('.request-bar');
+
                         requestCountSpan.textContent = `Usados: ${requestsMade}/${maxRequests}`;
                         const percentage = (requestsMade / maxRequests) * 100;
                         requestBar.style.width = `${percentage}%`;
 
-            // Change color based on usage percentage for visual feedback
+                        // Mudança de cor com base na porcentagem de uso
                         if (percentage > 80) {
                             requestBar.style.backgroundColor = 'var(--error)';
                         } else if (percentage > 50) {
                             requestBar.style.backgroundColor = 'var(--warning)';
+                        } else {
+                            requestBar.style.backgroundColor = 'var(--success)';
                         }
                     } else {
                         moduleElement.querySelector('.request-count').textContent = 'Erro ao carregar';
@@ -602,8 +601,41 @@
                     console.error('Erro ao buscar limites de requisições:', error);
                     moduleElement.querySelector('.request-count').textContent = 'Erro ao carregar';
                 });
-        }
-                                  });
-                                  <script>
-                                  </body>
-                                  </html>
+            }
+
+            // Função para observar mudanças no atributo data-module-id
+            function observeModuleChanges(element) {
+                observer = new MutationObserver(mutations => {
+                    mutations.forEach(mutation => {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'data-module-id') {
+                            const newModuleId = element.getAttribute('data-module-id');
+                            fetchModuleRequestCount(newModuleId, element);
+                        }
+                    });
+                });
+                
+                observer.observe(element, {
+                    attributes: true,
+                    attributeFilter: ['data-module-id']
+                });
+            }
+
+            // Inicializar observação para cada módulo ao carregar a página
+            modules.forEach(module => {
+                const moduleId = module.getAttribute('data-module-id');
+                fetchModuleRequestCount(moduleId, module);
+                observeModuleChanges(module);
+            });
+
+            // Atualização automática a cada 30 segundos
+            setInterval(() => {
+                modules.forEach(module => {
+                    const moduleId = module.getAttribute('data-module-id');
+                    fetchModuleRequestCount(moduleId, module);
+                });
+            }, 30000); // 30000 ms = 30 segundos
+
+        });
+    </script>
+</body>
+</html>
