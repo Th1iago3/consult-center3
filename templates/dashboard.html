@@ -569,14 +569,13 @@
 
             function fetchModuleRequestCount(moduleId, moduleElement) {
                 const user = {{ g.user_id | tojson | safe }};
-                const token = {{ session.get('token') | tojson | safe }};
 
                 fetch('/dashboard', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `action=view_modules&user=${user}&token=${token}&module=${moduleId}`
+                    body: `action=view_modules&user=${user}&module=${moduleId}`
                 })
                 .then(response => response.json())
                 .then(data => {
