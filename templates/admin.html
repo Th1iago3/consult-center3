@@ -293,7 +293,9 @@
                 <input type="password" name="password" placeholder="Senha" required>
                 <select name="role" id="role">
                     <option value="" selected></option>
-                    <option value="user">TIPO: MEMBRO</option>
+                    <option value="user_semanal">TIPO: MEMBRO SEMANAL</option>
+                    <option value="user_mensal">TIPO: MEMBRO MENSAL</option>
+                    <option value="user_anual">TIPO: MEMBRO ANUAL</option>
                     <option value="admin">TIPO: ADMINISTRADOR</option>
                 </select>
                 <input type="date" name="expiration" id="expirationField" placeholder="Data de Expiração" required>
@@ -391,7 +393,7 @@
                                 <p><strong>Token:</strong> ${data.token}</p>
                                 <p><strong>Expiração:</strong> ${data.expiration}</p>
                                 <p><strong>Tipo:</strong> ${data.role}</p>
-                                <p><strong>Dispositivos:</strong> ${data.devices ? data.devices : "Ilimitado"}</p>
+                                <p><strong>Dispositivos:</strong> ${data.devices ? data.devices.join(', ') : "Ilimitado"}</p>
                             `;
                             usersList.appendChild(userInfo);
                         }
