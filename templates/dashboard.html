@@ -568,7 +568,7 @@
             });
 
             function fetchModuleRequestCount(moduleId, moduleElement) {
-                const user = {{ g.user_id | tojson | safe }};
+                const user = {{ g.user_id }};
 
                 fetch('/dashboard', {
                     method: 'POST',
