@@ -188,7 +188,7 @@ def dashboard():
 
     if g.user_id in users:
         expiration_date = datetime.strptime(users[g.user_id]['expiration'], '%Y-%m-%d')
-        if datetime.datetime.now() > expiration_date:
+        if datetime.now() > expiration_date:
             flash('Sua sessão expirou. Por favor, faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
