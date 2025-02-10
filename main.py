@@ -323,22 +323,659 @@ def logout():
     return resp
 
 # Module Routes (implement each with manage_module_usage)
-
-@app.route('/cpf', methods=['POST'])
+@app.route('/cpf', methods=['GET', 'POST'])
 def cpf():
-    if not manage_module_usage(g.user_id, 'cpf'):
-        return jsonify({"message": "Limite de uso atingido para CPF."}), 403
-    # CPF module logic here
-    return jsonify({"message": "CPF module accessed."})
+    if 'user_id' not in g:  # Ensure user is logged in
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
 
-@app.route('/cpf2', methods=['POST'])
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = ""
+
+    if request.method == 'POST':
+        try:
+            cpf = request.form.get('cpf', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not cpf or not token:
+                    flash('CPF ou Token não fornecido.', 'error')
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf&query={cpf}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado', {}).get('status') == 'OK':
+                # Increment module usage on success
+                if manage_module_usage(g.user_id, 'cpf'):
+                    result = data['resultado']
+                else:
+                    flash('Limite de uso atingido para CPF.', 'error')
+            else:
+                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+@app.route('/cpf2', methods=['GET', 'POST'])
 def cpf2():
-    if not manage_module_usage(g.user_id, 'cpf2'):
-        return jsonify({"message": "Limite de uso atingido para CPF2."}), 403
-    # CPF2 module logic here
-    return jsonify({"message": "CPF2 module accessed."})
+    if 'user_id' not in g:  # Ensure user is logged in
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
 
-# Add similar routes for each module (cpf3, cpfdata, cpflv, datanome, placalv, tellv, placa, tel, ip, fotor, nome, nome2) with the same structure
+    is_admin = g.user_id == "admin7k"
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = ""
+
+    if request.method == 'POST':
+        try:
+            cpf = request.form.get('cpf', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not cpf or (not is_admin and not token):
+                    flash('CPF ou Token não fornecido.', 'error')
+                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+                users = load_data('users.json')
+                if not is_admin and token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf1&query={cpf}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            app.logger.info(f"API response status: {response.status_code}")
+            try:
+                result = response.json()
+                app.logger.info(f"API result: {json.dumps(result, indent=2)}")
+                if result.get('resultado', {}).get('status') == 200:
+                    # Increment module usage on success
+                    if manage_module_usage(g.user_id, 'cpf2'):
+                        result = result['resultado']
+                    else:
+                        flash('Limite de uso atingido para CPF2.', 'error')
+                        result = None
+                else:
+                    flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+                    result = None
+            except json.JSONDecodeError as e:
+                app.logger.error(f"JSON Decoding error: {str(e)}. Response content: {response.text}")
+                flash('Resposta da API inválida.', 'error')
+        except requests.RequestException as e:
+            app.logger.error(f"Request failed for CPF: {str(e)}")
+            flash('Erro ao conectar com o servidor da API.', 'error')
+
+    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+
+@app.route('/cpf3', methods=['GET', 'POST'])
+def cpf3():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = request.form.get('cpf', '')
+
+    if not is_admin:
+        token = request.form.get('token', '')
+        if not token or token != users.get(g.user_id, {}).get('token'):
+            flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+            return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+    if not cpf:
+        flash('CPF não fornecido.', 'error')
+        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+    try:
+        # API Call for CPF lookup
+        url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfSipni&query={cpf}"
+        response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+        response.raise_for_status()  # Raises HTTPError for bad responses
+        data = response.json()
+
+        if data.get('resultado'):
+            # Increment module usage on success
+            if manage_module_usage(g.user_id, 'cpf3'):
+                result = data['resultado']
+            else:
+                flash('Limite de uso atingido para CPF3.', 'error')
+        else:
+            flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+    except requests.RequestException:
+        flash('Erro ao conectar com o servidor da API.', 'error')
+    except json.JSONDecodeError:
+        flash('Resposta da API inválida.', 'error')
+
+    return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+
+@app.route('/cpflv', methods=['GET', 'POST'])
+def cpflv():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = ""
+
+    if request.method == 'POST':
+        try:
+            cpf = request.form.get('cpf', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not cpf or not token:
+                    flash('CPF ou Token não fornecido.', 'error')
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfLv&query={cpf}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado'):
+                if manage_module_usage(g.user_id, 'cpflv'):
+                    result = data['resultado']
+                else:
+                    flash('Limite de uso atingido para CPFLV.', 'error')
+            else:
+                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+
+@app.route('/datanome', methods=['GET', 'POST'])
+def datanome():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    nome = request.form.get('nome', '')
+    datanasc = request.form.get('datanasc', '')
+    result = []
+
+    if request.method == 'POST':
+        if not nome or not datanasc:
+            flash('Nome e data de nascimento são obrigatórios.', 'error')
+        else:
+            try:
+                # API Call for name lookup
+                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nome&query={nome}"
+                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+                response.raise_for_status()  # Raises HTTPError for bad responses
+                data = response.json()
+
+                if data.get('resultado') and len(data['resultado']) > 0:
+                    # Filter results by birth date
+                    for item in data['resultado']:
+                        if 'nascimento' in item:
+                            # Convert the birth date string to a datetime object for comparison
+                            api_date = datetime.strptime(item['nascimento'].strip(), '%d/%m/%Y')
+                            user_date = datetime.strptime(datanasc, '%Y-%m-%d')  # Date from form is in ISO format
+                            if api_date == user_date:
+                                result.append(item)
+                    
+                    if result:
+                        if manage_module_usage(g.user_id, 'datanome'):
+                            pass  # Usage has been incremented
+                        else:
+                            flash('Limite de uso atingido para DATANOME.', 'error')
+                            result = []
+                    else:
+                        flash('Nenhum resultado encontrado para o nome e data de nascimento fornecidos.', 'error')
+                else:
+                    flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
+            except requests.RequestException:
+                flash('Erro ao conectar com o servidor da API.', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta da API inválida.', 'error')
+            except ValueError:
+                flash('Formato de data inválido.', 'error')
+
+    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome, datanasc=datanasc, token=session.get('token'))
+
+
+@app.route('/placalv', methods=['GET', 'POST'])
+def placalv():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    placa = ""
+
+    if request.method == 'POST':
+        try:
+            placa = request.form.get('placa', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not placa or not token:
+                    flash('PLACA ou Token não fornecido.', 'error')
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=token)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=token)
+
+            # API Call for plate lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placaLv&query={placa}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado'):
+                if manage_module_usage(g.user_id, 'placalv'):
+                    result = data['resultado']
+                else:
+                    flash('Limite de uso atingido para PLACALV.', 'error')
+            else:
+                flash('Nenhum resultado encontrado para a PLACA fornecida.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=session.get('token'))
+
+@app.route('/tellv', methods=['GET', 'POST'])
+def tellv():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    telefone = ""
+
+    if request.method == 'POST':
+        try:
+            telefone = request.form.get('telefone', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not telefone or (not is_admin and not token):
+                    flash('TELEFONE ou Token não fornecido.', 'error')
+                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
+
+                if not is_admin and token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
+
+            # API Call for telephone lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telefoneLv&query={telefone}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+            
+            if 'resultado' in data and data['resultado']:
+                if manage_module_usage(g.user_id, 'tellv'):
+                    result = data['resultado']
+                else:
+                    flash('Limite de uso atingido para TELLV.', 'error')
+            else:
+                # If no result or 'resultado' key does not exist or is empty
+                if 'error' in data:
+                    flash(data['error'], 'error')  # Assuming the API returns an error message
+                else:
+                    flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
+                    flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566', 'error')
+                
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
+
+@app.route('/placa', methods=['GET', 'POST'])
+def placa():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    results = None
+    placa = ""
+
+    if request.method == 'POST':
+        placa = request.form.get('placa', '')
+        if placa:
+            try:
+                if not is_admin:
+                    token = request.form.get('token')
+                    if not token:
+                        flash('Token não fornecido.', 'error')
+                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=token)
+
+                    if token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=token)
+
+                # API Call for plate lookup
+                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placa&query={placa}"
+                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+                response.raise_for_status()  # Raises HTTPError for bad responses
+                data = response.json()
+
+                if data.get('resultado'):
+                    if manage_module_usage(g.user_id, 'placa'):
+                        results = data['resultado']
+                    else:
+                        flash('Limite de uso atingido para PLACA.', 'error')
+                else:
+                    flash('Nenhum resultado encontrado. Verifique o formato da placa.', 'error')
+                    flash('Formato: ABC1234', 'error')
+            except requests.RequestException:
+                flash('Erro ao conectar com o servidor da API.', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta da API inválida.', 'error')
+
+    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=session.get('token'))
+
+@app.route('/tel', methods=['GET', 'POST'])
+def tel():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    results = None
+    tel = ""
+
+    if request.method == 'GET':
+        tel = request.args.get('tel', '')
+        if tel:
+            try:
+                if not is_admin:
+                    token = request.args.get('token')
+                    if not token:
+                        flash('Token não fornecido.', 'error')
+                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
+
+                    if token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
+
+                # API Call for telephone lookup
+                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telcredlink&query={tel}"
+                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+                response.raise_for_status()  # Raises HTTPError for bad responses
+                data = response.json()
+
+                if data.get('resultado') and 'msg' in data['resultado'] and len(data['resultado']['msg']) > 0:
+                    if manage_module_usage(g.user_id, 'tel'):
+                        results = data['resultado']['msg']
+                    else:
+                        flash('Limite de uso atingido para TEL.', 'error')
+                else:
+                    flash('Nenhum resultado encontrado. Ou, formato inválido.', 'error')
+                    flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566 ', 'error')
+            except requests.RequestException:
+                flash('Erro ao conectar com o servidor da API.', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta da API inválida.', 'error')
+
+    return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
+
+@app.route('/fotor', methods=['GET', 'POST'])
+def fotor():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    results = None
+    documento = ""
+    selected_option = "fotoba"  # Default option
+
+    if request.method == 'POST':
+        documento = request.form.get('documento', '')
+        selected_option = request.form.get('estado', 'fotoba')
+        if documento:
+            try:
+                if not is_admin:
+                    token = request.form.get('token')
+                    if not token:
+                        flash('Token não fornecido.', 'error')
+                        return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=token)
+
+                    if token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                        return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=token)
+
+                # API Call for photo lookup based on the selected state
+                token = "a72566c8fac76174cb917c1501d94856"
+                if selected_option == "fotoba":
+                    url = f"https://apibr.lat/painel/api.php?token={token}&base=fotoba&query={documento}"
+                elif selected_option == "fotorj":
+                    url = f"https://apibr.lat/painel/api.php?token={token}&base=fotorj&query={documento}"
+                else: 
+                    url = f"https://apibr.lat/painel/api.php?token={token}&base=fotosp&query={documento}"
+
+                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+                response.raise_for_status()  # Raises HTTPError for bad responses
+                data = response.json()
+
+                if data.get('resultado', {}).get('success'):
+                    if manage_module_usage(g.user_id, 'fotor'):
+                        results = data['resultado']['data']
+                    else:
+                        flash('Limite de uso atingido para FOTOR.', 'error')
+                else:
+                    flash('Nenhum resultado encontrado ou erro na consulta.', 'error')
+            except requests.RequestException:
+                flash('Erro ao conectar com o servidor da API.', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta da API inválida.', 'error')
+
+    return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
+
+@app.route('/nome', methods=['GET', 'POST'])
+def nome():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    results = None
+    nome = ""
+
+    if request.method == 'POST':
+        try:
+            nome = request.form.get('nome', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not nome or not token:
+                    flash('Nome ou Token não fornecido.', 'error')
+                    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+
+            # API Call for name lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nome&query={nome}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado') and len(data['resultado']) > 0:
+                if manage_module_usage(g.user_id, 'nome'):
+                    results = data['resultado']
+                else:
+                    flash('Limite de uso atingido para NOME.', 'error')
+            else:
+                flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
+
+@app.route('/ip', methods=['GET', 'POST'])
+def ip():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    results = None
+    ip_address = ""
+
+    if request.method == 'POST':
+        ip_address = request.form.get('ip', '')
+        if ip_address:
+            try:
+                if not is_admin:
+                    token = request.form.get('token')
+                    if not token:
+                        flash('Token não fornecido.', 'error')
+                        return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=token)
+
+                    if token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                        return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=token)
+
+                # Fetch IP information from ipwho.is
+                import requests
+                url = f"https://ipwho.is/{ip_address}"
+                response = requests.get(url)
+                response.raise_for_status()
+                data = response.json()
+
+                if data.get('success'):
+                    if manage_module_usage(g.user_id, 'ip'):
+                        results = {
+                            'ip': data.get('ip'),
+                            'continent': data.get('continent'),
+                            'country': data.get('country'),
+                            'region': data.get('region'),
+                            'city': data.get('city'),
+                            'latitude': data.get('latitude'),
+                            'longitude': data.get('longitude'),
+                            'provider': data.get('connection', {}).get('isp', 'Não disponível')
+                        }
+                    else:
+                        flash('Limite de uso atingido para IP.', 'error')
+                else:
+                    flash('IP não encontrado ou inválido.', 'error')
+            except requests.RequestException:
+                flash('Erro ao conectar com o servidor da API.', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta da API inválida.', 'error')
+
+    return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=session.get('token'))
+
+@app.route('/nome2', methods=['GET', 'POST'])
+def nome2():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    results = None
+    nome = ""
+
+    if request.method == 'POST':
+        try:
+            nome = request.form.get('nome', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not nome or not token:
+                    flash('Nome ou Token não fornecido.', 'error')
+                    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+
+            # API Call for name lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nomeData&query={nome}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado') and 'itens' in data['resultado']:
+                if manage_module_usage(g.user_id, 'nome2'):
+                    results = data['resultado']['itens']
+                else:
+                    flash('Limite de uso atingido para NOME2.', 'error')
+            else:
+                flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
+
+
 
 if __name__ == '__main__':
     initialize_json('users.json')
