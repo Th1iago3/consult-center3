@@ -520,8 +520,8 @@
             });
 
             function fetchModuleRequestCount(moduleId, moduleType, moduleElement) {
-                const user = {{ g.user_id|tojson }};
-                const token = '{{ session.get('token')|escapejs }}';
+                const user = {{ g.user_id | tojson | safe }};
+                const token = {{ session.get('token') | escapejs | safe }};
 
                 fetch('/dashboard', {
                     method: 'POST',
