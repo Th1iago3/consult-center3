@@ -191,11 +191,10 @@ def dashboard():
     if request.method == 'POST':
         action = request.form.get('action')
         user = request.form.get('user')
-        token = request.form.get('token')
         module = request.form.get('module')
 
         if action == 'view_modules':
-            if user in users and token == users[user]['token']:
+            if user in users:
                 user_modules = users[user].get('modules', {})
                 role = users[user].get('role', 'user_semanal')
                 max_requests = {
@@ -221,6 +220,7 @@ def dashboard():
                 return jsonify({"error": "Parâmetros inválidos ou usuário não encontrado."}), 400
 
     return render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, token=session.get('token'))
+    
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
     users = load_data('users.json')
