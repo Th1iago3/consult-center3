@@ -187,7 +187,7 @@ def dashboard():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
 
     if g.user_id in users:
-        expiration_date = datetime.datetime.strptime(users[g.user_id]['expiration'], '%Y-%m-%d')
+        expiration_date = datetime.strptime(users[g.user_id]['expiration'], '%Y-%m-%d')
         if datetime.datetime.now() > expiration_date:
             flash('Sua sessão expirou. Por favor, faça login novamente.', 'error')
             resp = redirect('/')
