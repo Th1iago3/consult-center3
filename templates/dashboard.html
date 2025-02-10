@@ -566,32 +566,29 @@
                 const moduleId = module.getAttribute('data-module-id');
                 fetchModuleRequestCount(moduleId, module);
             });
-
             function fetchModuleRequestCount(moduleId, moduleElement) {
-                const user = {{ g.user_id }};
-
-                fetch('/dashboard', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=view_modules&user=${user}&module=${moduleId}`
-                })
+                const user = {{ g.user_id | tojson | safe }};
+            fetch('/dashboard', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=view_modules&user=${user}&module=${moduleId}`
+            })
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Data fetched:', data); // Debugging
                     if (data.modules && data.modules[moduleId] !== undefined) {
                         const requestsMade = data.modules[moduleId];
                         const maxRequests = data.maxRequests || 10; // Default to 10 if not provided
                         const remaining = maxRequests - requestsMade;
-
                         const requestCountSpan = moduleElement.querySelector('.request-count');
                         const requestBar = moduleElement.querySelector('.request-bar');
-
                         requestCountSpan.textContent = `Usados: ${requestsMade}/${maxRequests}`;
                         const percentage = (requestsMade / maxRequests) * 100;
                         requestBar.style.width = `${percentage}%`;
 
-                        // Change color based on usage percentage for visual feedback
+            // Change color based on usage percentage for visual feedback
                         if (percentage > 80) {
                             requestBar.style.backgroundColor = 'var(--error)';
                         } else if (percentage > 50) {
@@ -605,7 +602,8 @@
                     console.error('Erro ao buscar limites de requisições:', error);
                     moduleElement.querySelector('.request-count').textContent = 'Erro ao carregar';
                 });
-            }
-    </script>
-    </body>
-    </html>
+        }
+                                  });
+                                  <script>
+                                  </body>
+                                  </html>
