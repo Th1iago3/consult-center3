@@ -366,14 +366,19 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="module-icon">
                 <h3 class="module-title">Consulta - CPF (DATASUS)</h3>
                 <p class="module-description">Consulta completa de dados através do CPF.</p>
-                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
+                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
                         'user_semanal': 10,
                         'user_mensal': 250,
                         'user_anual': 150
                     }.get(user_role, 10) %}
+                    {% if module_usage > 0 %}
+                        {% set progress_width = (module_usage / max_requests * 100)|round|int %}
+                    {% else %}
+                        {% set progress_width = 0 %}
+                    {% endif %}
                     <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (module_usage > 0) | ternary((module_usage / max_requests * 100)|round|int, 0) }}%"></div>
+                        <div class="request-bar" style="width: {{ progress_width }}%"></div>
                     </div>
                     <p class="request-count">{{ module_usage }} de {{ max_requests }} usos</p>
                 {% endwith %}
