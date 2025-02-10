@@ -351,7 +351,7 @@ def logout():
     return resp
 
 # Module Routes (implement each with manage_module_usage)
-@app.route('/cpf', methods=['GET', 'POST'])
+@app.route('/cpfdata', methods=['GET', 'POST'])
 def cpf():
     if 'user_id' not in g:  # Ensure user is logged in
         flash('Você precisa estar logado para acessar esta página.', 'error')
