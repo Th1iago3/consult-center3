@@ -21,13 +21,30 @@
         "password": "@th2x_lkj",
         "token": "20DIAS",
         "expiration": "2025-02-24",
-        "role": "user"
+        "role": "user_semanal",
+        "modules": {
+            "cpf": 0,
+            "cpf2": 0,
+            "cpf3": 0,
+            "cpfdata": 0,
+            "cpflv": 0,
+            "datanome": 0,
+            "placalv": 0,
+            "tellv": 0,
+            "placa": 0,
+            "tel": 0,
+            "ip": 0,
+            "fotor": 0,
+            "nome": 0,
+            "nome2": 0
+        },
+        "last_reset": "2025-02-10"
     },
     "@trial3d": {
         "password": "3dias",
         "token": "3diass",
         "expiration": "2025-02-09",
-        "role": "user",
+        "role": "user_semanal",
         "devices": [
             "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36"
         ]
