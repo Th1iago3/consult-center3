@@ -178,7 +178,7 @@ def login():
             flash('Usuário ou senha incorretos.', 'error')
     return render_template('login.html')
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     users = load_data('users.json')
     notifications = load_data('notifications.json')
@@ -187,12 +187,46 @@ def dashboard():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
 
     if g.user_id in users:
-        expiration_date = datetime.strptime(users[g.user_id]['expiration'], '%Y-%m-%d')
-        if datetime.now() > expiration_date:
+        expiration_date = datetime.datetime.strptime(users[g.user_id]['expiration'], '%Y-%m-%d')
+        if datetime.datetime.now() > expiration_date:
             flash('Sua sessão expirou. Por favor, faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
             return resp
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+        user = request.form.get('user')
+        token = request.form.get('token')
+        module = request.form.get('module')
+        module_type = request.form.get('module_type')
+
+        if action == 'view_modules':
+            if user in users and token == users[user]['token']:
+                user_modules = users[user].get('modules', {})
+                role = users[user].get('role', 'user_semanal')
+                max_requests = {
+                    'user_semanal': 10,
+                    'user_mensal': 250,
+                    'user_anual': 150
+                }.get(role, 10)  # Default to weekly limit if role not recognized
+
+                if is_admin:
+                    # For admin, return all module limits
+                    return jsonify({
+                        "user": user,
+                        "modules": user_modules,
+                        "maxRequests": "Admin has unlimited access to all modules."
+                    }), 200
+                else:
+                    return jsonify({
+                        "user": user,
+                        "modules": {module: user_modules.get(module, 0)},
+                        "maxRequests": max_requests
+                    }), 200
+            else:
+                return jsonify({"error": "Parâmetros inválidos ou usuário não encontrado."}), 400
+
     return render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, token=session.get('token'))
 
 @app.route('/admin', methods=['GET', 'POST'])
