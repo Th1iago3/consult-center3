@@ -297,6 +297,32 @@
         .module-card:hover .request-count, .module-card:hover .request-bar-wrapper {
             opacity: 1;
         }
+
+        .request-count-formatted {
+    font-size: 12px; /* Tamanho da fonte */
+    font-weight: bold; /* Texto em negrito */
+    color: var(--text-color); /* Cor do texto, assumindo que você tem uma variável CSS para isso */
+    margin-bottom: 5px; /* Espaçamento inferior para separar do próximo elemento */
+    display: inline-block; /* Para que o texto fique na mesma linha se necessário */
+    padding: 2px 5px; /* Espaçamento interno para dar um pouco de destaque */
+    border-radius: 3px; /* Bordas arredondadas para o contêiner do texto */
+    background-color: var(--light-background); /* Cor de fundo suave */
+    transition: color 0.3s ease; /* Transição suave para a mudança de cor */
+}
+
+/* Mudanças de cor com base na porcentagem de uso, se você quiser usar isso */
+.request-count-formatted[data-usage="high"] {
+    color: var(--error);
+}
+
+.request-count-formatted[data-usage="medium"] {
+    color: var(--warning);
+}
+
+.request-count-formatted[data-usage="low"] {
+    color: var(--success);
+}
+
     </style>
     
 </head>
