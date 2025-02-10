@@ -16,6 +16,7 @@ app.config['SECRET_KEY'] = os.urandom(24)
 colorama.init()
 
 # Ensure JSON files exist
+# Função para garantir que arquivos JSON existam
 def initialize_json(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -26,20 +27,21 @@ def initialize_json(file_path):
 
 def load_data(file_path):
     with open(file_path, 'r') as file:
-        return json.load(file)
+        try:
+            return json.load(file)
+        except json.JSONDecodeError:
+            return {}
 
 def save_data(data, file_path):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
+# Gerenciamento de Tokens
 def generate_token(user_id):
     users = load_data('users.json')
-    if users.get(user_id, {}).get('role') == 'admin':
-        payload = {'user_id': user_id, 'exp': datetime.utcnow() + timedelta(days=3650)}  # Admin token lasts 10 years
-    else:
-        payload = {'user_id': user_id, 'exp': datetime.utcnow() + timedelta(hours=1)}
-    token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm="HS256")
-    return token
+    exp_time = timedelta(days=3650) if users.get(user_id, {}).get('role') == 'admin' else timedelta(hours=1)
+    payload = {'user_id': user_id, 'exp': datetime.utcnow() + exp_time}
+    return jwt.encode(payload, app.config['SECRET_KEY'], algorithm="HS256")
 
 def decode_token(token):
     try:
@@ -50,90 +52,93 @@ def decode_token(token):
     except jwt.InvalidTokenError:
         return None
 
-# Function to manage module usage
+# Gerenciamento de Logs
+def log_access(endpoint, ip, message=''):
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} acessou {endpoint}. {message}")
+
+# Notificações
+def load_notifications():
+    return load_data('notifications.json')
+
+def save_notifications(notifications):
+    save_data(notifications, 'notifications.json')
+
+def send_notification(user_id, message):
+    notifications = load_notifications()
+    if user_id not in notifications:
+        notifications[user_id] = []
+    notifications[user_id].append({
+        'message': message,
+        'timestamp': datetime.now().isoformat()
+    })
+    save_notifications(notifications)
+
+# Gestão de uso dos módulos
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
-    
-    if user.get('role') == 'admin':
-        return True  # Admins have no limits
 
-    # Initialize module counts if not present
+    if user.get('role') == 'admin':
+        return True  # Admins têm acesso ilimitado
+
     if 'modules' not in user:
-        user['modules'] = {
-            'cpf': 0,
-            'cpf2': 0,
-            'cpf3': 0,
-            'cpfdata': 0,
-            'cpflv': 0,
-            'datanome': 0,
-            'placalv': 0,
-            'tellv': 0,
-            'placa': 0,
-            'tel': 0,
-            'ip': 0,
-            'fotor': 0,
-            'nome': 0,
-            'nome2': 0
-        }
-    
-    if module in user['modules']:
-        if increment:
-            user['modules'][module] += 1
-        if user['modules'][module] >= 10:
-            flash(f'Limite de uso atingido para o módulo {module}.', 'error')
-            return False
-        
-    # Check daily limits based on user role
+        user['modules'] = {m: 0 for m in [
+            'cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv',
+            'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2'
+        ]}
+
+    if increment:
+        user['modules'][module] += 1
+
     today = datetime.now().date()
-    if 'last_reset' not in user or user['last_reset'] != today:
+    if 'last_reset' not in user or user['last_reset'] != today.isoformat():
         user['last_reset'] = today.isoformat()
         for module_key in user['modules']:
             user['modules'][module_key] = 0
-    
+
     usage_limit = {
         'user_semanal': 10,
         'user_mensal': 250,
         'user_anual': 150
-    }.get(user.get('role', 'user_semanal'), 10)  # Default to weekly limit if role not recognized
-    
+    }.get(user.get('role', 'user_semanal'), 10)
+
     if user['modules'][module] > usage_limit:
         flash(f'Você excedeu o limite diário de {usage_limit} requisições para o módulo {module}.', 'error')
         return False
-    
+
     users[user_id] = user
     save_data(users, 'users.json')
     return True
 
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
+
 @app.before_request
-def manage_session():
+def check_user_existence():
     token = request.cookies.get('auth_token')
-    if request.endpoint not in ['login', 'planos', 'static']:
+    if request.endpoint not in ['login', 'static']:
         if not token:
-            flash('Você precisa estar logado para acessar esta página.', 'error')
+            log_access(request.endpoint, request.remote_addr, "Usuário não autenticado.")
             return redirect('/')
 
         user_id = decode_token(token)
-        if user_id is None:
-            flash('Por favor, faça login novamente.', 'error')
-            return redirect('/')
-
-        if user_id == "expired":
-            flash('Sua sessão expirou. Por favor, faça login novamente.', 'error')
+        if user_id in [None, "expired"]:
+            flash('Sua sessão expirou. Faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
             return resp
 
         users = load_data('users.json')
         if user_id not in users:
-            flash('Sua sessão expirou ou foi removida. Por favor, faça login novamente.', 'error')
+            flash('Sessão inválida. Faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
             return resp
 
         g.user_id = user_id
-        if 'token' not in session:
-            session['token'] = users[user_id]['token']  # Store the user's token in the session if not already there
+    log_access(request.endpoint, request.remote_addr)
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -147,29 +152,18 @@ def login():
             expiration_date = datetime.strptime(users[user]['expiration'], '%Y-%m-%d')
             if datetime.now() < expiration_date:
                 token = generate_token(user)
-                session['token'] = users[user]['token']  # Store token in session
-                resp = make_response(redirect('/dashboard'))
+                resp = redirect('/dashboard')
                 resp.set_cookie('auth_token', token)
-                resp.set_cookie('user-agent', user_agent)  # Store user-agent in a cookie
-                resp.set_cookie('connect.sid', secrets.token_hex(16))  # Generate and set connect.sid cookie
 
-                # Check for device restrictions
                 if 'devices' in users[user]:
                     if isinstance(users[user]['devices'], list) and len(users[user]['devices']) > 0:
-                        # Check if current User-Agent matches any in the list
                         if user_agent not in users[user]['devices']:
                             flash('Dispositivo não autorizado. Login recusado.', 'error')
                             return render_template('login.html')
 
-                    # Add the new User-Agent to the list if it's not there
                     if user_agent not in users[user].get('devices', []):
-                        if 'devices' not in users[user]:
-                            users[user]['devices'] = []
-                        users[user]['devices'].append(user_agent)
+                        users[user].setdefault('devices', []).append(user_agent)
                         save_data(users, 'users.json')
-                else:
-                    # If 'devices' is not present, it means unlimited logins
-                    pass
 
                 return resp
             else:
