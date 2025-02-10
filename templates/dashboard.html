@@ -266,19 +266,21 @@
             animation: notificationPulse 0.5s infinite;
         }
 
-        .request-bar-wrapper {
-            height: 5px;
+         .request-bar-wrapper {
+            height: 10px;
             width: 100%;
-            background-color: rgba(106,90,205,0.2);
-            border-radius: 4px;
-            margin-top: 10px;
+            background-color: rgba(106,90,205,0.1);
+            border-radius: 5px;
+            margin-top: 15px;
             position: relative;
         }
 
         .request-bar {
             height: 100%;
-            border-radius: 4px;
-            background-color: var(--primary-color);
+            border-radius: 5px;
+            background: linear-gradient(to right, var(--success), var(--warning), var(--error));
+            background-size: 300% 100%;
+            animation: progressAnimation 2s ease-out infinite;
             transition: width 0.3s ease;
         }
 
@@ -286,16 +288,16 @@
             font-size: 12px;
             color: var(--text-light);
             margin-top: 5px;
-            display: block;
+            text-align: center;
         }
 
-        .module-card .request-count, .module-card .request-bar-wrapper {
-            transition: opacity 0.3s ease;
-            opacity: 0;
-        }
-
-        .module-card:hover .request-count, .module-card:hover .request-bar-wrapper {
-            opacity: 1;
+        @keyframes progressAnimation {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
         }
 
         .request-count-formatted {
@@ -364,9 +366,17 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="module-icon">
                 <h3 class="module-title">Consulta - CPF (DATASUS)</h3>
                 <p class="module-description">Consulta completa de dados através do CPF.</p>
-                <div class="request-count-formatted">
-                <span>Uso: {{ users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 'N/A') }}</span>
-                </div>
+                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
+                    {% set max_requests = {
+                        'user_semanal': 10,
+                        'user_mensal': 250,
+                        'user_anual': 150
+                    }.get(user_role, 10) %}
+                    <div class="request-bar-wrapper">
+                        <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
+                    </div>
+                    <p class="request-count">{{ module_usage }}/{{ max_requests }}</p>
+                {% endwith %}
                 <div class="status-dot bolinha-amarela"></div>
             </div>
 
