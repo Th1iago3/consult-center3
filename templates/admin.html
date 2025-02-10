@@ -392,10 +392,10 @@
                                 <p><strong>Senha:</strong> ${data.password}</p>
                                 <p><strong>Token:</strong> ${data.token}</p>
                                 <p><strong>Expiração:</strong> ${data.expiration}</p>
-                                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'SEMANAL' : 
-                                                           data.role === 'user_mensal' ? 'MENSAL' : 
-                                                           data.role === 'user_anual' ? 'ANUAL' : 
-                                                           data.role === 'admin' ? 'ADMINISTRADOR' : data.role}</p>
+                                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'semanal' : 
+                                                           data.role === 'user_mensal' ? 'mensal' : 
+                                                           data.role === 'user_anual' ? 'anual' : 
+                                                           data.role === 'admin' ? 'admin' : data.role}</p>
                                 <p><strong>Dispositivos:</strong> ${data.devices ? data.devices.join(', ') : "Ilimitado"}</p>
                             `;
                             usersList.appendChild(userInfo);
