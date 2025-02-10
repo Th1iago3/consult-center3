@@ -340,7 +340,7 @@
                 <p class="module-description">Consulta completa de dados através do CPF.</p>
                 <span class="request-count"></span>
                 <div class="request-bar-wrapper">
-                    <div class="request-bar" style="width: 0%"></div>
+                    <div class="request-bar" style="width: {{ (count / max_requests) * 100 }}%; {% if (count / max_requests) * 100 > 80 %} background-color: var(--error); {% elif (count / max_requests) * 100 > 50 %} background-color: var(--warning); {% else %} background-color: var(--success); {% endif %}"></div>
                 </div>
                 <div class="status-dot bolinha-amarela"></div>
             </div>
@@ -554,87 +554,6 @@
             setTimeout(() => {
                 this.style.animation = '';
             }, 500);
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const modules = document.querySelectorAll('.module-card');
-            const user = {{ g.user_id | tojson | safe }};
-            let observer;
-
-            // Função para buscar dados de cada módulo
-            function fetchModuleRequestCount(moduleId, moduleElement) {
-                fetch('/dashboard', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=view_modules&user=${user}&module=${moduleId}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.modules && data.modules[moduleId] !== undefined) {
-                        const requestsMade = data.modules[moduleId];
-                        const maxRequests = data.maxRequests || 10;
-                        const remaining = maxRequests - requestsMade;
-
-                        const requestCountSpan = moduleElement.querySelector('.request-count');
-                        const requestBar = moduleElement.querySelector('.request-bar');
-
-                        requestCountSpan.textContent = `Usados: ${requestsMade}/${maxRequests}`;
-                        const percentage = (requestsMade / maxRequests) * 100;
-                        requestBar.style.width = `${percentage}%`;
-
-                        // Mudança de cor com base na porcentagem de uso
-                        if (percentage > 80) {
-                            requestBar.style.backgroundColor = 'var(--error)';
-                        } else if (percentage > 50) {
-                            requestBar.style.backgroundColor = 'var(--warning)';
-                        } else {
-                            requestBar.style.backgroundColor = 'var(--success)';
-                        }
-                    } else {
-                        moduleElement.querySelector('.request-count').textContent = 'Erro ao carregar';
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar limites de requisições:', error);
-                    moduleElement.querySelector('.request-count').textContent = 'Erro ao carregar';
-                });
-            }
-
-            // Função para observar mudanças no atributo data-module-id
-            function observeModuleChanges(element) {
-                observer = new MutationObserver(mutations => {
-                    mutations.forEach(mutation => {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'data-module-id') {
-                            const newModuleId = element.getAttribute('data-module-id');
-                            fetchModuleRequestCount(newModuleId, element);
-                        }
-                    });
-                });
-                
-                observer.observe(element, {
-                    attributes: true,
-                    attributeFilter: ['data-module-id']
-                });
-            }
-
-            // Inicializar observação para cada módulo ao carregar a página
-            modules.forEach(module => {
-                const moduleId = module.getAttribute('data-module-id');
-                fetchModuleRequestCount(moduleId, module);
-                observeModuleChanges(module);
-            });
-
-            // Atualização automática a cada 30 segundos
-            setInterval(() => {
-                modules.forEach(module => {
-                    const moduleId = module.getAttribute('data-module-id');
-                    fetchModuleRequestCount(moduleId, module);
-                });
-            }, 30000); // 30000 ms = 30 segundos
-
         });
     </script>
 </body>
