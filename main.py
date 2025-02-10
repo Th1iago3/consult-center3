@@ -193,7 +193,6 @@ def dashboard():
         user = request.form.get('user')
         token = request.form.get('token')
         module = request.form.get('module')
-        module_type = request.form.get('module_type')
 
         if action == 'view_modules':
             if user in users and token == users[user]['token']:
@@ -222,7 +221,6 @@ def dashboard():
                 return jsonify({"error": "Parâmetros inválidos ou usuário não encontrado."}), 400
 
     return render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, token=session.get('token'))
-
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
     users = load_data('users.json')
