@@ -265,6 +265,38 @@
         .user-panel img:nth-child(3):hover {
             animation: notificationPulse 0.5s infinite;
         }
+
+        .request-bar-wrapper {
+            height: 5px;
+            width: 100%;
+            background-color: rgba(106,90,205,0.2);
+            border-radius: 4px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .request-bar {
+            height: 100%;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .request-count {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 5px;
+            display: block;
+        }
+
+        .module-card .request-count, .module-card .request-bar-wrapper {
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .module-card:hover .request-count, .module-card:hover .request-bar-wrapper {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -305,6 +337,10 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="module-icon">
                 <h3 class="module-title">Consulta - CPF (DATASUS)</h3>
                 <p class="module-description">Consulta completa de dados através do CPF.</p>
+                <span class="request-count"></span>
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: 0%"></div>
+                </div>
                 <div class="status-dot bolinha-verde"></div>
             </div>
 
@@ -472,6 +508,57 @@
                 this.style.animation = '';
             }, 500);
         });
+
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            const modules = document.querySelectorAll('.module-card');
+
+            modules.forEach(module => {
+                const moduleId = module.getAttribute('data-module-id');
+                const moduleType = module.getAttribute('data-module-type');
+                fetchModuleRequestCount(moduleId, moduleType, module);
+            });
+
+            function fetchModuleRequestCount(moduleId, moduleType, moduleElement) {
+                const user = {{ g.user_id|tojson }};
+                const token = '{{ session.get('token')|escapejs }}';
+
+                fetch('/dashboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=view_modules&user=${user}&token=${token}&module=${moduleId}&module_type=${moduleType}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.modules && data.modules[moduleId] !== undefined) {
+                        const requestsMade = data.modules[moduleId];
+                        const maxRequests = data.maxRequests || 10; // Default to 10 if not provided
+                        const remaining = maxRequests - requestsMade;
+
+                        const requestCountSpan = moduleElement.querySelector('.request-count');
+                        const requestBar = moduleElement.querySelector('.request-bar');
+
+                        requestCountSpan.textContent = `Usados: ${requestsMade}/${maxRequests}`;
+                        const percentage = (requestsMade / maxRequests) * 100;
+                        requestBar.style.width = `${percentage}%`;
+
+                        // Change color based on usage percentage for visual feedback
+                        if (percentage > 80) {
+                            requestBar.style.backgroundColor = 'var(--error)';
+                        } else if (percentage > 50) {
+                            requestBar.style.backgroundColor = 'var(--warning)';
+                        }
+                    } else {
+                        moduleElement.querySelector('.request-count').textContent = 'Erro ao carregar';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar limites de requisições:', error);
+                    moduleElement.querySelector('.request-count').textContent = 'Erro ao carregar';
+                });
+            }
     </script>
     </body>
     </html>
