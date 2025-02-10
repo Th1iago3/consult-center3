@@ -21,7 +21,7 @@
 
         .pricing-container {
             display: flex;
-            justify-content: flex-start; /* Aligns to the start of the container */
+            justify-content: flex-start;
             align-items: flex-start;
             overflow-x: auto;
             padding: 20px;
@@ -34,7 +34,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             padding: 30px;
-            min-width: 250px; /* Reduced min-width for better mobile view */
+            min-width: 250px;
             max-width: 300px;
             text-align: center;
             position: relative;
@@ -42,7 +42,7 @@
             opacity: 0;
             transform: translateY(-50px);
             animation: fadeInFromTop 0.5s ease-out forwards;
-            pointer-events: all; /* Garante que seja interativo */
+            pointer-events: all;
         }
 
         @keyframes fadeInFromTop {
@@ -54,15 +54,15 @@
 
         .card:nth-child(1) { 
             animation-delay: 0.1s;
-            z-index: 10; /* Garante que fique acima de outros */
+            z-index: 10;
         }
         .card:nth-child(2) { animation-delay: 0.2s; }
         .card:nth-child(3) { animation-delay: 0.3s; }
 
         .card:hover {
-            transform: scale(1.05); /* Scale up on hover */
+            transform: scale(1.05);
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-            width: calc(300px * 1.05); /* Increase width */
+            width: calc(300px * 1.05);
         }
 
         .card .popular {
@@ -142,11 +142,22 @@
             display: flex;
             align-items: center;
         }
+
+        .card .features li::before {
+            content: "";
+            border-color: #8f94fb;
+            border-style: solid;
+            border-width: 0 2px 2px 0;
+            display: inline-block;
+            height: 10px;
+            width: 5px;
+            transform: rotate(45deg);
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="pricing-container">
-        <!-- Changed order to match your request -->
         <div class="card">
             <div class="plan-title">
                 <h3>Plano Semanal</h3>
@@ -157,9 +168,9 @@
             </div>
             <div class="features">
                 <ul>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> 10 Requisições Diárias.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> Suporte 24 H / 7d.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> TODOS os MODULOS disponíveis.</li>
+                    <li>10 Requisições Diárias.</li>
+                    <li>Suporte 24 H / 7d.</li>
+                    <li>TODOS os MODULOS disponíveis.</li>
                 </ul>
             </div>
             <a href="https://wa.me/5582993708218?text=QUERO%20ADQUIRIR%20O%20PLANO%20%27SEMANAL%27%20DO%20CONSULT%20CENTER" class="cta">Adquirir</a>
@@ -174,10 +185,10 @@
             </div>
             <div class="features">
                 <ul>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> Suporte Priorizado 24 H / 7d.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> 250 Requisições Diárias.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> Token Personalizado.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> API'S de TODOS os MÓDULOS.</li>
+                    <li>Suporte Priorizado 24 H / 7d.</li>
+                    <li>250 Requisições Diárias.</li>
+                    <li>Token Personalizado.</li>
+                    <li>API'S de TODOS os MÓDULOS.</li>
                 </ul>
             </div>
             <a href="https://wa.me/5582993708218?text=QUERO%20ADQUIRIR%20O%20PLANO%20%27MENSAL%27%20DO%20CONSULT%20CENTER" class="cta">Adquirir</a>
@@ -192,11 +203,11 @@
             </div>
             <div class="features">
                 <ul>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> Suporte VIP Priorizado 24 H / 7d.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> 150 Requisições Diárias.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> Token Personalizado.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> API's de TODOS os MÓDULOS.</li>
-                    <li><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #8f94fb; margin-right: 10px;"></span> Até 2x Token Personalizado.</li>
+                    <li>Suporte VIP Priorizado 24 H / 7d.</li>
+                    <li>150 Requisições Diárias.</li>
+                    <li>Token Personalizado.</li>
+                    <li>API's de TODOS os MÓDULOS.</li>
+                    <li>Até 2x Token Personalizado.</li>
                 </ul>
             </div>
             <a href="https://wa.me/5582993708218?text=QUERO%20ADQUIRIR%20O%20PLANO%20%27ANUAL%27%20DO%20CONSULT%20CENTER" class="cta">Adquirir</a>
