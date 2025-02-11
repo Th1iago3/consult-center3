@@ -132,7 +132,7 @@
             </div>
             {% if not is_admin %}
                 <div class="form-group">
-                    <input type="hidden" name="token" value="{{ token }}">
+                    <input type="text" name="token" placeholder="Digite seu token..." required>
                 </div>
             {% endif %}
             <button type="submit" class="button">Consultar</button>
