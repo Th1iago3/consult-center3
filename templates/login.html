@@ -1,13 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Consult Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-        /* Reset básico */
         * {
             margin: 0;
             padding: 0;
@@ -147,6 +148,10 @@
             text-decoration: underline;
         }
 
+        .signup-text a i {
+            color: inherit;
+        }
+
         /* Responsividade */
         @media (max-width: 480px) {
             .login-container {
@@ -197,7 +202,7 @@
         </form>
         <!-- Texto abaixo do botão de login -->
         <div class="signup-text">
-            Ainda não tem acesso? <a href="/planos">Veja nossos planos</a>
+            Ainda não tem acesso? <a href="/planos">Veja nossos planos <i class="fas fa-external-link-alt"></i></a>
         </div>
     </div>
 </body>
