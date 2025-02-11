@@ -98,10 +98,10 @@ def manage_module_usage(user_id, module, increment=True):
             user['modules'][module_key] = 0
 
     usage_limit = {
-        'user_semanal': 10,
+        'user_semanal': 30,
         'user_mensal': 250,
         'user_anual': 150
-    }.get(user.get('role', 'user_semanal'), 10)
+    }.get(user.get('role', 'user_semanal'), 30)
 
     if user['modules'][module] > usage_limit:
         flash(f'Você excedeu o limite diário de {usage_limit} requisições para o módulo {module}.', 'error')
