@@ -456,7 +456,7 @@ def cpf2():
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/cpfdata', methods=['GET', 'POST'])
-def cpf4():
+def cpfdata():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -468,38 +468,72 @@ def cpf4():
     result = None
     cpf = request.form.get('cpf', '')
 
-    if not is_admin:
-        token = request.form.get('token', '')
-        if not token or token != users.get(g.user_id, {}).get('token'):
-            flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token', '')
+            if not token or token != users.get(g.user_id, {}).get('token'):
+                flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                return render_template('cpfdata.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-    if not cpf:
-        flash('CPF não fornecido.', 'error')
-        return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
+            return render_template('cpfdata.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-    try:
-        # API Call for CPF lookup
-        url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfDatasus&query={cpf}"
-        response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-        response.raise_for_status()  # Raises HTTPError for bad responses
-        data = response.json()
+        try:
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfDatasus&query={cpf}"
+            response = requests.get(url, verify=False)  
+            response.raise_for_status()  
+            data = response.json()
 
-        if data.get('resultado'):
-            # Increment module usage on success
-            if manage_module_usage(g.user_id, 'cpfdata'):
-                result = data['resultado']
+            if data.get('resultado'):
+                # Increment module usage on success
+                if manage_module_usage(g.user_id, 'cpfdata'):
+                    result = data['resultado']
+                else:
+                    flash('Limite de uso atingido para CPFDATA.', 'error')
             else:
-                flash('Limite de uso atingido para CPF4.', 'error')
-        else:
-            flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-    except requests.RequestException:
-        flash('Erro ao conectar com o servidor da API.', 'error')
-    except json.JSONDecodeError:
-        flash('Resposta da API inválida.', 'error')
+                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+        except requests.RequestException as e:
+            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida. Erro ao decodificar JSON.', 'error')
+        except KeyError:
+            flash('Resposta da API não contém a chave esperada.', 'error')
 
-    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    # Prepare data for rendering in the template
+    if result:
+        formatted_result = {
+            'nome': result.get('nome', 'SEM INFORMAÇÃO'),
+            'cpf': result.get('cpf', 'SEM INFORMAÇÃO'),
+            'sexo': result.get('sexo', 'SEM INFORMAÇÃO'),
+            'dataNascimento': {
+                'nascimento': result['dataNascimento'].get('nascimento', 'SEM INFORMAÇÃO'),
+                'idade': result['dataNascimento'].get('idade', 'SEM INFORMAÇÃO'),
+                'signo': result['dataNascimento'].get('signo', 'SEM INFORMAÇÃO')
+            },
+            'nomeMae': result.get('nomeMae', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
+            'nomePai': result.get('nomePai', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
+            'telefone': [
+                {
+                    'ddi': phone['ddi'],
+                    'ddd': phone['ddd'],
+                    'numero': phone['numero']
+                }
+                for phone in result.get('telefone', [])
+            ] if result.get('telefone') else [{'ddi': 'SEM INFORMAÇÃO', 'ddd': 'SEM INFORMAÇÃO', 'numero': 'SEM INFORMAÇÃO'}],
+            'nacionalidade': {
+                'municipioNascimento': result['nacionalidade'].get('municipioNascimento', 'SEM INFORMAÇÃO'),
+                'paisNascimento': result['nacionalidade'].get('paisNascimento', 'SEM INFORMAÇÃO')
+            },
+            'enderecos': result.get('enderecos', []),
+            'cnsDefinitivo': result.get('cnsDefinitivo', 'SEM INFORMAÇÃO')
+        }
+    else:
+        formatted_result = None
 
+    return render_template('cpfdata.html', is_admin=is_admin, notifications=user_notifications, result=formatted_result, cpf=cpf)
+    
 @app.route('/cpf3', methods=['GET', 'POST'])
 def cpf3():
     if 'user_id' not in g:
