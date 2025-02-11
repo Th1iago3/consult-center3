@@ -367,10 +367,10 @@
                 <p class="module-description">Consulta completa de dados através do CPF.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100) | round | int }}%"></div>
                     </div>
@@ -385,10 +385,10 @@
                 <p class="module-description">Consulta completa de dados através do CPF.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -403,10 +403,10 @@
                 <p class="module-description">Consulta completa de dados através do TELEFONE.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('tel', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -421,10 +421,10 @@
                 <p class="module-description">Consultas veiculares detalhadas.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('placa', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -442,10 +442,10 @@
                 <p class="module-description">Consulta completa de dados através do CPF. (manutenção)</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -460,10 +460,10 @@
                 <p class="module-description">Consulta completa de dados através do NOME.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -478,9 +478,9 @@
                 <p class="module-description">Consulta completa de dados através do NOME.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('nome2', {}).get('nome2', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
+                        'user_anual': 500
                     }.get(user_role, 10) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
@@ -496,9 +496,9 @@
                 <p class="module-description">Consulta completa de dados através do CPF.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
+                        'user_anual': 500
                     }.get(user_role, 10) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
@@ -517,10 +517,10 @@
                 <p class="module-description">Consulta de FOTO - RG através do CPF.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -535,10 +535,10 @@
                 <p class="module-description">Em Andamento...</p>
                 {% with module_usage=users.get(g.user_id, {}).get('pix', {}).get('pix', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -553,10 +553,10 @@
                 <p class="module-description">Consulte a Localização de qualquer IP.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('ip', {}).get('ip', 0), user_role=users.get(g.user_id, {}).get('role', 'user_mensal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -571,9 +571,9 @@
                 <p class="module-description">Consulta completa de dados através do CPF.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('cpf3', {}).get('cpf3', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
+                        'user_anual': 500
                     }.get(user_role, 10) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
@@ -591,10 +591,10 @@
                 <p class="module-description">Consulta completa de dados através do TELEFONE.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('tellv', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -609,10 +609,10 @@
                 <p class="module-description">Consultas veiculares detalhadas.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('placalv', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
@@ -627,10 +627,10 @@
                <p class="module-description">Consulte Dados de um NOME especifico.</p>
                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
-                        'user_semanal': 10,
+                        'user_semanal': 30,
                         'user_mensal': 250,
-                        'user_anual': 150
-                    }.get(user_role, 10) %}
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
                     </div>
