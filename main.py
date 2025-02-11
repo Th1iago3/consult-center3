@@ -375,12 +375,11 @@ def cpf():
 
                 if not cpf or not token:
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
-
+                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
@@ -400,7 +399,7 @@ def cpf():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
 @app.route('/cpf2', methods=['GET', 'POST'])
 def cpf2():
@@ -473,11 +472,11 @@ def cpf4():
         token = request.form.get('token', '')
         if not token or token != users.get(g.user_id, {}).get('token'):
             flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+            return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
     if not cpf:
         flash('CPF não fornecido.', 'error')
-        return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+        return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
     try:
         # API Call for CPF lookup
@@ -499,7 +498,7 @@ def cpf4():
     except json.JSONDecodeError:
         flash('Resposta da API inválida.', 'error')
 
-    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
 @app.route('/cpf3', methods=['GET', 'POST'])
 def cpf3():
