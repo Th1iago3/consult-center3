@@ -728,7 +728,7 @@ def placalv():
 
     return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=session.get('token'))
 
-@app.route('/tellv', methods=['GET', 'POST'])
+@app.route('/telLv', methods=['GET', 'POST'])
 def tellv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
