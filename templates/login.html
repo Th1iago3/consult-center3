@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -152,6 +151,65 @@
             color: inherit;
         }
 
+        /* Estilo para o checkbox "Mostrar Senha" */
+        .show-password {
+            display: flex;
+            align-items: center;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .show-password input[type="checkbox"] {
+            display: none;
+        }
+
+        .show-password label {
+            position: relative;
+            padding-left: 30px;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .show-password label::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border: 2px solid #8f94fb;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .show-password label::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-45deg);
+            width: 10px;
+            height: 5px;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .show-password input[type="checkbox"]:checked + label::before {
+            background: #8f94fb;
+        }
+
+        .show-password input[type="checkbox"]:checked + label::after {
+            opacity: 1;
+        }
+
         /* Responsividade */
         @media (max-width: 480px) {
             .login-container {
@@ -198,6 +256,13 @@
                 <input type="password" id="password" name="password" required>
                 <label for="password">Senha</label>
             </div>
+            
+            <!-- Checkbox "Mostrar Senha" -->
+            <div class="show-password">
+                <input type="checkbox" id="showPassword" onclick="togglePasswordVisibility()">
+                <label for="showPassword">Mostrar Senha</label>
+            </div>
+
             <button type="submit" class="button">Login</button>
         </form>
         <!-- Texto abaixo do botão de login -->
@@ -205,5 +270,12 @@
             Ainda não tem acesso? <a href="/planos">Veja nossos planos <i class="fas fa-external-link-alt"></i></a>
         </div>
     </div>
+
+    <script>
+        function togglePasswordVisibility() {
+            var passwordInput = document.getElementById('password');
+            passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+        }
+    </script>
 </body>
 </html>
