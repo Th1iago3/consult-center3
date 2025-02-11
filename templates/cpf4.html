@@ -157,19 +157,19 @@
         </form>
         {% if result %}
             <div class="profile-info">
-                <p><strong>Nome:</strong> {{ result.resultado.nome }}</p>
-                <p><strong>CPF:</strong> {{ result.resultado.cpf }}</p>
-                <p><strong>Sexo:</strong> {{ result.resultado.sexo }}</p>
-                <p><strong>Nascimento:</strong> {{ result.resultado.dataNascimento.nascimento }}</p>
-                <p><strong>Idade:</strong> {{ result.resultado.dataNascimento.idade }}</p>
-                <p><strong>Signo:</strong> {{ result.resultado.dataNascimento.signo }}</p>
-                <p><strong>Nome da Mãe:</strong> {{ result.resultado.nomeMae or 'SEM INFORMAÇÃO' }}</p>
-                <p><strong>Nome do Pai:</strong> {{ result.resultado.nomePai or 'SEM INFORMAÇÃO' }}</p>
-                <p><strong>Telefone:</strong> {{ result.resultado.telefone[0].ddi }}{{ result.resultado.telefone[0].ddd }}{{ result.resultado.telefone[0].numero }}</p>
-                <p><strong>Município de Nascimento:</strong> {{ result.resultado.nacionalidade.municipioNascimento }}</p>
-                <p><strong>País de Nascimento:</strong> {{ result.resultado.nacionalidade.paisNascimento }}</p>
-                <p><strong>Endereço:</strong> {{ result.resultado.enderecos[0].logradouro }}, {{ result.resultado.enderecos[0].numero }}, {{ result.resultado.enderecos[0].bairro }}, {{ result.resultado.enderecos[0].cidade }}</p>
-                <p><strong>CNS Definitivo:</strong> {{ result.resultado.cnsDefinitivo }}</p>
+                <p><strong>Nome:</strong> {{ result.nome }}</p>
+                <p><strong>CPF:</strong> {{ result.cpf }}</p>
+                <p><strong>Sexo:</strong> {{ result.sexo }}</p>
+                <p><strong>Nascimento:</strong> {{ result.dataNascimento.nascimento }}</p>
+                <p><strong>Idade:</strong> {{ result.dataNascimento.idade }}</p>
+                <p><strong>Signo:</strong> {{ result.dataNascimento.signo }}</p>
+                <p><strong>Nome da Mãe:</strong> {{ result.nomeMae or 'SEM INFORMAÇÃO' }}</p>
+                <p><strong>Nome do Pai:</strong> {{ result.nomePai or 'SEM INFORMAÇÃO' }}</p>
+                <p><strong>Telefone:</strong> {{ result.telefone[0].ddi }}{{ result.resultado.telefone[0].ddd }}{{ result.resultado.telefone[0].numero }}</p>
+                <p><strong>Município de Nascimento:</strong> {{ result.nacionalidade.municipioNascimento }}</p>
+                <p><strong>País de Nascimento:</strong> {{ result.nacionalidade.paisNascimento }}</p>
+                <p><strong>Endereço:</strong> {{ result.enderecos[0].logradouro }}, {{ result.resultado.enderecos[0].numero }}, {{ result.resultado.enderecos[0].bairro }}, {{ result.resultado.enderecos[0].cidade }}</p>
+                <p><strong>CNS Definitivo:</strong> {{ result.cnsDefinitivo }}</p>
             </div>
         {% endif %}
     </div>
