@@ -100,7 +100,7 @@ def manage_module_usage(user_id, module, increment=True):
     usage_limit = {
         'user_semanal': 30,
         'user_mensal': 250,
-        'user_anual': 150
+        'user_anual': 500
     }.get(user.get('role', 'user_semanal'), 30)
 
     if user['modules'][module] > usage_limit:
