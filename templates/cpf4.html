@@ -27,7 +27,7 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #E6E6FA;
+            background-color: var(--bg-color);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -42,9 +42,9 @@
         }
 
         .container {
-            background: #ffffff;
+            background: var(--panel-bg);
             border-radius: 20px;
-            box-shadow: 0 15px 25px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow);
             padding: 40px;
             width: 400px;
             text-align: center;
@@ -53,7 +53,7 @@
         }
 
         h2 {
-            color: #333;
+            color: var(--text-color);
             margin-bottom: 30px;
         }
 
@@ -67,20 +67,20 @@
             border: none;
             border-bottom: 2px solid #ccc;
             background: transparent;
-            color: #333;
+            color: var(--text-color);
             font-size: 16px;
             transition: all 0.3s ease;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #6C63FF;
+            border-color: var(--accent-color);
             transform: scale(1.01);
         }
 
         .button {
             display: inline-block;
-            background: linear-gradient(45deg, #6C63FF, #4E54C8);
+            background: linear-gradient(45deg, var(--accent-color), #6C63FF);
             border: none;
             color: white;
             padding: 15px 30px;
@@ -113,18 +113,18 @@
         .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 5px solid #721C24; }
 
         .profile-info {
-            background: #F3F4FF;
+            background: var(--notification-bg);
             border-radius: 10px;
             padding: 15px;
             margin-top: 20px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow);
             text-align: left;
         }
 
         .profile-info p {
             margin: 5px 0;
-            color: #555;
+            color: var(--text-color);
             font-size: 14px;
         }
 
@@ -157,19 +157,31 @@
         </form>
         {% if result %}
             <div class="profile-info">
-                <p><strong>Nome:</strong> {{ result.resultado.nome }}</p>
-                <p><strong>CPF:</strong> {{ result.resultado.cpf }}</p>
-                <p><strong>Sexo:</strong> {{ result.resultado.sexo }}</p>
-                <p><strong>Nascimento:</strong> {{ result.resultado.dataNascimento.nascimento }}</p>
-                <p><strong>Idade:</strong> {{ result.resultado.dataNascimento.idade }}</p>
-                <p><strong>Signo:</strong> {{ result.resultado.dataNascimento.signo }}</p>
-                <p><strong>Nome da Mãe:</strong> {{ result.resultado.nomeMae or 'SEM INFORMAÇÃO' }}</p>
-                <p><strong>Nome do Pai:</strong> {{ result.resultado.nomePai or 'SEM INFORMAÇÃO' }}</p>
-                <p><strong>Telefone:</strong> {{ result.resultado.telefone[0].ddi }}{{ result.resultado.telefone[0].ddd }}{{ result.resultado.telefone[0].numero }}</p>
-                <p><strong>Município de Nascimento:</strong> {{ result.resultado.nacionalidade.municipioNascimento }}</p>
-                <p><strong>País de Nascimento:</strong> {{ result.resultado.nacionalidade.paisNascimento }}</p>
-                <p><strong>Endereço:</strong> {{ result.resultado.enderecos[0].logradouro }}, {{ result.resultado.enderecos[0].numero }}, {{ result.resultado.enderecos[0].bairro }}, {{ result.resultado.enderecos[0].cidade }}</p>
-                <p><strong>CNS Definitivo:</strong> {{ result.resultado.cnsDefinitivo }}</p>
+                <p><strong>Nome:</strong> {{ result.nome }}</p>
+                <p><strong>CPF:</strong> {{ result.cpf }}</p>
+                <p><strong>Sexo:</strong> {{ result.sexo }}</p>
+                <p><strong>Nascimento:</strong> {{ result.dataNascimento.nascimento }}</p>
+                <p><strong>Idade:</strong> {{ result.dataNascimento.idade }}</p>
+                <p><strong>Signo:</strong> {{ result.dataNascimento.signo }}</p>
+                <p><strong>Nome da Mãe:</strong> {{ result.nomeMae }}</p>
+                <p><strong>Nome do Pai:</strong> {{ result.nomePai }}</p>
+                <p><strong>Telefone:</strong> 
+                    {% if result.telefone[0].ddi != 'SEM INFORMAÇÃO' %}
+                        {{ result.telefone[0].ddi }}{{ result.telefone[0].ddd }}{{ result.telefone[0].numero }}
+                    {% else %}
+                        {{ result.telefone[0].ddi }}
+                    {% endif %}
+                </p>
+                <p><strong>Município de Nascimento:</strong> {{ result.nacionalidade.municipioNascimento }}</p>
+                <p><strong>País de Nascimento:</strong> {{ result.nacionalidade.paisNascimento }}</p>
+                <p><strong>Endereço:</strong> 
+                    {% if result.enderecos %}
+                        {{ result.enderecos[0].logradouro }}, {{ result.enderecos[0].numero }}, {{ result.enderecos[0].bairro }}, {{ result.enderecos[0].cidade }}
+                    {% else %}
+                        SEM INFORMAÇÃO
+                    {% endif %}
+                </p>
+                <p><strong>CNS Definitivo:</strong> {{ result.cnsDefinitivo }}</p>
             </div>
         {% endif %}
     </div>
