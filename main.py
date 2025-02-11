@@ -354,7 +354,7 @@ def logout():
     return resp
 
 # Module Routes (implement each with manage_module_usage)
-@app.route('/cpfdata', methods=['GET', 'POST'])
+@app.route('/cpf', methods=['GET', 'POST'])
 def cpf():
     if 'user_id' not in g:  # Ensure user is logged in
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -382,7 +382,7 @@ def cpf():
                     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
 
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfDatasus&query={cpf}"
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -455,6 +455,51 @@ def cpf2():
             flash('Erro ao conectar com o servidor da API.', 'error')
 
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+
+@app.route('/cpfData', methods=['GET', 'POST'])
+def cpf4():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = request.form.get('cpf', '')
+
+    if not is_admin:
+        token = request.form.get('token', '')
+        if not token or token != users.get(g.user_id, {}).get('token'):
+            flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+            return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+    if not cpf:
+        flash('CPF não fornecido.', 'error')
+        return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+    try:
+        # API Call for CPF lookup
+        url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfDatasus&query={cpf}"
+        response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+        response.raise_for_status()  # Raises HTTPError for bad responses
+        data = response.json()
+
+        if data.get('resultado'):
+            # Increment module usage on success
+            if manage_module_usage(g.user_id, 'cpfData'):
+                result = data['resultado']
+            else:
+                flash('Limite de uso atingido para CPF4.', 'error')
+        else:
+            flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+    except requests.RequestException:
+        flash('Erro ao conectar com o servidor da API.', 'error')
+    except json.JSONDecodeError:
+        flash('Resposta da API inválida.', 'error')
+
+    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/cpf3', methods=['GET', 'POST'])
 def cpf3():
