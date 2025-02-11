@@ -456,7 +456,7 @@ def cpf2():
 
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
-@app.route('/cpfData', methods=['GET', 'POST'])
+@app.route('/cpfdata', methods=['GET', 'POST'])
 def cpf4():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
