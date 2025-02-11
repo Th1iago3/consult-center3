@@ -203,10 +203,10 @@ def dashboard():
                 user_modules = users[user].get('modules', {})
                 role = users[user].get('role', 'user_semanal')
                 max_requests = {
-                    'user_semanal': 10,
+                    'user_semanal': 30,
                     'user_mensal': 250,
-                    'user_anual': 150
-                }.get(role, 10)  # Default to weekly limit if role not recognized
+                    'user_anual': 500
+                }.get(role, 30)  # Default to weekly limit if role not recognized
 
                 if is_admin:
                     # For admin, return all module limits
