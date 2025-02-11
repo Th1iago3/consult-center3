@@ -174,46 +174,41 @@
             align-items: center;
         }
 
-         .show-password label::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 20px;
-        height: 20px;
-        background: #fff;
-        border: 2px solid #8f94fb;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-    }
+        .show-password label::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border: 2px solid #8f94fb;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
 
-    .show-password label::after {
-        content: '';
-        position: absolute;
-        left: 4px;
-        top: 45%;
-        width: 12px;
-        height: 6px;
-        border-left: 2px solid transparent;
-        border-bottom: 2px solid transparent;
-        transform: rotate(-45deg) translateY(-50%);
-        opacity: 0;
-        transition: 
-            opacity 0.2s ease,
-            border-color 0.2s ease;
-    }
+        .show-password label::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-45deg);
+            width: 10px;
+            height: 5px;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-    .show-password input[type="checkbox"]:checked + label::before {
-        background: #8f94fb;
-    }
+        .show-password input[type="checkbox"]:checked + label::before {
+            background: #8f94fb;
+        }
 
-    .show-password input[type="checkbox"]:checked + label::after {
-        opacity: 1;
-        border-color: #fff;
-        left: 4px;
-        top: 45%;
-    }
+        .show-password input[type="checkbox"]:checked + label::after {
+            opacity: 1;
+        }
 
         /* Responsividade */
         @media (max-width: 480px) {
