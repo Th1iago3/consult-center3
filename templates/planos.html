@@ -9,14 +9,34 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: #1a1a1a;
-            color: #fff;
+            background: #1a1a2e;
+            color: white;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            left: -200px;
+            right: -200px;
+            bottom: -200px;
+            background: radial-gradient(circle, rgba(78,84,200,0.15) 0%, transparent 70%);
+            animation: pulseGlow 4s infinite;
+            z-index: -1;
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.2); }
+            100% { opacity: 0.6; transform: scale(1); }
         }
 
         .pricing-container {
@@ -31,18 +51,19 @@
 
         .card {
             background: #2e2e2e;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 10px rgba(78,84,200,0.3);
             padding: 30px;
             min-width: 250px;
             max-width: 300px;
             text-align: center;
             position: relative;
-            transition: transform 0.3s ease, box-shadow 0.3s ease, width 0.3s ease;
+            transition: all 0.3s ease;
             opacity: 0;
             transform: translateY(-50px);
             animation: fadeInFromTop 0.5s ease-out forwards;
             pointer-events: all;
+            backdrop-filter: blur(5px);
         }
 
         @keyframes fadeInFromTop {
@@ -60,9 +81,8 @@
         .card:nth-child(3) { animation-delay: 0.3s; }
 
         .card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-            width: calc(300px * 1.05);
+            transform: scale(1.05) translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6), 0 0 20px rgba(78,84,200,0.5);
         }
 
         .card .popular {
@@ -88,12 +108,14 @@
             color: #8f94fb;
             font-size: 24px;
             text-align: left;
+            text-shadow: 0 0 10px rgba(143,148,251,0.5);
         }
 
         .card .plan-title .price {
             color: rgba(255, 255, 255, 0.5);
             font-size: 24px;
             font-weight: 400;
+            text-shadow: 0 0 5px rgba(255,255,255,0.1);
         }
 
         .card .description {
@@ -101,6 +123,7 @@
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
+            box-shadow: inset 0 0 10px rgba(78,84,200,0.2);
         }
 
         .card p {
@@ -112,18 +135,21 @@
         .card .cta {
             display: block;
             padding: 15px;
-            background: #8f94fb;
+            background: linear-gradient(45deg, #4e54c8, #8f94fb);
             color: #fff;
             text-decoration: none;
             border-radius: 10px;
             font-size: 16px;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
             width: 80%;
             margin: 0 auto;
+            box-shadow: 0 5px 15px rgba(78,84,200,0.3);
         }
 
         .card .cta:hover {
-            background: #4e54c8;
+            background: linear-gradient(45deg, #8f94fb, #4e54c8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(78,84,200,0.5);
         }
 
         .card .features {
@@ -141,6 +167,7 @@
             margin: 5px 0;
             display: flex;
             align-items: center;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .card .features li::before {
@@ -207,7 +234,7 @@
                     <li>500 Requisições Diárias.</li>
                     <li>Token Personalizado.</li>
                     <li>API's de TODOS os MÓDULOS.</li>
-                    <li>Até 2x Token Personalizado.</li>
+                    <li>Acesso Antecipado aos MÓDULOS.</li>
                 </ul>
             </div>
             <a href="https://wa.me/5582993708218?text=QUERO%20ADQUIRIR%20O%20PLANO%20%27ANUAL%27%20DO%20CONSULT%20CENTER" class="cta">Adquirir</a>
