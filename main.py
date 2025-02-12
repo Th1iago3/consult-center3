@@ -285,12 +285,12 @@ def admin_panel():
                         'ip': 0,
                         'fotor': 0,
                         'nome': 0,
-                        'nome2': 0
+                        'nome2': 0,
+                        'cpf5: 0,
+                        'nomelv': 0
                     }
                 }
-
-                if role != 'admin':
-                    new_user['devices'] = []
+                new_user['devices'] = []
 
                 users[user_input] = new_user
                 save_data(users, 'users.json')
