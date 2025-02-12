@@ -142,15 +142,15 @@
             {% endif %}
             <button type="submit" class="button">Consultar</button>
         </form>
-        {% if results and results.data%}
-            {% for result in results.data %}
+        {% if results and results.data %}
+        {% for result in results.data %}
                 <div class="profile-info">
                     <p><strong>Nome:</strong> {{ result.nome }}</p>
                     <p><strong>CPF:</strong> {{ result.cpf }}</p>
                     <p><strong>Nascimento:</strong> {{ result.dt_nascimento }}</p>
                     <p><strong>Mae:</strong> {{ result.nome_mae }}</p>
                     <p><strong>Tipo-Logradouro:</strong> {{ result.tipo_logradouro }}</p>
-                    <p><strong>Logradouro:</strong> {{ result.logradouro}}  /  Numero: {{ result.data.numero }}</p>
+                    <p><strong>Logradouro:</strong> {{ result.logradouro}}  /  Numero: {{ result.numero }}</p>
                     <p><strong>Bairro:</strong> {{ result.bairro }}</p>
                     <p><strong>Cidade:</strong> {{ result.cidade }}</p>
                     <p><strong>Cep:</strong> {{ result.cep }}</p>
