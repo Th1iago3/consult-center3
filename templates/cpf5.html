@@ -108,27 +108,25 @@
             margin: 5px 0;
             color: #555;
             font-size: 14px;
-        }
-
-        .profile-info p strong {
-            display: inline-block;
-            width: 120px;
+            white-space: pre-line; /* Mantém as quebras de linha do PHP */
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Consulta - CPF</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <form method="POST">
+        <div id="messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        <form id="cpfForm">
             <div class="form-group">
-                <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
+                <input type="text" name="cpf" placeholder="Digite o CPF..." required>
             </div>
             {% if not is_admin %}
                 <div class="form-group">
@@ -137,11 +135,26 @@
             {% endif %}
             <button type="submit" class="button">Consultar</button>
         </form>
-        {% if result %}
-            <div class="profile-info">
-                {{ result | safe }}
-            </div>
-        {% endif %}
+        <div id="result" class="profile-info"></div>
     </div>
+
+    <script>
+        document.getElementById('cpfForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const cpf = this.elements['cpf'].value;
+
+            // Faz a requisição para o PHP diretamente
+            fetch(`cpf.php?cpf=${encodeURIComponent(cpf)}`)
+            .then(response => response.text())
+            .then(result => {
+                document.getElementById('result').innerHTML = result; // Resultado já vem formatado do PHP
+                document.getElementById('messages').innerHTML = '<div class="alert alert-success">Consulta realizada com sucesso.</div>';
+            })
+            .catch(error => {
+                console.error('Erro ao buscar dados do PHP:', error);
+                document.getElementById('messages').innerHTML = '<div class="alert alert-error">Erro ao conectar com o servidor PHP.</div>';
+            });
+        });
+    </script>
 </body>
 </html>
