@@ -702,11 +702,11 @@ def placalv():
 
                 if not placa or not token:
                     flash('PLACA ou Token não fornecido.', 'error')
-                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=token)
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=token)
+                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
             # API Call for plate lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placaLv&query={placa}"
@@ -726,7 +726,7 @@ def placalv():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa, token=session.get('token'))
+    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
 @app.route('/telLv', methods=['GET', 'POST'])
 def tellv():
@@ -802,11 +802,11 @@ def placa():
                     token = request.form.get('token')
                     if not token:
                         flash('Token não fornecido.', 'error')
-                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=token)
+                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
                     if token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=token)
+                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
                 # API Call for plate lookup
                 url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placa&query={placa}"
@@ -827,7 +827,7 @@ def placa():
             except json.JSONDecodeError:
                 flash('Resposta da API inválida.', 'error')
 
-    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa, token=session.get('token'))
+    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
 @app.route('/tel', methods=['GET', 'POST'])
 def tel():
