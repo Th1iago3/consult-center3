@@ -142,8 +142,8 @@
             {% endif %}
             <button type="submit" class="button">Consultar</button>
         </form>
-        {% if results %}
-            {% for result in results %}
+        {% if results and results.data%}
+            {% for result in results.data %}
                 <div class="profile-info">
                     <p><strong>Nome:</strong> {{ result.data.nome }}</p>
                     <p><strong>CPF:</strong> {{ result.data.cpf }}</p>
