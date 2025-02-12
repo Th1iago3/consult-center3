@@ -654,7 +654,7 @@ def cpf5():
                     response.raise_for_status()
                     result = response.text  # Assumindo que o retorno é HTML formatado
                     if manage_module_usage(g.user_id, 'cpf5'):
-                        
+                        result = response.text
                     else:
                         flash('Limite de uso atingido para CPF5.', 'error')
                         result = None
