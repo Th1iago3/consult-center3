@@ -627,56 +627,22 @@ def cpflv():
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/cpf5', methods=['GET', 'POST'])
-def cpf5():
+def cpf5_module():
     if 'user_id' not in g:  # Ensure user is logged in
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
-    user_notifications = len(notifications.get(g.user_id, []))
-    result = None
-    cpf = ""
 
-    if request.method == 'POST':
-        cpf = request.form.get('cpf', '')
-        if not cpf:
-            flash('CPF não fornecido.', 'error')
-        else:
-            token = request.form.get('token', '')
-            if not is_admin and (not token or token != users.get(g.user_id, {}).get('token', '')):
-                flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            else:
-                try:
-                    # Executando o script PHP diretamente
-                    command = ['php', 'cpf.php', f'cpf={cpf}']
-                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    
-                    stdout, stderr = process.communicate()
-                    
-                    if stderr:
-                        flash(f'Erro ao executar o script PHP: {stderr.decode()}', 'error')
-                    else:
-                        result = json.loads(stdout.decode())
-                        
-                        if 'error' in result:
-                            flash(result['error'], 'error')
-                            result = None  # Limpa o resultado para não mostrar dados inválidos
-                        else:
-                            # Incrementa o uso do módulo somente se a consulta foi bem-sucedida
-                            if manage_module_usage(g.user_id, 'cpf5'):
-                                result = json.loads(stdout.decode())
-                                
-                            else:
-                                flash('Limite de uso atingido para CPF5.', 'error')
-                                result = None
-                except json.JSONDecodeError:
-                    flash('Resposta do script PHP inválida.', 'error')
-                except Exception as e:
-                    flash(f'Erro inesperado: {str(e)}', 'error')
+    token = request.form.get('token', '')
+    if not is_admin and (not token or token != users.get(g.user_id, {}).get('token', '')):
+        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+    elif not manage_module_usage(g.user_id, 'cpf5'):
+        flash('Limite de uso atingido para CPF5.', 'error')
 
-    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    return render_template('cpf5.html', is_admin=is_admin)
+
     
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 def datanome():
