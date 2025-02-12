@@ -440,6 +440,25 @@
                 <div class="status-dot bolinha-verde"></div>
             </div>
 
+            <div class="module-card" onclick="navigateTo('/cpf5')" data-module-id="cpf5">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="module-icon">
+                <h3 class="module-title">Consulta - CPF (DATA)</h3>
+                <p class="module-description">Consulta completa de dados através do CPF.</p>
+                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
+                    {% set max_requests = {
+                        'user_semanal': 30,
+                        'user_mensal': 250,
+                        'user_anual': 500
+                    }.get(user_role, 10) %}
+                    <div class="request-bar-wrapper">
+                        <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
+                    </div>
+                    <p class="request-count">{{ module_usage }}/{{ max_requests }}</p>
+                {% endwith %}
+                <div class="status-dot bolinha-verde"></div>
+            </div>
+
+
 
         <div class="module-card" onclick="navigateTo('/cpf3')" data-module-id="cpf3">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="module-icon">
@@ -463,7 +482,24 @@
         <!-- Página 2 -->
         <div class="modules-grid" id="page2" id="modules-grid" style="display: none;">
             
-
+          <div class="module-card" onclick="navigateTo('/nomelv')" data-module-id="nomelv">
+                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" class="module-icon">
+                <h3 class="module-title">Consulta - NOME (LV)</h3>
+                <p class="module-description">Consulta completa de dados através do NOME.</p>
+                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
+                    {% set max_requests = {
+                        'user_semanal': 30,
+                        'user_mensal': 250,
+                        'user_anual': 500
+                    }.get(user_role, 30) %}
+                    <div class="request-bar-wrapper">
+                        <div class="request-bar" style="width: {{ (module_usage / max_requests * 100)|round|int }}%"></div>
+                    </div>
+                    <p class="request-count">{{ module_usage }}/{{ max_requests }}</p>
+                {% endwith %}
+                <div class="status-dot bolinha-verde"></div>
+            </div>
+            
             <div class="module-card" onclick="navigateTo('/nome')" data-module-id="nome">
                 <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" class="module-icon">
                 <h3 class="module-title">Consulta - NOME</h3>
