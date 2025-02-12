@@ -649,7 +649,7 @@ def cpf5():
             else:
                 try:
                     # URL para a API interna
-                    url = f'/api/cpf?cpf={cpf}'
+                    url = f'https://consult-center3.onrender.com/api/cpf?cpf={cpf}'
                     response = requests.get(url)
                     response.raise_for_status()
                     result = response.text  # Assumindo que o retorno é HTML formatado
