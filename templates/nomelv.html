@@ -145,15 +145,15 @@
         {% if results and results.data%}
             {% for result in results.data %}
                 <div class="profile-info">
-                    <p><strong>Nome:</strong> {{ result.data.nome }}</p>
-                    <p><strong>CPF:</strong> {{ result.data.cpf }}</p>
-                    <p><strong>Nascimento:</strong> {{ result.data.dt_nascimento }}</p>
-                    <p><strong>Mae:</strong> {{ result.data.nome_mae }}</p>
-                    <p><strong>Tipo-Logradouro:</strong> {{ result.data.tipo_logradouro }}</p>
-                    <p><strong>Logradouro:</strong> {{ result.data.logradouro}}  /  Numero: {{ result.data.numero }}</p>
-                    <p><strong>Bairro:</strong> {{ result.data.bairro }}</p>
-                    <p><strong>Cidade:</strong> {{ result.data.cidade }}</p>
-                    <p><strong>Cep:</strong> {{ result.data.cep }}</p>
+                    <p><strong>Nome:</strong> {{ result.nome }}</p>
+                    <p><strong>CPF:</strong> {{ result.cpf }}</p>
+                    <p><strong>Nascimento:</strong> {{ result.dt_nascimento }}</p>
+                    <p><strong>Mae:</strong> {{ result.nome_mae }}</p>
+                    <p><strong>Tipo-Logradouro:</strong> {{ result.tipo_logradouro }}</p>
+                    <p><strong>Logradouro:</strong> {{ result.logradouro}}  /  Numero: {{ result.data.numero }}</p>
+                    <p><strong>Bairro:</strong> {{ result.bairro }}</p>
+                    <p><strong>Cidade:</strong> {{ result.cidade }}</p>
+                    <p><strong>Cep:</strong> {{ result.cep }}</p>
                 </div>
             {% endfor %}
         {% endif %}
