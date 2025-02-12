@@ -118,7 +118,7 @@ def not_found(e):
 @app.before_request
 def check_user_existence():
     token = request.cookies.get('auth_token')
-    if request.endpoint not in ['login', 'planos', 'api', 'static']:
+    if request.endpoint not in ['login', 'planos', 'api?cpf=', 'static']:
         if not token:
             log_access(request.endpoint, request.remote_addr, "Usuário não autenticado.")
             return redirect('/')
