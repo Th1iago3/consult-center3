@@ -627,21 +627,41 @@ def cpflv():
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/cpf5', methods=['GET', 'POST'])
-def cpf5_module():
+def cpf5():
     if 'user_id' not in g:  # Ensure user is logged in
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = request.form.get('cpf', '')
 
-    token = request.form.get('token', '')
-    if not is_admin and (not token or token != users.get(g.user_id, {}).get('token', '')):
-        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-    elif not manage_module_usage(g.user_id, 'cpf5'):
-        flash('Limite de uso atingido para CPF5.', 'error')
+    if request.method == 'POST':
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
+        else:
+            token = request.form.get('token', '')
+            if not is_admin and (not token or token != users.get(g.user_id, {}).get('token', '')):
+                flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+            else:
+                try:
+                    # URL para a API interna
+                    url = f'/api/cpf?cpf={cpf}'
+                    response = requests.get(url)
+                    response.raise_for_status()
+                    result = response.text  # Assumindo que o retorno é HTML formatado
+                    if manage_module_usage(g.user_id, 'cpf5'):
+                        flash('Consulta realizada com sucesso.', 'success')
+                    else:
+                        flash('Limite de uso atingido para CPF5.', 'error')
+                        result = None
+                except requests.RequestException as e:
+                    flash(f'Erro ao conectar com a API: {str(e)}', 'error')
 
-    return render_template('cpf5.html', is_admin=is_admin)
+    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
     
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
@@ -1149,6 +1169,129 @@ def nome2():
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
+credentials = 'carlinhos.edu.10@hotmail.com:#Esp210400'
+credentials_base64 = credentials.encode().decode('utf-8')  # Encode to base64
+url_login = 'https://servicos-cloud.saude.gov.br/pni-bff/v1/autenticacao/tokenAcesso'
+url_pesquisa_base = 'https://servicos-cloud.saude.gov.br/pni-bff/v1/cidadao/cpf/'
+
+headers_login = {
+    "Host": "servicos-cloud.saude.gov.br",
+    "Connection": "keep-alive",
+    "Content-Length": "0",
+    "sec-ch-ua": '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+    "accept": "application/json",
+    "X-Authorization": f"Basic {credentials_base64}",
+    "sec-ch-ua-mobile": "?0",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "sec-ch-ua-platform": "Windows",
+    "Origin": "https://si-pni.saude.gov.br",
+    "Sec-Fetch-Site": "same-site",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Dest": "empty",
+    "Referer": "https://si-pni.saude.gov.br/",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
+}
+
+def processar_cpf(cpf):
+    max_retries = 3
+    retry_delay = 5
+
+    for _ in range(max_retries):
+        # Autenticação
+        try:
+            response_login = requests.post(url_login, headers=headers_login)
+            response_login.raise_for_status()
+            login_data = response_login.json()
+            if 'accessToken' in login_data:
+                token_acesso = login_data['accessToken']
+                headers_pesquisa = {
+                    'Host': "servicos-cloud.saude.gov.br",
+                    "Authorization": f"Bearer {token_acesso}",
+                    'Accept': "application/json, text/plain, */*",
+                    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+                    'Origin': "https://si-pni.saude.gov.br",
+                    'Sec-Fetch-Site': "same-site",
+                    'Sec-Fetch-Mode': "cors",
+                    'Sec-Fetch-Dest': "empty",
+                    'Referer': "https://si-pni.saude.gov.br/",
+                    'Accept-Encoding': "gzip, deflate, br",
+                    'Accept-Language': "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
+                }
+                
+                url_pesquisa = f"{url_pesquisa_base}{cpf}"
+                for _ in range(max_retries):
+                    try:
+                        response_pesquisa = requests.get(url_pesquisa, headers=headers_pesquisa)
+                        response_pesquisa.raise_for_status()
+                        dados_pessoais = response_pesquisa.json()
+                        if 'records' in dados_pessoais:
+                            return formatar_informacoes(dados_pessoais['records'][0])
+                        else:
+                            return {"error": "Erro na pesquisa", "details": str(dados_pessoais)}
+                    except requests.RequestException:
+                        time.sleep(retry_delay)
+                return {"error": "Falha na requisição de pesquisa após várias tentativas"}
+            else:
+                return {"error": "Erro no login", "details": str(login_data)}
+        except requests.RequestException:
+            time.sleep(retry_delay)
+    return {"error": "Falha na requisição de login após várias tentativas"}
+
+def formatar_informacoes(dados_pessoais):
+    data_nascimento = dados_pessoais.get('dataNascimento', 'SEM INFORMAÇÃO')
+    idade = 'SEM INFORMAÇÃO'
+    if data_nascimento != 'SEM INFORMAÇÃO':
+        try:
+            from datetime import datetime
+            data_nascimento_obj = datetime.strptime(data_nascimento, '%Y-%m-%d')  # Ajuste o formato conforme necessário
+            hoje = datetime.now()
+            idade = f"{hoje.year - data_nascimento_obj.year} anos"
+        except ValueError:
+            idade = 'DATA INVÁLIDA'
+
+    endereco = dados_pessoais.get('endereco', {})
+    logradouro = endereco.get('logradouro', 'SEM INFORMAÇÃO')
+    cidade = endereco.get('cidade', 'SEM INFORMAÇÃO')
+    bairro = endereco.get('bairro', 'SEM INFORMAÇÃO')
+    cep = endereco.get('cep', 'SEM INFORMAÇÃO')
+
+    resultado = f"""
+    <div class='profile-info'>
+    <p><strong>NOME:</strong> {dados_pessoais.get('nome', 'SEM INFORMAÇÃO')}</p>
+    <p><strong>CPF:</strong> {dados_pessoais.get('cpf', 'SEM INFORMAÇÃO')}</p>
+    <p><strong>NOME DA MÃE:</strong> {dados_pessoais.get('nomeMae', 'SEM INFORMAÇÃO')}</p>
+    <p><strong>NOME DO PAI:</strong> {dados_pessoais.get('nomePai', 'SEM INFORMAÇÃO')}</p>
+    <p><strong>CNS:</strong> {dados_pessoais.get('cns', 'SEM INFORMAÇÃO')}</p>
+    <p><strong>Nascimento:</strong> {data_nascimento} ({idade})</p>
+    <p><strong>EMAIL:</strong> {dados_pessoais.get('email', 'SEM INFORMAÇÃO')}</p>
+    <p><strong>Sexo:</strong> {dados_pessoais.get('sexo', 'SEM INFORMAÇÃO')} 
+    <strong>Cor:</strong> {dados_pessoais.get('racaCor', 'SEM INFORMAÇÃO')} 
+    <strong>Grau de Qualidade:</strong> {dados_pessoais.get('grauQualidade', 'SEM INFORMAÇÃO')}</p>
+    <p><strong>Endereço:</strong><br>
+    Logradouro: {logradouro}<br>
+    Cidade: {cidade}<br>
+    Bairro: {bairro}<br>
+    CEP: {cep}<br>
+    Número: ( manutenção )</p>
+    <p><strong>DADOS USADOS:</strong><br>
+    CPF: {dados_pessoais.get('cpf', 'SEM INFORMAÇÃO')}<br>
+    👨‍💻 Site: lostsearch.net</p>
+    </div>
+    """
+    return resultado
+
+@app.route('/api/cpf', methods=['GET'])
+def api_cpf():
+    cpf = request.args.get('cpf')
+    if not cpf:
+        return jsonify({"error": "Por favor, forneça o CPF na URL como ?cpf=seu_cpf"}), 400
+
+    resultado = processar_cpf(cpf)
+    if isinstance(resultado, dict) and 'error' in resultado:
+        return jsonify(resultado), 400
+    else:
+        return resultado, 200, {'Content-Type': 'text/html; charset=utf-8'}
 
 
 if __name__ == '__main__':
