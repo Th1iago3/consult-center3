@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta - VACINAS</title>
+    <title>Consulta - Vacinas</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
@@ -91,6 +91,11 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         .alert-success { background-color: #E3FCEF; color: #155724; border-left: 5px solid #155724; }
         .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 5px solid #721C24; }
 
@@ -109,11 +114,16 @@
             color: #555;
             font-size: 14px;
         }
+
+        .profile-info p strong {
+            display: inline-block;
+            width: 120px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Consulta - CPF</h2>
+        <h2>Consulta - Nome</h2>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -123,7 +133,7 @@
         {% endwith %}
         <form method="POST">
             <div class="form-group">
-                <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
+                <input type="text" name="cpf" placeholder="Digite o cpf..." value="{{ cpf }}" required>
             </div>
             {% if not is_admin %}
                 <div class="form-group">
@@ -132,10 +142,28 @@
             {% endif %}
             <button type="submit" class="button">Consultar</button>
         </form>
-        {% if result %}
-            <div class="profile-info">
-                {{ result }}
-            </div>
+        {% if results %}
+        {% for result in results %}
+                <div class="profile-info">
+                    <p><strong>Sigla:</strong> {{ result.sigla}}</p>
+                    <p><strong>CPF:</strong> {{ cpf }}</p>
+                    <p><strong>Abreviatura:</strong> {{ result.abreviatura }}</p>
+                    <p><strong>ID Imunização:</strong> {{ result.imunizacao.id }}</p>
+                    <p><strong>Sistema de Origem:</strong> {{ result.imunizacao.sistemaOrigem }}</p>
+                    <p><strong>Nome da Campanha:</strong> {{ result.imunizacao.nomeCampanha }}</p>
+                    <p><strong>Código Esquema Dose:</strong> {{ .result.imunizacao.esquemaDose.codigoEsquemaDose }}</p>
+                    <p><strong>Tipo de Dose:</strong> {{ result.imunizacao.esquemaDose.tipoDoseDto.descricao }}</p>
+                    <p><strong>Data de Aplicação:</strong> {{ result.imunizacao.dataAplicacao }}</p>
+                    <p><strong>Lote:</strong> {{ result.imunizacao.lote }}</p>
+                    <p><strong>Estabelecimento de Saúde:</strong> {{ result.imunizacao.nomeEstabelecimentoSaude }}</p>
+                    <p><strong>Idade na Aplicação:</strong> {{ result.imunizacao.idadeAplicacao }}</p>
+                    <p><strong>Profissional de Saúde:</strong> {{ result.imunizacao.nomeProfissionalSaude }}</p>
+                    <p><strong>Razão Social:</strong> {{ result.imunizacao.razaoSocial }}</p>
+                    <p><strong>Transmitida RNDS:</strong> {{ "Sim" if result.imunizacao.transmitidaRNDS else "Não" }}</p>
+                    <p><strong>Fabricante:</strong> {{ result.imunizacao.fabricante }}</p>
+                    <p><strong>Descrição Grupo Atendimento:</strong> {{ result.imunizacao.descricaoGrupoAtendimento }}</p>
+                </div>
+            {% endfor %}
         {% endif %}
     </div>
 </body>
