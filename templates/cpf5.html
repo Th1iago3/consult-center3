@@ -144,7 +144,7 @@
             const cpf = this.elements['cpf'].value;
 
             // Faz a requisição para o PHP diretamente
-            fetch(`cpf.php?cpf=${encodeURIComponent(cpf)}`)
+            fetch(`/cpf.php?cpf=${encodeURIComponent(cpf)}`)
             .then(response => response.text())
             .then(result => {
                 document.getElementById('result').innerHTML = result; // Resultado já vem formatado do PHP
