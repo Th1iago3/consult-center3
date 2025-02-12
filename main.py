@@ -421,12 +421,12 @@ def cpf2():
 
                 if not cpf or (not is_admin and not token):
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
                 users = load_data('users.json')
                 if not is_admin and token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf1&query={cpf}"
@@ -453,7 +453,7 @@ def cpf2():
             app.logger.error(f"Request failed for CPF: {str(e)}")
             flash('Erro ao conectar com o servidor da API.', 'error')
 
-    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
 @app.route('/cpfdata', methods=['GET', 'POST'])
 def cpfdata():
