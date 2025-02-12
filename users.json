@@ -44,7 +44,9 @@
             "ip": 0,
             "fotor": 0,
             "nome": 0,
-            "nome2": 0
+            "nome2": 0,
+            "nomelv": 0,
+            "cpf5": 0
         },
         "last_reset": "2025-02-10"
     },
