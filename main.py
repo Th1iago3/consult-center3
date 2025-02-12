@@ -653,7 +653,7 @@ def cpf5():
 
             if data.get('resultado'):
                 if manage_module_usage(g.user_id, 'cpf5'):
-                    results = data['resultado']
+                    result = data['resultado']
                 else:
                     flash('Limite de uso atingido para CPFLV.', 'error')
             else:
