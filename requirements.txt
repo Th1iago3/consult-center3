@@ -3,4 +3,3 @@ waitress
 pyjwt
 colorama
 requests
-time
