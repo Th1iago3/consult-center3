@@ -618,7 +618,7 @@ def cpflv():
 
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
-@app.route('/modulos/cpf5', methods=['GET', 'POST'])
+@app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def cpf5():
     if 'user_id' not in g:  # Ensure user is logged in
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -641,12 +641,12 @@ def cpf5():
             else:
                 try:
                     # URL para a API interna
-                    url = f'https://consult-center3.onrender.com/api?cpf={cpf}'
+                    url = f'https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=vacinas&query={cpf}'
                     response = requests.get(url)
                     response.raise_for_status()
-                    result = response.text  # Assumindo que o retorno é HTML formatado
+                    data = response.json()  # Assumindo que o retorno é HTML formatado
                     if manage_module_usage(g.user_id, 'cpf5'):
-                        result = response.text
+                        results = data['resultado']
                     else:
                         flash('Limite de uso atingido para CPF5.', 'error')
                         result = None
