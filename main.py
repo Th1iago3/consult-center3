@@ -404,58 +404,49 @@ def cpf():
 
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
 def cpf2():
-    if 'user_id' not in g:  # Ensure user is logged in
+    if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
 
+    users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_notifications()
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
-    cpf = ""
+    cpf = request.form.get('cpf', '')
 
-    if request.method == 'POST':
-        try:
-            cpf = request.form.get('cpf', '')
-            if not is_admin:
-                token = request.form.get('token')
+    if not is_admin:
+        token = request.form.get('token', '')
+        if not token or token != users.get(g.user_id, {}).get('token'):
+            flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+            return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                if not cpf or (not is_admin and not token):
-                    flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    if not cpf:
+        flash('CPF não fornecido.', 'error')
+        return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                users = load_data('users.json')
-                if not is_admin and token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    try:
+        # API Call for CPF lookup
+        url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf1&query={cpf}"
+        response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+        response.raise_for_status()  # Raises HTTPError for bad responses
+        data = response.json()
 
-            # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf1&query={cpf}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            app.logger.info(f"API response status: {response.status_code}")
-            try:
-                result = response.json()
-                app.logger.info(f"API result: {json.dumps(result, indent=2)}")
-                if result.get('resultado'):
-                    # Increment module usage on success
-                    if manage_module_usage(g.user_id, 'cpf2'):
-                        result = result['resultado']
-                    else:
-                        flash('Limite de uso atingido para CPF2.', 'error')
-                        result = None
-                else:
-                    flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-                    result = None
-            except json.JSONDecodeError as e:
-                app.logger.error(f"JSON Decoding error: {str(e)}. Response content: {response.text}")
-                flash('Resposta da API inválida.', 'error')
-        except requests.RequestException as e:
-            app.logger.error(f"Request failed for CPF: {str(e)}")
-            flash('Erro ao conectar com o servidor da API.', 'error')
+        if data.get('resultado'):
+            # Increment module usage on success
+            if manage_module_usage(g.user_id, 'cpf3'):
+                result = data['resultado']
+            else:
+                flash('Limite de uso atingido para CPF3.', 'error')
+        else:
+            flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+    except requests.RequestException:
+        flash('Erro ao conectar com o servidor da API.', 'error')
+    except json.JSONDecodeError:
+        flash('Resposta da API inválida.', 'error')
 
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
+    
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 def cpfdata():
     if 'user_id' not in g:
