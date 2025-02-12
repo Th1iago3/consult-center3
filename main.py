@@ -118,7 +118,7 @@ def not_found(e):
 @app.before_request
 def check_user_existence():
     token = request.cookies.get('auth_token')
-    if request.endpoint not in ['login', 'planos', 'api/cpf 'static']:
+    if request.endpoint not in ['login', 'planos', 'api', 'static']:
         if not token:
             log_access(request.endpoint, request.remote_addr, "Usuário não autenticado.")
             return redirect('/')
@@ -649,7 +649,7 @@ def cpf5():
             else:
                 try:
                     # URL para a API interna
-                    url = f'https://consult-center3.onrender.com/api/cpf?cpf={cpf}'
+                    url = f'https://consult-center3.onrender.com/api?cpf={cpf}'
                     response = requests.get(url)
                     response.raise_for_status()
                     result = response.text  # Assumindo que o retorno é HTML formatado
@@ -1281,7 +1281,7 @@ def formatar_informacoes(dados_pessoais):
     """
     return resultado
 
-@app.route('/api/cpf', methods=['GET'])
+@app.route('/api', methods=['GET'])
 def api_cpf():
     cpf = request.args.get('cpf')
     if not cpf:
