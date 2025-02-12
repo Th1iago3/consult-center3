@@ -1007,7 +1007,7 @@ def nomelv():
 
             if data.get('resultado') and len(data['resultado']) > 0:
                 if manage_module_usage(g.user_id, 'nomelv'):
-                    results = data['resultado']
+                    result = data['resultado']
                 else:
                     flash('Limite de uso atingido para NOME.', 'error')
             else:
