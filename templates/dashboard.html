@@ -440,11 +440,11 @@
                 <div class="status-dot bolinha-verde"></div>
             </div>
 
-            <div class="module-card" onclick="navigateTo('/modulos/cpf5')" data-module-id="cpf5">
+            <div class="module-card" onclick="navigateTo('/modulos/vacinas')" data-module-id="vacinas">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="module-icon">
-                <h3 class="module-title">Consulta - CPF (DATA)</h3>
-                <p class="module-description">Consulta completa de dados através do CPF.</p>
-                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
+                <h3 class="module-title">Consulta - VACINA (DATA)</h3>
+                <p class="module-description">Consulta de DADOS de VACINAS através do CPF.</p>
+                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {
                         'user_semanal': 30,
                         'user_mensal': 250,
