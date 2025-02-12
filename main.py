@@ -660,7 +660,7 @@ def cpf5():
                         flash('Limite de uso atingido para CPF5.', 'error')
                         result = None
                 except requests.RequestException as e:
-                    flash(f'Erro ao conectar com a API: {str(e)}', 'error')
+                    flash(f'Erro ao conectar com a API.', 'error')
 
     return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
@@ -1195,13 +1195,13 @@ headers_login = {
 }
 
 def processar_cpf(cpf):
-    max_retries = 3
-    retry_delay = 5
+    max_retries = 7
+    retry_delay = 2
 
     for _ in range(max_retries):
         # Autenticação
         try:
-            response_login = requests.post(url_login, headers=headers_login)
+            response_login = requests.post(url_login, headers=headers_login, verify=False)
             response_login.raise_for_status()
             login_data = response_login.json()
             if 'accessToken' in login_data:
@@ -1223,7 +1223,7 @@ def processar_cpf(cpf):
                 url_pesquisa = f"{url_pesquisa_base}{cpf}"
                 for _ in range(max_retries):
                     try:
-                        response_pesquisa = requests.get(url_pesquisa, headers=headers_pesquisa)
+                        response_pesquisa = requests.get(url_pesquisa, headers=headers_pesquisa, verify=False)
                         response_pesquisa.raise_for_status()
                         dados_pessoais = response_pesquisa.json()
                         if 'records' in dados_pessoais:
@@ -1277,7 +1277,6 @@ def formatar_informacoes(dados_pessoais):
     Número: ( manutenção )</p>
     <p><strong>DADOS USADOS:</strong><br>
     CPF: {dados_pessoais.get('cpf', 'SEM INFORMAÇÃO')}<br>
-    👨‍💻 Site: lostsearch.net</p>
     </div>
     """
     return resultado
