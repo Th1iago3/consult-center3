@@ -628,22 +628,21 @@ def cpf5():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_notifications()
     user_notifications = len(notifications.get(g.user_id, []))
-    result = None
-    cpf = ""
+    results = None  # Changed from 'result' to 'results' for consistency with the template
+    cpf = request.form.get('cpf', '')
 
     if request.method == 'POST':
         try:
-            cpf = request.form.get('cpf', '')
             if not is_admin:
                 token = request.form.get('token')
 
                 if not cpf or not token:
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+                    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+                    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=vacinas&query={cpf}"
@@ -653,18 +652,18 @@ def cpf5():
 
             if data.get('resultado'):
                 if manage_module_usage(g.user_id, 'cpf5'):
-                    result = data['resultado']
+                    # Here we correct the naming to match the template expectation
+                    results = data['resultado']
                 else:
                     flash('Limite de uso atingido para CPFLV.', 'error')
             else:
                 flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
+        except requests.RequestException as e:
+            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
-
+    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf, token=session.get('token'))
     
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 def datanome():
