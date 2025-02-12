@@ -145,23 +145,23 @@
         {% if results %}
         {% for result in results %}
                 <div class="profile-info">
-                    <p><strong>Sigla:</strong> {{ result.sigla}}</p>
+                    <p><strong>Sigla:</strong> {{ result.sigla }}</p>
                     <p><strong>CPF:</strong> {{ cpf }}</p>
                     <p><strong>Abreviatura:</strong> {{ result.abreviatura }}</p>
-                    <p><strong>ID Imunização:</strong> {{ result.imunizacao.id }}</p>
-                    <p><strong>Sistema de Origem:</strong> {{ result.imunizacao.sistemaOrigem }}</p>
-                    <p><strong>Nome da Campanha:</strong> {{ result.imunizacao.nomeCampanha }}</p>
-                    <p><strong>Código Esquema Dose:</strong> {{ result.imunizacao.esquemaDose.codigoEsquemaDose }}</p>
-                    <p><strong>Tipo de Dose:</strong> {{ result.imunizacao.esquemaDose.tipoDoseDto.descricao }}</p>
-                    <p><strong>Data de Aplicação:</strong> {{ result.imunizacao.dataAplicacao }}</p>
-                    <p><strong>Lote:</strong> {{ result.imunizacao.lote }}</p>
-                    <p><strong>Estabelecimento de Saúde:</strong> {{ result.imunizacao.nomeEstabelecimentoSaude }}</p>
-                    <p><strong>Idade na Aplicação:</strong> {{ result.imunizacao.idadeAplicacao }}</p>
-                    <p><strong>Profissional de Saúde:</strong> {{ result.imunizacao.nomeProfissionalSaude }}</p>
-                    <p><strong>Razão Social:</strong> {{ result.imunizacao.razaoSocial }}</p>
-                    <p><strong>Transmitida RNDS:</strong> {{ "Sim" if result.imunizacao.transmitidaRNDS else "Não" }}</p>
-                    <p><strong>Fabricante:</strong> {{ result.imunizacao.fabricante }}</p>
-                    <p><strong>Descrição Grupo Atendimento:</strong> {{ result.imunizacao.descricaoGrupoAtendimento }}</p>
+                    <p><strong>ID Imunização:</strong> {{ result.imunizacors.id }}</p>
+                    <p><strong>Sistema de Origem:</strong> {{ result.imunizacoes.sistemaOrigem }}</p>
+                    <p><strong>Nome da Campanha:</strong> {{ result.imunizacoes.nomeCampanha }}</p>
+                    <p><strong>Código Esquema Dose:</strong> {{ result.imunizacoes.esquemaDose.codigoEsquemaDose }}</p>
+                    <p><strong>Tipo de Dose:</strong> {{ result.imunizacoes.esquemaDose.tipoDoseDto.descricao }}</p>
+                    <p><strong>Data de Aplicação:</strong> {{ result.imunizacoes.dataAplicacao }}</p>
+                    <p><strong>Lote:</strong> {{ result.imunizacoes.lote }}</p>
+                    <p><strong>Estabelecimento de Saúde:</strong> {{ result.imunizacoes.nomeEstabelecimentoSaude }}</p>
+                    <p><strong>Idade na Aplicação:</strong> {{ result.imunizacoes.idadeAplicacao }}</p>
+                    <p><strong>Profissional de Saúde:</strong> {{ result.imunizacoes.nomeProfissionalSaude }}</p>
+                    <p><strong>Razão Social:</strong> {{ result.imunizacoes.razaoSocial }}</p>
+                    <p><strong>Transmitida RNDS:</strong> {{ "Sim" if result.imunizacoes.transmitidaRNDS else "Não" }}</p>
+                    <p><strong>Fabricante:</strong> {{ result.imunizacoes.fabricante }}</p>
+                    <p><strong>Descrição Grupo Atendimento:</strong> {{ result.imunizacoes.descricaoGrupoAtendimento }}</p>
                 </div>
             {% endfor %}
         {% endif %}
