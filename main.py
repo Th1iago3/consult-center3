@@ -933,6 +933,53 @@ def fotor():
 
     return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
 
+@app.route('/nomelv', methods=['GET', 'POST'])
+def nomelv():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    results = None
+    nome = ""
+
+    if request.method == 'POST':
+        try:
+            nome = request.form.get('nome', '')
+            if not is_admin:
+                token = request.form.get('token')
+
+                if not nome or not token:
+                    flash('Nome ou Token não fornecido.', 'error')
+                    return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+
+            # API Call for name lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nomeLv&query={nome}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado') and len(data['resultado']) > 0:
+                if manage_module_usage(g.user_id, 'nome'):
+                    results = data['resultado']
+                else:
+                    flash('Limite de uso atingido para NOME.', 'error')
+            else:
+                flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
+    
 @app.route('/nome', methods=['GET', 'POST'])
 def nome():
     if 'user_id' not in g:
