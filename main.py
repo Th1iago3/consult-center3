@@ -286,7 +286,7 @@ def admin_panel():
                         'fotor': 0,
                         'nome': 0,
                         'nome2': 0,
-                        'cpf5: 0,
+                        'cpf5': 0,
                         'nomelv': 0
                     }
                 }
