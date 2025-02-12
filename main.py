@@ -620,7 +620,7 @@ def cpflv():
 
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def cpf5():
-    if 'user_id' not in g:  # Ensure user is logged in
+    if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
 
@@ -629,31 +629,41 @@ def cpf5():
     notifications = load_notifications()
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
-    cpf = request.form.get('cpf', '')
+    cpf = ""
 
     if request.method == 'POST':
-        if not cpf:
-            flash('CPF não fornecido.', 'error')
-        else:
-            token = request.form.get('token', '')
-            if not is_admin and (not token or token != users.get(g.user_id, {}).get('token', '')):
-                flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            else:
-                try:
-                    # URL para a API interna
-                    url = f'https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=vacinas&query={cpf}'
-                    response = requests.get(url)
-                    response.raise_for_status()
-                    data = response.json()  # Assumindo que o retorno é HTML formatado
-                    if manage_module_usage(g.user_id, 'cpf5'):
-                        results = data['resultado']
-                    else:
-                        flash('Limite de uso atingido para CPF5.', 'error')
-                        result = None
-                except requests.RequestException as e:
-                    flash(f'Erro ao conectar com a API.', 'error')
+        try:
+            cpf = request.form.get('cpf', '')
+            if not is_admin:
+                token = request.form.get('token')
 
-    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                if not cpf or not token:
+                    flash('CPF ou Token não fornecido.', 'error')
+                    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+
+            # API Call for CPF lookup
+            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=vacinas&query={cpf}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            if data.get('resultado'):
+                if manage_module_usage(g.user_id, 'cpf5'):
+                    results = data['resultado']
+                else:
+                    flash('Limite de uso atingido para CPFLV.', 'error')
+            else:
+                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+        except requests.RequestException:
+            flash('Erro ao conectar com o servidor da API.', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+
+    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
     
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
