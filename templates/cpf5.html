@@ -102,6 +102,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             text-align: left;
+            display: none; /* Inicialmente oculto */
         }
 
         .profile-info p {
@@ -115,14 +116,14 @@
     <div class="container">
         <h2>Consulta - CPF</h2>
         <div id="messages">
-            <?php 
-            // Aqui começa o PHP
-            $cpf = isset($_GET['cpf']) ? $_GET['cpf'] : '';
-            if ($cpf) {
-                $result = processar_cpf($cpf);
-                echo $result;
-            }
-            ?>
+        <?php 
+        // Aqui começa o PHP
+        $cpf = isset($_GET['cpf']) ? $_GET['cpf'] : '';
+        $result = '';
+        if ($cpf) {
+            $result = processar_cpf($cpf);
+        }
+        ?>
         </div>
         <form method="GET">
             <div class="form-group">
@@ -130,6 +131,9 @@
             </div>
             <button type="submit" class="button">Consultar</button>
         </form>
+        <div id="user-profile" class="profile-info">
+            <?php echo $result; ?>
+        </div>
     </div>
 
     <?php
@@ -221,7 +225,6 @@
 
         return "<div class='alert alert-error'>Falha na requisição de login após várias tentativas</div>";
     }
-
     function formatar_informacoes($dados_pessoais) {
         // Formatar a data de nascimento e calcular a idade
         $dataNascimento = isset($dados_pessoais['dataNascimento']) ? $dados_pessoais['dataNascimento'] : 'SEM INFORMAÇÃO';
