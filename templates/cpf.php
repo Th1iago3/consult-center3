@@ -1,8 +1,6 @@
 <?php
-
 function processar_cpf($cpf) {
-    //
-    $credentials = 'carlinhos.edu.10@hotmail.com:#Esp210400';
+    $credentials = getenv('PNI_CREDENTIALS') ?: 'carlinhos.edu.10@hotmail.com:#Esp210400'; // Use variáveis de ambiente para segurança
     $credentials_base64 = base64_encode($credentials);
     $url_login = 'https://servicos-cloud.saude.gov.br/pni-bff/v1/autenticacao/tokenAcesso';
     $url_pesquisa_base = 'https://servicos-cloud.saude.gov.br/pni-bff/v1/cidadao/cpf/';
@@ -26,6 +24,7 @@ function processar_cpf($cpf) {
     ];
     $max_retries = 3; 
     $retry_delay = 5; 
+
     for ($i = 0; $i < $max_retries; $i++) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url_login);
@@ -77,21 +76,21 @@ function processar_cpf($cpf) {
                 if (isset($dados_pessoais['records'])) {
                     return formatar_informacoes($dados_pessoais['records'][0]);
                 } else {
-                    return json_encode(["error" => "Erro na pesquisa", "details" => $response_pesquisa]);
+                    return "<div class='alert alert-error'>Erro na pesquisa: " . htmlspecialchars($response_pesquisa) . "</div>";
                 }
             }
-            return json_encode(["error" => "Falha na requisição de pesquisa após várias tentativas"]);
+            return "<div class='alert alert-error'>Falha na requisição de pesquisa após várias tentativas</div>";
         } else {
-            return json_encode(["error" => "Erro no login", "details" => $response_login]);
+            return "<div class='alert alert-error'>Erro no login: " . htmlspecialchars($response_login) . "</div>";
         }
     }
 
-     return json_encode(["error" => "Falha na requisição de login após várias tentativas"]);
-     }
+    return "<div class='alert alert-error'>Falha na requisição de login após várias tentativas</div>";
+}
+
 function formatar_informacoes($dados_pessoais) {
     // Formatar a data de nascimento e calcular a idade
     $dataNascimento = isset($dados_pessoais['dataNascimento']) ? $dados_pessoais['dataNascimento'] : 'SEM INFORMAÇÃO';
-
     $idade = 'SEM INFORMAÇÃO';
     if ($dataNascimento != 'SEM INFORMAÇÃO') {
         try {
@@ -112,39 +111,42 @@ function formatar_informacoes($dados_pessoais) {
     $bairro = isset($endereco['bairro']) ? $endereco['bairro'] : 'SEM INFORMAÇÃO';
     $cep = isset($endereco['cep']) ? $endereco['cep'] : 'SEM INFORMAÇÃO';
 
-    // Adicionando o telefone
-
     // Construir a string com os dados formatados
-    $resultado .= "NOME: " . (isset($dados_pessoais['nome']) ? $dados_pessoais['nome'] : 'SEM INFORMAÇÃO') . "\n";
-    $resultado .= "CPF: " . (isset($dados_pessoais['cpf']) ? $dados_pessoais['cpf'] : 'SEM INFORMAÇÃO') . "\n";
-    $resultado .= "NOME DA MÃE: " . (isset($dados_pessoais['nomeMae']) ? $dados_pessoais['nomeMae'] : 'SEM INFORMAÇÃO') . "\n";
-    $resultado .= "NOME DO PAI: " . (isset($dados_pessoais['nomePai']) ? $dados_pessoais['nomePai'] : 'SEM INFORMAÇÃO') . "\n";
-    $resultado .= "CNS: " . (isset($dados_pessoais['cns']) ? $dados_pessoais['cns'] : 'SEM INFORMAÇÃO') . "\n";
-    $resultado .= "Nascimento: $dataNascimento ($idade) \n";
-    $resultado .= "EMAIL: " . (isset($dados_pessoais['email']) ? $dados_pessoais['email'] : 'SEM INFORMAÇÃO') . "\n";
-    $resultado .= "Sexo: " . (isset($dados_pessoais['sexo']) ? $dados_pessoais['sexo'] : 'SEM INFORMAÇÃO') . " ";
-    $resultado .= "Cor: " . (isset($dados_pessoais['racaCor']) ? $dados_pessoais['racaCor'] : 'SEM INFORMAÇÃO') . " ";
-    $resultado .= "Grau de Qualidade: " . (isset($dados_pessoais['grauQualidade']) ? $dados_pessoais['grauQualidade'] : 'SEM INFORMAÇÃO') . "\n";
+    $output = "<div class='profile-info'>";
+    $output .= "<p><strong>NOME:</strong> " . htmlspecialchars($dados_pessoais['nome'] ?? 'SEM INFORMAÇÃO') . "</p>";
+    $output .= "<p><strong>CPF:</strong> " . htmlspecialchars($dados_pessoais['cpf'] ?? 'SEM INFORMAÇÃO') . "</p>";
+    $output .= "<p><strong>NOME DA MÃE:</strong> " . htmlspecialchars($dados_pessoais['nomeMae'] ?? 'SEM INFORMAÇÃO') . "</p>";
+    $output .= "<p><strong>NOME DO PAI:</strong> " . htmlspecialchars($dados_pessoais['nomePai'] ?? 'SEM INFORMAÇÃO') . "</p>";
+    $output .= "<p><strong>CNS:</strong> " . htmlspecialchars($dados_pessoais['cns'] ?? 'SEM INFORMAÇÃO') . "</p>";
+    $output .= "<p><strong>Nascimento:</strong> $dataNascimento ($idade)</p>";
+    $output .= "<p><strong>EMAIL:</strong> " . htmlspecialchars($dados_pessoais['email'] ?? 'SEM INFORMAÇÃO') . "</p>";
+    $output .= "<p><strong>Sexo:</strong> " . htmlspecialchars($dados_pessoais['sexo'] ?? 'SEM INFORMAÇÃO') . " ";
+    $output .= "<strong>Cor:</strong> " . htmlspecialchars($dados_pessoais['racaCor'] ?? 'SEM INFORMAÇÃO') . " ";
+    $output .= "<strong>Grau de Qualidade:</strong> " . htmlspecialchars($dados_pessoais['grauQualidade'] ?? 'SEM INFORMAÇÃO') . "</p>";
 
     // Endereço formatado corretamente
-    $resultado .= "Endereço: \n";
-    $resultado .= "Logradouro: $logradouro \n";
-    $resultado .= "Cidade: $cidade \n";
-    $resultado .= "Bairro: $bairro \n";
-    $resultado .= "CEP: $cep \n";
-    $resultado .= "Número: ( manutenção )\n\n"; // Corrigido
+    $output .= "<p><strong>Endereço:</strong><br>";
+    $output .= "Logradouro: " . htmlspecialchars($logradouro) . "<br>";
+    $output .= "Cidade: " . htmlspecialchars($cidade) . "<br>";
+    $output .= "Bairro: " . htmlspecialchars($bairro) . "<br>";
+    $output .= "CEP: " . htmlspecialchars($cep) . "<br>";
+    $output .= "Número: ( manutenção )</p>";
 
     // Dados usados
-    return $resultado;
+    $output .= "<p><strong>DADOS USADOS:</strong><br>";
+    $output .= "CPF: " . htmlspecialchars($dados_pessoais['cpf'] ?? 'SEM INFORMAÇÃO') . "<br>";
+    
+    $output .= "</div>";
+
+    return $output;
 }
 
-header('Content-Type: application/json');
-
+header('Content-Type: text/html; charset=utf-8');
 
 if (isset($_GET['cpf'])) {
     $cpf = $_GET['cpf'];
     echo processar_cpf($cpf);
 } else {
-    echo json_encode(["error" => "Por favor, forneça o CPF na URL como ?cpf=seu_cpf"]);
+    echo "<div class='alert alert-error'>Por favor, forneça o CPF na URL como ?cpf=seu_cpf</div>";
 }
 ?>
