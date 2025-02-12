@@ -408,7 +408,7 @@ def cpf2():
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
 
-    is_admin = g.user_id == "admin7k"
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_notifications()
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
@@ -437,7 +437,7 @@ def cpf2():
             try:
                 result = response.json()
                 app.logger.info(f"API result: {json.dumps(result, indent=2)}")
-                if result.get('resultado', {}).get('status') == 200:
+                if result.get('resultado'):
                     # Increment module usage on success
                     if manage_module_usage(g.user_id, 'cpf2'):
                         result = result['resultado']
