@@ -133,7 +133,7 @@
         {% endwith %}
         <form method="POST">
             <div class="form-group">
-                <input type="text" name="cpf" placeholder="Digite o cpf..." value="{{ cpf }}" required>
+                <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
             </div>
             {% if not is_admin %}
                 <div class="form-group">
@@ -143,25 +143,27 @@
             <button type="submit" class="button">Consultar</button>
         </form>
         {% if results %}
-        {% for result in results %}
-                <div class="profile-info">
-                    <p><strong>Sigla:</strong> {{ result.sigla }}</p>
-                    <p><strong>Abreviatura:</strong> {{ result.abreviatura }}</p>
-                    <p><strong>ID Imunização:</strong> {{ result.imunizacoes.id }}</p>
-                    <p><strong>Sistema de Origem:</strong> {{ result.imunizacoes.sistemaOrigem }}</p>
-                    <p><strong>Nome da Campanha:</strong> {{ result.imunizacoes.nomeCampanha }}</p>
-                    <p><strong>Código Esquema Dose:</strong> {{ result.imunizacoes.esquemaDose.codigoEsquemaDose }}</p>
-                    <p><strong>Tipo de Dose:</strong> {{ result.imunizacoes.esquemaDose.tipoDoseDto.descricao }}</p>
-                    <p><strong>Data de Aplicação:</strong> {{ result.imunizacoes.dataAplicacao }}</p>
-                    <p><strong>Lote:</strong> {{ result.imunizacoes.lote }}</p>
-                    <p><strong>Estabelecimento de Saúde:</strong> {{ result.imunizacoes.nomeEstabelecimentoSaude }}</p>
-                    <p><strong>Idade na Aplicação:</strong> {{ result.imunizacoes.idadeAplicacao }}</p>
-                    <p><strong>Profissional de Saúde:</strong> {{ result.imunizacoes.nomeProfissionalSaude }}</p>
-                    <p><strong>Razão Social:</strong> {{ result.imunizacoes.razaoSocial }}</p>
-                    <p><strong>Transmitida RNDS:</strong> {{ "Sim" if result.imunizacoes.transmitidaRNDS else "Não" }}</p>
-                    <p><strong>Fabricante:</strong> {{ result.imunizacoes.fabricante }}</p>
-                    <p><strong>Descrição Grupo Atendimento:</strong> {{ result.imunizacoes.descricaoGrupoAtendimento }}</p>
-                </div>
+            {% for result in results %}
+                {% for imunizacao in result.imunizacoes %}
+                    <div class="profile-info">
+                        <p><strong>Sigla:</strong> {{ result.sigla }}</p>
+                        <p><strong>Abreviatura:</strong> {{ result.abreviatura }}</p>
+                        <p><strong>ID Imunização:</strong> {{ imunizacao.id }}</p>
+                        <p><strong>Sistema de Origem:</strong> {{ imunizacao.sistemaOrigem }}</p>
+                        <p><strong>Nome da Campanha:</strong> {{ imunizacao.nomeCampanha }}</p>
+                        <p><strong>Código Esquema Dose:</strong> {{ imunizacao.esquemaDose.codigoEsquemaDose }}</p>
+                        <p><strong>Tipo de Dose:</strong> {{ imunizacao.esquemaDose.tipoDoseDto.descricao }}</p>
+                        <p><strong>Data de Aplicação:</strong> {{ imunizacao.dataAplicacao }}</p>
+                        <p><strong>Lote:</strong> {{ imunizacao.lote }}</p>
+                        <p><strong>Estabelecimento de Saúde:</strong> {{ imunizacao.nomeEstabelecimentoSaude }}</p>
+                        <p><strong>Idade na Aplicação:</strong> {{ imunizacao.idadeAplicacao }}</p>
+                        <p><strong>Profissional de Saúde:</strong> {{ imunizacao.nomeProfissionalSaude }}</p>
+                        <p><strong>Razão Social:</strong> {{ imunizacao.razaoSocial }}</p>
+                        <p><strong>Transmitida RNDS:</strong> {{ "Sim" if imunizacao.transmitidaRNDS else "Não" }}</p>
+                        <p><strong>Fabricante:</strong> {{ imunizacao.fabricante }}</p>
+                        <p><strong>Descrição Grupo Atendimento:</strong> {{ imunizacao.descricaoGrupoAtendimento }}</p>
+                    </div>
+                {% endfor %}
             {% endfor %}
         {% endif %}
     </div>
