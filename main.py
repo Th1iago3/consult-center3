@@ -894,7 +894,7 @@ def tel():
     results = None
     tel = ""
 
-    if request.method == 'GET':
+    if request.method == 'POST':
         tel = request.args.get('tel', '')
         if tel:
             try:
