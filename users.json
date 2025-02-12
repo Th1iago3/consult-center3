@@ -17,11 +17,19 @@
             "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
         ]
     },
+    "@apiBROficial": {
+        "password": "@apiBrasilO.fc",
+        "token": "@apiBR",
+        "expiration": "2335-12-99",
+        "role": "admin",
+        "devices": []
+    },
+        
     "20DIAS": {
         "password": "@th2x_lkj",
         "token": "20DIAS",
         "expiration": "2025-02-24",
-        "role": "user_mensal",
+        "role": "user_anual",
         "modules": {
             "cpf": 0,
             "cpf2": 0,
