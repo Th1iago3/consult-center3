@@ -958,7 +958,7 @@ def fotor():
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
 
-                if data.get('resultado', {}).get('success'):
+                if data.get('status', {}).get('true'):
                     if manage_module_usage(g.user_id, 'fotor'):
                         results = data
                     else:
