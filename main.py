@@ -960,7 +960,7 @@ def fotor():
 
                 if data.get('resultado', {}).get('success'):
                     if manage_module_usage(g.user_id, 'fotor'):
-                        results = data['resultado']['data']
+                        results = data
                     else:
                         flash('Limite de uso atingido para FOTOR.', 'error')
                 else:
