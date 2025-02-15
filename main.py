@@ -1301,68 +1301,66 @@ def visitas():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_notifications()
     user_notifications = len(notifications.get(g.user_id, []))
+    uid = request.form.get('uid', '') if request.method == 'POST' else ''
+    token = request.form.get('token', '') if request.method == 'POST' else ''
+    result = None
 
-    uid = request.form.get('uid', '')
-    token = request.form.get('token', '')
-
-    if not uid:
+    if not uid and request.method == 'POST':
         flash('UID não fornecido.', 'error')
         return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
 
-    if not is_admin:
+    if not is_admin and request.method == 'POST':
         if not token or token != users.get(g.user_id, {}).get('token'):
             flash('Token inválido ou não corresponde ao usuário logado.', 'error')
             return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
 
-    success_count = 0
-    error_message = None
+    if request.method == 'POST':
+        try:
+            region, nickname = get_player_info(uid)
+            is_banned = check_ban(uid)
 
-    try:
-        region, nickname = get_player_info(uid)
-        is_banned = check_ban(uid)
-
-        if is_banned is None:
-            flash('Não foi possível verificar o status de banimento.', 'error')
-            return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
-
-        for _ in range(4):  # Make 4 requests to add visits
-            response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}®ion=br&key=teamXKrishna')
-            response.raise_for_status()
-
-            if response.status_code == 200:
-                success_count += 1
-            else:
-                # If any request fails after at least one success, stop and report the error
-                error_message = "Um ou mais pedidos falharam ao adicionar visitas."
-                break
-
-        result_data = {
-            'status': 'success' if success_count > 0 else 'error',
-            'nick': nickname,
-            'banido': 'Sim' if is_banned else 'Não',
-            'região': region,
-            'visits_added': success_count
-        }
-
-        if result_data['status'] == 'success':
-            if manage_module_usage(g.user_id, 'visitas'):
-                return jsonify(result_data)
-            else:
-                flash('Limite de uso atingido para VISITAS.', 'error')
+            if is_banned is None:
+                flash('Não foi possível verificar o status de banimento.', 'error')
                 return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
-        else:
-            if error_message:
-                flash(error_message, 'error')
+
+            total_visits_sent = 0
+            requests_made = 0
+            max_requests = 4  # Assuming you want to make 4 requests, each adding 50 visits
+
+            while requests_made < max_requests:
+                response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region=br&key=teamXKrishna')
+                response.raise_for_status()
+
+                if response.status_code == 200:
+                    total_visits_sent += 50
+                    requests_made += 1
+                else:
+                    flash(f'Erro ao enviar visitas na requisição {requests_made + 1}.', 'error')
+                    break
+
+            result = {
+                'status': 'success' if total_visits_sent > 0 else 'error',
+                'nick': nickname,
+                'banido': 'Sim' if is_banned else 'Não',
+                'region': region,
+                'visits_sent': total_visits_sent
+            }
+
+            if result['status'] == 'success':
+                if manage_module_usage(g.user_id, 'visitas'):
+                    flash(f'Visitas enviadas: {total_visits_sent} (em {requests_made} requisições)', 'success')
+                else:
+                    flash('Limite de uso atingido para VISITAS.', 'error')
+                    result = None
             else:
-                flash('Falha ao adicionar visita.', 'error')
-            return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
+                flash('Falha ao adicionar visitas.', 'error')
 
-    except requests.RequestException as e:
-        flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-    except json.JSONDecodeError:
-        flash('Resposta da API inválida.', 'error')
+        except requests.RequestException as e:
+            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
 
-    return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
+    return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=result, uid=uid, token=session.get('token'))
     
 
 if __name__ == '__main__':
