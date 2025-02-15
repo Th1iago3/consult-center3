@@ -77,12 +77,6 @@ def decrypt_with_aes(encrypted, key):
     decrypted = decryptor.update(ct) + decryptor.finalize()
     return decrypted.decode()
 
-def bisnacci_encode(data):
-    return bisnacci.encode(data)
-
-def bisnacci_decode(encoded):
-    return bisnacci.decode(encoded)
-
 def generate_keys():
     user_key = secrets.token_bytes(32)  # AES key
     public_key_pem = app.config['RSA_PUBLIC_KEY'].public_bytes(
