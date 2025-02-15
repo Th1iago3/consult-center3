@@ -1354,7 +1354,7 @@ def visitas():
                 'banido': 'Sim' if is_banned else 'Não',
                 'região': region,
                 'visits_sent': total_visits_sent,
-                'message': f'Visitas enviadas: {total_visits_sent} (em {requests_made} requisições) - ConsultCenter' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
+                'message': f'Requisições enviadas: {requests_made}.' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
             }
 
             if not manage_module_usage(g.user_id, 'visitas'):
