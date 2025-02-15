@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Estilos anteriores mantidos */
         * {
             margin: 0;
             padding: 0;
@@ -343,7 +344,7 @@
     </div>
 
     <div class="content">
-        <form method="POST">
+        <form id="cpfForm" method="POST" action="/cpf">
             <div class="search-container">
                 <input type="text" class="search-input" name="cpf" placeholder="Digite o CPF..." required>
                 {% if not is_admin %}
@@ -388,12 +389,59 @@
             }, 3000);
         }
 
-        document.querySelector('form').addEventListener('submit', function(event) {
-            const cpf = this.cpf.value;
+        // Função para buscar os dados do CPF
+        async function fetchCPFData(cpf, token) {
+            try {
+                const response = await fetch('/cpf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cpf, token }),
+                });
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                showAlert('Erro ao buscar dados. Tente novamente.', 'error');
+                return null;
+            }
+        }
+
+        // Função para exibir os dados da consulta
+        function displayInfo(data) {
+            const infoContainer = document.getElementById('infoContainer');
+            infoContainer.innerHTML = `
+                <div class="info-item"><strong>Nome:</strong> ${data.nome}</div>
+                <div class="info-item"><strong>CPF:</strong> ${data.cpf}</div>
+                <div class="info-item"><strong>Sexo:</strong> ${data.sexo}</div>
+                <div class="info-item"><strong>Nascimento:</strong> ${data.nascimento}</div>
+                ${data.filiacao ? `<div class="info-item"><strong>Filiação:</strong> Mãe: ${data.filiacao.mae || 'Não informado'}, Pai: ${data.filiacao.pai || 'Não informado'}</div>` : ''}
+                ${data.poder_aquisitivo ? `<div class="info-item"><strong>Poder Aquisitivo:</strong> ${data.poder_aquisitivo.poder_aquisitivo} (Renda: ${data.poder_aquisitivo.renda})</div>` : ''}
+                ${data.score ? `<div class="info-item"><strong>Score CSBA:</strong> ${data.score.CSBA} (${data.score.faixa_CSBA})</div>` : ''}
+                ${data.INTERESSES ? `<div class="info-item"><strong>Interesses:</strong> 
+                    Celular Pré-pago: ${data.INTERESSES.celular_pre_pago}, 
+                    Transporte Público: ${data.INTERESSES.transporte_publico}, 
+                    Jogos Online: ${data.INTERESSES.jogos_online}
+                </div>` : ''}
+            `;
+            infoContainer.classList.add('active');
+        }
+
+        // Manipulação do formulário
+        document.getElementById('cpfForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const cpf = document.querySelector('input[name="cpf"]').value;
+            const token = document.querySelector('input[name="token"]')?.value;
+
             if (!/^\d{11}$/.test(cpf)) {
                 showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
-                event.preventDefault();
-            } else {
+                return;
+            }
+
+            const data = await fetchCPFData(cpf, token);
+            if (data) {
+                displayInfo(data);
                 document.getElementById('infoAdditional1').textContent = new Date().toLocaleString();
             }
         });
