@@ -1327,10 +1327,10 @@ def visitas():
 
             # Determine how many requests are needed based on the number of visits
             requests_needed = {
-                50: 1,
-                100: 5,
-                200: 7,
-                500: 40
+                50: 5,
+                100: 50,
+                200: 150,
+                500: 500
             }.get(visits, 1)
 
             total_visits_sent = 0
@@ -1338,12 +1338,17 @@ def visitas():
 
             while requests_made < requests_needed:
                 # Since the API doesn't accept a 'visits' parameter, we'll make one request per visit
-                response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region=br&key=teamXKrishna')
+                response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}®ion=br&key=teamXKrishna')
                 response.raise_for_status()
 
                 if response.status_code == 200:
                     total_visits_sent += 1  # Increment by 1 since each request adds one visit
                     requests_made += 1
+                    
+                    # Increment module usage for each successful request
+                    if not manage_module_usage(g.user_id, 'visitas', increment=True):
+                        flash('Limite de uso atingido para VISITAS.', 'error')
+                        break  # Stop making requests if usage limit is reached
                 else:
                     flash(f'Erro ao enviar visitas na requisição {requests_made + 1}.', 'error')
                     break
@@ -1354,12 +1359,8 @@ def visitas():
                 'banido': 'Sim' if is_banned else 'Não',
                 'região': region,
                 'visits_sent': total_visits_sent,
-                'message': f'{requests_made}.' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
+                'message': f'{requests_made} requisições feitas.' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
             }
-
-            if not manage_module_usage(g.user_id, 'visitas'):
-                flash('Limite de uso atingido para VISITAS.', 'error')
-                result = None
 
         except requests.RequestException as e:
             flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
