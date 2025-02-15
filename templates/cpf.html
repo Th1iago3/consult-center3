@@ -3,84 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta - CPF</title>
+    <title>Consulta de CPF</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #E6E6FA;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .container {
             background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 15px 25px rgba(0,0,0,0.05);
-            padding: 40px;
-            width: 400px;
-            text-align: center;
+            color: #333333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: #7367F0; /* Purple */
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             position: relative;
+            z-index: 100;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
             transition: all 0.3s ease;
         }
 
-        h2 {
-            color: #333;
-            margin-bottom: 30px;
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
         }
 
-        .form-group {
-            margin: 20px 0;
+        .nav-links a.active {
+            background: rgba(255, 255, 255, 0.4);
         }
 
-        .form-group input {
-            width: 100%;
-            padding: 15px;
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .logout-btn {
+            background: #ffffff;
+            color: #7367F0; /* Purple */
             border: none;
-            border-bottom: 2px solid #ccc;
-            background: transparent;
-            color: #333;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #6C63FF;
-            transform: scale(1.01);
-        }
-
-        .button {
-            display: inline-block;
-            background: linear-gradient(45deg, #6C63FF, #4E54C8);
-            border: none;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 16px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .logout-btn:hover {
+            background: #e6e6fa;
+            transform: translateY(-2px);
+        }
+
+        .dropdown-container {
+            position: relative;
+        }
+
+        .sub-navbar {
+            background: #7367F0; /* Purple */
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 99;
         }
 
-        .button:hover {
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        .sub-navbar.active {
+            display: flex;
         }
 
-        .button:active {
-            transform: translateY(0) scale(1);
+        .sub-navbar .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .sub-navbar .nav-links a {
+            width: 100%;
+            padding: 0.5rem;
+            justify-content: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #ffffff;
+        }
+
+        .sub-navbar .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .content {
+            flex: 1;
+            margin: 1rem;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: #f5f5f5;
+            color: #333333;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-input:focus {
+            border-color: #7367F0;
+            box-shadow: 0 0 0 3px rgba(115, 103, 240, 0.2);
+        }
+
+        .search-btn {
+            background: #7367F0; /* Purple */
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-btn:hover {
+            background: #5E50C6;
+            transform: translateY(-2px);
+        }
+
+        .info-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 1rem;
+            display: none;
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-container.active {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .info-item {
+            font-size: 0.875rem;
+            color: #333333;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .info-item strong {
+            color: #7367F0;
+            font-weight: 600;
         }
 
         .alert {
@@ -91,81 +230,240 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .alert-success { background-color: #E3FCEF; color: #155724; border-left: 5px solid #155724; }
-        .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 5px solid #721C24; }
-
-        .profile-info {
-            background: #F3F4FF;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            text-align: left;
+        .alert-error {
+            background-color: #FFEBEE;
+            color: #721C24;
+            border-left: 5px solid #721C24;
         }
 
-        .profile-info p {
-            margin: 5px 0;
-            color: #555;
-            font-size: 14px;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .profile-info p strong {
-            display: inline-block;
-            width: 120px;
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.5rem;
+            }
+
+            .nav-links {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .nav-links a {
+                width: 100%;
+                padding: 0.5rem;
+            }
+
+            .user-profile {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 1rem;
+            }
+
+            .content {
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+
+            .search-container {
+                max-width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-btn {
+                width: 100%;
+            }
+
+            .sub-navbar {
+                padding: 0.5rem;
+            }
+        }
+
+        @media (orientation: portrait) {
+            body {
+                flex-direction: column;
+            }
+
+            .navbar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 1rem;
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            }
+
+            .nav-links {
+                flex-direction: row;
+                width: auto;
+                gap: 1rem;
+            }
+
+            .nav-links a {
+                justify-content: flex-start;
+                padding: 0.5rem 1rem;
+            }
+
+            .user-profile {
+                flex-direction: row;
+                margin-top: 0;
+                align-items: center;
+            }
+
+            .content {
+                margin: 1rem;
+                border-radius: 12px;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                margin-left: 0;
+                width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .info-container.active {
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Consulta - CPF</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <form method="POST" action="/modulos/cpf">
-            <div class="form-group">
-                <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
-            </div>
-            {% if not is_admin %}
-                <div class="form-group">
-                    <input type="text" name="token" placeholder="Digite seu token..." required>
+    <div class="navbar">
+        <div class="nav-links">
+            <a href="/dashboard" onclick="toggleActive(this)">
+                <i class="fas fa-home"></i>
+                <span>Página Principal</span>
+            </a>
+            <div class="dropdown-container">
+                <a href="#" onclick="toggleDropdown(event)">
+                    <i class="fas fa-caret-down"></i>
+                    <span>Informações Adicionais</span>
+                </a>
+                <div class="sub-navbar" id="subNavbar">
+                    <div class="nav-links">
+                        <a href="#">
+                            <span>Origem:</span> DATA
+                        </a>
+                        <a href="#">
+                            <span>Última Consulta:</span> <span id="infoAdditional1"></span>
+                        </a>
+                    </div>
                 </div>
-            {% endif %}
-            <button type="submit" class="button">Consultar</button>
-        </form>
-        {% if result %}
-            <div class="profile-info">
-                <p><strong>Nome:</strong> {{ result.nome }}</p>
-                <p><strong>CPF:</strong> {{ result.cpf }}</p>
-                <p><strong>Sexo:</strong> {{ result.sexo }}</p>
-                <p><strong>Nascimento:</strong> {{ result.nascimento }}</p>
-
-                {% if result.filiacao %}
-                    <p><strong>Filiação:</strong> Mãe: {{ result.filiacao.mae or 'Não informado' }}, Pai: {{ result.filiacao.pai or 'Não informado' }}</p>
-                {% endif %}
-
-                {% if result.poder_aquisitivo %}
-                    <p><strong>Poder Aquisitivo:</strong> {{ result.poder_aquisitivo.poder_aquisitivo }} (Renda: {{ result.poder_aquisitivo.renda }})</p>
-                {% endif %}
-
-                {% if result.score %}
-                    <p><strong>Score CSBA:</strong> {{ result.score.CSBA }} ({{ result.score.faixa_CSBA }})</p>
-                {% endif %}
-
-                {% if result.INTERESSES %}
-                    <p><strong>Interesses:</strong> 
-                    Celular Pré-pago: {{ result.INTERESSES.celular_pre_pago }}, 
-                    Transporte Público: {{ result.INTERESSES.transporte_publico }}, 
-                    Jogos Online: {{ result.INTERESSES.jogos_online }}
-                    </p>
-                {% endif %}
             </div>
-        {% endif %}
+        </div>
+        
+        <div class="user-profile">
+            <div class="user-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <button class="logout-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sair</span>
+            </button>
+        </div>
     </div>
+
+    <div class="content">
+        <form id="cpfForm" method="POST" action="/cpf">
+            <div class="search-container">
+                <input type="text" class="search-input" name="cpf" placeholder="Digite o CPF..." required>
+                {% if not is_admin %}
+                <input type="text" class="search-input" name="token" placeholder="Digite seu token..." required>
+                {% endif %}
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+        <div id="alertContainer"></div>
+        <div id="infoContainer" class="info-container"></div>
+    </div>
+
+    <script>
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const subNavbar = document.getElementById('subNavbar');
+            subNavbar.classList.toggle('active');
+        }
+
+        function toggleActive(element) {
+            document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            const subNavbar = document.getElementById('subNavbar');
+            if (!e.target.closest('.dropdown-container') && !e.target.closest('.sub-navbar')) {
+                subNavbar.classList.remove('active');
+            }
+        });
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+
+        document.getElementById('cpfForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const cpf = formData.get('cpf');
+            const token = formData.get('token');
+
+            if (!/^\d{11}$/.test(cpf)) {
+                showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
+                return;
+            }
+
+            fetch('/cpf', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.resultado) {
+                    const result = data.resultado;
+                    const infoContainer = document.getElementById('infoContainer');
+                    infoContainer.innerHTML = `
+                        <div class="info-item"><strong>Nome:</strong> ${result.nome || 'N/A'}</div>
+                        <div class="info-item"><strong>CPF:</strong> ${result.cpf || 'N/A'}</div>
+                        <div class="info-item"><strong>Sexo:</strong> ${result.sexo || 'N/A'}</div>
+                        <div class="info-item"><strong>Nascimento:</strong> ${result.dataNascimento?.nascimento || 'N/A'}</div>
+                        <div class="info-item"><strong>Filiação:</strong> Mãe: ${result.filiacao?.mae || 'Não informado'}, Pai: ${result.filiacao?.pai || 'Não informado'}</div>
+                        <div class="info-item"><strong>Estado Civil:</strong> ${result.estado_civil || 'N/A'}</div>
+                        <div class="info-item"><strong>CNS Definitivo:</strong> ${result.cnsDefinitivo || 'N/A'}</div>
+                        <div class="info-item"><strong>Nacionalidade:</strong> ${result.nacionalidade?.municipioNascimento || 'N/A'}, ${result.nacionalidade?.paisNascimento || 'N/A'}</div>
+                        <div class="info-item"><strong>Endereço:</strong> N/A</div>
+                        <div class="info-item"><strong>Raça/Cor:</strong> ${result.racaCor || 'N/A'}</div>
+                        <div class="info-item"><strong>Ativo:</strong> ${result.ativo !== undefined ? (result.ativo ? "Sim" : "Não") : 'N/A'}</div>
+                        <div class="info-item"><strong>Óbito:</strong> ${result.obito || 'N/A'}</div>
+                        <div class="info-item"><strong>Parto Gemelar:</strong> ${result.partoGemelar !== undefined ? (result.partoGemelar ? "Sim" : "Não") : 'N/A'}</div>
+                        <div class="info-item"><strong>VIP:</strong> ${result.vip !== undefined ? (result.vip ? "Sim" : "Não") : 'N/A'}</div>
+                        <div class="info-item"><strong>Grau de Qualidade:</strong> ${result.grauQualidade || 'N/A'}</div>
+                    `;
+                    infoContainer.classList.add('active');
+                    document.getElementById('infoAdditional1').textContent = new Date().toLocaleString();
+                } else {
+                    showAlert('CPF não encontrado ou inválido.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar dados:', error);
+                showAlert('Erro ao buscar informações do CPF.', 'error');
+            });
+        });
+    </script>
 </body>
-</html>
 </html>
