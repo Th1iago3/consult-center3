@@ -12,7 +12,6 @@ import re
 import subprocess
 import base64
 from functools import wraps
-from flask_limiter.util import get_remote_address
 import hmac
 import hashlib
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
@@ -137,6 +136,11 @@ def send_notification(user_id, message):
         'timestamp': datetime.now().isoformat()
     })
     save_notifications(notifications)
+
+def log_access(endpoint, ip, message=''):
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} acessou {endpoint}. {message}")
+
 
 # Module Usage Management
 def manage_module_usage(user_id, module, increment=True):
