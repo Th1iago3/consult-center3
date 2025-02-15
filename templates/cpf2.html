@@ -4,43 +4,255 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consulta - CPF2</title>
+    <!-- Carrega ícones do Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Carrega a fonte Poppins do Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        /* Reset e Configurações Gerais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #E6E6FA;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-color: #E6E6FA; /* Cor de fundo suave */
             min-height: 100vh;
-            margin: 0;
-            animation: fadeIn 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            animation: fadeInBody 1s ease-in-out; /* Animação de entrada para o corpo da página */
         }
 
-        @keyframes fadeIn {
+        @keyframes fadeInBody {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
+        /* Navbar */
+        .navbar {
+            background: #ffffff; /* Fundo branco para o navbar */
+            width: 100%;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra suave */
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #6C63FF; /* Cor do ícone de navegação */
+        }
+
+        .navbar-toggle i {
+            transition: transform 0.4s ease; /* Transição suave para a rotação do ícone */
+        }
+
+        .navbar-toggle.active i {
+            transform: rotate(90deg); /* Rotação do ícone ao ativar o menu */
+        }
+
+        .nav-links {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+            background: #ffffff;
+            padding: 1rem;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 10px 10px;
+            animation: slideDown 0.3s ease-out forwards; /* Animação de deslize para baixo */
+        }
+
+        .nav-links.active {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-links a {
+            color: #6C63FF; /* Cor do texto dos links */
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease; /* Transição suave para hover */
+        }
+
+        .nav-links a:hover {
+            background: rgba(108, 99, 255, 0.1); /* Fundo semi-transparente ao passar o mouse */
+            transform: translateX(5px); /* Movimento lateral ao passar o mouse */
+        }
+
+        .sub-navbar {
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #F3F4FF; /* Fundo claro para submenu */
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            animation: fadeInSub 0.3s ease-out; /* Animação de entrada para submenu */
+        }
+
+        .sub-navbar.active {
+            display: flex;
+        }
+
+        @keyframes fadeInSub {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .sub-navbar a {
+            color: #555;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .sub-navbar a:hover {
+            color: #6C63FF;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #6C63FF;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .user-icon:hover {
+            transform: scale(1.1); /* Efeito de zoom no ícone do usuário */
+        }
+
+        .logout-btn {
+            background: #6C63FF;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #5b53c8; /* Cor de fundo mais escura ao passar o mouse */
+            transform: translateY(-2px); /* Efeito de elevação ao passar o mouse */
+        }
+
+        /* Container */
         .container {
             background: #ffffff;
             border-radius: 20px;
-            box-shadow: 0 15px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1); /* Sombra para dar profundidade */
             padding: 40px;
             width: 400px;
             text-align: center;
+            margin: 5rem auto 2rem;
             position: relative;
-            transition: all 0.3s ease;
+            overflow: hidden;
+            animation: slideInContainer 0.5s ease-in-out; /* Animação de entrada para o container */
+        }
+
+        @keyframes slideInContainer {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(108, 99, 255, 0.2) 0%, rgba(108, 99, 255, 0) 70%);
+            animation: shimmer 3s ease-in-out infinite; /* Efeito de brilho suave */
+            z-index: -1;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         h2 {
             color: #333;
             margin-bottom: 30px;
+            font-weight: 600;
+            animation: fadeInTitle 0.5s ease-in-out; /* Animação de entrada para o título */
+        }
+
+        @keyframes fadeInTitle {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .form-group {
             margin: 20px 0;
+            animation: fadeInUp 0.5s ease-in-out; /* Animação de entrada para os grupos de formulário */
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .form-group input {
@@ -57,42 +269,88 @@
         .form-group input:focus {
             outline: none;
             border-color: #6C63FF;
-            transform: scale(1.01);
+            transform: scale(1.01); /* Efeito de escala ao focar */
+            box-shadow: 0 2px 5px rgba(108, 99, 255, 0.2); /* Sombra suave ao focar */
         }
 
         .button {
-            display: inline-block;
-            background: linear-gradient(45deg, #6C63FF, #4E54C8);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(45deg, #6C63FF, #4E54C8); /* Gradiente de fundo */
             border: none;
             color: white;
             padding: 15px 30px;
             border-radius: 50px;
             font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
         }
 
         .button:hover {
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px) scale(1.03); /* Efeito de elevação e escala */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Sombra mais intensa ao passar o mouse */
         }
 
         .button:active {
-            transform: translateY(0) scale(1);
+            transform: translateY(0) scale(1); /* Volta ao tamanho original ao clicar */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .alert {
             padding: 15px;
             margin-bottom: 15px;
             border-radius: 8px;
-            animation: fadeIn 0.5s ease-in;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            animation: fadeInAlert 0.5s ease-in; /* Animação de entrada para alertas */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .alert-success { background-color: #E3FCEF; color: #155724; border-left: 5px solid #155724; }
-        .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 5px solid #721C24; }
+        @keyframes fadeInAlert {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert-success { 
+            background-color: #E3FCEF; 
+            color: #155724; 
+            border-left: 5px solid #155724; 
+        }
+
+        .alert-error { 
+            background-color: #FFEBEE; 
+            color: #721C24; 
+            border-left: 5px solid #721C24; 
+        }
+
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6C63FF;
+            font-weight: 500;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .download-link i {
+            font-size: 1.2rem;
+            color: #6C63FF;
+        }
+
+        .download-link:hover {
+            color: #5b53c8;
+            transform: translateY(-2px); /* Efeito de elevação ao passar o mouse */
+        }
+
+        .download-link:hover i {
+            color: #5b53c8;
+        }
 
         .profile-info {
             background: #F3F4FF;
@@ -100,8 +358,25 @@
             padding: 15px;
             margin-top: 20px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             text-align: left;
+            animation: slideUpInfo 0.5s ease-out; /* Animação de entrada para informações do perfil */
+        }
+
+        @keyframes slideUpInfo {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .profile-info h3 {
+            color: #333;
+            margin-bottom: 10px;
         }
 
         .profile-info p {
@@ -113,6 +388,8 @@
         .profile-info p strong {
             display: inline-block;
             width: 150px;
+            color: #555;
+            font-weight: 500;
         }
 
         .list-item {
@@ -121,30 +398,68 @@
             margin-bottom: 5px;
             border-radius: 5px;
         }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .nav-links {
+                padding: 0.75rem;
+            }
+
+            .nav-links a {
+                padding: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
+            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
+            <div class="sub-navbar" id="subNavbar">
+                <a href="#">Base: DATA</a>
+            </div>
+        </div>
+        <div class="user-profile">
+            <div class="user-icon"><i class="fas fa-user"></i></div>
+            <button class="logout-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </div>
+
     <div class="container">
         <h2>Consulta - CPF</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <form method="POST">
+        <div id="alertContainer"></div>
+        <form method="POST" id="searchForm">
             <div class="form-group">
                 <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
             </div>
             {% if not is_admin %}
-                <div class="form-group">
-                    <input type="text" name="token" placeholder="Digite seu token..." required>
-                </div>
+            <div class="form-group">
+                <input type="text" name="token" placeholder="Digite seu token..." required>
+            </div>
             {% endif %}
-            <button type="submit" class="button">Consultar</button>
+            <button type="submit" class="button">
+                <i class="fas fa-search"></i> Consultar
+            </button>
         </form>
         {% if result %}
+        <a href="#" class="download-link" onclick="generateAndDownloadTxt(event)">
+            <i class="fas fa-download"></i> Baixar em .txt
+        </a>
         <div class="profile-info">
             <h3>Dados Básicos:</h3>
             <p><strong>Nome:</strong> {{ result.resultado.DadosBasicos.nome | default('Não informado') }}</p>
@@ -251,5 +566,91 @@
         </div>
         {% endif %}
     </div>
+
+    <script>
+        // Função para alternar a exibição do navbar
+        function toggleNavbar() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.navbar-toggle');
+            const toggleIcon = toggleBtn.querySelector('i');
+            navLinks.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+            toggleIcon.classList.toggle('fa-arrow-right');
+            toggleIcon.classList.toggle('fa-arrow-down');
+        }
+
+        // Função para alternar o dropdown
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const subNavbar = document.getElementById('subNavbar');
+            subNavbar.classList.toggle('active');
+        }
+
+        // Função para exibir alertas
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // Validação do formulário
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            const cpf = this.cpf.value;
+            if (!/^\d{11}$/.test(cpf)) {
+                showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
+                event.preventDefault();
+            }
+        });
+
+        // Função para gerar e baixar arquivo .txt
+        function generateAndDownloadTxt(event) {
+            event.preventDefault();
+
+            const profileInfo = document.querySelector('.profile-info');
+            if (!profileInfo) {
+                showAlert('Nenhum resultado disponível para download.', 'error');
+                return;
+            }
+
+            // Gerar o conteúdo do arquivo
+            const resultText = Array.from(profileInfo.querySelectorAll('p'))
+                .map(p => p.textContent)
+                .join('\n');
+
+            // Formatar a data atual para o nome do arquivo
+            const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
+            const fileName = `${currentDate}-CPF-DATA-CONSULT-CENTER.txt`;
+
+            // Criar o arquivo e iniciar o download
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+
+            // Limpar o arquivo do cache após o download
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        // Fechar dropdown e navbar ao clicar fora
+        document.addEventListener('click', (e) => {
+            const subNavbar = document.getElementById('subNavbar');
+            const navLinks = document.getElementById('navLinks');
+            if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
+                subNavbar.classList.remove('active');
+            }
+            if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
+                toggleNavbar();
+            }
+        });
+    </script>
 </body>
 </html>
