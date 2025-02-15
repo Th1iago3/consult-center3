@@ -497,7 +497,6 @@
             const cpf = this.cpf.value;
             if (!/^\d{11}$/.test(cpf)) {
                 showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
-                event.preventDefault();
             } else {
                 lastConsultDate = new Date().toLocaleString();
                 document.getElementById('lastConsultDate').textContent = lastConsultDate;
