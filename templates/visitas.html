@@ -271,6 +271,32 @@
             box-shadow: 0 2px 5px rgba(108, 99, 255, 0.2);
         }
 
+        /* Style for the new select element */
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-bottom: 2px solid #ccc;
+            background: transparent;
+            color: #333;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%, 0 0;
+            background-size: 20px auto, 100%;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #6C63FF;
+            transform: scale(1.01);
+            box-shadow: 0 2px 5px rgba(108, 99, 255, 0.2);
+        }
+
         .button {
             display: inline-block;
             background: linear-gradient(45deg, #6C63FF, #4E54C8);
@@ -411,6 +437,14 @@
             <div class="form-group">
                 <input type="text" name="token" placeholder="Digite seu token..." required>
             </div>
+            <div class="form-group">
+                <select name="visits" required>
+                    <option value="50">50 Visitas (1 Requisição)</option>
+                    <option value="100">100 Visitas (2 Requisições)</option>
+                    <option value="200">200 Visitas (4 Requisições)</option>
+                    <option value="500">500 Visitas (10 Requisições)</option>
+                </select>
+            </div>
             <button type="submit" class="button">
                 <i class="fas fa-plus"></i> Adicionar Visita
             </button>
@@ -421,7 +455,9 @@
                     <p><strong>Status:</strong> Sucesso</p>
                     <p><strong>Nick:</strong> {{ result.nick }}</p>
                     <p><strong>Banido:</strong> {{ result.banido }}</p>
-                    <p><strong>Região:</strong> BR</p>
+                    <p><strong>Região:</strong> {{ result.região }}</p>
+                    <p><strong>Visitas Enviadas:</strong> {{ result.visits_sent }}</p>
+                    <p><strong>Requisições Feitas:</strong> {{ result.requests_made }}</p>
                 </div>
             {% else %}
                 <div class="alert alert-error">
