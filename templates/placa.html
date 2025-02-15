@@ -3,44 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta - Placa</title>
+    <title>Consulta - Nome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        /* Reset e Configurações Gerais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #E6E6FA;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            margin: 0;
-            animation: fadeIn 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            animation: fadeInBody 1s ease-in-out;
         }
 
-        @keyframes fadeIn {
+        @keyframes fadeInBody {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
+        /* Navbar */
+        .navbar {
+            background: #ffffff;
+            width: 100%;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #6C63FF;
+        }
+
+        .navbar-toggle i {
+            transition: transform 0.4s ease;
+        }
+
+        .navbar-toggle.active i {
+            transform: rotate(90deg);
+        }
+
+        .nav-links {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+            background: #ffffff;
+            padding: 1rem;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 10px 10px;
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        .nav-links.active {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-links a {
+            color: #6C63FF;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(108, 99, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .sub-navbar {
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #F3F4FF;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            animation: fadeInSub 0.3s ease-out;
+        }
+
+        .sub-navbar.active {
+            display: flex;
+        }
+
+        @keyframes fadeInSub {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .sub-navbar a {
+            color: #555;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .sub-navbar a:hover {
+            color: #6C63FF;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #6C63FF;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .user-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .logout-btn {
+            background: #6C63FF;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #5b53c8;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
         .container {
             background: #ffffff;
             border-radius: 20px;
-            box-shadow: 0 15px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
             padding: 40px;
             width: 400px;
             text-align: center;
+            margin: 5rem auto 2rem;
             position: relative;
-            transition: all 0.3s ease;
+            overflow: hidden;
+            animation: slideInContainer 0.5s ease-in-out;
+        }
+
+        @keyframes slideInContainer {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(108, 99, 255, 0.2) 0%, rgba(108, 99, 255, 0) 70%);
+            animation: shimmer 3s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         h2 {
             color: #333;
             margin-bottom: 30px;
+            font-weight: 600;
+            animation: fadeInTitle 0.5s ease-in-out;
+        }
+
+        @keyframes fadeInTitle {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .form-group {
             margin: 20px 0;
+            animation: fadeInUp 0.5s ease-in-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .form-group input {
@@ -58,6 +268,7 @@
             outline: none;
             border-color: #6C63FF;
             transform: scale(1.01);
+            box-shadow: 0 2px 5px rgba(108, 99, 255, 0.2);
         }
 
         .button {
@@ -87,12 +298,52 @@
             padding: 15px;
             margin-bottom: 15px;
             border-radius: 8px;
-            animation: fadeIn 0.5s ease-in;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            animation: fadeInAlert 0.5s ease-in;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .alert-success { background-color: #E3FCEF; color: #155724; border-left: 5px solid #155724; }
-        .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 5px solid #721C24; }
+        @keyframes fadeInAlert {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert-success { 
+            background-color: #E3FCEF; 
+            color: #155724; 
+            border-left: 5px solid #155724; 
+        }
+
+        .alert-error { 
+            background-color: #FFEBEE; 
+            color: #721C24; 
+            border-left: 5px solid #721C24; 
+        }
+
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6C63FF;
+            font-weight: 500;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .download-link i {
+            font-size: 1.2rem;
+            color: #6C63FF;
+        }
+
+        .download-link:hover {
+            color: #5b53c8;
+            transform: translateY(-2px);
+        }
+
+        .download-link:hover i {
+            color: #5b53c8;
+        }
 
         .profile-info {
             background: #F3F4FF;
@@ -100,8 +351,20 @@
             padding: 15px;
             margin-top: 20px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             text-align: left;
+            animation: slideUpInfo 0.5s ease-out;
+        }
+
+        @keyframes slideUpInfo {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .profile-info p {
@@ -112,20 +375,54 @@
 
         .profile-info p strong {
             display: inline-block;
-            width: 150px;
+            width: 120px;
+            color: #555;
+            font-weight: 500;
         }
 
-        .list-item {
-            background: #F7F7F7;
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 5px;
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .nav-links {
+                padding: 0.75rem;
+            }
+
+            .nav-links a {
+                padding: 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
+            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
+            <div class="sub-navbar" id="subNavbar">
+                <a href="#">Base: DETRAN</a>
+            </div>
+        </div>
+        <div class="user-profile">
+            <div class="user-icon"><i class="fas fa-user"></i></div>
+            <button class="logout-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </div>
+
     <div class="container">
-        <h2>Consulta - Placa</h2>
+        <h2>Consulta - Nome</h2>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -133,35 +430,124 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <form method="POST">
+        <form method="POST" id="searchForm">
             <div class="form-group">
-                <input type="text" name="placa" placeholder="Digite a placa..." value="{{ placa }}" required>
+                <input type="text" name="nome" placeholder="Digite o Nome..." value="{{ nome }}" required>
             </div>
             {% if not is_admin %}
                 <div class="form-group">
                     <input type="text" name="token" placeholder="Digite seu token..." required>
                 </div>
             {% endif %}
-            <button type="submit" class="button">Consultar</button>
+            <button type="submit" class="button">
+                <i class="fas fa-search"></i> Consultar
+            </button>
         </form>
-        {% if results %}
-        <div class="profile-info">
-            <p><strong>Chassi:</strong> {{ results.chassi | default('Não disponível') }}</p>
-            <p><strong>Modelo:</strong> {{ results.modelo | default('Não disponível') }}</p>
-            <p><strong>Marca:</strong> {{ results.marca | default('Não disponível') }}</p>
-            <p><strong>Cor:</strong> {{ results.cor | default('Não disponível') }}</p>
-            <p><strong>Ano:</strong> {{ results.ano | default('Não disponível') }}</p>
-            <p><strong>Placa:</strong> {{ results.placa | default('Não disponível') }}</p>
-            <p><strong>Cidade:</strong> {{ results.localidade.cidade | default('Não disponível') }}</p>
-            <p><strong>UF:</strong> {{ results.localidade.uf | default('Não disponível') }}</p>
-            <p><strong>Faturado:</strong> {{ results.faturado | default('Não disponível') }}</p>
-            <p><strong>Combustível:</strong> {{ results.combustivel | default('Não disponível') }}</p>
-            <p><strong>Potência:</strong> {{ results.potencia | default('Não disponível') }}</p>
-            <p><strong>Capacidade de Carga:</strong> {{ results.capacidade_carga | default('Não disponível') }}</p>
-            <p><strong>Tipo de Documento (Faturado):</strong> {{ results.tipo_doc_faturado.tipo_pessoa | default('Não disponível') }}</p>
-            <p><strong>Tipo de Documento (Proprietário):</strong> {{ results.tipo_doc_prop.tipo_pessoa | default('Não disponível') }}</p>
-        </div>
+        {% if results and results.data %}
+            <a href="#" class="download-link" onclick="generateAndDownloadTxt(event)">
+                <i class="fas fa-download"></i> Baixar em .txt
+            </a>
+            {% for result in results.data %}
+                <div class="profile-info">
+                    <p><strong>Nome:</strong> {{ result.nome }}</p>
+                    <p><strong>CPF:</strong> {{ result.cpf }}</p>
+                    <p><strong>Nascimento:</strong> {{ result.dt_nascimento }}</p>
+                    <p><strong>Mãe:</strong> {{ result.nome_mae }}</p>
+                    <p><strong>Tipo-Logradouro:</strong> {{ result.tipo_logradouro }}</p>
+                    <p><strong>Logradouro:</strong> {{ result.logradouro }}  /  <strong>Número:</strong> {{ result.numero }}</p>
+                    <p><strong>Bairro:</strong> {{ result.bairro }}</p>
+                    <p><strong>Cidade:</strong> {{ result.cidade }}</p>
+                    <p><strong>CEP:</strong> {{ result.cep }}</p>
+                </div>
+            {% endfor %}
         {% endif %}
     </div>
+
+    <script>
+        // Toggle Navbar with Animation
+        function toggleNavbar() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.navbar-toggle');
+            const toggleIcon = toggleBtn.querySelector('i');
+            navLinks.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+            toggleIcon.classList.toggle('fa-arrow-right');
+            toggleIcon.classList.toggle('fa-arrow-down');
+        }
+
+        // Toggle Dropdown
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const subNavbar = document.getElementById('subNavbar');
+            subNavbar.classList.toggle('active');
+        }
+
+        // Alert
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // Form Validation
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            const nome = this.nome.value.trim();
+            if (nome.length < 3) {
+                showAlert('Por favor, insira um nome com pelo menos 3 caracteres.', 'error');
+                event.preventDefault();
+            }
+        });
+
+        // Generate and Download TXT File with Cleanup
+        function generateAndDownloadTxt(event) {
+            event.preventDefault();
+
+            const profileInfos = document.querySelectorAll('.profile-info');
+            if (!profileInfos.length) {
+                showAlert('Nenhum resultado disponível para download.', 'error');
+                return;
+            }
+
+            // Gerar o conteúdo do arquivo
+            const resultText = Array.from(profileInfos).reduce((acc, info) => {
+                const infoText = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
+                return acc + '\n\n' + infoText;
+            }, '');
+
+            // Formatar a data atual para o nome do arquivo
+            const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
+            const fileName = `${currentDate}-NOME-DATA-CONSULT-CENTER.txt`;
+
+            // Criar o arquivo e iniciar o download
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+
+            // Limpar o arquivo do cache após o download
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        // Close Dropdown and Navbar on Outside Click
+        document.addEventListener('click', (e) => {
+            const subNavbar = document.getElementById('subNavbar');
+            const navLinks = document.getElementById('navLinks');
+            if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
+                subNavbar.classList.remove('active');
+            }
+            if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
+                toggleNavbar();
+            }
+        });
+    </script>
 </body>
 </html>
