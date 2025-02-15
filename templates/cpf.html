@@ -346,7 +346,7 @@
     <div class="content">
         <form id="cpfForm" method="POST">
             <div class="search-container">
-                <input type="text" class="search-input" name="cpf" placeholder="Digite o CPF..." required>
+                <input type="text" class="search-input" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
                 {% if not is_admin %}
                 <input type="text" class="search-input" name="token" placeholder="Digite seu token..." required>
                 {% endif %}
