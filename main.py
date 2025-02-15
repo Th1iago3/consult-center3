@@ -137,6 +137,83 @@ def send_notification(user_id, message):
     })
     save_notifications(notifications)
 
+def get_player_info(uid):
+    url = "https://recargajogo.com.br/api/auth/player_id_login"
+
+    payload = {
+        "app_id": 100067,
+        "login_id": uid
+    }
+
+    headers = {
+        'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+        'Accept': "application/json, text/plain, */*",
+        'Content-Type': "application/json",
+        'sec-ch-ua': "\"Not-A.Brand\";v=\"99\", \"Chromium\";v=\"124\"",
+        'sec-ch-ua-mobile': "?1",
+        'sec-ch-ua-platform': "\"Android\"",
+        'Origin': "https://recargajogo.com.br",
+        'Sec-Fetch-Site': "same-origin",
+        'Sec-Fetch-Mode': "cors",
+        'Sec-Fetch-Dest': "empty",
+        'Referer': "https://recargajogo.com.br/",
+        'Accept-Language': "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+        'Cookie': "region=BR; mspid2=ff74ba563fee80fa46630241bba36111; _ga=GA1.1.901765623.1736342976; cc=true; _ga_9TMTW7BN3E=GS1.1.1736915569.5.1.1736915613.0.0.0; datadome=_i~AmiCsW7aNYrtzvtbkNnorGt2yOc2GUvqqmPMT9oHP_GLPwvNNzi4Tqui2uQ3OouJYpZMCylUUwlDNtdqMMJpbnZb0BRv78weCxoFXzPbO7MvTEKfzlasjdSVZ0r4u; source=mb; session_key=1tesojh0yxrdpa1xwu4128qshbcaoc7l"
+    }
+
+    response = requests.post(url, data=json.dumps(payload), headers=headers)
+
+    if response.status_code == 200:
+        try:
+            player_data = response.json()
+            region = player_data.get("region", "N/A")
+            nickname = player_data.get("nickname", "N/A")
+            return region, nickname
+        except json.JSONDecodeError:
+            print("Erro ao tentar decodificar a resposta como JSON.")
+            return "N/A", "N/A"
+    else:
+        print(f"Erro {response.status_code}: Não foi possível acessar a API do jogador.")
+        return "N/A", "N/A"
+
+def check_ban(uid):
+    url = "https://ff.garena.com/api/antihack/check_banned"
+
+    params = {
+        'lang': "pt",
+        'uid': uid
+    }
+
+    headers = {
+        'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+        'Accept': "application/json, text/plain, */*",
+        'sec-ch-ua': "\"Not-A.Brand\";v=\"99\", \"Chromium\";v=\"124\"",
+        'x-requested-with': "B6FksShzIgjfrYImLpTsadjS86sddhFH",
+        'sec-ch-ua-mobile': "?1",
+        'sec-ch-ua-platform': "\"Android\"",
+        'sec-fetch-site': "same-origin",
+        'sec-fetch-mode': "cors",
+        'sec-fetch-dest': "empty",
+        'referer': "https://ff.garena.com/pt/support/",
+        'accept-language': "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+        'Cookie': "datadome=GcqVS0UG9NX0WEs804KR2pcR2HgGFFBYVfIglt81QFnIPmA0T1X7mMwrYqwbn85oyho8C9yKVYx71HbcuHii5iT8K8NkUnpHlYz0A8dyf5R1A4S_kRiurPWY8_I3Nvcx; _ga_G8QGMJPWWV=GS1.1.1736773737.1.1.1736774124.0.0.0; _ga_Y1QNJ6ZLV6=GS1.1.1736773729.1.1.1736774160.0.0.0; _gid=GA1.2.1234962202.1736915269; _ga_57E30E1PMN=GS1.2.1736915269.2.1.1736915277.0.0.0; _ga_KE3SY7MRSD=GS1.1.1736915307.3.1.1736915366.0.0.0; _ga_RF9R6YT614=GS1.1.1736915308.3.1.1736915366.0.0.0; _ga=GA1.1.1874756915.1736342926"
+    }
+
+    response = requests.get(url, params=params, headers=headers)
+
+    if response.status_code == 200:
+        try:
+            data = response.json()
+            if data.get("status") == "success":
+                return data["data"]["is_banned"] == 1
+            else:
+                print("Erro: Não foi possível verificar o banimento.")
+        except json.JSONDecodeError:
+            print("Erro ao tentar decodificar a resposta como JSON.")
+    else:
+        print(f"Erro {response.status_code}: Não foi possível acessar a API de banimento.")
+    return None  # Return None if there was an error in fetching ban status
+
 def log_access(endpoint, ip, message=''):
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} acessou {endpoint}. {message}")
@@ -1215,6 +1292,79 @@ def nome2():
             flash('Resposta da API inválida.', 'error')
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
+
+@app.route('/modulos/visitas', methods=['POST'])
+def visitas():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+
+    uid = request.form.get('uid', '')
+    token = request.form.get('token', '')
+
+    if not uid:
+        flash('UID não fornecido.', 'error')
+        return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
+
+    if not is_admin:
+        if not token or token != users.get(g.user_id, {}).get('token'):
+            flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+            return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
+
+    success_count = 0
+    error_message = None
+
+    try:
+        region, nickname = get_player_info(uid)
+        is_banned = check_ban(uid)
+
+        if is_banned is None:
+            flash('Não foi possível verificar o status de banimento.', 'error')
+            return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
+
+        for _ in range(4):  # Make 4 requests to add visits
+            response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}®ion=br&key=teamXKrishna')
+            response.raise_for_status()
+
+            if response.status_code == 200:
+                success_count += 1
+            else:
+                # If any request fails after at least one success, stop and report the error
+                error_message = "Um ou mais pedidos falharam ao adicionar visitas."
+                break
+
+        result_data = {
+            'status': 'success' if success_count > 0 else 'error',
+            'nick': nickname,
+            'banido': 'Sim' if is_banned else 'Não',
+            'região': region,
+            'visits_added': success_count
+        }
+
+        if result_data['status'] == 'success':
+            if manage_module_usage(g.user_id, 'visitas'):
+                return jsonify(result_data)
+            else:
+                flash('Limite de uso atingido para VISITAS.', 'error')
+                return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
+        else:
+            if error_message:
+                flash(error_message, 'error')
+            else:
+                flash('Falha ao adicionar visita.', 'error')
+            return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
+
+    except requests.RequestException as e:
+        flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+    except json.JSONDecodeError:
+        flash('Resposta da API inválida.', 'error')
+
+    return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token)
     
 
 if __name__ == '__main__':
