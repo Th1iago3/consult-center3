@@ -181,17 +181,6 @@ def manage_module_usage(user_id, module, increment=True):
 # Secure route decorator with encryption
 def secure_route(f):
     @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'auth_token' not in request.cookies:
-            return jsonify({"error": "Authentication required"}), 401
-        
-        try:
-            decrypted_token = jwt.decode(request.cookies['auth_token'], app.config['JWT_SECRET_KEY'], algorithms=["HS256"])
-            user_id = decrypted_token['user_id']
-            g.user_id = user_id
-        except Exception:
-            return jsonify({"error": "Invalid token"}), 403
-
         if request.method == 'POST':
             encrypted_content = request.data
             if not encrypted_content:
