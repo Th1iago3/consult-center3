@@ -1079,8 +1079,10 @@ def fotor():
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
 
-                if data.get('status') == "true":
+                # Assume success if the API returns non-empty data
+                if data: 
                     if manage_module_usage(g.user_id, 'fotor'):
+                        # Directly use the data as the result
                         results = data
                     else:
                         flash('Limite de uso atingido para FOTOR.', 'error')
@@ -1092,7 +1094,6 @@ def fotor():
                 flash('Resposta da API inválida.', 'error')
 
     return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
-
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 def nomelv():
     if 'user_id' not in g:
