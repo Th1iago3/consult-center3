@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de CPF</title>
+    <title>Consulta - CPF</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        /* Reset e Configurações Gerais */
         * {
             margin: 0;
             padding: 0;
@@ -13,57 +15,126 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #EAE7FF; /* Soft purple background */
+            font-family: 'Poppins', sans-serif;
+            background-color: #E6E6FA;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            animation: fadeInBody 1s ease-in-out;
         }
 
+        @keyframes fadeInBody {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Navbar */
         .navbar {
-            background: #FFFFFF;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            width: 100%;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            z-index: 100;
-            animation: slideDown 0.5s ease-out;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
         }
 
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
+        .navbar-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #6C63FF;
+            transition: transform 0.4s ease;
+        }
+
+        .navbar-toggle.active {
+            transform: rotate(90deg);
         }
 
         .nav-links {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+            background: #ffffff;
+            padding: 1rem;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 10px 10px;
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        .nav-links.active {
             display: flex;
-            gap: 1rem;
-            align-items: center;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .nav-links a {
             color: #6C63FF;
             text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
 
         .nav-links a:hover {
-            background: #F0F0FF;
-            transform: translateY(-2px);
+            background: rgba(108, 99, 255, 0.1);
+            transform: translateX(5px);
         }
 
-        .nav-links a.active {
-            background: #F0F0FF;
+        .sub-navbar {
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #F3F4FF;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            animation: fadeInSub 0.3s ease-out;
+        }
+
+        .sub-navbar.active {
+            display: flex;
+        }
+
+        @keyframes fadeInSub {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .sub-navbar a {
+            color: #555;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .sub-navbar a:hover {
+            color: #6C63FF;
         }
 
         .user-profile {
@@ -77,10 +148,11 @@
             height: 40px;
             border-radius: 50%;
             background: #6C63FF;
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ffffff;
+            font-size: 1.2rem;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
         }
@@ -91,16 +163,16 @@
 
         .logout-btn {
             background: #6C63FF;
-            color: #ffffff;
+            color: #fff;
             border: none;
             padding: 0.5rem 1rem;
-            border-radius: 20px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
 
         .logout-btn:hover {
@@ -108,115 +180,139 @@
             transform: translateY(-2px);
         }
 
-        .dropdown-container {
+        /* Container */
+        .container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+            margin: 5rem auto 2rem;
             position: relative;
+            overflow: hidden;
+            animation: slideInContainer 0.5s ease-in-out;
         }
 
-        .sub-navbar {
-            background: #FFFFFF;
-            padding: 1rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 200px;
-            display: none;
-            flex-direction: column;
-            gap: 0.5rem;
+        @keyframes slideInContainer {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .container::before {
+            content: '';
             position: absolute;
-            top: 100%;
-            right: 0;
-            z-index: 99;
-            animation: fadeIn 0.3s ease-out;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(108, 99, 255, 0.2) 0%, rgba(108, 99, 255, 0) 70%);
+            animation: shimmer 3s ease-in-out infinite;
+            z-index: -1;
         }
 
-        @keyframes fadeIn {
+        @keyframes shimmer {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+            animation: fadeInTitle 0.5s ease-in-out;
+        }
+
+        @keyframes fadeInTitle {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
-        .sub-navbar.active {
-            display: flex;
+        .form-group {
+            margin: 20px 0;
+            animation: fadeInUp 0.5s ease-in-out;
         }
 
-        .sub-navbar .nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group input {
             width: 100%;
-        }
-
-        .sub-navbar .nav-links a {
-            width: 100%;
-            padding: 0.5rem;
-            justify-content: flex-start;
-            background: rgba(108, 99, 255, 0.05);
-            border-radius: 6px;
-        }
-
-        .sub-navbar .nav-links a:hover {
-            background: rgba(108, 99, 255, 0.15);
-        }
-
-        .content {
-            flex: 1;
-            padding: 2rem;
-            margin-top: 70px;  /* Height of the navbar + padding */
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            background: #FFFFFF;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        .search-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-
-        .cpf-container {
-            display: flex;
-            gap: 0.5rem;
-            width: 100%;
-            margin-bottom: 1rem;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #EAE7FF;
-            background: #F8F8FF;
-            color: #333;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .search-input:focus {
-            border-color: #6C63FF;
-            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
-        }
-
-        .search-btn {
-            background: #6C63FF;
+            padding: 15px;
             border: none;
-            border-radius: 8px;
-            color: #ffffff;
-            padding: 1rem;
+            border-bottom: 2px solid #ccc;
+            background: transparent;
+            color: #333;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6C63FF;
+            transform: scale(1.01);
+            box-shadow: 0 2px 5px rgba(108, 99, 255, 0.2);
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(45deg, #6C63FF, #4E54C8);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:active {
+            transform: translateY(0) scale(1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            animation: fadeInAlert 0.5s ease-in;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .search-btn:hover {
-            background: #5b53c8;
-            transform: translateY(-2px);
+        @keyframes fadeInAlert {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert-error {
+            background-color: #FFEBEE;
+            color: #721C24;
+            border-left: 5px solid #721C24;
         }
 
         .profile-info {
@@ -225,177 +321,165 @@
             padding: 15px;
             margin-top: 20px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             text-align: left;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.5s ease-out forwards;
+            animation: slideUpInfo 0.5s ease-out;
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes slideUpInfo {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .profile-info p {
             margin: 5px 0;
-            color: #555;
+            color: #555; /* Cor mantida do exemplo original */
             font-size: 14px;
         }
 
         .profile-info p strong {
             display: inline-block;
             width: 120px;
-            color: #6C63FF;
+            color: #555; /* Cor mantida do exemplo original */
+            font-weight: 500;
         }
 
+        /* Responsividade */
         @media (max-width: 768px) {
             .navbar {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 0.5rem;
+                padding: 1rem;
+            }
+
+            .container {
+                width: 90%;
+                padding: 20px;
             }
 
             .nav-links {
-                width: 100%;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
+                padding: 0.75rem;
             }
 
             .nav-links a {
-                width: 100%;
                 padding: 0.5rem;
-            }
-
-            .user-profile {
-                width: 100%;
-                justify-content: space-between;
-                margin-top: 1rem;
-            }
-
-            .content {
-                margin-top: 120px; /* Adjust for navbar in mobile view */
-                margin: 0.5rem;
-            }
-
-            .cpf-container {
-                flex-direction: column;
-            }
-
-            .search-btn {
-                width: 100%;
             }
         }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <div class="nav-links">
-            <a href="/dashboard" onclick="toggleActive(this)">
-                <i class="fas fa-home"></i>
-                <span>Página Principal</span>
-            </a>
-            <div class="dropdown-container">
-                <a href="#" onclick="toggleDropdown(event)">
-                    <i class="fas fa-caret-down"></i>
-                    <span>Informações Adicionais</span>
-                </a>
-                <div class="sub-navbar" id="subNavbar">
-                    <div class="nav-links">
-                        <a href="#" onclick="toggleActive(this)">
-                            <span>Origem:</span> DATA
-                        </a>
-                        <a href="#" onclick="toggleActive(this)">
-                            <span>Última Consulta:</span> <span id="infoAdditional1"></span>
-                        </a>
-                    </div>
-                </div>
+        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
+            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
+            <div class="sub-navbar" id="subNavbar">
+                <a href="#">Origem: DATA</a>
+                <a href="#">Última Consulta: <span id="lastConsultDate"></span></a>
             </div>
         </div>
-        
         <div class="user-profile">
-            <div class="user-icon">
-                <i class="fas fa-user"></i>
-            </div>
+            <div class="user-icon"><i class="fas fa-user"></i></div>
             <button class="logout-btn" onclick="window.location.href='/logout'">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Sair</span>
+                <i class="fas fa-sign-out-alt"></i> Sair
             </button>
         </div>
     </div>
 
-    <div class="content">
-        <form method="POST">
-            <div class="search-container">
-                <div class="cpf-container">
-                    <input type="text" class="search-input" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
-                    <button type="submit" class="search-btn">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                {% if not is_admin %}
-                <input type="text" class="search-input" name="token" placeholder="Digite seu token..." required>
-                {% endif %}
-            </div>
-        </form>
+    <div class="container">
+        <h2>Consulta - CPF</h2>
         <div id="alertContainer"></div>
-        {% if result %}
-            <div class="profile-info">
-                <p><strong>Nome:</strong> {{ result.nome }}</p>
-                <p><strong>CPF:</strong> {{ result.cpf }}</p>
-                <p><strong>Sexo:</strong> {{ result.sexo }}</p>
-                <p><strong>Nascimento:</strong> {{ result.nascimento }}</p>
-                
-                {% if result.filiacao %}
-                    <p><strong>Filiação:</strong> Mãe: {{ result.filiacao.mae or 'Não informado' }}, Pai: {{ result.filiacao.pai or 'Não informado' }}</p>
-                {% endif %}
-                
-                {% if result.poder_aquisitivo %}
-                    <p><strong>Poder Aquisitivo:</strong> {{ result.poder_aquisitivo.poder_aquisitivo }} (Renda: {{ result.poder_aquisitivo.renda }})</p>
-                {% endif %}
-
-                {% if result.score %}
-                    <p><strong>Score CSBA:</strong> {{ result.score.CSBA }} ({{ result.score.faixa_CSBA }})</p>
-                {% endif %}
-
-                {% if result.INTERESSES %}
-                    <p><strong>Interesses:</strong> 
-                        Celular Pré-pago: {{ result.INTERESSES.celular_pre_pago }}, 
-                        Transporte Público: {{ result.INTERESSES.transporte_publico }}, 
-                        Jogos Online: {{ result.INTERESSES.jogos_online }}
-                    </p>
-                {% endif %}
+        <form method="POST" id="searchForm">
+            <div class="form-group">
+                <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
             </div>
+            {% if not is_admin %}
+            <div class="form-group">
+                <input type="text" name="token" placeholder="Digite seu token..." required>
+            </div>
+            {% endif %}
+            <button type="submit" class="button">
+                <i class="fas fa-search"></i> Consultar
+            </button>
+        </form>
+        {% if result %}
+        <div class="profile-info">
+            <p><strong>Nome:</strong> {{ result.nome }}</p>
+            <p><strong>CPF:</strong> {{ result.cpf }}</p>
+            <p><strong>Sexo:</strong> {{ result.sexo }}</p>
+            <p><strong>Nascimento:</strong> {{ result.nascimento }}</p>
+            {% if result.filiacao %}
+            <p><strong>Filiação:</strong> Mãe: {{ result.filiacao.mae or 'Não informado' }}, Pai: {{ result.filiacao.pai or 'Não informado' }}</p>
+            {% endif %}
+            {% if result.poder_aquisitivo %}
+            <p><strong>Poder Aquisitivo:</strong> {{ result.poder_aquisitivo.poder_aquisitivo }} (Renda: {{ result.poder_aquisitivo.renda }})</p>
+            {% endif %}
+            {% if result.score %}
+            <p><strong>Score CSBA:</strong> {{ result.score.CSBA }} ({{ result.score.faixa_CSBA }})</p>
+            {% endif %}
+            {% if result.INTERESSES %}
+            <p><strong>Interesses:</strong> Celular Pré-pago: {{ result.INTERESSES.celular_pre_pago }}, Transporte Público: {{ result.INTERESSES.transporte_publico }}, Jogos Online: {{ result.INTERESSES.jogos_online }}</p>
+            {% endif %}
+        </div>
         {% endif %}
     </div>
 
     <script>
+        // Toggle Navbar
+        function toggleNavbar() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.navbar-toggle');
+            const toggleIcon = toggleBtn.querySelector('i');
+            navLinks.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+            toggleIcon.classList.toggle('fa-arrow-right');
+            toggleIcon.classList.toggle('fa-arrow-down');
+        }
+
+        // Toggle Dropdown
         function toggleDropdown(event) {
             event.preventDefault();
             const subNavbar = document.getElementById('subNavbar');
             subNavbar.classList.toggle('active');
         }
 
-        function toggleActive(element) {
-            document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
-            element.classList.add('active');
+        // Alert
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
         }
 
-        document.addEventListener('click', (e) => {
-            const subNavbar = document.getElementById('subNavbar');
-            if (!e.target.closest('.dropdown-container') && !e.target.closest('.sub-navbar')) {
-                subNavbar.classList.remove('active');
+        // Form Validation and Last Consult Date
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            const cpf = this.cpf.value;
+            if (!/^\d{11}$/.test(cpf)) {
+                showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
+                event.preventDefault();
+            } else {
+                const currentDate = new Date().toLocaleString();
+                document.getElementById('lastConsultDate').textContent = currentDate;
             }
         });
 
-        document.querySelector('form').addEventListener('submit', function(event) {
-            const cpf = this.cpf.value;
-            if (!/^\d{11}$/.test(cpf)) {
-                alert('Por favor, insira um CPF válido com 11 dígitos.');
-                event.preventDefault();
-            } else {
-                document.getElementById('infoAdditional1').textContent = new Date().toLocaleString();
+        // Close Dropdown on Outside Click
+        document.addEventListener('click', (e) => {
+            const subNavbar = document.getElementById('subNavbar');
+            const navLinks = document.getElementById('navLinks');
+            if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
+                subNavbar.classList.remove('active');
+            }
+            if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
+                toggleNavbar();
             }
         });
     </script>
