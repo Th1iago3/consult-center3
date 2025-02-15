@@ -178,16 +178,12 @@ def manage_module_usage(user_id, module, increment=True):
     save_data(users, 'users.json')
     return True
 
-# Secure route decorator with encryption
-def secure_route(f):
-    @wraps(f)
 
 @app.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
 
 @app.before_request
-@secure_route
 def check_user_existence():
     token = request.cookies.get('auth_token')
     if request.endpoint not in ['login', 'planos']:
@@ -213,7 +209,6 @@ def check_user_existence():
     log_access(request.endpoint, request.remote_addr)
 
 @app.route('/', methods=['GET', 'POST'])
-@secure_route
 def login():
     if request.method == 'POST':
         user = request.form.get('user')
@@ -249,12 +244,10 @@ def login():
     return render_template('login.html')
 
 @app.route('/planos', methods=['GET'])
-@secure_route
 def planos():
     return render_template('planos.html')
 
 @app.route('/dashboard', methods=['GET', 'POST'])
-@secure_route
 def dashboard():
     users = load_data('users.json')
     notifications = load_notifications()
@@ -308,7 +301,6 @@ def dashboard():
     return jsonify({"error": "Session key missing"}), 403
 
 @app.route('/admin', methods=['GET', 'POST'])
-@secure_route
 def admin_panel():
     users = load_data('users.json')
     notifications = load_notifications()
@@ -410,7 +402,6 @@ def logout():
 
 # Module Routes (implement each with manage_module_usage)
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
-@secure_route
 def cpf():
     if 'user_id' not in g:  # Ensure user is logged in
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -458,7 +449,6 @@ def cpf():
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
-@secure_route
 def cpf2():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -504,7 +494,6 @@ def cpf2():
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
     
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
-@secure_route
 def cpfdata():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -584,7 +573,6 @@ def cpfdata():
     return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=formatted_result, cpf=cpf)
     
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
-@secure_route
 def cpf3():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -630,7 +618,6 @@ def cpf3():
     return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
-@secure_route
 def cpflv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -678,7 +665,6 @@ def cpflv():
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
-@secure_route
 def cpf5():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -726,7 +712,6 @@ def cpf5():
     return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf, token=session.get('token'))
     
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
-@secure_route
 def datanome():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -782,7 +767,6 @@ def datanome():
 
 
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
-@secure_route
 def placalv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -830,7 +814,6 @@ def placalv():
     return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
-@secure_route
 def tellv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -884,7 +867,6 @@ def tellv():
     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
 
 @app.route('/modulos/placa', methods=['GET', 'POST'])
-@secure_route
 def placa():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -933,7 +915,6 @@ def placa():
     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
 @app.route('/modulos/tel', methods=['GET', 'POST'])
-@secure_route
 def tel():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -982,7 +963,6 @@ def tel():
     return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
 
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
-@secure_route
 def fotor():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1039,7 +1019,6 @@ def fotor():
     return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
 
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
-@secure_route
 def nomelv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1087,7 +1066,6 @@ def nomelv():
     return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
     
 @app.route('/modulos/nome', methods=['GET', 'POST'])
-@secure_route
 def nome():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1135,7 +1113,6 @@ def nome():
     return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
 @app.route('/modulos/ip', methods=['GET', 'POST'])
-@secure_route
 def ip():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1193,7 +1170,6 @@ def ip():
     return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=session.get('token'))
 
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
-@secure_route
 def nome2():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
