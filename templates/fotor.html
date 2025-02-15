@@ -379,32 +379,35 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        .download-button {
-            display: inline-block;
+        /* Updated download button style */
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             color: #6C63FF;
+            font-weight: 500;
             text-decoration: none;
-            font-size: 14px;
-            padding: 10px 20px;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            margin-top: 10px;
+            margin-top: 20px;
+            transition: color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
             background: transparent;
             border: 2px solid #6C63FF;
+            padding: 10px 20px;
+            border-radius: 50px;
         }
 
-        .download-button:hover {
+        .download-link i {
+            font-size: 1.2rem;
+            color: #6C63FF;
+        }
+
+        .download-link:hover {
             background: #6C63FF;
             color: white;
         }
 
-        .download-button::after {
-            content: '➜';
-            margin-left: 5px;
-            transition: transform 0.3s ease;
-        }
-
-        .download-button:hover::after {
-            transform: translateX(2px);
+        .download-link:hover i {
+            color: white;
         }
 
         .not-found {
@@ -489,9 +492,9 @@
             <div class="image-container">
                 {% if results.foto %}
                     <img src="data:image/png;base64,{{ results.foto }}" alt="Foto RG">
-                    <button class="download-button" onclick="downloadImage()">
-                        Baixar em .jpg
-                    </button>
+                    <a href="#" class="download-link" onclick="downloadImage(event)">
+                        <i class="fas fa-download"></i> Baixar em .jpg
+                    </a>
                 {% else %}
                     <p class="not-found">Não encontrado...</p>
                 {% endif %}
@@ -589,7 +592,8 @@
         }
 
         // Download image functionality
-        function downloadImage() {
+        function downloadImage(event) {
+            event.preventDefault();
             const img = document.querySelector('.image-container img');
             if (img) {
                 const canvas = document.createElement('canvas');
@@ -601,7 +605,7 @@
                 canvas.toBlob(function(blob) {
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
-                    link.download = generateRandomString() + '.jpg'; // Changed to .jpg here
+                    link.download = generateRandomString() + '.jpg';
                     link.click();
                     URL.revokeObjectURL(link.href);
                 }, 'image/jpeg');
