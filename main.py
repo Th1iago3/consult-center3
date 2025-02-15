@@ -1291,7 +1291,7 @@ def nome2():
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
-@app.route('/modulos/visitas', methods=['POST'])
+@app.route('/modulos/visitas', methods=['GET', 'POST'])
 def visitas():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
