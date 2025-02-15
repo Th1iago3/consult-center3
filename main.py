@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-import bisnacci
+
 
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -69,11 +69,6 @@ def encrypt_with_aes(data, key):
     ct = encryptor.update(data.encode()) + encryptor.finalize()
     return iv + ct
 
-def bisnacci_encode(data):
-    return bisnacci.encode(data)
-
-def bisnacci_decode(encoded):
-    return bisnacci.decode(encoded)
 
 def decrypt_with_aes(encrypted, key):
     iv = encrypted[:16]
