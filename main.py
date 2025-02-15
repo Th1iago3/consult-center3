@@ -224,9 +224,6 @@ def check_ban(uid):
         print(f"Erro {response.status_code}: Não foi possível acessar a API de banimento.")
     return None  # Return None if there was an error in fetching ban status
 
-def log_access(endpoint, ip, message=''):
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} acessou {endpoint}. {message}")
 
 
 # Module Usage Management
@@ -275,7 +272,7 @@ def check_user_existence():
     token = request.cookies.get('auth_token')
     if request.endpoint not in ['login', 'planos']:
         if not token:
-            log_access(request.endpoint, request.remote_addr, "Unauthenticated user.")
+            log_access(request.endpoint, "Unauthenticated user.")
             return redirect('/')
 
         user_id = decode_token(token)
@@ -293,7 +290,7 @@ def check_user_existence():
             return resp
 
         g.user_id = user_id
-    log_access(request.endpoint, request.remote_addr)
+    log_access(request.endpoint)
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
