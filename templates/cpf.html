@@ -392,7 +392,7 @@
         // Função para buscar os dados do CPF
         async function fetchCPFData(cpf, token) {
             try {
-                const response = await fetch('/cpf', {
+                const response = await fetch('/modulos/cpf', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
