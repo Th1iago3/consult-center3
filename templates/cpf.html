@@ -344,7 +344,7 @@
     </div>
 
     <div class="content">
-        <form id="cpfForm" method="POST">
+        <form method="POST">
             <div class="search-container">
                 <input type="text" class="search-input" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
                 {% if not is_admin %}
@@ -356,7 +356,34 @@
             </div>
         </form>
         <div id="alertContainer"></div>
-        <div id="infoContainer" class="info-container"></div>
+        {% if result %}
+            <div class="info-container active">
+                <div class="info-item"><strong>Nome:</strong> {{ result.nome }}</div>
+                <div class="info-item"><strong>CPF:</strong> {{ result.cpf }}</div>
+                <div class="info-item"><strong>Sexo:</strong> {{ result.sexo }}</div>
+                <div class="info-item"><strong>Nascimento:</strong> {{ result.nascimento }}</div>
+
+                {% if result.filiacao %}
+                    <div class="info-item"><strong>Filiação:</strong> Mãe: {{ result.filiacao.mae or 'Não informado' }}, Pai: {{ result.filiacao.pai or 'Não informado' }}</div>
+                {% endif %}
+
+                {% if result.poder_aquisitivo %}
+                    <div class="info-item"><strong>Poder Aquisitivo:</strong> {{ result.poder_aquisitivo.poder_aquisitivo }} (Renda: {{ result.poder_aquisitivo.renda }})</div>
+                {% endif %}
+
+                {% if result.score %}
+                    <div class="info-item"><strong>Score CSBA:</strong> {{ result.score.CSBA }} ({{ result.score.faixa_CSBA }})</div>
+                {% endif %}
+
+                {% if result.INTERESSES %}
+                    <div class="info-item"><strong>Interesses:</strong> 
+                        Celular Pré-pago: {{ result.INTERESSES.celular_pre_pago }}, 
+                        Transporte Público: {{ result.INTERESSES.transporte_publico }}, 
+                        Jogos Online: {{ result.INTERESSES.jogos_online }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 
     <script>
@@ -389,59 +416,13 @@
             }, 3000);
         }
 
-        // Função para buscar os dados do CPF
-        async function fetchCPFData(cpf, token) {
-            try {
-                const response = await fetch('/modulos/cpf', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ cpf, token }),
-                });
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Erro ao buscar dados:', error);
-                showAlert('Erro ao buscar dados. Tente novamente.', 'error');
-                return null;
-            }
-        }
-
-        // Função para exibir os dados da consulta
-        function displayInfo(data) {
-            const infoContainer = document.getElementById('infoContainer');
-            infoContainer.innerHTML = `
-                <div class="info-item"><strong>Nome:</strong> ${data.nome}</div>
-                <div class="info-item"><strong>CPF:</strong> ${data.cpf}</div>
-                <div class="info-item"><strong>Sexo:</strong> ${data.sexo}</div>
-                <div class="info-item"><strong>Nascimento:</strong> ${data.nascimento}</div>
-                ${data.filiacao ? `<div class="info-item"><strong>Filiação:</strong> Mãe: ${data.filiacao.mae || 'Não informado'}, Pai: ${data.filiacao.pai || 'Não informado'}</div>` : ''}
-                ${data.poder_aquisitivo ? `<div class="info-item"><strong>Poder Aquisitivo:</strong> ${data.poder_aquisitivo.poder_aquisitivo} (Renda: ${data.poder_aquisitivo.renda})</div>` : ''}
-                ${data.score ? `<div class="info-item"><strong>Score CSBA:</strong> ${data.score.CSBA} (${data.score.faixa_CSBA})</div>` : ''}
-                ${data.INTERESSES ? `<div class="info-item"><strong>Interesses:</strong> 
-                    Celular Pré-pago: ${data.INTERESSES.celular_pre_pago}, 
-                    Transporte Público: ${data.INTERESSES.transporte_publico}, 
-                    Jogos Online: ${data.INTERESSES.jogos_online}
-                </div>` : ''}
-            `;
-            infoContainer.classList.add('active');
-        }
-
-        // Manipulação do formulário
-        document.getElementById('cpfForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const cpf = document.querySelector('input[name="cpf"]').value;
-            const token = document.querySelector('input[name="token"]')?.value;
-
+        // Atualiza a data da última consulta
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const cpf = this.cpf.value;
             if (!/^\d{11}$/.test(cpf)) {
                 showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
-                return;
-            }
-
-            const data = await fetchCPFData(cpf, token);
-            if (data) {
-                displayInfo(data);
+                event.preventDefault();
+            } else {
                 document.getElementById('infoAdditional1').textContent = new Date().toLocaleString();
             }
         });
