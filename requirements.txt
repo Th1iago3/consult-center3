@@ -1,5 +1,8 @@
-Flask
-waitress
-pyjwt
-colorama
-requests
+Flask==2.1.0
+Flask-Cors==3.0.10
+requests==2.26.0
+pyjwt==2.4.0
+colorama==0.4.4
+cryptography==36.0.1
+pycryptodome==3.14.1
+waitress==2.1.1
