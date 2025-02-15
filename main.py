@@ -69,6 +69,12 @@ def encrypt_with_aes(data, key):
     ct = encryptor.update(data.encode()) + encryptor.finalize()
     return iv + ct
 
+def bisnacci_encode(data):
+    return bisnacci.encode(data)
+
+def bisnacci_decode(encoded):
+    return bisnacci.decode(encoded)
+
 def decrypt_with_aes(encrypted, key):
     iv = encrypted[:16]
     ct = encrypted[16:]
