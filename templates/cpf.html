@@ -410,7 +410,6 @@
             <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
             <div class="sub-navbar" id="subNavbar">
                 <a href="#">Base: DATA</a>
-                <a href="#">Última Consulta: <span id="lastConsultDate"></span></a>
             </div>
         </div>
         <div class="user-profile">
@@ -491,19 +490,18 @@
             setTimeout(() => alert.remove(), 3000);
         }
 
-        // Form Validation and Last Consult Date
-        let lastConsultDate = null;
+        // Form Validation
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             const cpf = this.cpf.value;
             if (!/^\d{11}$/.test(cpf)) {
                 showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
-            } else {
-                lastConsultDate = new Date().toLocaleString();
-                document.getElementById('lastConsultDate').textContent = lastConsultDate;
+                event.preventDefault();
             }
         });
 
         // Generate and Download TXT File with Cleanup
+        function generateAndDownloadTxt(event) {
+            event.preventDefault();
 
             const profileInfo = document.querySelector('.profile-info');
             if (!profileInfo) {
@@ -516,9 +514,9 @@
                 .map(p => p.textContent)
                 .join('\n');
 
-            // Formatar a data para o nome do arquivo
-            const dateFormatted = lastConsultDate.replace(/[^\d]/g, '-').replace(/-+/g, '-');
-            const fileName = `${dateFormatted}-CPF-DATA-CONSULT-CENTER.txt`;
+            // Formatar a data atual para o nome do arquivo
+            const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
+            const fileName = `${currentDate}-CPF-DATA-CONSULT-CENTER.txt`;
 
             // Criar o arquivo e iniciar o download
             const blob = new Blob([resultText], { type: 'text/plain' });
