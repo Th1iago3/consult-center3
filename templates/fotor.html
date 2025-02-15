@@ -499,8 +499,12 @@
             <div class="profile-info">
                 <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
                 <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
-                <p><strong>Mãe:</strong> {{ results.mae | default('Não disponível') }}</p>
-                <p><strong>Pai:</strong> {{ results.pai | default('Não disponível') }}</p>
+                <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
+                <p><strong>Sexo:</strong> {{ results.sexo | default('Não disponível') }}</p>
+                <p><strong>Nascimento:</strong> {{ results.nascimento | default('Não disponível') }}</p>
+                <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
+                <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
+                <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
             </div>
         {% endif %}
     </div>
