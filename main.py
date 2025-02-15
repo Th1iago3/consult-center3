@@ -181,27 +181,24 @@ def manage_module_usage(user_id, module, increment=True):
 # Secure route decorator with encryption
 def secure_route(f):
     @wraps(f)
-        if request.method == 'POST':
-            encrypted_content = request.data
-            if not encrypted_content:
-                return jsonify({"error": "No encrypted content provided"}), 400
+    if request.method == 'POST':
+        encrypted_content = request.data
+        if not encrypted_content:
+            return jsonify({"error": "No encrypted content provided"}), 400
             user_key = session.get('user_key')
             if not user_key:
                 return jsonify({"error": "Session key missing"}), 403
-            decrypted_data = decrypt_with_aes(encrypted_content, user_key)
-            request.data = decrypted_data.encode()
-
-        response = f(*args, **kwargs)
-        
-        if isinstance(response, (bytes, str)):
-            user_key = session.get('user_key')
-            if user_key:
-                encrypted_response = encrypt_with_aes(response, user_key)
-                response = make_response(encrypted_response)
-                response.mimetype = 'application/octet-stream'
-
-        return response
-    return decorated_function
+                decrypted_data = decrypt_with_aes(encrypted_content, user_key)
+                request.data = decrypted_data.encode()
+                response = f(*args, **kwargs)
+                if isinstance(response, (bytes, str)):
+                    user_key = session.get('user_key')
+                    if user_key:
+                        encrypted_response = encrypt_with_aes(response, user_key)
+                        response = make_response(encrypted_response)
+                        response.mimetype = 'application/octet-stream'
+                        return response
+                        return decorated_function
 
 @app.errorhandler(404)
 def not_found(e):
