@@ -55,7 +55,7 @@
             transition: transform 0.4s ease;
         }
 
-        .navbar-toggle.active {
+        .navbar-toggle.active i {
             transform: rotate(90deg);
         }
 
@@ -315,6 +315,32 @@
             border-left: 5px solid #721C24;
         }
 
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6C63FF;
+            font-weight: 500;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .download-link i {
+            font-size: 1.2rem;
+            color: #6C63FF;
+        }
+
+        .download-link:hover {
+            color: #5b53c8;
+            transform: translateY(-2px);
+        }
+
+        .download-link:hover i {
+            color: #5b53c8;
+        }
+
         .profile-info {
             background: #F3F4FF;
             border-radius: 10px;
@@ -339,14 +365,14 @@
 
         .profile-info p {
             margin: 5px 0;
-            color: #555; /* Cor mantida do exemplo original */
+            color: #555;
             font-size: 14px;
         }
 
         .profile-info p strong {
             display: inline-block;
             width: 120px;
-            color: #555; /* Cor mantida do exemplo original */
+            color: #555;
             font-weight: 500;
         }
 
@@ -380,7 +406,7 @@
             <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
             <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
             <div class="sub-navbar" id="subNavbar">
-                <a href="#">Origem: DATA</a>
+                <a href="#">Base: DATA</a>
                 <a href="#">Última Consulta: <span id="lastConsultDate"></span></a>
             </div>
         </div>
@@ -409,6 +435,9 @@
             </button>
         </form>
         {% if result %}
+        <a href="#" class="download-link" onclick="downloadResult(event)">
+            <i class="fas fa-download"></i> Baixar em .txt
+        </a>
         <div class="profile-info">
             <p><strong>Nome:</strong> {{ result.nome }}</p>
             <p><strong>CPF:</strong> {{ result.cpf }}</p>
@@ -460,18 +489,42 @@
         }
 
         // Form Validation and Last Consult Date
+        let lastConsultDate = null;
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             const cpf = this.cpf.value;
             if (!/^\d{11}$/.test(cpf)) {
                 showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
                 event.preventDefault();
             } else {
-                const currentDate = new Date().toLocaleString();
-                document.getElementById('lastConsultDate').textContent = currentDate;
+                lastConsultDate = new Date().toLocaleString();
+                document.getElementById('lastConsultDate').textContent = lastConsultDate;
             }
         });
 
-        // Close Dropdown on Outside Click
+        // Download Result as TXT
+        function downloadResult(event) {
+            event.preventDefault();
+            if (!lastConsultDate) return;
+
+            const profileInfo = document.querySelector('.profile-info');
+            if (!profileInfo) return;
+
+            const resultText = Array.from(profileInfo.querySelectorAll('p'))
+                .map(p => p.textContent)
+                .join('\n');
+
+            const dateFormatted = lastConsultDate.replace(/[^\d]/g, '-').replace(/-+/g, '-');
+            const fileName = `${dateFormatted}-CPF-DATA-CONSULT-CENTER.txt`;
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Close Dropdown and Navbar on Outside Click
         document.addEventListener('click', (e) => {
             const subNavbar = document.getElementById('subNavbar');
             const navLinks = document.getElementById('navLinks');
