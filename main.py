@@ -465,7 +465,7 @@ def admin_panel():
     content = render_template('admin.html', users=users, token=session.get('token'))
     if 'user_key' in session:
         encrypted_content = encrypt_with_aes(content, session['user_key'])
-        return make_response(encrypted_content)
+        return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
 
 @app.route('/logout')
