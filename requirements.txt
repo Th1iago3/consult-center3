@@ -3,4 +3,3 @@ flask-limiter
 PyJWT
 colorama
 cryptography
-bisnacci
