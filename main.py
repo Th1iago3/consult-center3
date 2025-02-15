@@ -11,13 +11,87 @@ from colorama import Fore, Style
 import re
 import subprocess
 import base64
+from functools import wraps
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import hmac
+import hashlib
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import bisnacci
 
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = os.urandom(24)
+app.config['JWT_SECRET_KEY'] = os.urandom(24)
+app.config['RSA_PRIVATE_KEY'] = rsa.generate_private_key(
+    public_exponent=65537,
+    key_size=2048,
+    backend=default_backend()
+)
+app.config['RSA_PUBLIC_KEY'] = app.config['RSA_PRIVATE_KEY'].public_key()
 colorama.init()
 
+# Flask Limiter for rate limiting
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["5 per second"]
+)
+
+# Helper functions for encryption and key management
+def encrypt_with_rsa(data, public_key):
+    return public_key.encrypt(
+        data.encode(),
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+
+def decrypt_with_rsa(encrypted_data):
+    private_key = app.config['RSA_PRIVATE_KEY']
+    return private_key.decrypt(
+        encrypted_data,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    ).decode('utf-8')
+
+def encrypt_with_aes(data, key):
+    iv = os.urandom(16)
+    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+    ct = encryptor.update(data.encode()) + encryptor.finalize()
+    return iv + ct
+
+def decrypt_with_aes(encrypted, key):
+    iv = encrypted[:16]
+    ct = encrypted[16:]
+    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+    decryptor = cipher.decryptor()
+    decrypted = decryptor.update(ct) + decryptor.finalize()
+    return decrypted.decode()
+
+def bisnacci_encode(data):
+    return bisnacci.encode(data)
+
+def bisnacci_decode(encoded):
+    return bisnacci.decode(encoded)
+
+def generate_keys():
+    user_key = secrets.token_bytes(32)  # AES key
+    public_key_pem = app.config['RSA_PUBLIC_KEY'].public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    return user_key, public_key_pem
+
 # Ensure JSON files exist
-# Função para garantir que arquivos JSON existam
 def initialize_json(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -37,28 +111,30 @@ def save_data(data, file_path):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
-# Gerenciamento de Tokens
+# Token Management
 def generate_token(user_id):
     users = load_data('users.json')
     exp_time = timedelta(days=3650) if users.get(user_id, {}).get('role') == 'admin' else timedelta(hours=1)
     payload = {'user_id': user_id, 'exp': datetime.utcnow() + exp_time}
-    return jwt.encode(payload, app.config['SECRET_KEY'], algorithm="HS256")
+    return jwt.encode(payload, app.config['JWT_SECRET_KEY'], algorithm="HS256")
 
 def decode_token(token):
     try:
-        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        payload = jwt.decode(token, app.config['JWT_SECRET_KEY'], algorithms=["HS256"])
         return payload['user_id']
     except jwt.ExpiredSignatureError:
         return "expired"
     except jwt.InvalidTokenError:
         return None
 
-# Gerenciamento de Logs
-def log_access(endpoint, ip, message=''):
+# Logging
+def log_access(endpoint, ip=None, message=''):
+    if not ip:
+        ip = request.remote_addr
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} acessou {endpoint}. {message}")
+    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
 
-# Notificações
+# Notifications
 def load_notifications():
     return load_data('notifications.json')
 
@@ -75,13 +151,13 @@ def send_notification(user_id, message):
     })
     save_notifications(notifications)
 
-# Gestão de uso dos módulos
+# Module Usage Management
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
 
     if user.get('role') == 'admin':
-        return True  # Admins têm acesso ilimitado
+        return True  # Admins have unlimited access
 
     if 'modules' not in user:
         user['modules'] = {m: 0 for m in [
@@ -94,9 +170,8 @@ def manage_module_usage(user_id, module, increment=True):
 
     today = datetime.now().date()
     if 'last_reset' not in user or user['last_reset'] != today.isoformat():
+        user['modules'] = {k: 0 for k in user['modules']}  # Reset all modules to 0
         user['last_reset'] = today.isoformat()
-        for module_key in user['modules']:
-            user['modules'][module_key] = 0
 
     usage_limit = {
         'user_semanal': 30,
@@ -112,16 +187,54 @@ def manage_module_usage(user_id, module, increment=True):
     save_data(users, 'users.json')
     return True
 
+# Secure route decorator with encryption
+def secure_route(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'auth_token' not in request.cookies:
+            return jsonify({"error": "Authentication required"}), 401
+        
+        try:
+            decrypted_token = jwt.decode(request.cookies['auth_token'], app.config['JWT_SECRET_KEY'], algorithms=["HS256"])
+            user_id = decrypted_token['user_id']
+            g.user_id = user_id
+        except Exception:
+            return jsonify({"error": "Invalid token"}), 403
+
+        if request.method == 'POST':
+            encrypted_content = request.data
+            if not encrypted_content:
+                return jsonify({"error": "No encrypted content provided"}), 400
+            user_key = session.get('user_key')
+            if not user_key:
+                return jsonify({"error": "Session key missing"}), 403
+            decrypted_data = decrypt_with_aes(encrypted_content, user_key)
+            request.data = decrypted_data.encode()
+
+        response = f(*args, **kwargs)
+        
+        if isinstance(response, (bytes, str)):
+            user_key = session.get('user_key')
+            if user_key:
+                encrypted_response = encrypt_with_aes(response, user_key)
+                response = make_response(encrypted_response)
+                response.mimetype = 'application/octet-stream'
+
+        return response
+    return decorated_function
+
 @app.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
 
 @app.before_request
+@limiter.limit("5 per second")
+@secure_route
 def check_user_existence():
     token = request.cookies.get('auth_token')
-    if request.endpoint not in ['login', 'planos', 'api_cpf', 'api', 'static']:
+    if request.endpoint not in ['login', 'planos']:
         if not token:
-            log_access(request.endpoint, request.remote_addr, "Usuário não autenticado.")
+            log_access(request.endpoint, request.remote_addr, "Unauthenticated user.")
             return redirect('/')
 
         user_id = decode_token(token)
@@ -142,6 +255,7 @@ def check_user_existence():
     log_access(request.endpoint, request.remote_addr)
 
 @app.route('/', methods=['GET', 'POST'])
+@secure_route
 def login():
     if request.method == 'POST':
         user = request.form.get('user')
@@ -153,14 +267,17 @@ def login():
             expiration_date = datetime.strptime(users[user]['expiration'], '%Y-%m-%d')
             if datetime.now() < expiration_date:
                 token = generate_token(user)
-                resp = redirect('/dashboard')
-                resp.set_cookie('auth_token', token)
+                user_key, public_key = generate_keys()
+                session['user_key'] = user_key
+                session['public_key'] = public_key
 
+                resp = redirect('/dashboard')
+                resp.set_cookie('auth_token', token, httponly=True, secure=True, samesite='Strict')
+                
                 if 'devices' in users[user]:
-                    if isinstance(users[user]['devices'], list) and len(users[user]['devices']) > 0:
-                        if user_agent not in users[user]['devices']:
-                            flash('Dispositivo não autorizado. Login recusado.', 'error')
-                            return render_template('login.html')
+                    if isinstance(users[user]['devices'], list) and user_agent not in users[user]['devices']:
+                        flash('Dispositivo não autorizado. Login recusado.', 'error')
+                        return render_template('login.html')
 
                     if user_agent not in users[user].get('devices', []):
                         users[user].setdefault('devices', []).append(user_agent)
@@ -173,15 +290,16 @@ def login():
             flash('Usuário ou senha incorretos.', 'error')
     return render_template('login.html')
 
-
 @app.route('/planos', methods=['GET'])
+@secure_route
 def planos():
     return render_template('planos.html')
-    
+
 @app.route('/dashboard', methods=['GET', 'POST'])
+@secure_route
 def dashboard():
     users = load_data('users.json')
-    notifications = load_data('notifications.json')
+    notifications = load_notifications()
     user_notifications = len(notifications.get(g.user_id, []))
 
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
@@ -225,35 +343,26 @@ def dashboard():
             else:
                 return jsonify({"error": "Parâmetros inválidos ou usuário não encontrado."}), 400
 
-    return render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, token=session.get('token'))
-    
+    content = render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, token=session.get('token'))
+    if 'user_key' in session:
+        encrypted_content = encrypt_with_aes(content, session['user_key'])
+        return make_response(encrypted_content)
+    return jsonify({"error": "Session key missing"}), 403
+
 @app.route('/admin', methods=['GET', 'POST'])
+@secure_route
 def admin_panel():
     users = load_data('users.json')
-    notifications = load_data('notifications.json')
+    notifications = load_notifications()
 
-    # Check for authentication token
-    token = request.cookies.get('auth_token')
-    if not token:
-        flash('Acesso negado.', 'error')
-        return redirect('/dashboard')
-
-    user_id = decode_token(token)
-    if user_id is None or user_id == "expired":
-        flash('Sessão inválida ou expirada. Por favor, faça login novamente.', 'error')
-        resp = redirect('/')
-        resp.set_cookie('auth_token', '', expires=0)
-        return resp
-
-    # Check if user is admin
+    user_id = g.user_id  # already set by secure_route
     if users.get(user_id, {}).get('role') != 'admin':
-        flash('Acesso negado.', 'error')
-        return redirect('/dashboard')
+        return jsonify({"error": "Access denied"}), 403
 
     # User-Agent Check
     user_agent = request.headers.get('User-Agent', '')
     if 'bot' in user_agent.lower() or 'spider' in user_agent.lower():
-        abort(403)  # Deny access if User-Agent suggests a bot or spider
+        return jsonify({"error": "Access denied"}), 403
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -271,24 +380,7 @@ def admin_panel():
                     'token': token,
                     'expiration': expiration,
                     'role': role,
-                    'modules': {
-                        'cpf': 0,
-                        'cpf2': 0,
-                        'cpf3': 0,
-                        'cpfdata': 0,
-                        'cpflv': 0,
-                        'datanome': 0,
-                        'placalv': 0,
-                        'tellv': 0,
-                        'placa': 0,
-                        'tel': 0,
-                        'ip': 0,
-                        'fotor': 0,
-                        'nome': 0,
-                        'nome2': 0,
-                        'cpf5': 0,
-                        'nomelv': 0
-                    }
+                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5']}
                 }
                 new_user['devices'] = []
 
@@ -343,7 +435,11 @@ def admin_panel():
             else:
                 return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
 
-    return render_template('admin.html', users=users, token=session.get('token'))
+    content = render_template('admin.html', users=users, token=session.get('token'))
+    if 'user_key' in session:
+        encrypted_content = encrypt_with_aes(content, session['user_key'])
+        return make_response(encrypted_content)
+    return jsonify({"error": "Session key missing"}), 403
 
 @app.route('/logout')
 def logout():
@@ -356,6 +452,8 @@ def logout():
 
 # Module Routes (implement each with manage_module_usage)
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def cpf():
     if 'user_id' not in g:  # Ensure user is logged in
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -403,6 +501,8 @@ def cpf():
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def cpf2():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -448,6 +548,8 @@ def cpf2():
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
     
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def cpfdata():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -527,6 +629,8 @@ def cpfdata():
     return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=formatted_result, cpf=cpf)
     
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def cpf3():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -572,6 +676,8 @@ def cpf3():
     return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def cpflv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -619,6 +725,8 @@ def cpflv():
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def cpf5():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -666,6 +774,8 @@ def cpf5():
     return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf, token=session.get('token'))
     
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def datanome():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -721,6 +831,8 @@ def datanome():
 
 
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def placalv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -768,6 +880,8 @@ def placalv():
     return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def tellv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -821,6 +935,8 @@ def tellv():
     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
 
 @app.route('/modulos/placa', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def placa():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -869,6 +985,8 @@ def placa():
     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
 @app.route('/modulos/tel', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def tel():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -917,6 +1035,8 @@ def tel():
     return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
 
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def fotor():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -973,6 +1093,8 @@ def fotor():
     return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
 
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def nomelv():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1020,6 +1142,8 @@ def nomelv():
     return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
     
 @app.route('/modulos/nome', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def nome():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1067,6 +1191,8 @@ def nome():
     return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
 @app.route('/modulos/ip', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def ip():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1124,6 +1250,8 @@ def ip():
     return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=session.get('token'))
 
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
+@limiter.limit("5 per second")
+@secure_route
 def nome2():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1169,130 +1297,7 @@ def nome2():
             flash('Resposta da API inválida.', 'error')
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
-
-credentials = 'carlinhos.edu.10@hotmail.com:#Esp210400'
-credentials_base64 = credentials.encode().decode('utf-8')  # Encode to base64
-url_login = 'https://servicos-cloud.saude.gov.br/pni-bff/v1/autenticacao/tokenAcesso'
-url_pesquisa_base = 'https://servicos-cloud.saude.gov.br/pni-bff/v1/cidadao/cpf/'
-
-headers_login = {
-    "Host": "servicos-cloud.saude.gov.br",
-    "Connection": "keep-alive",
-    "Content-Length": "0",
-    "sec-ch-ua": '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
-    "accept": "application/json",
-    "X-Authorization": f"Basic {credentials_base64}",
-    "sec-ch-ua-mobile": "?0",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    "sec-ch-ua-platform": "Windows",
-    "Origin": "https://si-pni.saude.gov.br",
-    "Sec-Fetch-Site": "same-site",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Dest": "empty",
-    "Referer": "https://si-pni.saude.gov.br/",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
-}
-
-def processar_cpf(cpf):
-    max_retries = 7
-    retry_delay = 2
-
-    for _ in range(max_retries):
-        # Autenticação
-        try:
-            response_login = requests.post(url_login, headers=headers_login, verify=False)
-            response_login.raise_for_status()
-            login_data = response_login.json()
-            if 'accessToken' in login_data:
-                token_acesso = login_data['accessToken']
-                headers_pesquisa = {
-                    'Host': "servicos-cloud.saude.gov.br",
-                    "Authorization": f"Bearer {token_acesso}",
-                    'Accept': "application/json, text/plain, */*",
-                    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-                    'Origin': "https://si-pni.saude.gov.br",
-                    'Sec-Fetch-Site': "same-site",
-                    'Sec-Fetch-Mode': "cors",
-                    'Sec-Fetch-Dest': "empty",
-                    'Referer': "https://si-pni.saude.gov.br/",
-                    'Accept-Encoding': "gzip, deflate, br",
-                    'Accept-Language': "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
-                }
-                
-                url_pesquisa = f"{url_pesquisa_base}{cpf}"
-                for _ in range(max_retries):
-                    try:
-                        response_pesquisa = requests.get(url_pesquisa, headers=headers_pesquisa, verify=False)
-                        response_pesquisa.raise_for_status()
-                        dados_pessoais = response_pesquisa.json()
-                        if 'records' in dados_pessoais:
-                            return formatar_informacoes(dados_pessoais['records'][0])
-                        else:
-                            return {"error": "Erro na pesquisa", "details": str(dados_pessoais)}
-                    except requests.RequestException:
-                        time.sleep(retry_delay)
-                return {"error": "Falha na requisição de pesquisa após várias tentativas"}
-            else:
-                return {"error": "Erro no login", "details": str(login_data)}
-        except requests.RequestException:
-            time.sleep(retry_delay)
-    return {"error": "Falha na requisição de login após várias tentativas"}
-
-def formatar_informacoes(dados_pessoais):
-    data_nascimento = dados_pessoais.get('dataNascimento', 'SEM INFORMAÇÃO')
-    idade = 'SEM INFORMAÇÃO'
-    if data_nascimento != 'SEM INFORMAÇÃO':
-        try:
-            from datetime import datetime
-            data_nascimento_obj = datetime.strptime(data_nascimento, '%Y-%m-%d')  # Ajuste o formato conforme necessário
-            hoje = datetime.now()
-            idade = f"{hoje.year - data_nascimento_obj.year} anos"
-        except ValueError:
-            idade = 'DATA INVÁLIDA'
-
-    endereco = dados_pessoais.get('endereco', {})
-    logradouro = endereco.get('logradouro', 'SEM INFORMAÇÃO')
-    cidade = endereco.get('cidade', 'SEM INFORMAÇÃO')
-    bairro = endereco.get('bairro', 'SEM INFORMAÇÃO')
-    cep = endereco.get('cep', 'SEM INFORMAÇÃO')
-
-    resultado = f"""
-    <div class='profile-info'>
-    <p><strong>NOME:</strong> {dados_pessoais.get('nome', 'SEM INFORMAÇÃO')}</p>
-    <p><strong>CPF:</strong> {dados_pessoais.get('cpf', 'SEM INFORMAÇÃO')}</p>
-    <p><strong>NOME DA MÃE:</strong> {dados_pessoais.get('nomeMae', 'SEM INFORMAÇÃO')}</p>
-    <p><strong>NOME DO PAI:</strong> {dados_pessoais.get('nomePai', 'SEM INFORMAÇÃO')}</p>
-    <p><strong>CNS:</strong> {dados_pessoais.get('cns', 'SEM INFORMAÇÃO')}</p>
-    <p><strong>Nascimento:</strong> {data_nascimento} ({idade})</p>
-    <p><strong>EMAIL:</strong> {dados_pessoais.get('email', 'SEM INFORMAÇÃO')}</p>
-    <p><strong>Sexo:</strong> {dados_pessoais.get('sexo', 'SEM INFORMAÇÃO')} 
-    <strong>Cor:</strong> {dados_pessoais.get('racaCor', 'SEM INFORMAÇÃO')} 
-    <strong>Grau de Qualidade:</strong> {dados_pessoais.get('grauQualidade', 'SEM INFORMAÇÃO')}</p>
-    <p><strong>Endereço:</strong><br>
-    Logradouro: {logradouro}<br>
-    Cidade: {cidade}<br>
-    Bairro: {bairro}<br>
-    CEP: {cep}<br>
-    Número: ( manutenção )</p>
-    <p><strong>DADOS USADOS:</strong><br>
-    CPF: {dados_pessoais.get('cpf', 'SEM INFORMAÇÃO')}<br>
-    </div>
-    """
-    return resultado
-
-@app.route('/api', methods=['GET'])
-def api_cpf():
-    cpf = request.args.get('cpf')
-    if not cpf:
-        return jsonify({"error": "Por favor, forneça o CPF na URL como ?cpf=seu_cpf"}), 400
-
-    resultado = processar_cpf(cpf)
-    if isinstance(resultado, dict) and 'error' in resultado:
-        return jsonify(resultado), 400
-    else:
-        return resultado, 200, {'Content-Type': 'text/html; charset=utf-8'}
-
+    
 
 if __name__ == '__main__':
     initialize_json('users.json')
