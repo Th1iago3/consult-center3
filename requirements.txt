@@ -3,3 +3,5 @@ flask-limiter
 PyJWT
 colorama
 cryptography
+requests
+base64
