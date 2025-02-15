@@ -230,7 +230,7 @@ def manage_module_usage(user_id, module, increment=True):
     if 'modules' not in user:
         user['modules'] = {m: 0 for m in [
             'cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv',
-            'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5'
+            'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'visitas'
         ]}
 
     if increment:
@@ -407,7 +407,7 @@ def admin_panel():
                     'token': token,
                     'expiration': expiration,
                     'role': role,
-                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5']}
+                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'visitas']}
                 }
                 new_user['devices'] = []
 
@@ -470,11 +470,9 @@ def admin_panel():
 
 @app.route('/logout')
 def logout():
-    session.pop('token', None)  # Remove token from session
+    session.clear()  # Clear all session data
     resp = make_response(redirect('/'))
     resp.set_cookie('auth_token', '', expires=0)
-    resp.set_cookie('user-agent', '', expires=0)
-    resp.set_cookie('connect.sid', '', expires=0)
     return resp
 
 # Module Routes (implement each with manage_module_usage)
