@@ -1328,16 +1328,15 @@ def visitas():
             # Determine how many requests are needed based on the number of visits
             requests_needed = {
                 50: 1,
-                100: 2,
-                200: 4,
-                500: 10
+                100: 5,
+                200: 7,
+                500: 40
             }.get(visits, 1)
 
             total_visits_sent = 0
             requests_made = 0
 
             while requests_made < requests_needed:
-                time.sleep(2)
                 # Since the API doesn't accept a 'visits' parameter, we'll make one request per visit
                 response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region=br&key=teamXKrishna')
                 response.raise_for_status()
