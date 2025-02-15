@@ -12,7 +12,6 @@ import re
 import subprocess
 import base64
 from functools import wraps
-from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import hmac
 import hashlib
@@ -32,13 +31,6 @@ app.config['RSA_PRIVATE_KEY'] = rsa.generate_private_key(
 )
 app.config['RSA_PUBLIC_KEY'] = app.config['RSA_PRIVATE_KEY'].public_key()
 colorama.init()
-
-# Flask Limiter for rate limiting
-limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["5 per second"]
-)
 
 # Helper functions for encryption and key management
 def encrypt_with_rsa(data, public_key):
@@ -223,7 +215,6 @@ def not_found(e):
     return render_template('404.html'), 404
 
 @app.before_request
-@limiter.limit("5 per second")
 @secure_route
 def check_user_existence():
     token = request.cookies.get('auth_token')
@@ -447,7 +438,6 @@ def logout():
 
 # Module Routes (implement each with manage_module_usage)
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def cpf():
     if 'user_id' not in g:  # Ensure user is logged in
@@ -496,7 +486,6 @@ def cpf():
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def cpf2():
     if 'user_id' not in g:
@@ -543,7 +532,6 @@ def cpf2():
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
     
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def cpfdata():
     if 'user_id' not in g:
@@ -624,7 +612,6 @@ def cpfdata():
     return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=formatted_result, cpf=cpf)
     
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def cpf3():
     if 'user_id' not in g:
@@ -671,7 +658,6 @@ def cpf3():
     return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def cpflv():
     if 'user_id' not in g:
@@ -720,7 +706,6 @@ def cpflv():
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def cpf5():
     if 'user_id' not in g:
@@ -769,7 +754,6 @@ def cpf5():
     return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf, token=session.get('token'))
     
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def datanome():
     if 'user_id' not in g:
@@ -826,7 +810,6 @@ def datanome():
 
 
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def placalv():
     if 'user_id' not in g:
@@ -875,7 +858,6 @@ def placalv():
     return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def tellv():
     if 'user_id' not in g:
@@ -930,7 +912,6 @@ def tellv():
     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
 
 @app.route('/modulos/placa', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def placa():
     if 'user_id' not in g:
@@ -980,7 +961,6 @@ def placa():
     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
 @app.route('/modulos/tel', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def tel():
     if 'user_id' not in g:
@@ -1030,7 +1010,6 @@ def tel():
     return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
 
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def fotor():
     if 'user_id' not in g:
@@ -1088,7 +1067,6 @@ def fotor():
     return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
 
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def nomelv():
     if 'user_id' not in g:
@@ -1137,7 +1115,6 @@ def nomelv():
     return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
     
 @app.route('/modulos/nome', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def nome():
     if 'user_id' not in g:
@@ -1186,7 +1163,6 @@ def nome():
     return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
 @app.route('/modulos/ip', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def ip():
     if 'user_id' not in g:
@@ -1245,7 +1221,6 @@ def ip():
     return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=session.get('token'))
 
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
-@limiter.limit("5 per second")
 @secure_route
 def nome2():
     if 'user_id' not in g:
