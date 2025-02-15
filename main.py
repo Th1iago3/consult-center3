@@ -1336,7 +1336,7 @@ def visitas():
             requests_made = 0
 
             while requests_made < requests_needed:
-                time.sleep(1)
+                time.sleep(2)
                 # Since the API doesn't accept a 'visits' parameter, we'll make one request per visit
                 response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region=br&key=teamXKrishna')
                 response.raise_for_status()
@@ -1354,7 +1354,6 @@ def visitas():
                 'banido': 'Sim' if is_banned else 'Não',
                 'região': region,
                 'visits_sent': total_visits_sent,
-                'requests_made': requests_made,
                 'message': f'Visitas enviadas: {total_visits_sent} (em {requests_made} requisições) - ConsultCenter' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
             }
 
