@@ -505,12 +505,6 @@
         });
 
         // Generate and Download TXT File with Cleanup
-        function generateAndDownloadTxt(event) {
-            event.preventDefault();
-            if (!lastConsultDate) {
-                showAlert('Nenhuma consulta realizada ainda.', 'error');
-                return;
-            }
 
             const profileInfo = document.querySelector('.profile-info');
             if (!profileInfo) {
