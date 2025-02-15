@@ -363,7 +363,7 @@
             <div class="user-icon">
                 <i class="fas fa-user"></i>
             </div>
-            <button class="logout-btn" onclick="window.location.href='/logout'">
+            <button class="logout-btn" onclick="window.location.href='/'">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Sair</span>
             </button>
@@ -373,7 +373,7 @@
     <div class="content">
         <form id="cpfForm" method="POST" action="/cpf">
             <div class="search-container">
-                <input type="text" class="search-input" name="cpf" placeholder="Digite o CPF..." required>
+                <input type="text" class="search-input" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
                 {% if not is_admin %}
                 <input type="text" class="search-input" name="token" placeholder="Digite seu token..." required>
                 {% endif %}
