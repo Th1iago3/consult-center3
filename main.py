@@ -1345,7 +1345,7 @@ def visitas():
 
             while requests_made < requests_needed:
                 # Since the API doesn't accept a 'visits' parameter, we'll make one request per visit
-                response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}®ion=br&key=teamXKrishna')
+                response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region=br&key=teamXKrishna')
                 response.raise_for_status()
 
                 if response.status_code == 200:
