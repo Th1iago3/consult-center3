@@ -423,7 +423,13 @@
 
     <div class="container">
         <h2>Consulta - Vacinas</h2>
-        <div id="alertContainer"></div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <form method="POST" id="searchForm">
             <div class="form-group">
                 <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
