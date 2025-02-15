@@ -114,9 +114,19 @@ def decode_token(token):
         return None
 
 # Logging
-def log_access(endpoint, ip=None, message=''):
-    if not ip:
+def log_access(endpoint, message=''):
+    try:
+        # Fetch the real IP from ipify.org
+        response = requests.get('https://api.ipify.org?format=json')
+        response.raise_for_status()
+        ip_info = response.json()
+        ip = ip_info.get('ip', 'Unknown')  # Fallback to 'Unknown' if we can't fetch the IP
+
+    except requests.RequestException as e:
+        # If API request fails, use Flask's remote_addr as a fallback
         ip = request.remote_addr
+        message += f" [Error fetching real IP: {str(e)}]"
+
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
 
