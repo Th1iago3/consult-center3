@@ -452,12 +452,11 @@
         {% if result %}
             {% if result.status == 'success' %}
                 <div class="profile-info">
-                    <p><strong>Status:</strong> ✅. Visitas Adicionadas com Sucesso.</p>
                     <p><strong>Nick:</strong> {{ result.nick }}</p>
                     <p><strong>Banido:</strong> {{ result.banido }}</p>
                     <p><strong>Região:</strong> {{ result.região }}</p>
-                    <p><strong>Visitas Enviadas:</strong> {{ result.message }}</p>
-                    <p><strong>Mensagem:</strong>Após Enviar As Visitas, Relogue Novamente ao Jogo.</p>
+                    <p><strong>Mensagem:</strong> {{ result.message }}</p>
+                    <p><strong>Aviso:</strong>Após Enviar As Visitas, Relogue Novamente ao Jogo. (obrigatório)</p>
                     
                 </div>
             {% else %}
