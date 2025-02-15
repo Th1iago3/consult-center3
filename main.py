@@ -994,11 +994,11 @@ def fotor():
                 # API Call for photo lookup based on the selected state
                 token = "a72566c8fac76174cb917c1501d94856"
                 if selected_option == "fotoba":
-                    url = f"https://apibr.lat/painel/api.php?token={token}=fotoba&query={documento}"
+                    url = f"https://apibr.lat/estadosrjx/fotoba.php?query={documento}"
                 elif selected_option == "fotorj":
-                    url = f"https://apibr.lat/painel/api.php?token={token}=fotoRJ&query={documento}"
+                    url = f"https://apibr.lat/estadosrjx/fotorj.php?query={documento}"
                 else: 
-                    url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=fotosp&query={documento}"
+                    url = f"https://apibr.lat/estadosrjx/fotosp.php?query={documento}"
 
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
