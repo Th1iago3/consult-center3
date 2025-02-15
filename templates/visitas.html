@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar - Visitas (ff)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Reset e Configurações Gerais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #E6E6FA;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            animation: fadeInBody 1s ease-in-out;
+        }
+
+        @keyframes fadeInBody {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #ffffff;
+            width: 100%;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #6C63FF;
+        }
+
+        .navbar-toggle i {
+            transition: transform 0.4s ease;
+        }
+
+        .navbar-toggle.active i {
+            transform: rotate(90deg);
+        }
+
+        .nav-links {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+            background: #ffffff;
+            padding: 1rem;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 10px 10px;
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        .nav-links.active {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-links a {
+            color: #6C63FF;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(108, 99, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .sub-navbar {
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #F3F4FF;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            animation: fadeInSub 0.3s ease-out;
+        }
+
+        .sub-navbar.active {
+            display: flex;
+        }
+
+        @keyframes fadeInSub {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .sub-navbar a {
+            color: #555;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .sub-navbar a:hover {
+            color: #6C63FF;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #6C63FF;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .user-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .logout-btn {
+            background: #6C63FF;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #5b53c8;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
+        .container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+            margin: 5rem auto 2rem;
+            position: relative;
+            overflow: hidden;
+            animation: slideInContainer 0.5s ease-in-out;
+        }
+
+        @keyframes slideInContainer {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(108, 99, 255, 0.2) 0%, rgba(108, 99, 255, 0) 70%);
+            animation: shimmer 3s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+            animation: fadeInTitle 0.5s ease-in-out;
+        }
+
+        @keyframes fadeInTitle {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-group {
+            margin: 20px 0;
+            animation: fadeInUp 0.5s ease-in-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-bottom: 2px solid #ccc;
+            background: transparent;
+            color: #333;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6C63FF;
+            transform: scale(1.01);
+            box-shadow: 0 2px 5px rgba(108, 99, 255, 0.2);
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(45deg, #6C63FF, #4E54C8);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:active {
+            transform: translateY(0) scale(1);
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            animation: fadeInAlert 0.5s ease-in;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes fadeInAlert {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert-success { 
+            background-color: #E3FCEF; 
+            color: #155724; 
+            border-left: 5px solid #155724; 
+        }
+
+        .alert-error { 
+            background-color: #FFEBEE; 
+            color: #721C24; 
+            border-left: 5px solid #721C24; 
+        }
+
+        .profile-info {
+            background: #F3F4FF;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: left;
+            animation: slideUpInfo 0.5s ease-out;
+        }
+
+        @keyframes slideUpInfo {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .profile-info p strong {
+            display: inline-block;
+            width: 120px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .nav-links {
+                padding: 0.75rem;
+            }
+
+            .nav-links a {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
+            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
+            <div class="sub-navbar" id="subNavbar">
+                <a href="#">Base: FreeFire</a>
+            </div>
+        </div>
+        <div class="user-profile">
+            <div class="user-icon"><i class="fas fa-user"></i></div>
+            <button class="logout-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Adicionar - Visitas (ff)</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST" id="addVisitForm">
+            <div class="form-group">
+                <input type="text" name="uid" placeholder="Digite o UID..." required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="token" placeholder="Digite seu token..." required>
+            </div>
+            <button type="submit" class="button">
+                <i class="fas fa-plus"></i> Adicionar Visita
+            </button>
+        </form>
+        {% if result %}
+            {% if result.status == 'success' %}
+                <div class="profile-info">
+                    <p><strong>Status:</strong> Sucesso</p>
+                    <p><strong>Nick:</strong> {{ result.nick }}</p>
+                    <p><strong>Banido:</strong> {{ result.banido }}</p>
+                    <p><strong>Região:</strong> BR</p>
+                </div>
+            {% else %}
+                <div class="alert alert-error">
+                    {{ result.message | default('Falha ao adicionar visita.') }}
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <script>
+        // Toggle Navbar with Animation
+        function toggleNavbar() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.navbar-toggle');
+            const toggleIcon = toggleBtn.querySelector('i');
+            navLinks.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+            toggleIcon.classList.toggle('fa-arrow-right');
+            toggleIcon.classList.toggle('fa-arrow-down');
+        }
+
+        // Toggle Dropdown
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const subNavbar = document.getElementById('subNavbar');
+            subNavbar.classList.toggle('active');
+        }
+
+        // Alert
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // Form Validation
+        document.getElementById('addVisitForm').addEventListener('submit', function(event) {
+            const uid = this.uid.value.trim();
+            const token = this.token.value.trim();
+            if (uid.length === 0 || token.length === 0) {
+                showAlert('Por favor, preencha todos os campos.', 'error');
+                event.preventDefault();
+            }
+        });
+
+        // Close Dropdown and Navbar on Outside Click
+        document.addEventListener('click', (e) => {
+            const subNavbar = document.getElementById('subNavbar');
+            const navLinks = document.getElementById('navLinks');
+            if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
+                subNavbar.classList.remove('active');
+            }
+            if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
+                toggleNavbar();
+            }
+        });
+    </script>
+</body>
+</html>
