@@ -1,5 +1,4 @@
 Flask
-flask-limiter
 PyJWT
 colorama
 cryptography
