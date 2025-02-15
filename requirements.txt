@@ -4,4 +4,3 @@ PyJWT
 colorama
 cryptography
 requests
-bisnacci
