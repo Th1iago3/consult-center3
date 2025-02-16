@@ -51,6 +51,32 @@
         },
         "last_reset": "2025-02-10"
     },
+    "@sins-falling": {
+        "password": "@04756.6",
+        "token": "@sins-falling-KEY8e076d651f979bb30489b0f28a.center",
+        "expiration": "2025-02-19",
+        "role": "user_semanal",
+        "modules": {
+            "cpf": 0,
+            "cpf2": 0,
+            "cpf3": 0,
+            "cpfdata": 0,
+            "cpflv": 0,
+            "datanome": 0,
+            "placalv": 0,
+            "tellv": 0,
+            "placa": 0,
+            "tel": 0,
+            "ip": 0,
+            "fotor": 0,
+            "nome": 0,
+            "nome2": 0,
+            "nomelv": 0,
+            "cpf5": 0,
+            "visitas": 0
+        },
+        "last_reset": "2025-02-10"
+    },
     "@trial3d": {
         "password": "3dias",
         "token": "3diass",
