@@ -430,6 +430,7 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+        <div id="requestCounter">Requisições Feitas: <span id="requestCount">0</span></div>
         <form method="POST" id="addVisitForm">
             <div class="form-group">
                 <input type="text" name="uid" placeholder="Digite o UID..." required>
@@ -440,9 +441,9 @@
             <div class="form-group">
                 <select name="visits" required>
                     <option value="150">150+ Visitas (10) Requisições</option>
-                    <option value="300">300+ Visitas (30) Requisições</option>
-                    <option value="500">500+ Visitas (70) Requisições</option>
-                    <option value="10000">10000+ Visitas (500) Requisições</option>
+                    <option value="300">1,500+ Visitas (30) Requisições</option>
+                    <option value="500">3,500+ Visitas (70) Requisições</option>
+                    <option value="10000">25,000+ Visitas (500) Requisições</option>
                 </select>
             </div>
             <button type="submit" class="button">
@@ -457,7 +458,6 @@
                     <p><strong>Região:</strong> {{ result.região }}</p>
                     <p><strong>Requisições:</strong> {{ result.message }}</p>
                     <p><strong>Aviso:</strong>Após Enviar As Visitas, Relogue Novamente ao Jogo. (obrigatório)</p>
-                    
                 </div>
             {% else %}
                 <div class="alert alert-error">
@@ -496,15 +496,32 @@
             setTimeout(() => alert.remove(), 3000);
         }
 
-        // Form Validation
+        // Initialize counter
+        let requestCount = 0;
+
+        // Function to update and show the request count
+        function updateRequestCount() {
+            const counterElement = document.getElementById('requestCount');
+            if (counterElement) {
+                counterElement.textContent = requestCount;
+            }
+        }
+
+        // Increment counter on form submission
         document.getElementById('addVisitForm').addEventListener('submit', function(event) {
             const uid = this.uid.value.trim();
             const token = this.token.value.trim();
             if (uid.length === 0 || token.length === 0) {
                 showAlert('Por favor, preencha todos os campos.', 'error');
                 event.preventDefault();
+            } else {
+                requestCount++; // Increment the count
+                updateRequestCount(); // Update the display
             }
         });
+
+        // Ensure the counter is initialized when the page loads
+        window.addEventListener('load', updateRequestCount);
 
         // Close Dropdown and Navbar on Outside Click
         document.addEventListener('click', (e) => {
