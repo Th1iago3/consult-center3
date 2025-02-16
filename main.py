@@ -303,7 +303,7 @@ def login():
 
         if user in users and users[user]['password'] == password:
             # Verify reCAPTCHA
-            secret_key = os.getenv('6LevOdkqAAAAAK3UwwzYnrQr2etTFhnyFURfDHBd')  # Ensure this is set in environment
+            secret_key = os.getenv('RECAPTCHA_SECRET_KEY')  # Ensure this is set in environment
             response = requests.post('https://www.google.com/recaptcha/api/siteverify', data={
                 'secret': secret_key,
                 'response': recaptcha_response
@@ -331,21 +331,21 @@ def login():
                     else:
                         # Check if the user-agent matches what's stored
                         if user_agent != users[user]['devices'][users[user]['devices'].index(user_agent)]:
-                            flash('Dispositivo não autorizado.', 'error')
+                            flash('Dispositivo não autorizado. Login recusado.', 'error')
                             return render_template('login.html')
 
-                    # Clear the recaptcha response from the form to prevent reuse
+                    # Remove reCAPTCHA response token from client-side
                     resp.delete_cookie('recaptchaResponse')
                     return resp
                 else:
-                    flash('Usuário expirado. Contate seu Vendedor para Renovação!', 'error')
+                    flash('Usuário expirado.', 'error')
             else:
                 flash('Verificação reCAPTCHA falhou.', 'error')
         else:
             flash('Usuário ou senha incorretos.', 'error')
     
     # For GET requests, load the site key from environment for reCAPTCHA
-    recaptcha_site_key = os.getenv('6LevOdkqAAAAAPXWfi6MFGS0pMlY_02va_Dz-Sxo')
+    recaptcha_site_key = os.getenv('RECAPTCHA_SITE_KEY')
     return render_template('login.html', recaptcha_site_key=recaptcha_site_key)
 
 @app.route('/planos', methods=['GET'])
