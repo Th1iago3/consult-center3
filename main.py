@@ -1339,9 +1339,9 @@ def visitas():
 
             # Determine how many requests are needed based on the number of visits
             requests_needed = {
-                50: 50,
-                100: 100,
-                200: 150,
+                50: 5,
+                100: 10,
+                200: 50,
                 500: 500
             }.get(visits, 1)
 
