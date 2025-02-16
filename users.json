@@ -89,7 +89,6 @@
         "token": "@@3dias-KEYc0cae3bc16c71b47217cb72e30.center",
         "expiration": "2025-02-20",
         "role": "user_semanal",
-        "devices": [],
         "modules": {
             "cpf": 0,
             "cpf2": 0,
