@@ -374,7 +374,7 @@
                 sendMessageBtn.style.display = 'none';
                 usersVisible = false;
             } else {
-                fetch('/admin', {
+                fetch('/i/settings/admin', {
                     method: 'POST',
                     body: new URLSearchParams({
                         action: 'view_users'
@@ -438,7 +438,7 @@
                 flash('Por favor, insira uma mensagem.', 'error');
                 return;
             }
-            fetch('/admin', {
+            fetch('/i/settings/admin', {
                 method: 'POST',
                 body: new URLSearchParams({
                     action: 'send_message',
