@@ -297,57 +297,41 @@ def login():
     if request.method == 'POST':
         user = request.form.get('user')
         password = request.form.get('password')
-        recaptcha_response = request.form.get('recaptchaResponse')
         users = load_data('users.json')
         user_agent = request.headers.get('User-Agent')
 
         if user in users and users[user]['password'] == password:
-            # Verify reCAPTCHA
-            secret_key = os.getenv('RECAPTCHA_SECRET_KEY')  # For server-side verification
-            response = requests.post('https://www.google.com/recaptcha/api/siteverify', data={
-                'secret': secret_key,
-                'response': recaptcha_response
-            })
-            result = response.json()
-            if result.get('success'):
-                expiration_date = datetime.strptime(users[user]['expiration'], '%Y-%m-%d')
-                if datetime.now() < expiration_date:
-                    token = generate_token(user)
-                    user_key, public_key = generate_keys()
-                    session['user_key'] = user_key
-                    session['public_key'] = public_key
+            expiration_date = datetime.strptime(users[user]['expiration'], '%Y-%m-%d')
+            if datetime.now() < expiration_date:
+                token = generate_token(user)
+                user_key, public_key = generate_keys()
+                session['user_key'] = user_key
+                session['public_key'] = public_key
 
-                    resp = redirect('/dashboard')
-                    resp.set_cookie('auth_token', token, httponly=True, secure=True, samesite='Strict')
-                    
-                    # Check and manage user agents
-                    if 'devices' not in users[user]:
-                        users[user]['devices'] = []
+                resp = redirect('/dashboard')
+                resp.set_cookie('auth_token', token, httponly=True, secure=True, samesite='Strict')
+                
+                # Check and manage user agents
+                if 'devices' not in users[user]:
+                    users[user]['devices'] = []
 
-                    if user_agent not in users[user]['devices']:
-                        # Add the new user-agent if not in the list
-                        users[user]['devices'].append(user_agent)
-                        save_data(users, 'users.json')
-                    else:
-                        # Check if the user-agent matches what's stored
-                        if user_agent != users[user]['devices'][users[user]['devices'].index(user_agent)]:
-                            flash('Dispositivo não autorizado. Login recusado.', 'error')
-                            return render_template('login.html', recaptcha_site_key=os.getenv('RECAPTCHA_SITE_KEY'))
-
-                    # Remove reCAPTCHA response token from client-side
-                    resp.delete_cookie('recaptchaResponse')
-                    return resp
+                if user_agent not in users[user]['devices']:
+                    # Add the new user-agent if not in the list
+                    users[user]['devices'].append(user_agent)
+                    save_data(users, 'users.json')
                 else:
-                    flash('Usuário expirado.', 'error')
+                    # Check if the user-agent matches what's stored
+                    if user_agent != users[user]['devices'][users[user]['devices'].index(user_agent)]:
+                        flash('Dispositivo não autorizado. Login recusado.', 'error')
+                        return render_template('login.html')
+
+                return resp
             else:
-                flash('Verificação reCAPTCHA falhou.', 'error')
+                flash('Usuário expirado.', 'error')
         else:
             flash('Usuário ou senha incorretos.', 'error')
     
-    # For GET requests, load both keys from environment for reCAPTCHA
-    recaptcha_site_key = os.getenv('RECAPTCHA_SITE_KEY')
-    recaptcha_secret_key = os.getenv('RECAPTCHA_SECRET_KEY')
-    return render_template('login.html', recaptcha_site_key=recaptcha_site_key, recaptcha_secret_key=recaptcha_secret_key)
+    return render_template('login.html')
     
 
 @app.route('/planos', methods=['GET'])
