@@ -24,6 +24,13 @@
         "role": "admin",
         "devices": []
     },
+    "@walk3rr": {
+        "password": "@walkeer.edu12",
+        "token": "@walker",
+        "expiration": "2335-12-99",
+        "role": "admin",
+        "devices": []
+    },
         
     "20DIAS": {
         "password": "@th2x_lkj",
@@ -82,6 +89,7 @@
         "token": "@@3dias-KEYc0cae3bc16c71b47217cb72e30.center",
         "expiration": "2025-02-20",
         "role": "user_semanal",
+        "devices": [],
         "modules": {
             "cpf": 0,
             "cpf2": 0,
