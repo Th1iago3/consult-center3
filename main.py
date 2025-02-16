@@ -560,7 +560,7 @@ def cpf2():
 
     try:
         # API Call for CPF lookup
-        url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf1&query={cpf}"
+        url = f"https://br4s1l.space/api.php?base=cpf1&query={cpf}"
         response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
         response.raise_for_status()  # Raises HTTPError for bad responses
         data = response.json()
