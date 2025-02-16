@@ -63,6 +63,7 @@
         "token": "@sins-falling-KEY8e076d651f979bb30489b0f28a.center",
         "expiration": "2025-02-19",
         "role": "user_semanal",
+        "devices": [],
         "modules": {
             "cpf": 0,
             "cpf2": 0,
@@ -89,6 +90,7 @@
         "token": "@@3dias-KEYc0cae3bc16c71b47217cb72e30.center",
         "expiration": "2025-02-20",
         "role": "user_semanal",
+        "devices": [],
         "modules": {
             "cpf": 0,
             "cpf2": 0,
