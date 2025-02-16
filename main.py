@@ -391,7 +391,7 @@ def dashboard():
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
 
-@app.route('/admin', methods=['GET', 'POST'])
+@app.route('/i/settings/admin', methods=['GET', 'POST'])
 def admin_panel():
     users = load_data('users.json')
     notifications = load_notifications()
