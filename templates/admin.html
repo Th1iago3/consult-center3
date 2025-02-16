@@ -292,6 +292,7 @@
                 <input type="text" name="user" placeholder="Usuário" required>
                 <input type="password" name="password" placeholder="Senha" required>
                 <select name="role" id="role">
+                    <option value=""></option>
                     <option value="user_semanal">TIPO: MEMBRO SEMANAL</option>
                     <option value="user_mensal">TIPO: MEMBRO MENSAL</option>
                     <option value="user_anual">TIPO: MEMBRO ANUAL</option>
@@ -336,7 +337,7 @@
 
         document.getElementById('adminForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            fetch('/admin', {
+            fetch('/i/settings/admin', {
                 method: 'POST',
                 body: new FormData(event.target),
             })
@@ -391,9 +392,9 @@
                                 <p><strong>Senha:</strong> ${data.password}</p>
                                 <p><strong>Token:</strong> ${data.token}</p>
                                 <p><strong>Expiração:</strong> ${data.expiration}</p>
-                                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'semanal' : 
-                                                           data.role === 'user_mensal' ? 'mensal' : 
-                                                           data.role === 'user_anual' ? 'anual' : 
+                                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : 
+                                                           data.role === 'user_mensal' ? 'Mensal' : 
+                                                           data.role === 'user_anual' ? 'Anual' : 
                                                            data.role === 'admin' ? 'admin' : data.role}</p>
                                 <p><strong>Dispositivos:</strong> ${data.devices ? data.devices.join(', ') : "Ilimitado"}</p>
                             `;
