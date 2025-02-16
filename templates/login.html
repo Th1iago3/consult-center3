@@ -151,7 +151,6 @@
             color: inherit;
         }
 
-        /* Estilo para o checkbox "Mostrar Senha" */
         .show-password {
             display: flex;
             align-items: center;
@@ -235,6 +234,7 @@
             }
         }
     </style>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="login-container">
@@ -263,7 +263,11 @@
                 <label for="showPassword">Mostrar Senha</label>
             </div>
 
-            <button type="submit" class="button">Login</button>
+            <!-- reCAPTCHA -->
+            <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+            <input type="hidden" id="recaptchaResponse" name="recaptchaResponse">
+
+            <button type="submit" class="button" onclick="submitForm()">Login</button>
         </form>
         <!-- Texto abaixo do botão de login -->
         <div class="signup-text">
@@ -275,6 +279,16 @@
         function togglePasswordVisibility() {
             var passwordInput = document.getElementById('password');
             passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+        }
+
+        function submitForm() {
+            grecaptcha.execute();
+        }
+
+        // This function will be called by reCAPTCHA when the challenge is completed
+        function onSubmit(token) {
+            document.getElementById('recaptchaResponse').value = token;
+            document.querySelector('form').submit();
         }
     </script>
 </body>
