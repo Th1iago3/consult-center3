@@ -280,7 +280,7 @@
                 {% endif %}
             {% endwith %}
         </div>
-        <form id="adminForm" method="POST" action="/admin">
+        <form id="adminForm" method="POST">
             <div class="form-group">
                 <select name="action" id="action" onchange="toggleFields()">
                     <option value="add_user">Adicionar Usuário</option>
@@ -292,7 +292,6 @@
                 <input type="text" name="user" placeholder="Usuário" required>
                 <input type="password" name="password" placeholder="Senha" required>
                 <select name="role" id="role">
-                    <option value="" selected></option>
                     <option value="user_semanal">TIPO: MEMBRO SEMANAL</option>
                     <option value="user_mensal">TIPO: MEMBRO MENSAL</option>
                     <option value="user_anual">TIPO: MEMBRO ANUAL</option>
