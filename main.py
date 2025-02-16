@@ -311,14 +311,19 @@ def login():
                 resp = redirect('/dashboard')
                 resp.set_cookie('auth_token', token, httponly=True, secure=True, samesite='Strict')
                 
-                if 'devices' in users[user]:
-                    if isinstance(users[user]['devices'], list) and user_agent not in users[user]['devices']:
+                # Check and manage user agents
+                if 'devices' not in users[user]:
+                    users[user]['devices'] = []
+
+                if user_agent not in users[user]['devices']:
+                    # Add the new user-agent if not in the list
+                    users[user]['devices'].append(user_agent)
+                    save_data(users, 'users.json')
+                else:
+                    # Check if the user-agent matches what's stored
+                    if user_agent != users[user]['devices'][users[user]['devices'].index(user_agent)]:
                         flash('Dispositivo não autorizado. Login recusado.', 'error')
                         return render_template('login.html')
-
-                    if user_agent not in users[user].get('devices', []):
-                        users[user].setdefault('devices', []).append(user_agent)
-                        save_data(users, 'users.json')
 
                 return resp
             else:
