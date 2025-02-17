@@ -330,7 +330,6 @@ def login():
                 flash('Usuário expirado.', 'error')
         else:
             flash('Usuário ou senha incorretos.', 'error')
-    
     return render_template('login.html')
     
 
