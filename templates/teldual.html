@@ -443,23 +443,23 @@
                 <i class="fas fa-search"></i> Consultar
             </button>
         </form>
-        {% if result %}
+        {% if results %}
             <a href="#" class="download-link" onclick="generateAndDownloadTxt(event)">
                 <i class="fas fa-download"></i> Baixar em .txt
             </a>
             <div class="profile-info">
-                <p><strong>Nome:</strong> {{ result.nome | default('Não disponível') }}</p>
-                <p><strong>CPF:</strong> {{ result.cpf | default('Não disponível') }}</p>
+                <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
+                <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
                 <p><strong>Endereço:</strong>
-                {% if result.endereco %}
+                {% if results.endereco %}
                     {% set endereco_str = "" %}
-                    {% if result.endereco.tipo_logradouro %} {{ result.endereco.tipoLogradouro }} {% endif %}
-                    {% if result.endereco.logradouro %} {{ result.endereco.logradouro }} {% endif %}
-                    {% if result.endereco.numero %} {{ result.endereco.logradouroNumero }} {% endif %}
-                    {% if result.endereco.bairro %}, {{ result.endereco.bairro }}{% endif %}
-                    {% if result.endereco.cidade %}, {{ result.endereco.cidade }}{% endif %}
-                    {% if result.endereco.uf %} - {{ result.endereco.uf }}{% endif %}
-                    {% if result.endereco.cep %} - CEP: {{ result.endereco.cep }}{% endif %}
+                    {% if results.endereco.tipo_logradouro %} {{ results.endereco.tipoLogradouro }} {% endif %}
+                    {% if results.endereco.logradouro %} {{ results.endereco.logradouro }} {% endif %}
+                    {% if results.endereco.numero %} {{ results.endereco.logradouroNumero }} {% endif %}
+                    {% if results.endereco.bairro %}, {{ results.endereco.bairro }}{% endif %}
+                    {% if results.endereco.cidade %}, {{ results.endereco.cidade }}{% endif %}
+                    {% if results.endereco.uf %} - {{ results.endereco.uf }}{% endif %}
+                    {% if results.endereco.cep %} - CEP: {{ results.endereco.cep }}{% endif %}
                     {{ endereco_str }}
                 {% else %}
                     Não disponível
