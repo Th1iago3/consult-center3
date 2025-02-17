@@ -1068,7 +1068,7 @@ def teldual():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_notifications()
     user_notifications = len(notifications.get(g.user_id, []))
-    result = None
+    results = None
     telefone = ""
 
     if request.method == 'POST':
@@ -1079,11 +1079,11 @@ def teldual():
 
                 if not telefone or (not is_admin and not token):
                     flash('TELEFONE ou Token não fornecido.', 'error')
-                    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
+                    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
 
                 if not is_admin and token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
+                    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
 
             # API Call for telephone lookup
             url = f"https://br4s1l.space/api.php?base=teldual&query={telefone}"
@@ -1095,7 +1095,7 @@ def teldual():
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
             elif 'resultado' in data and data['resultado']:
                 if manage_module_usage(g.user_id, 'teldual'):
-                    result = data['resultado']
+                    results = data['resultado']
                 else:
                     flash('Limite de uso atingido para TELDUAL.', 'error')
             else:
@@ -1106,7 +1106,7 @@ def teldual():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
+    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=session.get('token'))
 
 @app.route('/modulos/tel', methods=['GET', 'POST'])
 def tel():
