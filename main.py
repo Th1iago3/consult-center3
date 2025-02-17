@@ -31,7 +31,6 @@ app.config['RSA_PRIVATE_KEY'] = rsa.generate_private_key(
 app.config['RSA_PUBLIC_KEY'] = app.config['RSA_PRIVATE_KEY'].public_key()
 colorama.init()
 
-# Helper functions for encryption and key management
 def encrypt_with_rsa(data, public_key):
     return public_key.encrypt(
         data.encode(),
@@ -59,7 +58,6 @@ def encrypt_with_aes(data, key):
     encryptor = cipher.encryptor()
     ct = encryptor.update(data.encode()) + encryptor.finalize()
     return iv + ct
-
 
 def decrypt_with_aes(encrypted, key):
     iv = encrypted[:16]
@@ -90,10 +88,6 @@ def validate_byte_hex(byte_cookie, hex_cookie):
     # Convert hex string back to bytes and compare
     hex_back_to_bytes = base64.b16decode(hex_cookie.encode('ascii'))
     return hex_back_to_bytes == byte_cookie
-
-# Modify the login route to include byte and hex cookies
-
-
 
 # Ensure JSON files exist
 def initialize_json(file_path):
@@ -135,7 +129,7 @@ def decode_token(token):
 def log_access(endpoint, message=''):
     try:
         # Fetch the real IP from ipify.org
-        response = requests.get('https://ipwho.is/')
+        response = requests.get('https://ipinfo.io//json')
         response.raise_for_status()
         ip_info = response.json()
         ip = ip_info.get('ip', '')  # Fallback to 'Unknown' if we can't fetch the IP
@@ -287,16 +281,24 @@ def not_found(e):
 
 @app.before_request
 def check_user_existence():
-    token = request.cookies.get('auth_token')
+    token_cookie = request.cookies.get('auth_token')
     byte_cookie = request.cookies.get('byte_cookie')
     hex_cookie = request.cookies.get('hex_cookie')
     
     if request.endpoint not in ['login', 'planos']:
-        if not token or not byte_cookie or not hex_cookie:
+        if not token_cookie or not byte_cookie or not hex_cookie:
             log_access(request.endpoint, "Unauthenticated user.")
             return redirect('/')
 
-        user_id = decode_token(token)
+        try:
+            # Decrypt the token from the cookie
+            encrypted_token = base64.b64decode(token_cookie)
+            token = decrypt_with_rsa(encrypted_token)
+            user_id = decode_token(token)
+        except:
+            flash('Dados de sessão inválidos. Faça login novamente.', 'error')
+            return redirect('/')
+
         if user_id in [None, "expired"]:
             flash('Sua sessão expirou. Faça login novamente.', 'error')
             resp = redirect('/')
@@ -376,8 +378,12 @@ def login():
                 byte_cookie = generate_byte_cookie()
                 hex_cookie = byte_to_hex(byte_cookie)
 
+                # Encrypt token before setting in cookie
+                encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
+                
                 resp = redirect('/dashboard')
-                resp.set_cookie('auth_token', token, httponly=True, secure=True, samesite='Strict')
+                # Set cookies with encrypted values
+                resp.set_cookie('auth_token', base64.b64encode(encrypted_token).decode('ascii'), httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
                 
@@ -401,6 +407,7 @@ def login():
         else:
             flash('Usuário ou senha incorretos.', 'error')
     return render_template('login.html')
+
     
 
 @app.route('/planos', methods=['GET'])
@@ -556,8 +563,10 @@ def logout():
     session.clear()  # Clear all session data
     resp = make_response(redirect('/'))
     resp.set_cookie('auth_token', '', expires=0)
+    resp.set_cookie('byte_cookie', '', expires=0)
+    resp.set_cookie('hex_cookie', '', expires=0)
     return resp
-
+    
 # Module Routes (implement each with manage_module_usage)
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 def cpf():
