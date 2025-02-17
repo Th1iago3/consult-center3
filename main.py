@@ -91,6 +91,21 @@ def validate_byte_hex(byte_cookie, hex_cookie):
     hex_back_to_bytes = base64.b16decode(hex_cookie.encode('ascii'))
     return hex_back_to_bytes == byte_cookie
 
+
+def check_referrer():
+    referrer = request.headers.get('Referer', '')
+    if not referrer.startswith('https://consult-center3.onrender.com'):
+        return False
+    return True
+
+def check_user_agent():
+    user_agent = request.headers.get('User-Agent', '')
+    # Pattern to match common browsers, adjust as necessary
+    browser_pattern = re.compile(r'(Chrome|Firefox|Safari|Edge|Opera)', re.IGNORECASE)
+    if not browser_pattern.search(user_agent):
+        return False
+    return True
+
 # Ensure JSON files exist
 def initialize_json(file_path):
     try:
@@ -282,12 +297,22 @@ def not_found(e):
     return render_template('404.html'), 404
 
 @app.before_request
-def check_user_existence():
-    token_cookie = request.cookies.get('auth_token')
-    byte_cookie = request.cookies.get('byte_cookie')
-    hex_cookie = request.cookies.get('hex_cookie')
-    
+def security_check():
     if request.endpoint not in ['login', 'planos']:
+        # Referrer Check
+        if not check_referrer():
+            log_access(request.endpoint, "Invalid referrer")
+            return jsonify({"error": "Invalid referrer"}), 403
+
+        # User Agent Check
+        if not check_user_agent():
+            log_access(request.endpoint, "Invalid user agent")
+            return jsonify({"error": "Invalid user agent"}), 403
+
+        token_cookie = request.cookies.get('auth_token')
+        byte_cookie = request.cookies.get('byte_cookie')
+        hex_cookie = request.cookies.get('hex_cookie')
+
         if not token_cookie or not byte_cookie or not hex_cookie:
             log_access(request.endpoint, "Unauthenticated user.")
             return redirect('/')
