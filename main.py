@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import httpx
 
 
 app = Flask(__name__, template_folder='templates')
@@ -1428,23 +1429,23 @@ def visitas():
             total_visits_sent = 0
             requests_made = 0
 
-            while requests_made < requests_needed:
-                # Since the API doesn't accept a 'visits' parameter, we'll make one request per visit
-                time.sleep(2.5)
-                response = requests.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region=br&key=teamXKrishna')
-                response.raise_for_status()
+            async def send_visit():
+                nonlocal total_visits_sent, requests_made
+                async with httpx.AsyncClient() as client:
+                    while requests_made < requests_needed:
+                        try:
+                            response = await client.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region=br&key=teamXKrishna')
+                            response.raise_for_status()
+                            total_visits_sent += 1
+                            requests_made += 1
+                            if not manage_module_usage(g.user_id, 'visitas'):
+                                flash('Limite de uso atingido para VISITAS.', 'error')
+                                break
+                        except httpx.RequestError as e:
+                            flash(f'Erro ao enviar visitas na requisição {requests_made + 1}: {str(e)}', 'error')
+                            break
 
-                if response.status_code == 200:
-                    total_visits_sent += 1  # Increment by 1 since each request adds one visit
-                    requests_made += 1
-                    
-                    # Increment module usage for each successful request
-                    if not manage_module_usage(g.user_id, 'visitas'):
-                        flash('Limite de uso atingido para VISITAS.', 'error')
-                        break  # Stop making requests if usage limit is reached
-                else:
-                    flash(f'Erro ao enviar visitas na requisição {requests_made + 1}.', 'error')
-                    break
+            asyncio.run(send_visit())
 
             result = {
                 'status': 'success' if total_visits_sent > 0 else 'error',
@@ -1455,10 +1456,8 @@ def visitas():
                 'message': f'{requests_made} requisições feitas.' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
             }
 
-        except requests.RequestException as e:
+        except Exception as e:
             flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
 
     return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=result, uid=uid, visits=visits)
     
