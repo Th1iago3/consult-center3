@@ -782,7 +782,7 @@ def cpf3():
     except json.JSONDecodeError:
         flash('Resposta da API inválida.', 'error')
 
-    return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+    return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
 def cpflv():
@@ -805,11 +805,11 @@ def cpflv():
 
                 if not cpf or not token:
                     flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
                 if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
             # API Call for CPF lookup
             url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfLv&query={cpf}"
@@ -1401,12 +1401,12 @@ def visitas():
 
     if not uid and request.method == 'POST':
         flash('UID não fornecido.', 'error')
-        return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token, visits=visits)
+        return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, visits=visits)
 
     if not is_admin and request.method == 'POST':
         if not token or token != users.get(g.user_id, {}).get('token'):
             flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token, visits=visits)
+            return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, visits=visits)
 
     if request.method == 'POST':
         try:
@@ -1415,7 +1415,7 @@ def visitas():
 
             if is_banned is None:
                 flash('Não foi possível verificar o status de banimento.', 'error')
-                return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, token=token, visits=visits)
+                return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, visits=visits)
 
             # Determine how many requests are needed based on the number of visits
             requests_needed = {
@@ -1460,7 +1460,7 @@ def visitas():
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
-    return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=result, uid=uid, token=session.get('token'), visits=visits)
+    return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=result, uid=uid, visits=visits)
     
 if __name__ == '__main__':
     initialize_json('users.json')
