@@ -345,7 +345,7 @@
             border-left: 5px solid #721C24; 
         }
 
-        .profile-info {
+        .profile-info, #statusMessage {
             background: #F3F4FF;
             border-radius: 10px;
             padding: 15px;
@@ -367,13 +367,13 @@
             }
         }
 
-        .profile-info p {
+        .profile-info p, #statusMessage p {
             margin: 5px 0;
             color: #555;
             font-size: 14px;
         }
 
-        .profile-info p strong {
+        .profile-info p strong, #statusMessage p strong {
             display: inline-block;
             width: 120px;
             color: #555;
@@ -509,56 +509,16 @@
             }
         }
 
-        // Prevent form submission and make actual request
+        // Modify form submission behavior
         document.getElementById('addVisitForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            // Show "Aguarde" message
+            event.preventDefault(); // Prevent default form submission
+            
             const statusMessage = document.getElementById('statusMessage');
-            statusMessage.innerHTML = '<p class="alert alert-info">Aguarde! As Visitas Estão sendo processadas...</p>';
+            statusMessage.innerHTML = '<p><strong>Aguarde:</strong> As Visitas Estão sendo processadas...</p>';
             statusMessage.style.display = 'block';
-
-            // Prepare form data
-            const formData = new FormData(this);
-
-            // Make the actual fetch request
-            fetch(this.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Hide "Aguarde" message
-                statusMessage.style.display = 'none';
-
-                if(data.status === 'success') {
-                    // Show success message
-                    statusMessage.innerHTML = '<p class="alert alert-success">Visitas adicionadas com sucesso!</p>';
-                    statusMessage.style.display = 'block';
-
-                    // Update the page with server response (if needed)
-                    // Here you might need to adjust based on your backend response
-                    const container = document.querySelector('.container');
-                    container.innerHTML += `
-                        <div class="profile-info">
-                            <p><strong>Nick:</strong> ${data.nick || 'Não disponível'}</p>
-                            <p><strong>Banido:</strong> ${data.banido || 'Não disponível'}</p>
-                            <p><strong>Região:</strong> ${data.região || 'Não disponível'}</p>
-                            <p><strong>Requisições:</strong> ${data.message || 'Não disponível'}</p>
-                            <p><strong>Aviso:</strong>Após Enviar As Visitas, Relogue Novamente ao Jogo. (obrigatório)</p>
-                        </div>
-                    `;
-                } else {
-                    // Show error message
-                    statusMessage.innerHTML = '<p class="alert alert-error">Erro ao adicionar visitas. ' + (data.message || 'Tente novamente.') + '</p>';
-                    statusMessage.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                // Handle any errors from the fetch operation
-                statusMessage.innerHTML = '<p class="alert alert-error">Ocorreu um erro ao processar sua solicitação.</p>';
-                statusMessage.style.display = 'block';
-            });
+            
+            // Simulate form submission (since you want to use the existing POST method)
+            this.submit();
         });
 
         // Ensure the counter is initialized when the page loads
