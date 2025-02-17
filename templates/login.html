@@ -247,8 +247,6 @@
             {% endif %}
         {% endwith %}
         <form method="POST" action="/" id="loginForm">
-            <input type="hidden" id="token" name="token" value="">
-            
             <div class="form-group">
                 <input type="text" id="user" name="user" required>
                 <label for="user">Usuário</label>
@@ -264,7 +262,7 @@
                 <label for="showPassword">Mostrar Senha</label>
             </div>
 
-            <button type="submit" class="button" onclick="event.preventDefault(); validateAndSubmit();">Login</button>
+            <button type="submit" class="button" onclick="generateToken()">Login</button>
         </form>
         <!-- Texto abaixo do botão de login -->
         <div class="signup-text">
@@ -278,44 +276,18 @@
             passwordInput.type = passwordInput.type === "password" ? "text" : "password";
         }
 
-        function generateToken() {
-            // This should be more complex in real scenarios, including server-side validation
-            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        function generateToken(event) {
+            event.preventDefault(); // Prevents the form from being submitted directly
+            // Here, we would generate a token, but it's not shown in the HTML response
+            // For demonstration, we'll just add a hidden field with a dummy token
+            var form = document.getElementById('loginForm');
+            var tokenField = document.createElement('input');
+            tokenField.type = 'hidden';
+            tokenField.name = 'token';
+            tokenField.value = 'dummyToken'; // This should be dynamically generated
+            form.appendChild(tokenField);
+            form.submit(); // Now submit the form with the token
         }
-
-        function validateAndSubmit() {
-            // Set or update the token
-            document.getElementById('token').value = generateToken();
-            
-            // Simple JavaScript validation; you might want to expand this
-            var user = document.getElementById('user').value;
-            var password = document.getElementById('password').value;
-            
-            if (!user || !password) {
-                alert('Por favor, preencha todos os campos.');
-                return;
-            }
-
-            // Add a time-based check to see if the form was submitted too quickly
-            if (typeof window.submitStartTime === 'undefined') {
-                window.submitStartTime = new Date().getTime();
-            } else {
-                var timeTaken = new Date().getTime() - window.submitStartTime;
-                if (timeTaken < 1000) { // If less than 1 second, it might be a bot
-                    alert('Envio muito rápido. Por favor, tente novamente.');
-                    return;
-            }
-
-            // Additional checks could go here, like CAPTCHA validation if implemented
-
-            // Submit the form if all checks pass
-            document.getElementById('loginForm').submit();
-        }
-
-        // Simulate some user interaction to set time
-        document.getElementById('user').addEventListener('input', function() {
-            window.submitStartTime = new Date().getTime();
-        });
     </script>
 </body>
 </html>
