@@ -451,11 +451,13 @@
                 <i class="fas fa-plus"></i> Adicionar Visita
             </button>
         </form>
+        {% if result %}
         <div class="profile-info">
                     <p>Aguarde! As Visitas Estão sendo processadas...</p>
                     
                     
                 </div>
+        {% endif %}
         {% if result %}
             {% if result.status == 'success' %}
                 <div class="profile-info">
