@@ -4,4 +4,3 @@ colorama
 cryptography
 requests
 waitress
-bisnacii
