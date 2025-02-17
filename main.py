@@ -305,12 +305,12 @@ def security_check():
         # Referrer Check
         if not check_referrer():
             log_access(request.endpoint, "Invalid referrer")
-            return jsonify({"error": "Invalid referrer"}), 403
+            return jsonify({"error": "503"}), 503
 
         # User Agent Check
         if not check_user_agent():
             log_access(request.endpoint, "Invalid user agent")
-            return jsonify({"error": "Invalid user agent"}), 403
+            return jsonify({"error": "503"}), 503
 
         token_cookie = request.cookies.get('auth_token')
         byte_cookie = request.cookies.get('byte_cookie')
