@@ -1040,18 +1040,15 @@ def tellv():
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
             
-            if 'resultado' in data and data['resultado']:
+            if 'status' in data and data['status'] == "not_found":
+                flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
+            elif 'resultado' in data and data['resultado']:
                 if manage_module_usage(g.user_id, 'tellv'):
                     result = data['resultado']
                 else:
                     flash('Limite de uso atingido para TELLV.', 'error')
             else:
-                # If no result or 'resultado' key does not exist or is empty
-                if 'error' in data:
-                    flash(data['error'], 'error')  # Assuming the API returns an error message
-                else:
-                    flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-                    flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566', 'error')
+                flash('Erro ao processar a consulta.', 'error')
                 
         except requests.RequestException:
             flash('Erro ao conectar com o servidor da API.', 'error')
@@ -1094,18 +1091,15 @@ def teldual():
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
             
-            if 'resultado' in data and data['resultado']:
+            if 'resultado' in data and isinstance(data['resultado'], str) and data['resultado'].strip().lower() == 'registro sem informacao':
+                flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
+            elif 'resultado' in data and data['resultado']:
                 if manage_module_usage(g.user_id, 'teldual'):
                     result = data['resultado']
                 else:
                     flash('Limite de uso atingido para TELDUAL.', 'error')
             else:
-                # If no result or 'resultado' key does not exist or is empty
-                if 'error' in data:
-                    flash(data['error'], 'error')  # Assuming the API returns an error message
-                else:
-                    flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-                    flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566', 'error')
+                flash('Erro ao processar a consulta.', 'error')
                 
         except requests.RequestException:
             flash('Erro ao conectar com o servidor da API.', 'error')
@@ -1114,6 +1108,54 @@ def teldual():
 
     return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
 
+@app.route('/modulos/tel', methods=['GET', 'POST'])
+def tel():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_notifications()
+    user_notifications = len(notifications.get(g.user_id, []))
+    results = None
+    tel = ""
+
+    if request.method == 'POST':
+        tel = request.form.get('tel', '')
+        if tel:
+            try:
+                if not is_admin:
+                    token = request.form.get('token')
+                    if not token:
+                        flash('Token não fornecido.', 'error')
+                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
+
+                    if token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
+
+                # API Call for telephone lookup
+                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telcredlink&query={tel}"
+                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+                response.raise_for_status()  # Raises HTTPError for bad responses
+                data = response.json()
+
+                if 'resultado' in data and data['resultado'] == {"status": "OK", "consulta": "1", "total": 0}:
+                    flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
+                elif 'resultado' in data and 'msg' in data['resultado'] and len(data['resultado']['msg']) > 0:
+                    if manage_module_usage(g.user_id, 'tel'):
+                        results = data['resultado']['msg']
+                    else:
+                        flash('Limite de uso atingido para TEL.', 'error')
+                else:
+                    flash('Erro ao processar a consulta.', 'error')
+            except requests.RequestException:
+                flash('Erro ao conectar com o servidor da API.', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta da API inválida.', 'error')
+
+    return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
 @app.route('/modulos/placa', methods=['GET', 'POST'])
 def placa():
     if 'user_id' not in g:
@@ -1162,53 +1204,6 @@ def placa():
 
     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-@app.route('/modulos/tel', methods=['GET', 'POST'])
-def tel():
-    if 'user_id' not in g:
-        flash('Você precisa estar logado para acessar esta página.', 'error')
-        return redirect('/')
-
-    users = load_data('users.json')
-    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
-    user_notifications = len(notifications.get(g.user_id, []))
-    results = None
-    tel = ""
-
-    if request.method == 'POST':
-        tel = request.args.get('tel', '')
-        if tel:
-            try:
-                if not is_admin:
-                    token = request.args.get('token')
-                    if not token:
-                        flash('Token não fornecido.', 'error')
-                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
-
-                    if token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
-
-                # API Call for telephone lookup
-                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telcredlink&query={tel}"
-                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-                response.raise_for_status()  # Raises HTTPError for bad responses
-                data = response.json()
-
-                if data.get('resultado') and 'msg' in data['resultado'] and len(data['resultado']['msg']) > 0:
-                    if manage_module_usage(g.user_id, 'tel'):
-                        results = data['resultado']['msg']
-                    else:
-                        flash('Limite de uso atingido para TEL.', 'error')
-                else:
-                    flash('Nenhum resultado encontrado. Ou, formato inválido.', 'error')
-                    flash('Formato: sem "+", "55", "-", "(", ou ")", EX: 22998300566 ', 'error')
-            except requests.RequestException:
-                flash('Erro ao conectar com o servidor da API.', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida.', 'error')
-
-    return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
 
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 def fotor():
