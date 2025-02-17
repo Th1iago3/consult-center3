@@ -247,6 +247,8 @@
             {% endif %}
         {% endwith %}
         <form method="POST" action="/">
+            <!-- CSRF Token -->
+            {{ csrf_token() }}
             <div class="form-group">
                 <input type="text" id="user" name="user" required>
                 <label for="user">Usuário</label>
