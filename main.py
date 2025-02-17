@@ -756,11 +756,11 @@ def cpf3():
         token = request.form.get('token', '')
         if not token or token != users.get(g.user_id, {}).get('token'):
             flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+            return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
     if not cpf:
         flash('CPF não fornecido.', 'error')
-        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=token)
+        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
     try:
         # API Call for CPF lookup
