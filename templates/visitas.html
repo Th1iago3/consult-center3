@@ -451,13 +451,7 @@
                 <i class="fas fa-plus"></i> Adicionar Visita
             </button>
         </form>
-        {% if result %}
-        <div class="profile-info">
-                    <p>Aguarde! As Visitas Estão sendo processadas...</p>
-                    
-                    
-                </div>
-        {% endif %}
+        <div id="statusMessage" style="display:none;"></div>
         {% if result %}
             {% if result.status == 'success' %}
                 <div class="profile-info">
@@ -515,17 +509,56 @@
             }
         }
 
-        // Increment counter on form submission
+        // Prevent form submission and make actual request
         document.getElementById('addVisitForm').addEventListener('submit', function(event) {
-            const uid = this.uid.value.trim();
-            const token = this.token.value.trim();
-            if (uid.length === 0 || token.length === 0) {
-                showAlert('Por favor, preencha todos os campos.', 'error');
-                event.preventDefault();
-            } else {
-                requestCount++; // Increment the count
-                updateRequestCount(); // Update the display
-            }
+            event.preventDefault();
+
+            // Show "Aguarde" message
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.innerHTML = '<p class="alert alert-info">Aguarde! As Visitas Estão sendo processadas...</p>';
+            statusMessage.style.display = 'block';
+
+            // Prepare form data
+            const formData = new FormData(this);
+
+            // Make the actual fetch request
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide "Aguarde" message
+                statusMessage.style.display = 'none';
+
+                if(data.status === 'success') {
+                    // Show success message
+                    statusMessage.innerHTML = '<p class="alert alert-success">Visitas adicionadas com sucesso!</p>';
+                    statusMessage.style.display = 'block';
+
+                    // Update the page with server response (if needed)
+                    // Here you might need to adjust based on your backend response
+                    const container = document.querySelector('.container');
+                    container.innerHTML += `
+                        <div class="profile-info">
+                            <p><strong>Nick:</strong> ${data.nick || 'Não disponível'}</p>
+                            <p><strong>Banido:</strong> ${data.banido || 'Não disponível'}</p>
+                            <p><strong>Região:</strong> ${data.região || 'Não disponível'}</p>
+                            <p><strong>Requisições:</strong> ${data.message || 'Não disponível'}</p>
+                            <p><strong>Aviso:</strong>Após Enviar As Visitas, Relogue Novamente ao Jogo. (obrigatório)</p>
+                        </div>
+                    `;
+                } else {
+                    // Show error message
+                    statusMessage.innerHTML = '<p class="alert alert-error">Erro ao adicionar visitas. ' + (data.message || 'Tente novamente.') + '</p>';
+                    statusMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // Handle any errors from the fetch operation
+                statusMessage.innerHTML = '<p class="alert alert-error">Ocorreu um erro ao processar sua solicitação.</p>';
+                statusMessage.style.display = 'block';
+            });
         });
 
         // Ensure the counter is initialized when the page loads
