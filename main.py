@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import bisnacii
 
 
 app = Flask(__name__, template_folder='templates')
@@ -76,6 +77,21 @@ def generate_keys():
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
     return user_key, public_key_pem
+
+def generate_byte_cookie():
+    # Generate a random byte array
+    byte_cookie = os.urandom(32)  # 32 bytes for randomness
+    return byte_cookie
+
+def byte_to_hex(byte_data):
+    # Convert bytes to hex string
+    return binascii.hexlify(byte_data).decode('ascii')
+
+def validate_byte_hex(byte_cookie, hex_cookie):
+    # Convert hex string back to bytes and compare
+    hex_back_to_bytes = binascii.unhexlify(hex_cookie.encode('ascii'))
+    return hex_back_to_bytes == byte_cookie
+
 
 # Ensure JSON files exist
 def initialize_json(file_path):
@@ -270,8 +286,11 @@ def not_found(e):
 @app.before_request
 def check_user_existence():
     token = request.cookies.get('auth_token')
+    byte_cookie = request.cookies.get('byte_cookie')
+    hex_cookie = request.cookies.get('hex_cookie')
+    
     if request.endpoint not in ['login', 'planos']:
-        if not token:
+        if not token or not byte_cookie or not hex_cookie:
             log_access(request.endpoint, "Unauthenticated user.")
             return redirect('/')
 
@@ -280,14 +299,33 @@ def check_user_existence():
             flash('Sua sessão expirou. Faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
+            resp.set_cookie('byte_cookie', '', expires=0)
+            resp.set_cookie('hex_cookie', '', expires=0)
             return resp
+
+        # Validate byte and hex cookies
+        try:
+            byte_cookie = base64.b64decode(byte_cookie)
+            if not validate_byte_hex(byte_cookie, hex_cookie):
+                flash('Sessão inválida. Faça login novamente.', 'error')
+                resp = redirect('/')
+                resp.set_cookie('auth_token', '', expires=0)
+                resp.set_cookie('byte_cookie', '', expires=0)
+                resp.set_cookie('hex_cookie', '', expires=0)
+                return resp
+        except (ValueError, binascii.Error):
+            flash('Sessão inválida. Faça login novamente.', 'error')
+            return redirect('/')
 
         users = load_data('users.json')
         if user_id not in users:
             flash('Sessão inválida. Faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
+            resp.set_cookie('byte_cookie', '', expires=0)
+            resp.set_cookie('hex_cookie', '', expires=0)
             return resp
+
 
         g.user_id = user_id
     log_access(request.endpoint)
@@ -307,23 +345,29 @@ def login():
                 user_key, public_key = generate_keys()
                 session['user_key'] = user_key
                 session['public_key'] = public_key
+                
+                # Generate new byte and hex cookies
+                byte_cookie = generate_byte_cookie()
+                hex_cookie = byte_to_hex(byte_cookie)
 
                 resp = redirect('/dashboard')
                 resp.set_cookie('auth_token', token, httponly=True, secure=True, samesite='Strict')
+                resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
+                resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
                 
-                # Check and manage user agents
+                # Device management logic remains the same
                 if 'devices' not in users[user]:
                     users[user]['devices'] = []
 
-                if user_agent not in users[user]['devices']:
-                    # Add the new user-agent if not in the list
+                if not users[user]['devices']:
                     users[user]['devices'].append(user_agent)
                     save_data(users, 'users.json')
                 else:
-                    # Check if the user-agent matches what's stored
-                    if user_agent != users[user]['devices'][users[user]['devices'].index(user_agent)]:
+                    if user_agent not in users[user]['devices']:
                         flash('Dispositivo não autorizado. Login recusado.', 'error')
                         return render_template('login.html')
+                    else:
+                        pass
 
                 return resp
             else:
