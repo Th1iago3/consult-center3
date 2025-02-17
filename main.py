@@ -20,6 +20,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import httpx
 import asyncio
+from flask_wtf.csrf import CSRFProtect
 
 
 app = Flask(__name__, template_folder='templates')
@@ -32,6 +33,8 @@ app.config['RSA_PRIVATE_KEY'] = rsa.generate_private_key(
 )
 app.config['RSA_PUBLIC_KEY'] = app.config['RSA_PRIVATE_KEY'].public_key()
 colorama.init()
+csrf = CSRFProtect(app)
+
 
 def encrypt_with_rsa(data, public_key):
     return public_key.encrypt(
