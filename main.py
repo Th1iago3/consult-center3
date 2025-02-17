@@ -647,7 +647,7 @@ def cpf2():
 
         if data.get('resultado'):
             # Increment module usage on success
-            if manage_module_usage(g.user_id, 'cpf3'):
+            if manage_module_usage(g.user_id, 'cpf2'):
                 result = data['resultado']
             else:
                 flash('Limite de uso atingido para CPF3.', 'error')
