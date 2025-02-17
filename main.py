@@ -18,7 +18,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-import bisnacii
 
 
 app = Flask(__name__, template_folder='templates')
@@ -85,12 +84,15 @@ def generate_byte_cookie():
 
 def byte_to_hex(byte_data):
     # Convert bytes to hex string
-    return binascii.hexlify(byte_data).decode('ascii')
+    return base64.b16encode(byte_data).decode('ascii')
 
 def validate_byte_hex(byte_cookie, hex_cookie):
     # Convert hex string back to bytes and compare
-    hex_back_to_bytes = binascii.unhexlify(hex_cookie.encode('ascii'))
+    hex_back_to_bytes = base64.b16decode(hex_cookie.encode('ascii'))
     return hex_back_to_bytes == byte_cookie
+
+# Modify the login route to include byte and hex cookies
+
 
 
 # Ensure JSON files exist
@@ -313,9 +315,34 @@ def check_user_existence():
                 resp.set_cookie('byte_cookie', '', expires=0)
                 resp.set_cookie('hex_cookie', '', expires=0)
                 return resp
-        except (ValueError, binascii.Error):
+        except (ValueError, base64.binascii.Error):
             flash('Sessão inválida. Faça login novamente.', 'error')
             return redirect('/')
+
+        # VPN Check using external API
+        try:
+            # Fetch IP from an external service (example using ipify.org)
+            response = requests.get('https://api.ipify.org?format=json')
+            response.raise_for_status()
+            ip_data = response.json()
+            ip_address = ip_data['ip']
+
+            # Check with an IP to VPN/Proxy API (example using ipinfo.io)
+            vpn_check = requests.get(f'https://ipinfo.io/{ip_address}/json?token=9db60cdc38ce1f')
+            vpn_check.raise_for_status()
+            vpn_data = vpn_check.json()
+
+            if 'bogon' in vpn_data and vpn_data['bogon']:
+                # Bogon IPs are typically private or reserved IPs which might indicate VPN/proxy
+                log_access(request.endpoint, "VPN/Proxy detected for IP: " + ip_address)
+                return make_response('Acesso não permitido através de VPN ou Proxy.', 403)
+            elif 'org' in vpn_data and any(x in vpn_data['org'].lower() for x in ['vpn', 'proxy', 'tor']):
+                # Check if organization name suggests VPN/Proxy
+                log_access(request.endpoint, "VPN/Proxy detected for IP: " + ip_address)
+                return make_response('Acesso não permitido através de VPN ou Proxy.', 403)
+
+        except requests.RequestException as e:
+            log_access(request.endpoint, f"Error fetching or checking IP: {str(e)}")
 
         users = load_data('users.json')
         if user_id not in users:
@@ -325,7 +352,6 @@ def check_user_existence():
             resp.set_cookie('byte_cookie', '', expires=0)
             resp.set_cookie('hex_cookie', '', expires=0)
             return resp
-
 
         g.user_id = user_id
     log_access(request.endpoint)
