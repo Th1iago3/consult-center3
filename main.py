@@ -1095,7 +1095,7 @@ def teldual():
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
             elif 'resultado' in data and data['resultado']:
                 if manage_module_usage(g.user_id, 'teldual'):
-                    results = data['resultado']
+                    result = data['resultado']
                 else:
                     flash('Limite de uso atingido para TELDUAL.', 'error')
             else:
