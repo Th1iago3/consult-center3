@@ -451,11 +451,11 @@
                 <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
                 <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
                 <p><strong>Endereço:</strong>
-                {% if results.endereco %}
+                {% if result.endereco %}
                     {% set endereco_str = "" %}
                     {% if results.endereco.tipo_logradouro %} {{ results.endereco.tipoLogradouro }} {% endif %}
                     {% if results.endereco.logradouro %} {{ results.endereco.logradouro }} {% endif %}
-                    {% if results.endereco.numero %} {{ results.endereco.logradouroNumero }} {% endif %}
+                    {% if results.endereco.numero %} {{ results.endereco.numero }} {% endif %}
                     {% if results.endereco.bairro %}, {{ results.endereco.bairro }}{% endif %}
                     {% if results.endereco.cidade %}, {{ results.endereco.cidade }}{% endif %}
                     {% if results.endereco.uf %} - {{ results.endereco.uf }}{% endif %}
