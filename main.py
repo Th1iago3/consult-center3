@@ -391,6 +391,10 @@ def security_check():
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        if not csrf.validate_on_submit():
+            flash('CSRF token is missing or invalid', 'error')
+            return redirect('/')
+        
         user = request.form.get('user')
         password = request.form.get('password')
         users = load_data('users.json')
@@ -400,13 +404,16 @@ def login():
             expiration_date = datetime.strptime(users[user]['expiration'], '%Y-%m-%d')
             if datetime.now() < expiration_date:
                 token = generate_token(user)
-                user_key, public_key = generate_keys()
+                user_key, public_key = secrets.token_bytes(32), app.config['RSA_PUBLIC_KEY'].public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                )
                 session['user_key'] = user_key
                 session['public_key'] = public_key
                 
                 # Generate new byte and hex cookies
-                byte_cookie = generate_byte_cookie()
-                hex_cookie = byte_to_hex(byte_cookie)
+                byte_cookie = secrets.token_bytes(32)
+                hex_cookie = base64.b16encode(byte_cookie).decode('ascii')
 
                 # Encrypt token before setting in cookie
                 encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
@@ -417,7 +424,7 @@ def login():
                 resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
                 
-                # Device management logic remains the same
+                # Device management logic
                 if 'devices' not in users[user]:
                     users[user]['devices'] = []
 
