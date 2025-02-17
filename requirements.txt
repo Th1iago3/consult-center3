@@ -5,3 +5,4 @@ cryptography
 requests
 waitress
 httpx
+asyncio
