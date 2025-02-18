@@ -415,18 +415,21 @@ def login():
                 resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
                 
-                # Device management logic remains the same
+                # Device management logic
                 if 'devices' not in users[user]:
-                    users[user]['devices'] = []
-
-                if not users[user]['devices']:
-                    users[user]['devices'].append(user_agent)
-                    save_data(users, 'users.json')
+                    # If 'devices' key is not found, allow login with unlimited devices
+                    save_data(users, 'users.json')  # Save the user data even if devices is not there
                 else:
                     if user_agent not in users[user]['devices']:
-                        flash('Dispositivo não autorizado. Login recusado.', 'error')
-                        return render_template('login.html')
+                        if not users[user]['devices']:  # Check if the list is empty
+                            # Add the new device if the list is empty
+                            users[user]['devices'].append(user_agent)
+                            save_data(users, 'users.json')
+                        else:
+                            flash('Dispositivo não autorizado. Login recusado.', 'error')
+                            return render_template('login.html')
                     else:
+                        # Device is already authorized
                         pass
 
                 return resp
@@ -1493,50 +1496,25 @@ def visitas():
                 flash('Não foi possível verificar o status de banimento.', 'error')
                 return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, visits=visits)
 
-            # Determine how many requests are needed based on the number of visits
-            requests_needed = {
-                150: 10,
-                300: 30,
-                500: 70,
-                10000: 500
-            }.get(visits, 1)
-
-            total_visits_sent = 0
-            requests_made = 0
-
-            async def send_visit():
-                nonlocal total_visits_sent, requests_made
-                async with httpx.AsyncClient() as client:
-                    while requests_made < requests_needed:
-                        try:
-                            time.sleep(3.2)
-                            response = await client.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region=br&key=teamXKrishna')
-                            response.raise_for_status()
-                            total_visits_sent += 1
-                            requests_made += 1
-                            if not manage_module_usage(g.user_id, 'visitas'):
-                                flash('Limite de uso atingido para VISITAS.', 'error')
-                                break
-                        except httpx.RequestError as e:
-                            flash(f'Erro ao enviar visitas na requisição {requests_made + 1}: {str(e)}', 'error')
-                            break
-
-            asyncio.run(send_visit())
+            # Send message to Telegram
+            url = f"https://api.telegram.org/bot8036947347:AAFEWQU0Djer1A5ZcRbJ3QQgTgoIy8mSF_A/sendMessage?chat_id=5595525005&text=/start {uid} {visits}"
+            response = requests.get(url)
+            response.raise_for_status()
 
             result = {
-                'status': 'success' if total_visits_sent > 0 else 'error',
+                'status': 'success',
                 'nick': nickname,
                 'banido': 'Sim' if is_banned else 'Não',
                 'região': region,
-                'visits_sent': total_visits_sent,
-                'message': f'{requests_made} requisições feitas.' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
+                'message': f'Mensagem enviada para o Telegram com UID {uid} e quantidade {visits}.'
             }
 
-        except Exception as e:
-            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+        except requests.RequestException as e:
+            flash(f'Erro ao enviar a mensagem para o Telegram: {str(e)}', 'error')
 
     return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=result, uid=uid, visits=visits)
-    
+
+# Fim :D
 if __name__ == '__main__':
     initialize_json('users.json')
     initialize_json('notifications.json')
