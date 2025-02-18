@@ -1512,8 +1512,8 @@ def visitas():
                 async with httpx.AsyncClient() as client:
                     while requests_made < requests_needed:
                         try:
-                            time.sleep(3.2)
-                            response = await client.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}®ion=br&key=teamXKrishna')
+                            time.sleep(6)
+                            response = await client.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region={region}&key=teamXKrishna')
                             response.raise_for_status()
                             total_visits_sent += 1
                             requests_made += 1
