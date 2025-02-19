@@ -1226,12 +1226,13 @@ def placa():
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
 
+                elif 'null' in data.get('resultado'):
+                        flash('Nenhum Resultado Encontrado para a PLACA fornecida.', 'error')
                 if 'id' in data.get('resultado'):
                     if manage_module_usage(g.user_id, 'placa'):
                         results = data['resultado']
                         reset_all()
-                    elif 'null' in data.get('resultado'):
-                        flash('Nenhum Resultado Encontrado para a PLACA fornecida.', 'error')
+                    
                                             
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
