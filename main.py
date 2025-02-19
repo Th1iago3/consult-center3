@@ -21,7 +21,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import httpx
 import asyncio
 
-
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['JWT_SECRET_KEY'] = os.urandom(24)
@@ -33,7 +32,7 @@ app.config['RSA_PRIVATE_KEY'] = rsa.generate_private_key(
 app.config['RSA_PUBLIC_KEY'] = app.config['RSA_PRIVATE_KEY'].public_key()
 colorama.init()
 
-
+# Encryption Functions
 def encrypt_with_rsa(data, public_key):
     return public_key.encrypt(
         data.encode(),
@@ -80,8 +79,7 @@ def generate_keys():
 
 def generate_byte_cookie():
     # Generate a random byte array
-    byte_cookie = os.urandom(32)  # 32 bytes for randomness
-    return byte_cookie
+    return os.urandom(32)  # 32 bytes for randomness
 
 def byte_to_hex(byte_data):
     # Convert bytes to hex string
@@ -92,6 +90,22 @@ def validate_byte_hex(byte_cookie, hex_cookie):
     hex_back_to_bytes = base64.b16decode(hex_cookie.encode('ascii'))
     return hex_back_to_bytes == byte_cookie
 
+# Generate custom cookies with the specified format
+def generate_custom_cookies():
+    cookies = {
+        "JSESSIONID": secrets.token_urlsafe(16),
+        "TS" + secrets.token_hex(4): secrets.token_hex(128),
+        "TS" + secrets.token_hex(4): secrets.token_hex(128),
+        "_ga": f"GA1.4.{secrets.token_hex(8)}.{int(time.time())}",
+        "_ga_" + secrets.token_hex(4): f"GS1.1.{int(time.time())}.4.1.{int(time.time() + 3600)}.0.0.0",
+        "_gat_gtag_UA_" + secrets.token_hex(4) + "_1": "1",
+        "_gid": f"GA.{secrets.randbelow(10)}.{secrets.choice('abcdefghijklmnopqrstuvwxyz')}.{secrets.token_hex(4)}",
+        "TS" + secrets.token_hex(4): secrets.token_hex(128),
+        "Mabel": secrets.token_hex(8),
+        "TS" + secrets.token_hex(4): secrets.token_hex(128),
+        "Omega": base64.b64encode(secrets.token_bytes(32)).decode()
+    }
+    return cookies
 
 def check_referrer():
     referrer = request.headers.get('Referer', '')
@@ -101,13 +115,12 @@ def check_referrer():
 
 def check_user_agent():
     user_agent = request.headers.get('User-Agent', '')
-    # Pattern to match common browsers, adjust as necessary
     browser_pattern = re.compile(r'(Chrome|Firefox|Safari|Edge|Opera)', re.IGNORECASE)
     if not browser_pattern.search(user_agent):
         return False
     return True
 
-# Ensure JSON files exist
+# JSON File Management
 def initialize_json(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -127,10 +140,10 @@ def save_data(data, file_path):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
-# Token Management
+# Token Management with time-based expiration
 def generate_token(user_id):
     users = load_data('users.json')
-    exp_time = timedelta(days=3650) if users.get(user_id, {}).get('role') == 'admin' else timedelta(hours=1)
+    exp_time = timedelta(days=3650) if users.get(user_id, {}).get('role') == 'admin' else timedelta(minutes=15)  # Now minutes instead of hours
     payload = {'user_id': user_id, 'exp': datetime.utcnow() + exp_time}
     return jwt.encode(payload, app.config['JWT_SECRET_KEY'], algorithm="HS256")
 
@@ -146,14 +159,11 @@ def decode_token(token):
 # Logging
 def log_access(endpoint, message=''):
     try:
-        # Fetch the real IP from ipify.org
         response = requests.get('https://ipinfo.io//json')
         response.raise_for_status()
         ip_info = response.json()
         ip = ip_info.get('ip', '')  # Fallback to 'Unknown' if we can't fetch the IP
-
     except requests.RequestException as e:
-        # If API request fails, use Flask's remote_addr as a fallback
         ip = request.remote_addr
         message += f" [Error fetching real IP: {str(e)}]"
 
@@ -300,30 +310,25 @@ def not_found(e):
 @app.before_request
 def security_check():
     if request.endpoint not in ['login', 'planos']:
-        # Referrer Check
         if not check_referrer():
             log_access(request.endpoint, "Invalid referrer")
             return jsonify({"error": "503"}), 503
 
-        # User Agent Check
         if not check_user_agent():
             log_access(request.endpoint, "Invalid user agent")
             return jsonify({"error": "503"}), 503
 
         token_cookie = request.cookies.get('auth_token')
-        byte_cookie = request.cookies.get('byte_cookie')
-        hex_cookie = request.cookies.get('hex_cookie')
-
-        if not token_cookie or not byte_cookie or not hex_cookie:
+        if not token_cookie:
             log_access(request.endpoint, "Unauthenticated user.")
             return redirect('/')
 
         try:
-            # Decrypt the token from the cookie
             encrypted_token = base64.b64decode(token_cookie)
             token = decrypt_with_rsa(encrypted_token)
             user_id = decode_token(token)
-        except:
+        except Exception as e:
+            log_access(request.endpoint, f"Error decoding token: {str(e)}")
             flash('Dados de sessão inválidos. Faça login novamente.', 'error')
             return redirect('/')
 
@@ -331,60 +336,54 @@ def security_check():
             flash('Sua sessão expirou. Faça login novamente.', 'error')
             resp = redirect('/')
             resp.set_cookie('auth_token', '', expires=0)
-            resp.set_cookie('byte_cookie', '', expires=0)
-            resp.set_cookie('hex_cookie', '', expires=0)
             return resp
-
-        # Validate byte and hex cookies
-        try:
-            byte_cookie = base64.b64decode(byte_cookie)
-            if not validate_byte_hex(byte_cookie, hex_cookie):
-                flash('Sessão inválida. Faça login novamente.', 'error')
-                resp = redirect('/')
-                resp.set_cookie('auth_token', '', expires=0)
-                resp.set_cookie('byte_cookie', '', expires=0)
-                resp.set_cookie('hex_cookie', '', expires=0)
-                return resp
-        except (ValueError, base64.binascii.Error):
-            flash('Sessão inválida. Faça login novamente.', 'error')
-            return redirect('/')
-
-        # VPN Check using external API
-        try:
-            # Fetch IP from an external service (example using ipify.org)
-            response = requests.get('https://api.ipify.org?format=json')
-            response.raise_for_status()
-            ip_data = response.json()
-            ip_address = ip_data['ip']
-
-            # Check with an IP to VPN/Proxy API (example using ipinfo.io)
-            vpn_check = requests.get(f'https://ipinfo.io/{ip_address}/json?token=9db60cdc38ce1f')
-            vpn_check.raise_for_status()
-            vpn_data = vpn_check.json()
-
-            if 'bogon' in vpn_data and vpn_data['bogon']:
-                # Bogon IPs are typically private or reserved IPs which might indicate VPN/proxy
-                log_access(request.endpoint, "VPN/Proxy detected for IP: " + ip_address)
-                return make_response('Acesso não permitido através de VPN ou Proxy.', 403)
-            elif 'org' in vpn_data and any(x in vpn_data['org'].lower() for x in ['vpn', 'proxy', 'tor']):
-                # Check if organization name suggests VPN/Proxy
-                log_access(request.endpoint, "VPN/Proxy detected for IP: " + ip_address)
-                return make_response('Acesso não permitido através de VPN ou Proxy.', 403)
-
-        except requests.RequestException as e:
-            log_access(request.endpoint, f"Error fetching or checking IP: {str(e)}")
 
         users = load_data('users.json')
         if user_id not in users:
             flash('Sessão inválida. Faça login novamente.', 'error')
-            resp = redirect('/')
-            resp.set_cookie('auth_token', '', expires=0)
-            resp.set_cookie('byte_cookie', '', expires=0)
-            resp.set_cookie('hex_cookie', '', expires=0)
-            return resp
+            return redirect('/')
+
+        # Check for VPN/Proxy
+        try:
+            response = requests.get('https://api.ipify.org?format=json')
+            response.raise_for_status()
+            ip_data = response.json()
+            ip_address = ip_data['ip']
+            vpn_check = requests.get(f'https://ipinfo.io/{ip_address}/json?token=your_api_token')
+            vpn_check.raise_for_status()
+            vpn_data = vpn_check.json()
+            if 'bogon' in vpn_data and vpn_data['bogon']:
+                log_access(request.endpoint, "VPN/Proxy detected for IP: " + ip_address)
+                return make_response('Acesso não permitido através de VPN ou Proxy.', 403)
+        except requests.RequestException as e:
+            log_access(request.endpoint, f"Error checking VPN/Proxy: {str(e)}")
 
         g.user_id = user_id
     log_access(request.endpoint)
+
+
+def reset_all():
+    if 'user_id' in g:
+        token = generate_token(g.user_id)
+        byte_cookie = generate_byte_cookie()
+        hex_cookie = byte_to_hex(byte_cookie)
+        encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
+        
+        resp = make_response()
+        resp.set_cookie('auth_token', base64.b64encode(encrypted_token).decode('ascii'), httponly=True, secure=True, samesite='Strict')
+        resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
+        resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
+        
+        custom_cookies = generate_custom_cookies()
+        for key, value in custom_cookies.items():
+            resp.set_cookie(key, value, httponly=True, secure=True, samesite='Strict')
+        
+        # Update session keys if needed
+        session['user_key'], _ = generate_keys()
+        
+        return resp
+    else:
+        return jsonify({"error": "User not authenticated"}), 401
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -409,7 +408,34 @@ def login():
                 # Encrypt token before setting in cookie
                 encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
                 
+                # Generate custom cookies
+                def generate_custom_cookies():
+                    import secrets
+                    import time
+                    import base64
+                    
+                    cookies = {
+                        "JSESSIONID": secrets.token_urlsafe(16),
+                        f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
+                        f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
+                        "_ga": f"GA1.4.{secrets.token_hex(8)}.{int(time.time())}",
+                        f"_ga_{secrets.token_hex(4)}": f"GS1.1.{int(time.time())}.4.1.{int(time.time() + 3600)}.0.0.0",
+                        f"_gat_gtag_UA_{secrets.token_hex(4)}_1": "1",
+                        "_gid": f"GA.{secrets.randbelow(10)}.{secrets.choice('abcdefghijklmnopqrstuvwxyz')}.{secrets.token_hex(4)}",
+                        f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
+                        "Mabel": secrets.token_hex(8),
+                        f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
+                        "Omega": base64.b64encode(secrets.token_bytes(32)).decode()
+                    }
+                    return cookies
+
+                custom_cookies = generate_custom_cookies()
+                
                 resp = redirect('/dashboard')
+                # Set custom cookies
+                for key, value in custom_cookies.items():
+                    resp.set_cookie(key, value, httponly=True, secure=True, samesite='Strict')
+                
                 # Set cookies with encrypted values
                 resp.set_cookie('auth_token', base64.b64encode(encrypted_token).decode('ascii'), httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
@@ -420,17 +446,12 @@ def login():
                     # If 'devices' key is not found, allow login with unlimited devices
                     save_data(users, 'users.json')  # Save the user data even if devices is not there
                 else:
-                    if user_agent not in users[user]['devices']:
-                        if not users[user]['devices']:  # Check if the list is empty
-                            # Add the new device if the list is empty
-                            users[user]['devices'].append(user_agent)
-                            save_data(users, 'users.json')
-                        else:
-                            flash('Dispositivo não autorizado. Login recusado.', 'error')
-                            return render_template('login.html')
+                    if users[user]['devices'] and user_agent != users[user]['devices'][0]:
+                        flash('Dispositivo não autorizado. Login recusado.', 'error')
+                        return render_template('login.html')
                     else:
-                        # Device is already authorized
-                        pass
+                        users[user]['devices'] = [user_agent]  # Only one device is allowed
+                        save_data(users, 'users.json')
 
                 return resp
             else:
@@ -634,6 +655,7 @@ def cpf():
                 # Increment module usage on success
                 if manage_module_usage(g.user_id, 'cpf'):
                     result = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para CPF.', 'error')
             else:
@@ -679,6 +701,7 @@ def cpf2():
             # Increment module usage on success
             if manage_module_usage(g.user_id, 'cpf2'):
                 result = data['resultado']
+                reset_all()
             else:
                 flash('Limite de uso atingido para CPF3.', 'error')
         else:
@@ -725,6 +748,7 @@ def cpfdata():
                 # Increment module usage on success
                 if manage_module_usage(g.user_id, 'cpfdata'):
                     result = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para CPFDATA.', 'error')
             else:
@@ -764,6 +788,7 @@ def cpfdata():
             'enderecos': result.get('enderecos', []),
             'cnsDefinitivo': result.get('cnsDefinitivo', 'SEM INFORMAÇÃO')
         }
+        reset_all()
     else:
         formatted_result = None
 
@@ -803,6 +828,7 @@ def cpf3():
             # Increment module usage on success
             if manage_module_usage(g.user_id, 'cpf3'):
                 result = data['resultado']
+                reset_all()
             else:
                 flash('Limite de uso atingido para CPF3.', 'error')
         else:
@@ -850,6 +876,7 @@ def cpflv():
             if data.get('resultado'):
                 if manage_module_usage(g.user_id, 'cpflv'):
                     result = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para CPFLV.', 'error')
             else:
@@ -897,6 +924,7 @@ def cpf5():
                 if manage_module_usage(g.user_id, 'cpf5'):
                     # Here we correct the naming to match the template expectation
                     results = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para CPFLV.', 'error')
             else:
@@ -945,6 +973,7 @@ def datanome():
                     
                     if result:
                         if manage_module_usage(g.user_id, 'datanome'):
+                            reset_all()
                             pass  # Usage has been incremented
                         else:
                             flash('Limite de uso atingido para DATANOME.', 'error')
@@ -999,6 +1028,7 @@ def placalv():
             if data.get('resultado'):
                 if manage_module_usage(g.user_id, 'placalv'):
                     result = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para PLACALV.', 'error')
             else:
@@ -1048,6 +1078,7 @@ def tellv():
             elif 'resultado' in data and data['resultado']:
                 if manage_module_usage(g.user_id, 'tellv'):
                     result = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para TELLV.', 'error')
             else:
@@ -1099,6 +1130,7 @@ def teldual():
             elif 'resultado' in data and data['resultado']:
                 if manage_module_usage(g.user_id, 'teldual'):
                     results = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para TELDUAL.', 'error')
             else:
@@ -1149,6 +1181,7 @@ def tel():
                 elif 'resultado' in data and 'msg' in data['resultado'] and len(data['resultado']['msg']) > 0:
                     if manage_module_usage(g.user_id, 'tel'):
                         results = data['resultado']['msg']
+                        reset_all()
                     else:
                         flash('Limite de uso atingido para TEL.', 'error')
                 else:
@@ -1195,6 +1228,7 @@ def placa():
                 if data.get('resultado'):
                     if manage_module_usage(g.user_id, 'placa'):
                         results = data['resultado']
+                        reset_all()
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
                 else:
@@ -1255,6 +1289,7 @@ def fotor():
                     if manage_module_usage(g.user_id, 'fotor'):
                         # Directly use the data as the result
                         results = data
+                        reset_all()
                     else:
                         flash('Limite de uso atingido para FOTOR.', 'error')
                 else:
@@ -1301,6 +1336,7 @@ def nomelv():
             if data.get('resultado') and len(data['resultado']) > 0:
                 if manage_module_usage(g.user_id, 'nomelv'):
                     results = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para NOME.', 'error')
             else:
@@ -1348,6 +1384,7 @@ def nome():
             if data.get('resultado') and len(data['resultado']) > 0:
                 if manage_module_usage(g.user_id, 'nome'):
                     results = data['resultado']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para NOME.', 'error')
             else:
@@ -1405,6 +1442,7 @@ def ip():
                             'longitude': data.get('longitude'),
                             'provider': data.get('connection', {}).get('isp', 'Não disponível')
                         }
+                        reset_all()
                     else:
                         flash('Limite de uso atingido para IP.', 'error')
                 else:
@@ -1452,6 +1490,7 @@ def nome2():
             if data.get('resultado') and 'itens' in data['resultado']:
                 if manage_module_usage(g.user_id, 'nome2'):
                     results = data['resultado']['itens']
+                    reset_all()
                 else:
                     flash('Limite de uso atingido para NOME2.', 'error')
             else:
@@ -1534,6 +1573,7 @@ def visitas():
                 'visits_sent': total_visits_sent,
                 'message': f'{requests_made} requisições feitas.' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
             }
+            reset_all()
 
         except Exception as e:
             flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
