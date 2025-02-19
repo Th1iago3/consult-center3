@@ -872,8 +872,9 @@ def cpflv():
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
+            cpp = data['resultado']
 
-            if data.get('resultado'):
+            if cpp.get('cpf'):
                 if manage_module_usage(g.user_id, 'cpflv'):
                     result = data['resultado']
                     reset_all()
@@ -1075,7 +1076,7 @@ def tellv():
             
             if 'status' in data and data['status'] == "not_found":
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-            elif 'resultado' in data and data['resultado']:
+            elif 'data' in data and data['resultado']:
                 if manage_module_usage(g.user_id, 'tellv'):
                     result = data['resultado']
                     reset_all()
@@ -1125,9 +1126,9 @@ def teldual():
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
             
-            if 'resultado' in data and isinstance(data['resultado'], str) and data['resultado'].strip().lower() == 'registro sem informacao':
+            if 'resultado' in data and isinstance(data['resultado'], str) and data['resultado'].strip().lower() == 'Registro sem informacao':
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-            elif 'resultado' in data and data['resultado']:
+            elif 'cpf' in data and data['resultado']:
                 if manage_module_usage(g.user_id, 'teldual'):
                     results = data['resultado']
                     reset_all()
@@ -1176,9 +1177,9 @@ def tel():
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
 
-                if 'resultado' in data and data['resultado'] == {"status": "OK", "consulta": "1", "total": 0}:
+                if 'resultado' in data and data['resultado'] == {"status": "OK", "consulta": f"{tel}", "total": 0}:
                     flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-                elif 'resultado' in data and 'msg' in data['resultado'] and len(data['resultado']['msg']) > 0:
+                elif 'cpf' in data['resultado']:
                     if manage_module_usage(g.user_id, 'tel'):
                         results = data['resultado']['msg']
                         reset_all()
