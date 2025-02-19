@@ -1225,15 +1225,16 @@ def placa():
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
-        
-        if 'null' in data.get('resultado'):
-            flash('Nenhum Resultado Encontrado para a PLACA fornecida.', 'error')
-            elif 'id' in data.get('resultado'):
-                if manage_module_usage(g.user_id, 'placa'):
-                    results = data['resultado']
-                    reset_all()
-                else:
-                    flash('Limite de uso atingido para PLACA.', 'error')
+
+                # Check if 'resultado' is a string and equals 'null' or if it's an object with 'id'
+                if 'resultado' in data and isinstance(data['resultado'], str) and data['resultado'].lower() == 'null':
+                    flash('Nenhum Resultado Encontrado para a PLACA fornecida.', 'error')
+                elif 'resultado' in data and isinstance(data['resultado'], dict) and 'id' in data['resultado']:
+                    if manage_module_usage(g.user_id, 'placa'):
+                        results = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para PLACA.', 'error')
                 else:
                     flash('Nenhum resultado encontrado. Verifique o formato da placa.', 'error')
                     flash('Formato: ABC1234', 'error')
@@ -1243,7 +1244,6 @@ def placa():
                 flash('Resposta da API inválida.', 'error')
 
     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
-
 
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 def fotor():
