@@ -449,57 +449,57 @@
             </a>
             {% for result in results %}
                 <div class="profile-info">
-                    <p><strong>Retorno:</strong> {{ result.retorno }}</p>
-                    <p><strong>Código de Retorno:</strong> {{ result.codRetorno }}</p>
-                    <p><strong>Mensagem de Retorno:</strong> {{ result.msgRetorno }}</p>
-                    <p><strong>ID:</strong> {{ result.id }}</p>
-                    <p><strong>Placa:</strong> {{ result.placa }}</p>
-                    <p><strong>Roubo:</strong> {{ result.roubo }}</p>
-                    <p><strong>Clone:</strong> {{ result.clone | default('N/A', true) }}</p>
-                    <p><strong>Marca:</strong> {{ result.marca }}</p>
-                    <p><strong>Renavam:</strong> {{ result.renavam }}</p>
-                    <p><strong>Chassi:</strong> {{ result.chassi }}</p>
-                    <p><strong>Cor:</strong> {{ result.cor }}</p>
-                    <p><strong>Ano Modelo:</strong> {{ result.anoModelo }}</p>
-                    <p><strong>Ano Fabricação:</strong> {{ result.anoFabricacao }}</p>
-                    <p><strong>Categoria:</strong> {{ result.categoria }}</p>
-                    <p><strong>Combustível:</strong> {{ result.combustivel }}</p>
-                    <p><strong>Espécie:</strong> {{ result.especie }}</p>
-                    <p><strong>Tipo:</strong> {{ result.tipo }}</p>
-                    <p><strong>Nome do Proprietário:</strong> {{ result.nomeProprietario }}</p>
-                    <p><strong>Tipo de Documento:</strong> {{ result.tipoDocumento }}</p>
-                    <p><strong>Número do Documento:</strong> {{ result.numeroDocumento }}</p>
-                    <p><strong>Endereço:</strong> {{ result.endereco }}</p>
-                    <p><strong>Nome do Possuidor:</strong> {{ result.nomePossuidor }}</p>
-                    <p><strong>Tipo de Documento do Possuidor:</strong> {{ result.tipoDocumentoPossuidor }}</p>
-                    <p><strong>Número de Documento do Possuidor:</strong> {{ result.numeroDocumentoPossuidor }}</p>
-                    <p><strong>Endereço do Possuidor:</strong> {{ result.enderecoPossuidor }}</p>
-                    <p><strong>Restrição 1:</strong> {{ result.restricao1 }}</p>
-                    <p><strong>Restrições:</strong> {{ result.restricao | join(', ') | default('N/A', true) }}</p>
-                    <p><strong>Ano IPVA:</strong> {{ result.anoIpva }}</p>
-                    <p><strong>Ano Licença:</strong> {{ result.anoLicenca }}</p>
-                    <p><strong>Último IPVA:</strong> {{ result.ultimoIpva | default('N/A', true) }}</p>
-                    <p><strong>Cota Única:</strong> {{ result.cotaUnica | default('N/A', true) }}</p>
-                    <p><strong>Isento IPVA:</strong> {{ result.isentoIpva | default('N/A', true) }}</p>
-                    <p><strong>Restrição Administrativa:</strong> {{ result.restricaoAdministrativa | default('N/A', true) }}</p>
-                    <p><strong>Restrição Financeira:</strong> {{ result.restricaoFinanceira | default('N/A', true) }}</p>
-                    <p><strong>Restrição Jurídica:</strong> {{ result.restricaoJuridica | default('N/A', true) }}</p>
-                    <p><strong>Total IPVA:</strong> {{ result.totalIpva | default('N/A', true) }}</p>
-                    <p><strong>DPVAT Anterior:</strong> {{ result.dpvatAnterior | default('N/A', true) }}</p>
-                    <p><strong>DPVAT Atual:</strong> {{ result.dpvatAtual | default('N/A', true) }}</p>
-                    <p><strong>IPVA Anterior:</strong> {{ result.ipvaAnterior | default('N/A', true) }}</p>
-                    <p><strong>Licença Anterior:</strong> {{ result.licencaAnterior | default('N/A', true) }}</p>
-                    <p><strong>Licença Atual:</strong> {{ result.licencaAtual | default('N/A', true) }}</p>
-                    <p><strong>Valor Multa:</strong> {{ result.valorMulta | default('N/A', true) }}</p>
-                    <p><strong>Multa em Tramitação:</strong> {{ result.multaTramitacao | default('N/A', true) }}</p>
-                    <p><strong>Base:</strong> {{ result.base }}</p>
-                    <p><strong>Motor:</strong> {{ result.motor }}</p>
-                    <p><strong>Município:</strong> {{ result.municipio }}</p>
-                    <p><strong>Cidade:</strong> {{ result.cidade }}</p>
-                    <p><strong>UF Veículo:</strong> {{ result.ufVeiculo }}</p>
-                    <p><strong>UF:</strong> {{ result.uf }}</p>
-                    <p><strong>Situação:</strong> {{ result.situacao | default('N/A', true) }}</p>
-                    <p><strong>Temporário:</strong> {{ result.temporario | default('N/A', true) }}</p>
+                    <p><strong>Retorno:</strong> {{ result.retorno || 'Indisponível' }}</p>
+                    <p><strong>Código de Retorno:</strong> {{ result.codRetorno || 'Indisponível' }}</p>
+                    <p><strong>Mensagem de Retorno:</strong> {{ result.msgRetorno || 'Indisponível' }}</p>
+                    <p><strong>ID:</strong> {{ result.id || 'Indisponível' }}</p>
+                    <p><strong>Placa:</strong> {{ result.placa || 'Indisponível' }}</p>
+                    <p><strong>Roubo:</strong> {{ result.roubo || 'Indisponível' }}</p>
+                    <p><strong>Clone:</strong> {{ result.clone || 'Indisponível' }}</p>
+                    <p><strong>Marca:</strong> {{ result.marca || 'Indisponível' }}</p>
+                    <p><strong>Renavam:</strong> {{ result.renavam || 'Indisponível' }}</p>
+                    <p><strong>Chassi:</strong> {{ result.chassi || 'Indisponível' }}</p>
+                    <p><strong>Cor:</strong> {{ result.cor || 'Indisponível' }}</p>
+                    <p><strong>Ano Modelo:</strong> {{ result.anoModelo || 'Indisponível' }}</p>
+                    <p><strong>Ano Fabricação:</strong> {{ result.anoFabricacao || 'Indisponível' }}</p>
+                    <p><strong>Categoria:</strong> {{ result.categoria || 'Indisponível' }}</p>
+                    <p><strong>Combustível:</strong> {{ result.combustivel || 'Indisponível' }}</p>
+                    <p><strong>Espécie:</strong> {{ result.especie || 'Indisponível' }}</p>
+                    <p><strong>Tipo:</strong> {{ result.tipo || 'Indisponível' }}</p>
+                    <p><strong>Nome do Proprietário:</strong> {{ result.nomeProprietario || 'Indisponível' }}</p>
+                    <p><strong>Tipo de Documento:</strong> {{ result.tipoDocumento || 'Indisponível' }}</p>
+                    <p><strong>Número do Documento:</strong> {{ result.numeroDocumento || 'Indisponível' }}</p>
+                    <p><strong>Endereço:</strong> {{ result.endereco || 'Indisponível' }}</p>
+                    <p><strong>Nome do Possuidor:</strong> {{ result.nomePossuidor || 'Indisponível' }}</p>
+                    <p><strong>Tipo de Documento do Possuidor:</strong> {{ result.tipoDocumentoPossuidor || 'Indisponível' }}</p>
+                    <p><strong>Número de Documento do Possuidor:</strong> {{ result.numeroDocumentoPossuidor || 'Indisponível' }}</p>
+                    <p><strong>Endereço do Possuidor:</strong> {{ result.enderecoPossuidor || 'Indisponível' }}</p>
+                    <p><strong>Restrição 1:</strong> {{ result.restricao1 || 'Indisponível' }}</p>
+                    <p><strong>Restrições:</strong> {{ result.restricao | join(', ') || 'Indisponível' }}</p>
+                    <p><strong>Ano IPVA:</strong> {{ result.anoIpva || 'Indisponível' }}</p>
+                    <p><strong>Ano Licença:</strong> {{ result.anoLicenca || 'Indisponível' }}</p>
+                    <p><strong>Último IPVA:</strong> {{ result.ultimoIpva || 'Indisponível' }}</p>
+                    <p><strong>Cota Única:</strong> {{ result.cotaUnica || 'Indisponível' }}</p>
+                    <p><strong>Isento IPVA:</strong> {{ result.isentoIpva || 'Indisponível' }}</p>
+                    <p><strong>Restrição Administrativa:</strong> {{ result.restricaoAdministrativa || 'Indisponível' }}</p>
+                    <p><strong>Restrição Financeira:</strong> {{ result.restricaoFinanceira || 'Indisponível' }}</p>
+                    <p><strong>Restrição Jurídica:</strong> {{ result.restricaoJuridica || 'Indisponível' }}</p>
+                    <p><strong>Total IPVA:</strong> {{ result.totalIpva || 'Indisponível' }}</p>
+                    <p><strong>DPVAT Anterior:</strong> {{ result.dpvatAnterior || 'Indisponível' }}</p>
+                    <p><strong>DPVAT Atual:</strong> {{ result.dpvatAtual || 'Indisponível' }}</p>
+                    <p><strong>IPVA Anterior:</strong> {{ result.ipvaAnterior || 'Indisponível' }}</p>
+                    <p><strong>Licença Anterior:</strong> {{ result.licencaAnterior || 'Indisponível' }}</p>
+                    <p><strong>Licença Atual:</strong> {{ result.licencaAtual || 'Indisponível' }}</p>
+                    <p><strong>Valor Multa:</strong> {{ result.valorMulta || 'Indisponível' }}</p>
+                    <p><strong>Multa em Tramitação:</strong> {{ result.multaTramitacao || 'Indisponível' }}</p>
+                    <p><strong>Base:</strong> {{ result.base || 'Indisponível' }}</p>
+                    <p><strong>Motor:</strong> {{ result.motor || 'Indisponível' }}</p>
+                    <p><strong>Município:</strong> {{ result.municipio || 'Indisponível' }}</p>
+                    <p><strong>Cidade:</strong> {{ result.cidade || 'Indisponível' }}</p>
+                    <p><strong>UF Veículo:</strong> {{ result.ufVeiculo || 'Indisponível' }}</p>
+                    <p><strong>UF:</strong> {{ result.uf || 'Indisponível' }}</p>
+                    <p><strong>Situação:</strong> {{ result.situacao || 'Indisponível' }}</p>
+                    <p><strong>Temporário:</strong> {{ result.temporario || 'Indisponível' }}</p>
                 </div>
             {% endfor %}
         {% endif %}
