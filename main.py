@@ -1221,15 +1221,18 @@ def placa():
                         return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
                 # API Call for plate lookup
-                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placa&query={placa}"
+                url = f"https://br4s1l.space/api.php?base=placanacional&query={placa}"
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
 
-                if data.get('resultado'):
+                if 'id' in data.get('resultado'):
                     if manage_module_usage(g.user_id, 'placa'):
                         results = data['resultado']
                         reset_all()
+                    elif 'null' in data.get('resultado'):
+                        flash('Nenhum Resultado Encontrado para a PLACA fornecida.', 'error')
+                                            
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
                 else:
