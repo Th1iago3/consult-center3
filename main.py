@@ -875,7 +875,7 @@ def cpflv():
                 data = response.json()
 
                 # Verifica se há resultado válido
-                if data.get('resultado') and isinstance(data['resultado'], dict) and 'cpf' in data['resultado']:
+                if data.get('resultado') and isinstance(data['resultado'], dict) and 'pessoa' in data['resultado']:
                     if manage_module_usage(g.user_id, 'cpflv'):
                         result = data['resultado']
                         reset_all()
