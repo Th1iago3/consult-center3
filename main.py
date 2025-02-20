@@ -854,47 +854,44 @@ def cpflv():
     cpf = ""
 
     if request.method == 'POST':
-        try:
-            cpf = request.form.get('cpf', '')
-            if not is_admin:
-                token = request.form.get('token')
+        cpf = request.form.get('cpf', '').strip()
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token:
+                        flash('Token não fornecido.', 'error')
+                        return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                    if token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                        return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                if not cpf or not token:
-                    flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                # API Call for CPF lookup
+                url = f"https://br4s1l.space/api.php?base=cpfLv&query={cpf}"
+                response = requests.get(url, verify=False)
+                response.raise_for_status()
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
-            # API Call for CPF lookup
-            url = f"https://br4s1l.space/api.php?base=cpfLv&query={cpf}"
-            response = requests.get(url, verify=False)
-            response.raise_for_status()
-            data = response.json()
-
-            # Verifica se 'resultado' existe e contém 'cpf'
-            if data.get('resultado'):
-                    # CPF encontrado, processa como sucesso
+                # Verifica se há resultado válido
+                if data.get('resultado') and isinstance(data['resultado'], dict) and 'cpf' in data['resultado']:
                     if manage_module_usage(g.user_id, 'cpflv'):
                         result = data['resultado']
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPFLV.', 'error')
                 else:
-                    # CPF não encontrado no resultado
                     flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-            else:
-                # Resposta da API não contém 'resultado'
-                flash('Resposta da API inválida ou CPF não encontrado.', 'error')
-
-        except requests.RequestException as e:
-            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta da API inválida.', 'error')
+            except Exception as e:
+                flash(f'Erro inesperado: {str(e)}', 'error')
 
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
-
+    
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def cpf5():
     if 'user_id' not in g:
