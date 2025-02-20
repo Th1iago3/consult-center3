@@ -872,10 +872,13 @@ def cpflv():
             response = requests.get(url, verify=False)
             response.raise_for_status()
             data = response.json()
+            data2 = data['resultado']
+            pess = data2['pessoa']
+            idn = pess['identificacao']
 
             # Verifica se 'resultado' existe e contém 'cpf'
             if 'resultado' in data:
-                if 'cpf' in data['resultado']:
+                if 'cpf' in idn:
                     # CPF encontrado, processa como sucesso
                     if manage_module_usage(g.user_id, 'cpflv'):
                         result = data['resultado']
@@ -1133,7 +1136,7 @@ def teldual():
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
             
-            if 'resultado' in data and isinstance(data['resultado'], str) and data['resultado'].strip().lower() == 'Registro sem informacao':
+            if 'cpf' not in data['resultado']:
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
             elif 'cpf' in data['resultado']:
                 if manage_module_usage(g.user_id, 'teldual'):
