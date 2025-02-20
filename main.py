@@ -875,7 +875,6 @@ def cpflv():
 
             # Verifica se 'resultado' existe e contém 'cpf'
             if data.get('resultado'):
-                if 'pessoa' in data['resultado']:
                     # CPF encontrado, processa como sucesso
                     if manage_module_usage(g.user_id, 'cpflv'):
                         result = data['resultado']
