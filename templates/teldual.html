@@ -448,8 +448,8 @@
                 <i class="fas fa-download"></i> Baixar em .txt
             </a>
             <div class="profile-info">
-                <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
-                <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
+                <p><strong>Nome:</strong> {{ results.nome || default('Não disponível') }}</p>
+                <p><strong>CPF:</strong> {{ results.cpf || default('Não disponível') }}</p>
                 <p><strong>Endereço:</strong>
                 {% if results.endereco %}
                     {% set endereco_str = "" %}
