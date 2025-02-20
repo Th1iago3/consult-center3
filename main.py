@@ -646,7 +646,7 @@ def cpf():
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
                     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpf&query={cpf}"
+            url = f"https://br4s1l.space/api.php?base=cpf&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -739,7 +739,7 @@ def cpfdata():
 
         try:
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfDatasus&query={cpf}"
+            url = f"https://br4s1l.space/api.php?base=cpfDatasus&query={cpf}"
             response = requests.get(url, verify=False)  
             response.raise_for_status()  
             data = response.json()
@@ -819,7 +819,7 @@ def cpf3():
 
     try:
         # API Call for CPF lookup
-        url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfSipni&query={cpf}"
+        url = f"https://br4s1l.space/api.php?base=cpfSipni&query={cpf}"
         response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
         response.raise_for_status()  # Raises HTTPError for bad responses
         data = response.json()
@@ -868,7 +868,7 @@ def cpflv():
                     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=cpfLv&query={cpf}"
+            url = f"https://br4s1l.space/api.php?base=cpfLv&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
