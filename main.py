@@ -873,15 +873,21 @@ def cpflv():
             response.raise_for_status()
             data = response.json()
 
-            # Verifica se 'cpf' está em data['resultado']
-            if 'resultado' in data and 'cpf' in data.get('resultado', {}):
-                if manage_module_usage(g.user_id, 'cpflv'):
-                    result = data['resultado']
-                    reset_all()
+            # Verifica se 'resultado' existe e contém 'cpf'
+            if 'resultado' in data:
+                if 'cpf' in data['resultado']:
+                    # CPF encontrado, processa como sucesso
+                    if manage_module_usage(g.user_id, 'cpflv'):
+                        result = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para CPFLV.', 'error')
                 else:
-                    flash('Limite de uso atingido para CPFLV.', 'error')
+                    # CPF não encontrado no resultado
+                    flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
             else:
-                flash('CPF não encontrado nos dados retornados.', 'error')
+                # Resposta da API não contém 'resultado'
+                flash('Resposta da API inválida ou CPF não encontrado.', 'error')
 
         except requests.RequestException as e:
             flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
@@ -889,7 +895,7 @@ def cpflv():
             flash('Resposta da API inválida.', 'error')
 
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
-@app.route('/modulos/vacinas', methods=['GET', 'POST'])
+    
 def cpf5():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
