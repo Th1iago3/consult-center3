@@ -1135,7 +1135,7 @@ def teldual():
             
             if 'resultado' in data and isinstance(data['resultado'], str) and data['resultado'].strip().lower() == 'Registro sem informacao':
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-            elif 'cpf' in data and data['resultado']:
+            elif 'cpf' in data['resultado']:
                 if manage_module_usage(g.user_id, 'teldual'):
                     results = data['resultado']
                     reset_all()
