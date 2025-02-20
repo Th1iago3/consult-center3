@@ -874,10 +874,12 @@ def cpflv():
             data = response.json()
             cpp = data['resultado']
 
-            if data.get('resultado'):
+            if 'cpf' in data.get('resultado'):
                 if manage_module_usage(g.user_id, 'cpflv'):
                     result = data['resultado']
                     reset_all()
+            else:
+                flash('Não foi encontrado nenhuma informação para o CPF.', 'error')
                 else:
                     flash('Limite de uso atingido para CPFLV.', 'error')
             else:
