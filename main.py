@@ -874,7 +874,7 @@ def cpflv():
             data = response.json()
             cpp = data['resultado']
 
-            if cpp.get('cpf'):
+            if data.get('resultado'):
                 if manage_module_usage(g.user_id, 'cpflv'):
                     result = data['resultado']
                     reset_all()
