@@ -1136,16 +1136,16 @@ def teldual():
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
             
-            if 'cpf' not in data['resultado']:
+            # Verifica se 'resultado' existe e se há itens na lista com 'cpf'
+            if 'resultado' not in data or not data['resultado'] or not any('cpf' in item for item in data['resultado']):
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-            elif 'cpf' in data['resultado']:
+            else:
+                # Se há resultados e 'cpf' está presente em pelo menos um item
                 if manage_module_usage(g.user_id, 'teldual'):
                     results = data['resultado']
                     reset_all()
                 else:
                     flash('Limite de uso atingido para TELDUAL.', 'error')
-            else:
-                flash('Erro ao processar a consulta.', 'error')
                 
         except requests.RequestException:
             flash('Erro ao conectar com o servidor da API.', 'error')
@@ -1153,7 +1153,7 @@ def teldual():
             flash('Resposta da API inválida.', 'error')
 
     return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=session.get('token'))
-
+    
 @app.route('/modulos/tel', methods=['GET', 'POST'])
 def tel():
     if 'user_id' not in g:
