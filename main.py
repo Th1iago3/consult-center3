@@ -869,28 +869,26 @@ def cpflv():
 
             # API Call for CPF lookup
             url = f"https://br4s1l.space/api.php?base=cpfLv&query={cpf}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
+            response = requests.get(url, verify=False)
+            response.raise_for_status()
             data = response.json()
-            cpp = data['resultado']
 
-            if 'cpf' in data.get('resultado'):
+            # Verifica se 'cpf' está em data['resultado']
+            if 'resultado' in data and 'cpf' in data.get('resultado', {}):
                 if manage_module_usage(g.user_id, 'cpflv'):
                     result = data['resultado']
                     reset_all()
-            else:
-                flash('Não foi encontrado nenhuma informação para o CPF.', 'error')
                 else:
                     flash('Limite de uso atingido para CPFLV.', 'error')
             else:
-                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
+                flash('CPF não encontrado nos dados retornados.', 'error')
+
+        except requests.RequestException as e:
+            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
 
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
-
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def cpf5():
     if 'user_id' not in g:
