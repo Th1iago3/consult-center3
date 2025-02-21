@@ -1066,42 +1066,51 @@ def tellv():
 
     if request.method == 'POST':
         try:
-            telefone = request.form.get('telefone', '')
+            telefone = request.form.get('telefone', '').strip()
+            if not telefone:
+                flash('TELEFONE não fornecido.', 'error')
+                return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
+
             if not is_admin:
-                token = request.form.get('token')
-
-                if not telefone or (not is_admin and not token):
-                    flash('TELEFONE ou Token não fornecido.', 'error')
+                token = request.form.get('token', '')
+                if not token:
+                    flash('Token não fornecido.', 'error')
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
-
-                if not is_admin and token != users.get(g.user_id, {}).get('token'):
+                if token != users.get(g.user_id, {}).get('token'):
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
 
             # API Call for telephone lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telefoneLv&query={telefone}"
+            url = f"https://br4s1l.space/api.php?base=telefoneLv&query={telefone}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
-            
-            if 'status' in data and data['status'] == "not_found":
+
+            # Verifica o 'status' e a presença de 'cpf' no resultado
+            if data.get('status') == "not_found":
                 flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-            elif 'data' in data and data['resultado']:
+            elif (data.get('resultado') and 
+                  data['resultado'].get('status') == "success" and 
+                  'data' in data['resultado'] and 
+                  isinstance(data['resultado']['data'], list) and 
+                  any('cpf' in item.get('identificacao', {}) for item in data['resultado']['data'])):
                 if manage_module_usage(g.user_id, 'tellv'):
-                    result = data['resultado']
+                    result = data['resultado']['data'][0]  # Pega o primeiro item da lista (assumindo que há apenas um resultado principal)
                     reset_all()
                 else:
                     flash('Limite de uso atingido para TELLV.', 'error')
             else:
-                flash('Erro ao processar a consulta.', 'error')
-                
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
+                flash('Nenhum CPF encontrado na resposta da API ou estrutura inválida.', 'error')
+
+        except requests.RequestException as e:
+            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
         except json.JSONDecodeError:
             flash('Resposta da API inválida.', 'error')
+        except Exception as e:
+            flash(f'Erro inesperado: {str(e)}', 'error')
 
     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
-
+    
 
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
 def teldual():
