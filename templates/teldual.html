@@ -447,25 +447,27 @@
             <a href="#" class="download-link" onclick="generateAndDownloadTxt(event)">
                 <i class="fas fa-download"></i> Baixar em .txt
             </a>
-            <div class="profile-info">
-                <p><strong>Nome:</strong> {{ results.nome }}</p>
-                <p><strong>CPF:</strong> {{ results.cpf }}</p>
-                <p><strong>Endereço:</strong>
-                {% if results.endereco %}
-                    {% set endereco_str = "" %}
-                    {% if results.endereco.tipo_logradouro %} {{ results.endereco.tipo_logradouro }} {% endif %}
-                    {% if results.endereco.logradouro %} {{ results.endereco.logradouro }} {% endif %}
-                    {% if results.endereco.numero %} {{ results.endereco.numero }} {% endif %}
-                    {% if results.endereco.bairro %}, {{ results.endereco.bairro }}{% endif %}
-                    {% if results.endereco.cidade %}, {{ results.endereco.cidade }}{% endif %}
-                    {% if results.endereco.uf %} - {{ results.endereco.uf }}{% endif %}
-                    {% if results.endereco.cep %} - CEP: {{ results.endereco.cep }}{% endif %}
-                    {{ endereco_str }}
-                {% else %}
-                    Não disponível
-                {% endif %}
-                </p>
-            </div>
+            {% for result in results %}
+                <div class="profile-info">
+                    <p><strong>Nome:</strong> {{ result.nome }}</p>
+                    <p><strong>CPF:</strong> {{ result.cpf }}</p>
+                    <p><strong>Endereço:</strong>
+                        {% if result.endereco %}
+                            {% set endereco_str = "" %}
+                            {% if result.endereco.tipo_logradouro %}{{ result.endereco.tipo_logradouro }} {% endif %}
+                            {% if result.endereco.logradouro %}{{ result.endereco.logradouro }} {% endif %}
+                            {% if result.endereco.numero %}{{ result.endereco.numero }} {% endif %}
+                            {% if result.endereco.bairro %}, {{ result.endereco.bairro }}{% endif %}
+                            {% if result.endereco.cidade %}, {{ result.endereco.cidade }}{% endif %}
+                            {% if result.endereco.uf %} - {{ result.endereco.uf }}{% endif %}
+                            {% if result.endereco.cep %} - CEP: {{ result.endereco.cep }}{% endif %}
+                            {{ endereco_str }}
+                        {% else %}
+                            Não disponível
+                        {% endif %}
+                    </p>
+                </div>
+            {% endfor %}
         {% endif %}
     </div>
 
@@ -500,7 +502,7 @@
 
         // Form Validation
         document.getElementById('searchForm').addEventListener('submit', function(event) {
-            const tel = this.tel.value.trim();
+            const tel = this.telefone.value.trim();
             if (!/^[0-9]{10,11}$/.test(tel)) {
                 showAlert('Por favor, insira um número de telefone válido (10 ou 11 dígitos).', 'error');
                 event.preventDefault();
