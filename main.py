@@ -1226,44 +1226,51 @@ def placa():
     placa = ""
 
     if request.method == 'POST':
-        placa = request.form.get('placa', '')
-        if placa:
-            try:
-                if not is_admin:
-                    token = request.form.get('token')
-                    if not token:
-                        flash('Token não fornecido.', 'error')
-                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+        placa = request.form.get('placa', '').strip().upper()  # Normalize placa to uppercase and remove whitespace
+        if not placa:
+            flash('Placa não fornecida.', 'error')
+            return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-                    if token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+        try:
+            if not is_admin:
+                token = request.form.get('token', '')
+                if not token:
+                    flash('Token não fornecido.', 'error')
+                    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-                # API Call for plate lookup
-                url = f"https://br4s1l.space/api.php?base=placanacional&query={placa}"
-                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-                response.raise_for_status()  # Raises HTTPError for bad responses
-                data = response.json()
+                if token != users.get(g.user_id, {}).get('token'):
+                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-                # Check if 'resultado' is a string and equals 'null' or if it's an object with 'id'
-                if 'resultado' in data and isinstance(data['resultado'], str) and data['resultado'].lower() == 'null':
-                    flash('Nenhum Resultado Encontrado para a PLACA fornecida.', 'error')
-                elif 'resultado' in data and isinstance(data['resultado'], dict) and 'id' in data['resultado']:
+            # API Call for plate lookup
+            url = f"https://br4s1l.space/api.php?base=placanacional&query={placa}"
+            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response.raise_for_status()  # Raises HTTPError for bad responses
+            data = response.json()
+
+            # Check if 'resultado' exists and if 'retorno' is "ok"
+            if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0:
+                result_data = data['resultado'][0]  # Assuming API returns a list with one result
+                if result_data.get('retorno') == 'OK':
                     if manage_module_usage(g.user_id, 'placa'):
-                        results = data['resultado']
-                        reset_all()
+                        results = result_data  # Store the successful result
+                        reset_all()  # Reset cookies or session as per your security logic
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado. Verifique o formato da placa.', 'error')
-                    flash('Formato: ABC1234', 'error')
-            except requests.RequestException:
-                flash('Erro ao conectar com o servidor da API.', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida.', 'error')
+                    flash('Nenhum resultado encontrado para a placa fornecida.', 'error')
+            else:
+                flash('Nenhum resultado encontrado. Verifique o formato da placa (exemplo: ABC1234).', 'error')
+
+        except requests.RequestException as e:
+            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+        except json.JSONDecodeError:
+            flash('Resposta da API inválida.', 'error')
+        except Exception as e:
+            flash(f'Erro inesperado: {str(e)}', 'error')
 
     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
-
+    
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 def fotor():
     if 'user_id' not in g:
