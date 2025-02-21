@@ -874,15 +874,21 @@ def cpflv():
                 response.raise_for_status()
                 data = response.json()
 
-                # Verifica se há resultado válido
-                if data.get('resultado') and isinstance(data['resultado'], dict) and 'pessoa' in data['resultado']:
+                # Verifica se o CPF está na estrutura esperada
+                if (data.get('resultado') and 
+                    data['resultado'].get('status') == 'success' and 
+                    'data' in data['resultado'] and 
+                    'pessoa' in data['resultado']['data'] and 
+                    'identificacao' in data['resultado']['data']['pessoa'] and 
+                    'cpf' in data['resultado']['data']['pessoa']['identificacao'] and 
+                    data['resultado']['data']['pessoa']['identificacao']['cpf'] == cpf):
                     if manage_module_usage(g.user_id, 'cpflv'):
-                        result = data['resultado']
+                        result = data['resultado']['data']['pessoa']
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPFLV.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
+                    flash('CPF não encontrado na resposta da API ou dados inválidos.', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -891,6 +897,7 @@ def cpflv():
                 flash(f'Erro inesperado: {str(e)}', 'error')
 
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+    
     
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def cpf5():
