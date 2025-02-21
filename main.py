@@ -312,10 +312,12 @@ def security_check():
     if request.endpoint not in ['login', 'planos']:
         if not check_referrer():
             log_access(request.endpoint, "Invalid referrer")
+            return redirect('/')
             return jsonify({"error": "503"}), 503
 
         if not check_user_agent():
             log_access(request.endpoint, "Invalid user agent")
+            return redirect('/')
             return jsonify({"error": "503"}), 503
 
         token_cookie = request.cookies.get('auth_token')
@@ -1251,7 +1253,7 @@ def placa():
             # Check if 'resultado' exists and if 'retorno' is "ok"
             if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0:
                 result_data = data['resultado'][0]  # Assuming API returns a list with one result
-                if result_data.get('retorno') == 'OK':
+                if result_data.get('retorno') == 'ok':
                     if manage_module_usage(g.user_id, 'placa'):
                         results = data['resultado']  # Store the successful result
                         reset_all()  # Reset cookies or session as per your security logic
