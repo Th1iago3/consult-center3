@@ -447,15 +447,13 @@
             <a href="#" class="download-link" onclick="generateAndDownloadTxt(event)">
                 <i class="fas fa-download"></i> Baixar em .txt
             </a>
-            {% for item in result.data %}
-                <div class="profile-info">
-                    <p><strong>CPF:</strong> {{ item.identificacao.cpf }}</p>
-                    <p><strong>Nome:</strong> {{ item.identificacao.nome }}</p>
-                    <p><strong>Data de Nascimento:</strong> {{ item.identificacao.dt_nascimento }}</p>
-                    <p><strong>Nome da Mãe:</strong> {{ item.identificacao.nome_mae }}</p>
-                    <p><strong>Endereço:</strong> {{ item.endereco.tipo_logradouro }} {{ item.endereco.logradouro }}, {{ item.endereco.bairro }}, {{ item.endereco.cidade }} - {{ item.endereco.uf }}, {{ item.endereco.cep }}</p>
-                </div>
-            {% endfor %}
+            <div class="profile-info">
+                <p><strong>CPF:</strong> {{ result.identificacao.cpf }}</p>
+                <p><strong>Nome:</strong> {{ result.identificacao.nome }}</p>
+                <p><strong>Data de Nascimento:</strong> {{ result.identificacao.dt_nascimento }}</p>
+                <p><strong>Nome da Mãe:</strong> {{ result.identificacao.nome_mae }}</p>
+                <p><strong>Endereço:</strong> {{ result.endereco.tipo_logradouro }} {{ result.endereco.logradouro }}, {{ result.endereco.bairro }}, {{ result.endereco.cidade }} - {{ result.endereco.uf }}, {{ result.endereco.cep }}</p>
+            </div>
         {% endif %}
     </div>
 
@@ -480,12 +478,11 @@
 
         // Alert
         function showAlert(message, type) {
-            const alertContainer = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            alertContainer.appendChild(alert);
-            setTimeout(() => alert.remove(), 3000);
+            const alertContainer = document.createElement('div');
+            alertContainer.className = `alert alert-${type}`;
+            alertContainer.textContent = message;
+            document.querySelector('.container').insertBefore(alertContainer, document.querySelector('form'));
+            setTimeout(() => alertContainer.remove(), 3000);
         }
 
         // Form Validation
@@ -501,24 +498,25 @@
         function generateAndDownloadTxt(event) {
             event.preventDefault();
 
-            const profileInfos = document.querySelectorAll('.profile-info');
-            if (!profileInfos.length) {
+            const profileInfo = document.querySelector('.profile-info');
+            if (!profileInfo) {
                 showAlert('Nenhum resultado disponível para download.', 'error');
                 return;
             }
 
             // Gerar o conteúdo do arquivo
-            const resultText = Array.from(profileInfos).reduce((acc, info) => {
-                const infoText = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
-                return acc + '\n\n' + infoText;
-            }, '');
+            const resultText = Array.from(profileInfo.querySelectorAll('p'))
+                .map(p => p.textContent)
+                .join('\n');
 
             // Formatar a data atual para o nome do arquivo
-            const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
+            const currentDate = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+                .replace(/[^\d]/g, '-')
+                .replace(/-+/g, '-');
             const fileName = `${currentDate}-TELEFONE-DATA-CREDLINK.txt`;
 
             // Criar o arquivo e iniciar o download
-            const blob = new Blob([resultText], { type: 'text/plain' });
+            const blob = new Blob([resultText], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
