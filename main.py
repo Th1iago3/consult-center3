@@ -1253,7 +1253,7 @@ def placa():
                 result_data = data['resultado'][0]  # Assuming API returns a list with one result
                 if result_data.get('retorno') == 'OK':
                     if manage_module_usage(g.user_id, 'placa'):
-                        results = result_data  # Store the successful result
+                        results = data['resultado']  # Store the successful result
                         reset_all()  # Reset cookies or session as per your security logic
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
