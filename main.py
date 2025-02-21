@@ -883,7 +883,7 @@ def cpflv():
                     'cpf' in data['resultado']['data']['pessoa']['identificacao'] and 
                     data['resultado']['data']['pessoa']['identificacao']['cpf'] == cpf):
                     if manage_module_usage(g.user_id, 'cpflv'):
-                        result = data['resultado']['data']['pessoa']
+                        result = data['resultado']
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPFLV.', 'error')
