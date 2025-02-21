@@ -449,9 +449,6 @@
             </a>
             {% for result in results %}
                 <div class="profile-info">
-                    <p><strong>Retorno:</strong> {{ result.retorno | default('Não encontrado') }}</p>
-                    <p><strong>Código de Retorno:</strong> {{ result.codRetorno | default('Não encontrado') }}</p>
-                    <p><strong>Mensagem de Retorno:</strong> {{ result.msgRetorno | default('Não encontrado') }}</p>
                     <p><strong>ID:</strong> {{ result.id | default('Não encontrado') }}</p>
                     <p><strong>Placa:</strong> {{ result.placa | default('Não encontrado') }}</p>
                     <p><strong>Roubo:</strong> {{ result.roubo | default('Não encontrado') }}</p>
