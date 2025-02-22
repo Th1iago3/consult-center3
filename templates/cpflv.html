@@ -468,6 +468,7 @@
                 {% if result.data.vizinhos %}
                 <h3>Vizinhos:</h3>
                 {% for vizinho in result.data.vizinhos %}
+                <div class="profile-info">
                         <p><strong>CPF:</strong> {{ vizinho.identificacao.cpf }}</p>
                         <p><strong>Nome:</strong> {{ vizinho.identificacao.nome }}</p>
                         <p><strong>Data de Nascimento:</strong> {{ vizinho.identificacao.dt_nascimento }}</p>
