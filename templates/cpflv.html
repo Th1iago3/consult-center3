@@ -465,12 +465,10 @@
                 <p><strong>Endereço:</strong> {{ result.data.pessoa.endereco.tipo_logradouro }} {{ result.data.pessoa.endereco.logradouro }}, {{ result.data.pessoa.endereco.bairro }}, {{ result.data.pessoa.endereco.cidade }} - {{ result.data.pessoa.endereco.uf }}, {{ result.data.pessoa.endereco.cep }}</p>
                 <p><strong>Telefones Celulares:</strong> {{ result.data.pessoa.contatos.celulares | join(', ') }}</p>
                 <p><strong>Quantidade de Veículos:</strong> {{ result.data.pessoa.veiculos.qt_veiculos }}</p>
-            </div>
 
             {% if result.data.vizinhos %}
                 <h3>Vizinhos:</h3>
                 {% for vizinho in result.data.vizinhos %}
-                    <div class="neighbor-info">
                         <p><strong>CPF:</strong> {{ vizinho.identificacao.cpf }}</p>
                         <p><strong>Nome:</strong> {{ vizinho.identificacao.nome }}</p>
                         <p><strong>Data de Nascimento:</strong> {{ vizinho.identificacao.dt_nascimento }}</p>
