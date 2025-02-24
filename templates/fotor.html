@@ -587,7 +587,7 @@
                     <a href="#" class="download-link" onclick="downloadImage(event)">
                         <i class="fas fa-download"></i> Baixar em .jpg
                     </a>
-                {% elif selected_option == 'fotorj' and results.resultado.Foto %}
+                {% elif selected_option == 'fotorj' and results.resultado.resultado.Foto %}
                     <img src="data:image/png;base64,{{ results.resultado.Foto }}" alt="Foto RG">
                     <a href="#" class="download-link" onclick="downloadImage(event)">
                         <i class="fas fa-download"></i> Baixar em .jpg
@@ -617,20 +617,20 @@
 
                 {% elif selected_option == 'fotorj' %}
                     <!-- FotoRJ: Estrutura específica -->
-                    <p><strong>CPF:</strong> {{ results.resultado.CPF | default('Não disponível') }}</p>
-                    <p><strong>RG:</strong> {{ results.resultado.RG | default('Não disponível') }}</p>
-                    <p><strong>Cidadão:</strong> {{ results.resultado.Cidadão | default('Não disponível') }}</p>
-                    <p><strong>Nascimento:</strong> {{ results.resultado.Nascimento | default('Não disponível') }}</p>
-                    <p><strong>Mãe:</strong> {{ results.resultado.Mãe | default('Não disponível') }}</p>
-                    <p><strong>Autenticidade:</strong> {{ results.resultado.Autenticidade | default('Não disponível') }}</p>
+                    <p><strong>CPF:</strong> {{ results.resultado.resultado.CPF | default('Não disponível') }}</p>
+                    <p><strong>RG:</strong> {{ results.resultado.resultado.RG | default('Não disponível') }}</p>
+                    <p><strong>Cidadão:</strong> {{ results.resultado.resultado.Cidadão | default('Não disponível') }}</p>
+                    <p><strong>Nascimento:</strong> {{ results.resultado.resultado.Nascimento | default('Não disponível') }}</p>
+                    <p><strong>Mãe:</strong> {{ results.resultado.resultado.Mãe | default('Não disponível') }}</p>
+                    <p><strong>Autenticidade:</strong> {{ results.resultado.resultado.Autenticidade | default('Não disponível') }}</p>
 
                 {% elif selected_option == 'fotomg' %}
                     <!-- FotoMG: Estrutura detalhada -->
                     <p><strong>CPF:</strong> {{ results.CPF | default('Não disponível') }}</p>
                     <p><strong>Nome:</strong> {{ results.Nome | default('Não disponível') }}</p>
-                    <p><strong>Nome da Mãe:</strong> {{ results['Nome da Mãe'] | default('Não disponível') }}</p>
-                    <p><strong>Nome do Pai:</strong> {{ results['Nome do Pai'] | default('Não disponível') }}</p>
-                    <p><strong>Data de Nascimento:</strong> {{ results['Data de Nascimento'] | default('Não disponível') }}</p>
+                    <p><strong>Mãe:</strong> {{ results['Nome da Mãe'] | default('Não disponível') }}</p>
+                    <p><strong>Pai:</strong> {{ results['Nome do Pai'] | default('Não disponível') }}</p>
+                    <p><strong>Nascimento:</strong> {{ results['Data de Nascimento'] | default('Não disponível') }}</p>
                     <p><strong>Categoria CNH Concedida:</strong> {{ results['Categoria CNH Concedida'] | default('Não disponível') }}</p>
                     <p><strong>Validade CNH:</strong> {{ results['Validade CNH'] | default('Não disponível') }}</p>
 
