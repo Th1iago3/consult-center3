@@ -5,283 +5,307 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bem-vindo(a) Admin - Consult Center</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        /* Reset Geral */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F0F2FF;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #F0F2FF 0%, #E6E9FF 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            padding: 20px;
         }
 
+        /* Container Principal com Animação de Entrada */
         .admin-container {
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            padding: 40px;
-            width: 450px;
-            text-align: center;
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            padding: 32px;
+            width: 100%;
+            max-width: 480px;
             position: relative;
-            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0; /* Começa invisível para a animação */
         }
 
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .admin-container:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+
+        h2 {
+            color: #2D2F7A;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-align: center;
+            letter-spacing: -0.5px; /* Detalhe sutil para tipografia */
+        }
+
+        /* Formulário */
         .form-group {
-            margin: 20px 0;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
         }
 
         .form-group input,
         .form-group select {
             width: 100%;
-            padding: 15px;
-            border: none;
-            border-bottom: 2px solid #ccc;
-            background: transparent;
+            padding: 12px 16px;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            font-size: 14px;
             color: #333;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-        }
-
-        /* Enhanced select for user type */
-        .form-group select {
-            /* Removed background-image for the arrow */
-        }
-
-        .form-group select option[value=""] {
-            color: transparent;
+            background: #F8FAFC;
+            transition: all 0.2s ease;
         }
 
         .form-group input:focus,
         .form-group select:focus {
+            border-color: #5A67D8;
+            box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
             outline: none;
-            border-color: #6C63FF;
-            transform: scale(1.01);
         }
 
+        .form-group select {
+            appearance: none;
+            background: #F8FAFC url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%235A67D8' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 16px center;
+        }
+
+        /* Botões */
         .button {
-            display: inline-block;
-            background: linear-gradient(45deg, #6C63FF, #4E54C8);
+            background: linear-gradient(90deg, #5A67D8 0%, #4C51BF 100%);
             border: none;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 16px;
+            color: #FFFFFF;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
             width: 100%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
         .button:hover {
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(90deg, #4C51BF 0%, #434190 100%);
+            box-shadow: 0 4px 15px rgba(90, 103, 216, 0.3);
         }
 
-        .button:active {
-            transform: translateY(0) scale(1);
+        .button.secondary {
+            background: #EDF2F7;
+            color: #5A67D8;
         }
 
+        .button.secondary:hover {
+            background: #E2E8F0;
+        }
+
+        /* Link Voltar */
         .back-link {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            color: #6C63FF;
+            display: inline-flex;
+            align-items: center;
+            color: #5A67D8;
             text-decoration: none;
             font-size: 14px;
-            cursor: pointer;
-            transition: color 0.3s;
+            margin-top: 16px;
+            transition: color 0.2s ease;
         }
 
         .back-link:hover {
-            color: #4E54C8;
+            color: #434190;
         }
 
         .back-link::before {
             content: '←';
-            margin-right: 5px;
+            margin-right: 6px;
+            transition: transform 0.3s ease;
         }
 
+        .back-link:hover::before {
+            transform: translateX(-3px); /* Pequena animação no ícone */
+        }
+
+        /* Alertas */
         .alert {
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            animation: fadeIn 0.5s ease-in;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .alert-success { background-color: #E3FCEF; color: #155724; border-left: 6px solid #155724; }
-        .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 6px solid #721C24; }
-
-        .view-users {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: #6C63FF;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
             font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease-out forwards;
         }
 
-        .view-users:hover {
-            color: #4E54C8;
-            transform: scale(1.05);
+        @keyframes slideIn {
+            0% { transform: translateY(-10px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
 
-        #sendMessageBtn {
-            position: relative;
-            background: none;
-            border: none;
-            color: #6C63FF;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 5px auto 0;
-            display: none;
-            text-align: center;
+        .alert-success {
+            background: #F0FFF4;
+            color: #276749;
+            border-left: 4px solid #276749;
         }
 
-        #sendMessageBtn:hover {
-            color: #4E54C8;
-            transform: scale(1.05);
+        .alert-error {
+            background: #FFF5F5;
+            color: #9B2C2C;
+            border-left: 4px solid #9B2C2C;
         }
 
+        /* Lista de Usuários com Animação */
         #usersList {
-            max-height: 300px;
+            max-height: 320px;
             overflow-y: auto;
-            display: none;
-            text-align: left;
             margin-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            padding-top: 10px;
+            display: none;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 12px;
+            background: #F8FAFC;
+            animation: fadeInUpList 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUpList {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         .user-info {
-            background: #F3F4FF;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            background: #FFFFFF;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
         }
 
         .user-info:hover {
-            box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
         }
 
         .user-info p {
-            margin: 5px 0;
+            font-size: 13px;
             color: #555;
-            font-size: 14px;
+            margin: 4px 0;
         }
 
         .user-info p strong {
+            color: #2D2F7A;
+            min-width: 100px;
             display: inline-block;
-            width: 120px;
         }
 
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1; 
-            left: 0;
+        /* Modal de Sucesso com Animação */
+        .success-modal {
+            display: none;
+            position: fixed;
             top: 0;
-            width: 100%; 
-            height: 100%; 
-            background-color: rgba(0,0,0,0.4); 
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 30px;
-            border: none;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            animation-name: animateModal;
-            animation-duration: 0.4s;
-            position: relative;  /* Added for positioning the close button */
-        }
-
-        @keyframes animateModal {
-            from {transform: scale(0.8); opacity: 0;}
-            to {transform: scale(1); opacity: 1;}
-        }
-
-        .modal-content h3 {
-            color: #4E54C8;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .modal input[type="text"] {
+            left: 0;
             width: 100%;
-            padding: 15px;
-            margin: 10px 0 20px;
-            display: inline-block;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            animation: fadeInBackdrop 0.3s ease-out forwards;
         }
 
-        .modal input[type="text"]:focus {
-            border-color: #6C63FF;
-            outline: none;
+        @keyframes fadeInBackdrop {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
 
-        .close {
-            color: #aaa;
-            font-size: 24px;  /* Reduced size */
-            font-weight: bold;
-            cursor: pointer;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            transition: color 0.3s ease;
+        .success-modal-content {
+            background: #FFFFFF;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            animation: popInModal 0.4s ease-out forwards;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
+        @keyframes popInModal {
+            0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
         }
 
-        .modal .button {
-            width: 100%;
+        .success-modal-content img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            border-radius: 50%; /* Detalhe estético */
+        }
+
+        .success-modal-content h3 {
+            color: #2D2F7A;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .success-modal-content p {
+            font-size: 14px;
+            color: #555;
+            margin: 4px 0;
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .admin-container {
+                padding: 24px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .button {
+                padding: 10px 20px;
+            }
+
+            .success-modal-content {
+                width: 95%;
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="admin-container">
         <h2>Bem-vindo(a) Admin</h2>
-        <button class="view-users" onclick="toggleUsersView()">Ver Usuários</button>
-        <div id="alertContainer">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        </div>
+        <button class="button secondary view-users" onclick="toggleUsersView()">Ver Usuários</button>
+        <div id="alertContainer"></div>
         <form id="adminForm" method="POST">
             <div class="form-group">
+                <label for="action">Ação</label>
                 <select name="action" id="action" onchange="toggleFields()">
                     <option value="add_user">Adicionar Usuário</option>
                     <option value="delete_user">Excluir Usuário</option>
@@ -289,173 +313,143 @@
                 </select>
             </div>
             <div id="userFields" class="form-group">
-                <input type="text" name="user" placeholder="Usuário" required>
-                <input type="password" name="password" placeholder="Senha" required>
+                <label for="user">Usuário</label>
+                <input type="text" name="user" placeholder="Digite o nome de usuário" required>
+                <div id="passwordField">
+                    <label for="password">Senha</label>
+                    <input type="password" name="password" placeholder="Digite a senha" required>
+                </div>
+                <label for="role">Tipo de Usuário</label>
                 <select name="role" id="role">
-                    <option value=""></option>
-                    <option value="user_semanal">TIPO: MEMBRO SEMANAL</option>
-                    <option value="user_mensal">TIPO: MEMBRO MENSAL</option>
-                    <option value="user_anual">TIPO: MEMBRO ANUAL</option>
-                    <option value="admin">TIPO: ADMINISTRADOR</option>
+                    <option value="">Selecione</option>
+                    <option value="user_semanal">Membro Semanal</option>
+                    <option value="user_mensal">Membro Mensal</option>
+                    <option value="user_anual">Membro Anual</option>
+                    <option value="admin">Administrador</option>
                 </select>
-                <input type="date" name="expiration" id="expirationField" placeholder="Data de Expiração" required>
+                <label for="expiration">Data de Expiração</label>
+                <input type="date" name="expiration" id="expirationField" required>
             </div>
             <button type="submit" class="button">Enviar</button>
         </form>
 
         <div id="usersList"></div>
-        <button id="sendMessageBtn" onclick="openModal()">Enviar Mensagem</button>
         <a href="/dashboard" class="back-link">Voltar para o início</a>
     </div>
 
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">×</span>
-            <h3>Enviar Notificação para Todos</h3>
-            <input type="text" id="notificationMessage" placeholder="Mensagem para todos os usuários">
-            <button class="button" onclick="sendNotificationToAll()">Enviar</button>
+    <!-- Modal de Sucesso -->
+    <div id="successModal" class="success-modal">
+        <div class="success-modal-content">
+            <img src="https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif" alt="Success GIF">
+            <h3>Usuário Adicionado!</h3>
+            <p id="successUserInfo"></p>
         </div>
     </div>
 
     <script>
         function toggleFields() {
-            var action = document.getElementById('action').value;
-            var expirationField = document.getElementById('expirationField');
-            var roleField = document.getElementById('role');
+            const action = document.getElementById('action').value;
+            const passwordField = document.getElementById('passwordField');
+            const roleField = document.getElementById('role');
+            const expirationField = document.getElementById('expirationField');
+
             if (action === 'delete_user' || action === 'reset_device') {
-                expirationField.style.display = 'none';
-                expirationField.removeAttribute('required');
+                passwordField.style.display = 'none';
                 roleField.style.display = 'none';
-                roleField.removeAttribute('required');
+                expirationField.style.display = 'none';
             } else {
-                expirationField.style.display = 'block';
-                expirationField.setAttribute('required', 'required');
+                passwordField.style.display = 'block';
                 roleField.style.display = 'block';
-                roleField.setAttribute('required', 'required');
+                expirationField.style.display = 'block';
             }
         }
 
         document.getElementById('adminForm').addEventListener('submit', function(event) {
             event.preventDefault();
+            const formData = new FormData(event.target);
             fetch('/i/settings/admin', {
                 method: 'POST',
-                body: new FormData(event.target),
+                body: formData,
             })
             .then(response => response.json())
             .then(data => {
                 if (data.message) {
-                    flash(data.message, data.category || 'success');
-                    if (data.category === 'success' && data.user && data.password && data.token && data.expiration) {
-                        flash(`Usuário: ${data.user}\n\nSenha: ${data.password}\n\nToken: ${data.token}\n\nExpiração: ${data.expiration}\n\nTipo: ${data.role}`, 'success');
+                    showAlert(data.message, data.category || 'success');
+                    if (data.category === 'success') {
+                        showSuccessModal(data);
                     }
                 }
                 event.target.reset();
             })
             .catch(error => {
-                flash('Erro ao processar o pedido: ' + error.message, 'error');
+                showAlert('Erro ao processar o pedido: ' + error.message, 'error');
             });
         });
 
-        function flash(message, category) {
-            var alertContainer = document.getElementById('alertContainer');
-            var alert = document.createElement('div');
+        function showAlert(message, category) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
             alert.className = `alert alert-${category}`;
             alert.textContent = message;
             alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        function showSuccessModal(data) {
+            const successModal = document.getElementById('successModal');
+            const successUserInfo = document.getElementById('successUserInfo');
+            successUserInfo.innerHTML = `
+                <p><strong>Usuário:</strong> ${data.user}</p>
+                <p><strong>Senha:</strong> ${data.password}</p>
+                <p><strong>Token:</strong> ${data.token}</p>
+                <p><strong>Expiração:</strong> ${data.expiration}</p>
+                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : 
+                                           data.role === 'user_mensal' ? 'Mensal' : 
+                                           data.role === 'user_anual' ? 'Anual' : 
+                                           data.role === 'admin' ? 'Administrador' : data.role}</p>
+            `;
+            successModal.style.display = 'flex';
+            setTimeout(() => successModal.style.display = 'none', 5000);
         }
 
         let usersVisible = false;
-
         function toggleUsersView() {
-            var usersList = document.getElementById('usersList');
-            var sendMessageBtn = document.getElementById('sendMessageBtn');
+            const usersList = document.getElementById('usersList');
             if (usersVisible) {
                 usersList.style.display = 'none';
-                sendMessageBtn.style.display = 'none';
                 usersVisible = false;
             } else {
                 fetch('/i/settings/admin', {
                     method: 'POST',
-                    body: new URLSearchParams({
-                        action: 'view_users'
-                    })
+                    body: new URLSearchParams({ action: 'view_users' }),
                 })
                 .then(response => response.json())
                 .then(data => {
-                    usersList.innerHTML = '';  
-                    Object.entries(data.users).forEach(([user, data]) => {
+                    usersList.innerHTML = '';
+                    Object.entries(data.users).forEach(([user, info]) => {
                         if (user !== 'admin7k') {
-                            var userInfo = document.createElement('div');
+                            const userInfo = document.createElement('div');
                             userInfo.className = 'user-info';
                             userInfo.innerHTML = `
                                 <p><strong>Usuário:</strong> ${user}</p>
-                                <p><strong>Senha:</strong> ${data.password}</p>
-                                <p><strong>Token:</strong> ${data.token}</p>
-                                <p><strong>Expiração:</strong> ${data.expiration}</p>
-                                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : 
-                                                           data.role === 'user_mensal' ? 'Mensal' : 
-                                                           data.role === 'user_anual' ? 'Anual' : 
-                                                           data.role === 'admin' ? 'admin' : data.role}</p>
-                                <p><strong>Dispositivos:</strong> ${data.devices ? data.devices.join(', ') : "Ilimitado"}</p>
+                                <p><strong>Senha:</strong> ${info.password}</p>
+                                <p><strong>Token:</strong> ${info.token}</p>
+                                <p><strong>Expiração:</strong> ${info.expiration}</p>
+                                <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' : 
+                                                          info.role === 'user_mensal' ? 'Mensal' : 
+                                                          info.role === 'user_anual' ? 'Anual' : 
+                                                          info.role === 'admin' ? 'Administrador' : info.role}</p>
                             `;
                             usersList.appendChild(userInfo);
                         }
                     });
                     usersList.style.display = 'block';
-                    sendMessageBtn.style.display = 'block';
                     usersVisible = true;
                 })
                 .catch(error => {
-                    flash('Erro ao carregar informações dos usuários: ' + error.message, 'error');
+                    showAlert('Erro ao carregar usuários: ' + error.message, 'error');
                 });
             }
-        }
-
-        var modal = document.getElementById("myModal");
-        var span = document.getElementsByClassName("close")[0];
-
-        function openModal() {
-            modal.style.display = "block";
-        }
-
-        function closeModal() {
-            modal.style.display = "none";
-        }
-
-        span.onclick = function() {
-            closeModal();
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
-
-        function sendNotificationToAll() {
-            var message = document.getElementById('notificationMessage').value;
-            if (!message) {
-                flash('Por favor, insira uma mensagem.', 'error');
-                return;
-            }
-            fetch('/i/settings/admin', {
-                method: 'POST',
-                body: new URLSearchParams({
-                    action: 'send_message',
-                    user: 'all',  
-                    message: '| ' + message
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    flash(data.message, data.category || 'success');
-                    closeModal();
-                }
-            })
-            .catch(error => {
-                flash('Erro ao enviar notificação: ' + error.message, 'error');
-            });
         }
     </script>
 </body>
