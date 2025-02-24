@@ -588,7 +588,7 @@
                         <i class="fas fa-download"></i> Baixar em .jpg
                     </a>
                 {% elif selected_option == 'fotorj' and results.resultado.resultado.Foto %}
-                    <img src="data:image/png;base64,{{ results.resultado.Foto }}" alt="Foto RG">
+                    <img src="data:image/png;base64,{{ results.resultado.resultado.Foto }}" alt="Foto RG">
                     <a href="#" class="download-link" onclick="downloadImage(event)">
                         <i class="fas fa-download"></i> Baixar em .jpg
                     </a>
