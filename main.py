@@ -1345,7 +1345,7 @@ def fotor():
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     documento = ""
-    selected_option = "fotoba"  # Default option
+    selected_option = "fotoba"  # Opção padrão
 
     if request.method == 'POST':
         documento = request.form.get('documento', '')
@@ -1362,35 +1362,73 @@ def fotor():
                         flash('Token inválido ou não corresponde ao usuário logado.', 'error')
                         return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=token)
 
-                # API Call for photo lookup based on the selected state
-                token = "a72566c8fac76174cb917c1501d94856"
+                # Chamada à API para busca de foto baseada na opção selecionada
+                token = "a72566c8fac76174cb917c1501d94856"  # Token fixo (recomendo mover para config)
                 if selected_option == "fotoba":
-                    url = f"https://apibr.lat/estadosrjx/fotoba.php?query={documento}"
-                elif selected_option == "fotorj":
-                    url = f"https://apibr.lat/estadosrjx/fotorj.php?query={documento}"
-                else: 
-                    url = f"https://apibr.lat/estadosrjx/fotosp.php?query={documento}"
-
-                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-                response.raise_for_status()  # Raises HTTPError for bad responses
-                data = response.json()
-
-                # Assume success if the API returns non-empty data
-                if data: 
-                    if manage_module_usage(g.user_id, 'fotor'):
-                        # Directly use the data as the result
-                        results = data
-                        reset_all()
+                    url = f"http://br4s1l.space/api.php?base=FotoBA&query={documento}"
+                    response = requests.get(url, verify=False)
+                    response.raise_for_status()
+                    data = response.json()
+                    if data:
+                        results = data  # Usando diretamente os dados retornados
                     else:
-                        flash('Limite de uso atingido para FOTOR.', 'error')
-                else:
-                    flash('Nenhum resultado encontrado ou erro na consulta.', 'error')
-            except requests.RequestException:
-                flash('Erro ao conectar com o servidor da API.', 'error')
+                        flash('Nenhum resultado encontrado para FotoBA.', 'error')
+
+                elif selected_option == "fotorj":
+                    url = f"http://br4s1l.space/api.php?base=FotoRJ&query={documento}"
+                    response = requests.get(url, verify=False)
+                    response.raise_for_status()
+                    data = response.json()
+                    if data:
+                        results = data
+                    else:
+                        flash('Nenhum resultado encontrado para FotoRJ.', 'error')
+
+                elif selected_option == "fotomg":
+                    url = f"http://82.29.58.211:2000/mg_cpf_foto/{documento}"
+                    response = requests.get(url, verify=False)
+                    response.raise_for_status()
+                    data = response.json()
+                    if data and "foto_base64" in data:
+                        # Lógica específica para fotomg: garantir que os dados sejam tratados corretamente
+                        results = {
+                            "CPF": data.get("CPF", ""),
+                            "Nome": data.get("Nome", ""),
+                            "Nome da Mãe": data.get("Nome da Mãe", ""),
+                            "Nome do Pai": data.get("Nome do Pai", ""),
+                            "Data de Nascimento": data.get("Data de Nascimento", ""),
+                            "Categoria CNH Concedida": data.get("Categoria CNH Concedida", ""),
+                            "Validade CNH": data.get("Validade CNH", ""),
+                            "foto_base64": data.get("foto_base64", ""),
+                            # Adicione outros campos conforme necessário
+                        }
+                    else:
+                        flash('Nenhum resultado encontrado ou foto indisponível para FotoMG.', 'error')
+
+                else:  # fotosp
+                    url = f"http://br4s1l.space/api.php?base=FotoSP&query={documento}"
+                    response = requests.get(url, verify=False)
+                    response.raise_for_status()
+                    data = response.json()
+                    if data:
+                        results = data
+                    else:
+                        flash('Nenhum resultado encontrado para FotoSP.', 'error')
+
+                # Verifica limite de uso e processa resultados
+                if results and manage_module_usage(g.user_id, 'fotor'):
+                    reset_all()
+                elif results:
+                    flash('Limite de uso atingido para FOTOR.', 'error')
+                    results = None
+
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
                 flash('Resposta da API inválida.', 'error')
 
     return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
+
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 def nomelv():
     if 'user_id' not in g:
