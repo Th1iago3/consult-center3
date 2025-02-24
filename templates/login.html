@@ -30,12 +30,12 @@
 
         html {
             height: 100%;
-            background: var(--background); /* Fallback sólido */
+            background: var(--background);
         }
 
         body {
             background: linear-gradient(135deg, var(--background) 0%, #27294A 100%);
-            background-attachment: fixed; /* Evita redesenho */
+            background-attachment: fixed;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -47,12 +47,12 @@
 
         body::before {
             content: '';
-            position: absolute; /* Alterado de fixed para melhor compatibilidade */
-            inset: 0; /* Substitui top/left/width/height */
+            position: absolute;
+            inset: 0;
             background: radial-gradient(circle at center, rgba(110, 68, 255, 0.15) 0%, transparent 70%);
             animation: pulseGlow 8s infinite alternate;
             z-index: -1;
-            will-change: opacity, transform; /* Otimização de animação */
+            will-change: opacity, transform;
         }
 
         .particles {
@@ -65,17 +65,33 @@
 
         .particle {
             position: absolute;
-            background: var(--primary-color);
+            background: radial-gradient(circle, var(--primary-color) 20%, var(--secondary-color) 80%);
             border-radius: 50%;
-            box-shadow: 0 0 15px var(--glow);
-            animation: floatParticle 10s infinite ease-in-out;
+            box-shadow: 0 0 20px var(--glow), 0 0 10px var(--primary-color);
+            opacity: 0;
+            animation: floatParticle 12s infinite ease-in-out;
             will-change: transform, opacity;
         }
 
         @keyframes floatParticle {
-            0% { transform: translateY(100vh) scale(0.8); opacity: 0.6; }
-            50% { opacity: 0.9; }
-            100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+            0% {
+                transform: translateY(100vh) translateX(0) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(50vh) translateX(calc(sin(var(--random-x)) * 100px)) scale(1);
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(calc(sin(var(--random-x)) * 150px)) scale(1.2);
+                opacity: 0;
+            }
         }
 
         .login-screen {
@@ -92,7 +108,7 @@
             transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
 
-        /* Restante do CSS mantido igual, apenas com pequenas otimizações */
+        /* Restante do CSS mantido igual às suas especificações */
         .login-screen:hover {
             transform: scale(1.02);
             box-shadow: 0 20px 60px var(--shadow), 0 0 40px var(--glow);
@@ -164,7 +180,6 @@
             font-weight: 400;
         }
 
-        /* Restante do CSS mantido, apenas com pequenas melhorias de performance */
         .show-password {
             display: flex;
             align-items: center;
@@ -243,7 +258,7 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            color: #fff; /* Alterado de var(--white) que não estava definido */
+            color: #fff;
             box-shadow: 0 5px 20px var(--glow);
             cursor: pointer;
             transition: all 0.4s ease;
@@ -322,56 +337,45 @@
                 padding: 25px 15px;
                 border-radius: 20px;
             }
-
             .login-screen h2 {
                 font-size: 28px;
             }
-
             .login-field {
                 margin: 20px 0;
             }
-
             .login-input {
                 padding: 12px 12px 12px 45px;
                 font-size: 14px;
             }
-
             .login-submit {
                 padding: 12px;
                 font-size: 14px;
             }
-
             .show-password label {
                 font-size: 12px;
                 padding-left: 30px;
             }
-
             .show-password label::before {
                 width: 18px;
                 height: 18px;
             }
-
             .show-password label::after {
                 width: 14px;
                 height: 14px;
                 left: 2px;
             }
-
             .show-password input[type="checkbox"]:checked + label::before {
                 width: 18px;
                 height: 18px;
             }
-
             .show-password input[type="checkbox"]:checked + label::after {
                 width: 18px;
                 height: 18px;
                 left: 0;
             }
-
             .signup-text {
                 font-size: 12px;
             }
-
             .alert {
                 font-size: 12px;
                 padding: 10px;
@@ -382,15 +386,12 @@
             .login-screen {
                 padding: 20px 10px;
             }
-
             .login-screen h2 {
                 font-size: 24px;
             }
-
             .login-input {
                 font-size: 13px;
             }
-
             .login-submit {
                 font-size: 12px;
             }
@@ -403,9 +404,7 @@
     </style>
 </head>
 <body>
-    <div class="particles">
-        <!-- Partículas geradas via JS -->
-    </div>
+    <div class="particles" id="particlesContainer"></div>
 
     <div class="login-screen">
         <h2>Entrar</h2>
@@ -440,23 +439,47 @@
     </div>
 
     <script>
-        // Gerar partículas com melhor performance
-        const particlesContainer = document.querySelector('.particles');
-        const particleCount = Math.min(30, window.innerWidth < 480 ? 15 : 30); // Reduz partículas em telas pequenas
-        
-        for (let i = 0; i < particleCount; i++) {
+        // Função para criar partículas dinamicamente
+        function createParticle(container) {
             const particle = document.createElement('div');
             particle.classList.add('particle');
-            const size = Math.random() * 8 + 4;
+
+            const size = Math.random() * 6 + 4; // Tamanhos entre 4px e 10px
+            const randomX = Math.random() * 2 - 1; // Valor entre -1 e 1 para movimento lateral
+            const delay = Math.random() * 5;
+            const duration = Math.random() * 4 + 10; // Duração entre 10s e 14s
+
             particle.style.cssText = `
                 width: ${size}px;
                 height: ${size}px;
                 left: ${Math.random() * 100}vw;
-                top: ${Math.random() * 100}vh;
-                animation-delay: ${Math.random() * 5}s;
+                --random-x: ${randomX};
+                animation-duration: ${duration}s;
+                animation-delay: ${delay}s;
             `;
-            particlesContainer.appendChild(particle);
+
+            container.appendChild(particle);
+
+            // Remover partícula após animação para evitar acúmulo
+            particle.addEventListener('animationend', () => {
+                particle.remove();
+                createParticle(container); // Criar uma nova partícula
+            });
         }
+
+        // Inicializar partículas
+        function initParticles() {
+            const particlesContainer = document.getElementById('particlesContainer');
+            particlesContainer.innerHTML = ''; // Limpar qualquer conteúdo existente
+            const particleCount = Math.min(30, window.innerWidth < 480 ? 15 : 30);
+
+            for (let i = 0; i < particleCount; i++) {
+                createParticle(particlesContainer);
+            }
+        }
+
+        // Chamar inicialização ao carregar a página
+        window.addEventListener('load', initParticles);
 
         // Alternar visibilidade da senha
         document.getElementById('showPassword').addEventListener('change', function() {
