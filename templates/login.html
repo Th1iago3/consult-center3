@@ -358,8 +358,15 @@
             transition: all 0.4s ease;
         }
 
+        .login-input:disabled {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-light);
+            cursor: not-allowed;
+            border-color: rgba(110, 68, 255, 0.2);
+        }
+
         .login-input:focus,
-        .login-input:hover {
+        .login-input:hover:not(:disabled) {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 15px var(--glow);
@@ -456,7 +463,14 @@
             transition: all 0.4s ease;
         }
 
-        .login-submit:hover {
+        .login-submit:disabled {
+            background: linear-gradient(90deg, #5a3bcc, #8a5bcc);
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        .login-submit:hover:not(:disabled) {
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 10px 30px var(--glow);
             background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
@@ -469,7 +483,7 @@
             transition: transform 0.3s ease;
         }
 
-        .login-submit:hover .button-icon {
+        .login-submit:hover:not(:disabled) .button-icon {
             transform: translateX(5px) scale(1.2);
         }
 
@@ -621,17 +635,17 @@
         <form class="login-form" method="POST" action="/" id="loginForm">
             <div class="login-field">
                 <i class="login-icon fas fa-user"></i>
-                <input type="text" class="login-input" id="user" name="user" placeholder="Usuário" required>
+                <input type="text" class="login-input" id="user" name="user" placeholder="Usuário" required disabled>
             </div>
             <div class="login-field">
                 <i class="login-icon fas fa-lock"></i>
-                <input type="password" class="login-input" id="password" name="password" placeholder="Senha" required>
+                <input type="password" class="login-input" id="password" name="password" placeholder="Senha" required disabled>
             </div>
             <div class="show-password">
-                <input type="checkbox" id="showPassword">
+                <input type="checkbox" id="showPassword" disabled>
                 <label for="showPassword">Mostrar Senha</label>
             </div>
-            <button type="submit" class="login-submit">
+            <button type="submit" class="login-submit" disabled>
                 <span>Entrar</span>
                 <i class="button-icon fas fa-chevron-right"></i>
             </button>
@@ -682,6 +696,18 @@
             return !hasSeenWelcome && backinUP !== 'true';
         }
 
+        function enableLoginForm() {
+            const userInput = document.getElementById('user');
+            const passwordInput = document.getElementById('password');
+            const showPasswordCheckbox = document.getElementById('showPassword');
+            const loginSubmit = document.querySelector('.login-submit');
+
+            userInput.removeAttribute('disabled');
+            passwordInput.removeAttribute('disabled');
+            showPasswordCheckbox.removeAttribute('disabled');
+            loginSubmit.removeAttribute('disabled');
+        }
+
         window.addEventListener('load', () => {
             initParticles();
 
@@ -699,10 +725,12 @@
                 mainContainer.style.display = 'none';
                 loginScreen.style.display = 'block';
                 loginScreen.classList.add('active');
+                enableLoginForm(); // Habilita o formulário diretamente se não for a tela de boas-vindas
             }
 
             if (backinUP === 'true') {
                 loginScreen.classList.add('fade');
+                enableLoginForm(); // Habilita o formulário se backinUP=true
             }
 
             if (accessButton) {
@@ -710,6 +738,7 @@
                     mainContainer.classList.add('hidden');
                     setTimeout(() => {
                         loginScreen.classList.add('active');
+                        enableLoginForm(); // Habilita o formulário ao clicar no botão
                     }, 50);
                 });
             }
