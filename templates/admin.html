@@ -548,7 +548,11 @@
             }
             fetch('/i/settings/admin', {
                 method: 'POST',
-                body: new URLSearchParams({ action: 'send_message', message }),
+                body: new URLSearchParams({
+                    action: 'send_message',
+                    user: 'all',  
+                    message: message
+                })
             })
             .then(response => response.json())
             .then(data => {
