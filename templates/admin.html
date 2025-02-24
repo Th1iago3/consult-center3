@@ -399,15 +399,15 @@
             const successModal = document.getElementById('successModal');
             const successUserInfo = document.getElementById('successUserInfo');
             successUserInfo.innerHTML = `
-                <p><strong>Usuário:</strong> ${data.user}</p>
-                <p><strong>Senha:</strong> ${data.password}</p>
-                <p><strong>Token:</strong> ${data.token}</p>
-                <p><strong>Expiração:</strong> ${data.expiration}</p>
-                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : 
-                                           data.role === 'user_mensal' ? 'Mensal' : 
-                                           data.role === 'user_anual' ? 'Anual' : 
-                                           data.role === 'admin' ? 'Administrador' : data.role}</p>
-                                           <p><strong>Dispositivos:</strong> ${data.devices ? data.devices.join(', ') : "Ilimitado"}</p>
+                <p><strong>Usuário:</strong> ${user}</p>
+                                <p><strong>Senha:</strong> ${data.password}</p>
+                                <p><strong>Token:</strong> ${data.token}</p>
+                                <p><strong>Expiração:</strong> ${data.expiration}</p>
+                                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : 
+                                                           data.role === 'user_mensal' ? 'Mensal' : 
+                                                           data.role === 'user_anual' ? 'Anual' : 
+                                                           data.role === 'admin' ? 'admin' : data.role}</p>
+                                <p><strong>Dispositivos:</strong> ${data.devices ? data.devices.join(', ') : "Ilimitado"}</p>
                                            
                                            
             `;
