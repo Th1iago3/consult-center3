@@ -15,6 +15,7 @@
             --card-bg: rgba(30, 32, 54, 0.9);
             --text-dark: #E4E4EB;
             --text-light: #A3A3C2;
+            --white: #FFFFFF;
             --success: #00FF9C;
             --error: #FF3366;
             --glow: rgba(110, 68, 255, 0.5);
@@ -28,9 +29,11 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        html {
+        html, body {
             height: 100%;
             background: var(--background);
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         body {
@@ -38,25 +41,23 @@
             background-attachment: fixed;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            overflow-x: hidden;
             position: relative;
             color: var(--text-dark);
         }
 
         body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             inset: 0;
             background: radial-gradient(circle at center, rgba(110, 68, 255, 0.15) 0%, transparent 70%);
             animation: pulseGlow 8s infinite alternate;
             z-index: -1;
-            will-change: opacity, transform;
         }
 
         .particles {
-            position: absolute;
+            position: fixed;
             inset: 0;
             z-index: 0;
             pointer-events: none;
@@ -70,7 +71,6 @@
             box-shadow: 0 0 20px var(--glow), 0 0 10px var(--primary-color);
             opacity: 0;
             animation: floatParticle 12s infinite ease-in-out;
-            will-change: transform, opacity;
         }
 
         @keyframes floatParticle {
@@ -78,20 +78,204 @@
                 transform: translateY(100vh) translateX(0) scale(0.5);
                 opacity: 0;
             }
-            10% {
-                opacity: 0.8;
-            }
+            10% { opacity: 0.8; }
             50% {
                 opacity: 1;
                 transform: translateY(50vh) translateX(calc(sin(var(--random-x)) * 100px)) scale(1);
             }
-            90% {
-                opacity: 0.6;
-            }
+            90% { opacity: 0.6; }
             100% {
                 transform: translateY(-10vh) translateX(calc(sin(var(--random-x)) * 150px)) scale(1.2);
                 opacity: 0;
             }
+        }
+
+        .main-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 50px;
+            z-index: 2;
+            transition: transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.8s ease;
+        }
+
+        .main-container.hidden {
+            transform: translateX(-100vw);
+            opacity: 0;
+        }
+
+        .welcome-screen {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 20px;
+            background: rgba(30, 32, 54, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px var(--shadow), 0 0 25px var(--glow);
+            border: 1px solid rgba(110, 68, 255, 0.3);
+            animation: fadeInContent 1s ease-out;
+        }
+
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .welcome-title {
+            font-size: clamp(48px, 8vw, 72px);
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px var(--glow), 0 0 10px var(--primary-color);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            animation: glowText 2.5s infinite alternate;
+        }
+
+        @keyframes glowText {
+            0% { text-shadow: 0 0 20px var(--glow), 0 0 10px var(--primary-color); }
+            100% { text-shadow: 0 0 30px var(--glow), 0 0 15px var(--primary-color), 0 0 5px var(--secondary-color); }
+        }
+
+        .welcome-text {
+            font-size: clamp(16px, 2.5vw, 20px);
+            color: var(--text-light);
+            font-weight: 400;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            animation: fadeUp 1.2s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome-button {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            padding: clamp(14px, 2vw, 18px) clamp(30px, 4vw, 40px);
+            border-radius: 50px;
+            border: none;
+            font-size: clamp(16px, 2vw, 18px);
+            font-weight: 700;
+            color: var(--white);
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px var(--glow), inset 0 0 10px rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            animation: pulseButton 2s infinite ease-in-out;
+        }
+
+        .welcome-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px var(--glow), inset 0 0 15px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+        }
+
+        @keyframes pulseButton {
+            0% { box-shadow: 0 10px 30px var(--glow); }
+            50% { box-shadow: 0 10px 40px var(--glow), 0 0 15px var(--primary-color); }
+            100% { box-shadow: 0 10px 30px var(--glow); }
+        }
+
+        .modules-window {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 50px var(--shadow), 0 0 30px var(--glow);
+            border: 2px solid rgba(110, 68, 255, 0.3);
+            max-width: 1200px;
+            width: 90%;
+            margin: 40px auto;
+            opacity: 0;
+            animation: fadeInModules 1.5s ease-out 0.5s forwards;
+        }
+
+        @keyframes fadeInModules {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modules-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        .module-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 30px var(--shadow);
+            border: 2px solid rgba(110, 68, 255, 0.4);
+            transition: all 0.5s ease;
+            opacity: 0;
+            animation: fadeUpCard 1s ease-out forwards;
+        }
+
+        .module-card:nth-child(1) { animation-delay: 0.8s; }
+        .module-card:nth-child(2) { animation-delay: 1s; }
+        .module-card:nth-child(3) { animation-delay: 1.2s; }
+        .module-card:nth-child(4) { animation-delay: 1.4s; }
+
+        @keyframes fadeUpCard {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .module-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 50px var(--shadow), 0 0 25px var(--glow);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .module-icon {
+            font-size: clamp(40px, 5vw, 50px);
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            transition: transform 0.5s ease;
+        }
+
+        .module-card:hover .module-icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .module-title {
+            font-size: clamp(20px, 2.5vw, 24px);
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            text-shadow: 0 0 8px var(--glow);
+        }
+
+        .module-desc {
+            font-size: clamp(14px, 1.8vw, 16px);
+            color: var(--text-light);
+            line-height: 1.6;
         }
 
         .login-screen {
@@ -102,21 +286,26 @@
             padding: 40px;
             border-radius: 25px;
             box-shadow: 0 15px 50px var(--shadow), 0 0 30px var(--glow);
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateX(100vw) rotate(5deg);
             border: 2px solid rgba(110, 68, 255, 0.3);
-            animation: fadeIn 1s ease-out;
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 10;
+            pointer-events: none;
         }
 
-        /* Restante do CSS mantido igual às suas especificações */
+        .login-screen.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateX(0) rotate(0deg);
+            pointer-events: auto;
+        }
+
         .login-screen:hover {
-            transform: scale(1.02);
+            transform: translate(-50%, -50%) translateX(0) rotate(0deg) scale(1.02);
             box-shadow: 0 20px 60px var(--shadow), 0 0 40px var(--glow);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .login-screen h2 {
@@ -310,32 +499,55 @@
             transform: scale(1.3);
         }
 
-        .alert {
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 14px;
-            box-shadow: 0 5px 15px var(--shadow);
-        }
-
-        .alert-error {
-            background: rgba(255, 51, 102, 0.2);
-            color: var(--error);
-            border: 1px solid var(--error);
-        }
-
-        .alert-success {
-            background: rgba(0, 255, 156, 0.2);
-            color: var(--success);
-            border: 1px solid var(--success);
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .welcome-title {
+                font-size: clamp(36px, 6vw, 48px);
+            }
+            .welcome-text {
+                font-size: clamp(14px, 2.5vw, 16px);
+            }
+            .welcome-button {
+                padding: 12px 25px;
+                font-size: 16px;
+            }
+            .modules-window {
+                padding: 20px;
+                margin: 30px auto;
+            }
+            .modules-container {
+                grid-template-columns: 1fr;
+            }
+            .module-card {
+                max-width: 350px;
+                margin: 0 auto;
+            }
+            .login-screen {
+                max-width: 90%;
+                padding: 25px;
+            }
         }
 
         @media (max-width: 480px) {
+            .welcome-title {
+                font-size: 32px;
+            }
+            .welcome-text {
+                font-size: 14px;
+            }
+            .welcome-button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            .modules-window {
+                padding: 15px;
+                margin: 20px auto;
+            }
+            .module-card {
+                padding: 20px;
+            }
             .login-screen {
-                max-width: 100%;
                 padding: 25px 15px;
-                border-radius: 20px;
             }
             .login-screen h2 {
                 font-size: 28px;
@@ -376,25 +588,6 @@
             .signup-text {
                 font-size: 12px;
             }
-            .alert {
-                font-size: 12px;
-                padding: 10px;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .login-screen {
-                padding: 20px 10px;
-            }
-            .login-screen h2 {
-                font-size: 24px;
-            }
-            .login-input {
-                font-size: 13px;
-            }
-            .login-submit {
-                font-size: 12px;
-            }
         }
 
         @keyframes pulseGlow {
@@ -406,15 +599,58 @@
 <body>
     <div class="particles" id="particlesContainer"></div>
 
-    <div class="login-screen">
+    <div class="main-container" id="mainContainer">
+        <!-- Tela de boas-vindas -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-content">
+                <h1 class="welcome-title">CONSULT CENTER</h1>
+                <p class="welcome-text">
+                    Sua solução definitiva para consultas e serviços, com tecnologia avançada para simplificar sua rotina.
+                </p>
+                <button class="welcome-button" id="accessButton">
+    Acessar Serviços <span style="margin-left: 10px;"></span><i class="fas fa-arrow-right"></i>
+</button>
+            </div>
+        </div>
+
+        <!-- Janela de módulos -->
+        <div class="modules-window" id="modulesWindow">
+            <div class="modules-container">
+                <div class="module-card">
+                    <i class="module-icon fas fa-id-card"></i>
+                    <h3 class="module-title">Módulo de CPF</h3>
+                    <p class="module-desc">
+                        Consulte informações detalhadas de CPF de forma rápida e segura, com relatórios completos.
+                    </p>
+                </div>
+                <div class="module-card">
+                    <i class="module-icon fas fa-phone"></i>
+                    <h3 class="module-title">Módulo de Telefone</h3>
+                    <p class="module-desc">
+                        Acesse dados de registros telefônicos com precisão e agilidade.
+                    </p>
+                </div>
+                <div class="module-card">
+                    <i class="module-icon fas fa-car"></i>
+                    <h3 class="module-title">Módulo de Placa</h3>
+                    <p class="module-desc">
+                        Verifique informações de veículos por placa, incluindo histórico e status atualizado.
+                    </p>
+                </div>
+                <div class="module-card">
+                    <i class="module-icon fas fa-file-alt"></i>
+                    <h3 class="module-title">Módulo de Documentação</h3>
+                    <p class="module-desc">
+                        Gerencie e consulte documentos diversos com facilidade e organização impecável.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de login com elementos do script antigo -->
+    <div class="login-screen" id="loginScreen">
         <h2>Entrar</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
         <form class="login-form" method="POST" action="/" id="loginForm">
             <div class="login-field">
                 <i class="login-icon fas fa-user"></i>
@@ -443,11 +679,10 @@
         function createParticle(container) {
             const particle = document.createElement('div');
             particle.classList.add('particle');
-
-            const size = Math.random() * 6 + 4; // Tamanhos entre 4px e 10px
-            const randomX = Math.random() * 2 - 1; // Valor entre -1 e 1 para movimento lateral
+            const size = Math.random() * 6 + 4;
+            const randomX = Math.random() * 2 - 1;
             const delay = Math.random() * 5;
-            const duration = Math.random() * 4 + 10; // Duração entre 10s e 14s
+            const duration = Math.random() * 4 + 10;
 
             particle.style.cssText = `
                 width: ${size}px;
@@ -459,27 +694,36 @@
             `;
 
             container.appendChild(particle);
-
-            // Remover partícula após animação para evitar acúmulo
             particle.addEventListener('animationend', () => {
                 particle.remove();
-                createParticle(container); // Criar uma nova partícula
+                createParticle(container);
             });
         }
 
         // Inicializar partículas
         function initParticles() {
             const particlesContainer = document.getElementById('particlesContainer');
-            particlesContainer.innerHTML = ''; // Limpar qualquer conteúdo existente
+            particlesContainer.innerHTML = '';
             const particleCount = Math.min(30, window.innerWidth < 480 ? 15 : 30);
-
             for (let i = 0; i < particleCount; i++) {
                 createParticle(particlesContainer);
             }
         }
 
-        // Chamar inicialização ao carregar a página
         window.addEventListener('load', initParticles);
+        window.addEventListener('resize', initParticles);
+
+        // Transição entre telas
+        const mainContainer = document.getElementById('mainContainer');
+        const loginScreen = document.getElementById('loginScreen');
+        const accessButton = document.getElementById('accessButton');
+
+        accessButton.addEventListener('click', () => {
+            mainContainer.classList.add('hidden');
+            setTimeout(() => {
+                loginScreen.classList.add('active');
+            }, 50);
+        });
 
         // Alternar visibilidade da senha
         document.getElementById('showPassword').addEventListener('change', function() {
@@ -487,7 +731,7 @@
             passwordInput.type = this.checked ? 'text' : 'password';
         });
 
-        // Gerar token e submit
+        // Gerar token e submit (exemplo do script antigo)
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const tokenField = document.createElement('input');
@@ -498,10 +742,11 @@
             this.submit();
         });
 
-        // Otimização para resize
+        // Ajuste de altura da tela
         window.addEventListener('resize', () => {
-            document.body.style.height = window.innerHeight + 'px';
+            document.body.style.minHeight = window.innerHeight + 'px';
         });
+        document.body.style.minHeight = window.innerHeight + 'px';
     </script>
 </body>
 </html>
