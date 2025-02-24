@@ -166,12 +166,21 @@ body::before {
 }
 
 .module-icon {
-    width: 60px;
-    height: 60px;
+    width: 60px; /* Match the image icon size */
+    height: 60px; /* Match the image icon size */
     color: var(--primary-color);
     margin-bottom: 15px;
     filter: drop-shadow(0 5px 10px var(--shadow));
     transition: transform 0.4s ease;
+    display: flex; /* Ensure consistent centering */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+}
+
+/* Specific styling for Font Awesome icons */
+.module-icon.fas {
+    font-size: 60px; /* Match the size of the image icons */
+    line-height: 60px; /* Ensure the icon fits within the height */
 }
 
 .module-card:hover .module-icon {
