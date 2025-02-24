@@ -927,12 +927,16 @@ body::before {
     </div>
         
         <div class="pagination">
-    <button class="page-arrow left-arrow" onclick="previousPage()">←</button>
+    <button class="page-arrow left-arrow" onclick="previousPage()">
+        <i class="fas fa-chevron-left"></i>
+    </button>
     <div class="page-dot active" onclick="changePage(1)"></div>
     <div class="page-dot" onclick="changePage(2)"></div>
     <div class="page-dot" onclick="changePage(3)"></div>
     <div class="page-dot" onclick="changePage(4)"></div>
-    <button class="page-arrow right-arrow" onclick="nextPage()">→</button>
+    <button class="page-arrow right-arrow" onclick="nextPage()">
+        <i class="fas fa-chevron-right"></i>
+    </button>
 </div>
         
 
@@ -947,22 +951,42 @@ body::before {
 
         // Navegação entre páginas
         const dots = document.querySelectorAll('.page-dot');
+let currentPage = 1; // Página inicial
+const totalPages = dots.length; // Total de páginas baseado nos dots
 
-        function changePage(pageNumber) {
-            document.querySelectorAll('.modules-grid').forEach(page => {
-                page.style.display = 'none';
-            });
-            document.getElementById('page' + pageNumber).style.display = 'grid';
+function changePage(pageNumber) {
+    // Esconde todas as páginas
+    document.querySelectorAll('.modules-grid').forEach(page => {
+        page.style.display = 'none';
+    });
+    // Mostra a página selecionada
+    document.getElementById('page' + pageNumber).style.display = 'grid';
 
-            dots.forEach(dot => {
-                dot.classList.remove('active');
-            });
-            dots[pageNumber - 1].classList.add('active');
-        }
+    // Atualiza o estado dos dots
+    dots.forEach(dot => {
+        dot.classList.remove('active');
+    });
+    dots[pageNumber - 1].classList.add('active');
 
-        function navigateTo(url) {
-            window.location.href = url;
-        }
+    // Atualiza a página atual
+    currentPage = pageNumber;
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        changePage(currentPage - 1);
+    }
+}
+
+function nextPage() {
+    if (currentPage < totalPages) {
+        changePage(currentPage + 1);
+    }
+}
+
+function navigateTo(url) {
+    window.location.href = url;
+}
 
         // Animações ao carregar
         document.querySelectorAll('.module-card').forEach((card, index) => {
