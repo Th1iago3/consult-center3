@@ -252,8 +252,8 @@
         }
 
         .success-modal-content img {
-            width: 80px;
-            height: 80px;
+            max-width: 100%;
+            height: auto;
             margin-bottom: 16px;
             border-radius: 50%;
         }
@@ -267,7 +267,7 @@
 
         .success-modal-content p {
             font-size: 14px;
-            color: rgba(85, 85, 85, 0.7); /* Cinza meio transparente */
+            color: rgba(85, 85, 85, 0.7);
             margin: 4px 0;
         }
 
@@ -405,13 +405,17 @@
             const expirationField = document.getElementById('expirationField');
 
             if (action === 'delete_user' || action === 'reset_device') {
-                passwordField.style.display = 'none';
+                passwordField.style.display = 'block';
                 roleField.style.display = 'none';
                 expirationField.style.display = 'none';
+                roleField.removeAttribute('required');
+                expirationField.removeAttribute('required');
             } else {
                 passwordField.style.display = 'block';
                 roleField.style.display = 'block';
                 expirationField.style.display = 'block';
+                roleField.setAttribute('required', 'required');
+                expirationField.setAttribute('required', 'required');
             }
         }
 
