@@ -6,157 +6,212 @@
     <title>Login - Consult Center</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css?family=Raleway:400,700');
 
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;	
+            font-family: Raleway, sans-serif;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(90deg, #C7C5F4, #776BCC);
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            margin: 0;
-            background: linear-gradient(to bottom right, #4e54c8, #8f94fb);
-            animation: fadeIn 1s ease-in-out;
+            animation: fadeInBody 1s ease-in-out;
         }
 
-        @keyframes fadeIn {
+        @keyframes fadeInBody {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
-        .login-container {
-            background: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            animation: slideUp 0.8s ease-in-out;
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
-        @keyframes slideUp {
+        .screen {		
+            background: linear-gradient(90deg, #5D54A4, #7C78B8);		
+            position: relative;	
+            height: 600px;
+            width: 360px;	
+            box-shadow: 0px 0px 24px #5C5696;
+            border-radius: 15px;
+            animation: slideInScreen 0.8s ease-in-out;
+        }
+
+        @keyframes slideInScreen {
             from { transform: translateY(50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
-        h2 {
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 24px;
-            font-weight: 600;
+        .screen__content {
+            z-index: 1;
+            position: relative;	
+            height: 100%;
         }
 
-        .form-group {
-            position: relative;
-            margin-bottom: 25px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-bottom: 2px solid #ccc;
-            background: transparent;
-            color: #333;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #8f94fb;
-        }
-
-        .form-group label {
+        .screen__background {		
             position: absolute;
-            top: 12px;
+            top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            -webkit-clip-path: inset(0 0 0 0);
+            clip-path: inset(0 0 0 0);	
+        }
+
+        .screen__background__shape {
+            transform: rotate(45deg);
+            position: absolute;
+        }
+
+        .screen__background__shape1 {
+            height: 520px;
+            width: 520px;
+            background: #FFF;	
+            top: -50px;
+            right: 120px;	
+            border-radius: 0 72px 0 0;
+        }
+
+        .screen__background__shape2 {
+            height: 220px;
+            width: 220px;
+            background: #6C63AC;	
+            top: -172px;
+            right: 0;	
+            border-radius: 32px;
+        }
+
+        .screen__background__shape3 {
+            height: 540px;
+            width: 190px;
+            background: linear-gradient(270deg, #5D54A4, #6A679E);
+            top: -24px;
+            right: 0;	
+            border-radius: 32px;
+        }
+
+        .screen__background__shape4 {
+            height: 400px;
+            width: 200px;
+            background: #7E7BB9;	
+            top: 420px;
+            right: 50px;	
+            border-radius: 60px;
+        }
+
+        .login {
+            width: 320px;
+            padding: 30px;
+            padding-top: 156px;
+        }
+
+        .login__field {
+            padding: 20px 0px;	
+            position: relative;	
+        }
+
+        .login__icon {
+            position: absolute;
+            top: 30px;
+            color: #7875B5;
+            transition: transform 0.3s ease;
+        }
+
+        .login__input:focus ~ .login__icon,
+        .login__input:hover ~ .login__icon {
+            transform: scale(1.1);
+        }
+
+        .login__input {
+            border: none;
+            border-bottom: 2px solid #D1D1D4;
+            background: none;
+            padding: 10px;
+            padding-left: 24px;
+            font-weight: 700;
+            width: 100%;
+            transition: .2s;
+            color: #333;
+        }
+
+        .login__input:active,
+        .login__input:focus,
+        .login__input:hover {
+            outline: none;
+            border-bottom-color: #6A679E;
+        }
+
+        .login__input ~ label {
+            position: absolute;
+            top: 30px;
+            left: 24px;
             color: #999;
             pointer-events: none;
             transition: 0.2s ease all;
         }
 
-        .form-group input:focus ~ label,
-        .form-group input:valid ~ label {
-            top: -10px;
+        .login__input:focus ~ label,
+        .login__input:valid ~ label {
+            top: 10px;
             font-size: 12px;
-            color: #8f94fb;
+            color: #6A679E;
         }
 
-        .button {
+        .login__submit {
+            background: #fff;
+            font-size: 14px;
+            margin-top: 30px;
+            padding: 16px 20px;
+            border-radius: 26px;
+            border: 1px solid #D4D3E8;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
             width: 100%;
-            background: linear-gradient(to right, #4e54c8, #8f94fb);
-            border: none;
-            color: white;
-            padding: 15px;
-            border-radius: 25px;
-            font-size: 16px;
+            color: #4C3575; /* Roxo escuro para "Entrar" */
+            box-shadow: 0px 2px 2px #5C5696;
             cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .button:hover {
+        .login__submit:hover {
+            border-color: #6A679E;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0px 4px 8px rgba(92, 86, 150, 0.5);
         }
 
-        .button:active {
+        .login__submit:active {
             transform: translateY(0);
+            box-shadow: 0px 2px 2px #5C5696;
         }
 
-        .alert {
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            text-align: left;
-            font-size: 14px;
+        .button__icon {
+            font-size: 24px;
+            margin-left: auto;
+            color: #7875B5;
+            transition: transform 0.3s ease;
         }
 
-        .alert-error {
-            background-color: #f2dede;
-            color: #a94442;
-        }
-
-        .alert-success {
-            background-color: #dff0d8;
-            color: #3c763d;
-        }
-
-        .signup-text {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .signup-text a {
-            color: #8f94fb;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .signup-text a:hover {
-            text-decoration: underline;
-        }
-
-        .signup-text a i {
-            color: inherit;
+        .login__submit:hover .button__icon {
+            transform: translateX(5px);
         }
 
         .show-password {
             display: flex;
             align-items: center;
-            margin-top: -10px;
-            margin-bottom: 20px;
-            cursor: pointer;
+            margin-top: 10px;
+            color: #fff;
         }
 
         .show-password input[type="checkbox"] {
@@ -166,11 +221,17 @@
         .show-password label {
             position: relative;
             padding-left: 30px;
-            color: #666;
+            color: #4C3575; /* Roxo escuro para "Mostrar Senha" */
             cursor: pointer;
             font-size: 14px;
+            font-weight: 700;
             display: flex;
             align-items: center;
+            transition: color 0.3s ease;
+        }
+
+        .show-password label:hover {
+            color: #6A679E;
         }
 
         .show-password label::before {
@@ -182,51 +243,139 @@
             width: 20px;
             height: 20px;
             background: #fff;
-            border: 2px solid #8f94fb;
+            border: 2px solid #6A679E;
             border-radius: 4px;
             transition: all 0.3s ease;
         }
 
         .show-password label::after {
-            content: '';
+            content: '\f00c'; /* Ícone de check do Font Awesome */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
             position: absolute;
             left: 5px;
             top: 50%;
-            transform: translateY(-50%) rotate(-45deg);
+            transform: translateY(-50%);
             width: 10px;
-            height: 5px;
-            border-left: 2px solid #fff;
-            border-bottom: 2px solid #fff;
+            height: 10px;
+            color: #fff;
+            font-size: 12px;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
         .show-password input[type="checkbox"]:checked + label::before {
-            background: #8f94fb;
+            background: #6A679E;
         }
 
         .show-password input[type="checkbox"]:checked + label::after {
             opacity: 1;
         }
 
+        .signup-text {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #D1D1D4;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        .signup-text:hover {
+            color: #fff;
+        }
+
+        .signup-text a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .signup-text a:hover {
+            text-decoration: underline;
+        }
+
+        .signup-text a i {
+            color: #7875B5;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .signup-text a:hover i {
+            transform: scale(1.2);
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: left;
+            font-size: 14px;
+            color: #fff;
+            opacity: 0;
+            animation: fadeInAlert 0.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeInAlert {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-error {
+            background-color: #a94442;
+        }
+
+        .alert-success {
+            background-color: #3c763d;
+        }
+
+        h2 {
+            color: #fff;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            padding-top: 30px;
+            animation: fadeInH2 1s ease-in-out;
+        }
+
+        @keyframes fadeInH2 {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
         /* Responsividade */
         @media (max-width: 480px) {
-            .login-container {
-                padding: 30px;
-                border-radius: 10px;
+            .screen {
+                width: 90%;
+                height: auto;
+                padding-bottom: 20px;
+                margin: 10px;
+            }
+
+            .login {
+                width: 100%;
+                padding: 20px;
+                padding-top: 120px;
             }
 
             h2 {
-                font-size: 22px;
+                font-size: 20px;
             }
 
-            .form-group input {
+            .login__field {
+                padding: 15px 0;
+            }
+
+            .login__input {
                 font-size: 14px;
             }
 
-            .button {
-                padding: 12px;
-                font-size: 14px;
+            .login__submit {
+                font-size: 12px;
+                padding: 12px 16px;
+            }
+
+            .show-password label {
+                font-size: 12px;
             }
 
             .signup-text {
@@ -236,37 +385,52 @@
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Entrar</h2>
-        <!-- Exibição de mensagens de erro/sucesso -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <form method="POST" action="/" id="loginForm">
-            <div class="form-group">
-                <input type="text" id="user" name="user" required>
-                <label for="user">Usuário</label>
-            </div>
-            <div class="form-group">
-                <input type="password" id="password" name="password" required>
-                <label for="password">Senha</label>
-            </div>
-            
-            <!-- Checkbox "Mostrar Senha" -->
-            <div class="show-password">
-                <input type="checkbox" id="showPassword" onclick="togglePasswordVisibility()">
-                <label for="showPassword">Mostrar Senha</label>
-            </div>
+    <div class="container">
+        <div class="screen">
+            <div class="screen__content">
+                <!-- Exibição de mensagens de erro/sucesso -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <form class="login" method="POST" action="/" id="loginForm">
+                    <div class="login__field">
+                        <i class="login__icon fas fa-user"></i>
+                        <input type="text" class="login__input" id="user" name="user" required>
+                        <label for="user">Usuário</label>
+                    </div>
+                    <div class="login__field">
+                        <i class="login__icon fas fa-lock"></i>
+                        <input type="password" class="login__input" id="password" name="password" required>
+                        <label for="password">Senha</label>
+                    </div>
+                    
+                    <!-- Checkbox "Mostrar Senha" -->
+                    <div class="show-password">
+                        <input type="checkbox" id="showPassword" onclick="togglePasswordVisibility()">
+                        <label for="showPassword">Mostrar Senha</label>
+                    </div>
 
-            <button type="submit" class="button" onclick="generateToken()">Login</button>
-        </form>
-        <!-- Texto abaixo do botão de login -->
-        <div class="signup-text">
-            Ainda não tem acesso? <a href="/planos">Veja nossos planos <i class="fas fa-external-link-alt"></i></a>
+                    <button type="submit" class="login__submit" onclick="generateToken()">
+                        <span class="button__text">Entrar</span>
+                        <i class="button__icon fas fa-chevron-right"></i>
+                    </button>
+
+                    <!-- Texto abaixo do botão de login -->
+                    <div class="signup-text">
+                        Ainda não tem acesso? <a href="/planos">Veja nossos planos <i class="fas fa-external-link-alt"></i></a>
+                    </div>
+                </form>
+            </div>
+            <div class="screen__background">
+                <span class="screen__background__shape screen__background__shape4"></span>
+                <span class="screen__background__shape screen__background__shape3"></span>		
+                <span class="screen__background__shape screen__background__shape2"></span>
+                <span class="screen__background__shape screen__background__shape1"></span>
+            </div>
         </div>
     </div>
 
@@ -278,8 +442,6 @@
 
         function generateToken(event) {
             event.preventDefault(); // Prevents the form from being submitted directly
-            // Here, we would generate a token, but it's not shown in the HTML response
-            // For demonstration, we'll just add a hidden field with a dummy token
             var form = document.getElementById('loginForm');
             var tokenField = document.createElement('input');
             tokenField.type = 'hidden';
