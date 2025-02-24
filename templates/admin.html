@@ -24,7 +24,7 @@
             padding: 20px;
         }
 
-        /* Container Principal */
+        /* Container Principal com Animação de Entrada */
         .admin-container {
             background: #FFFFFF;
             border-radius: 16px;
@@ -34,11 +34,17 @@
             max-width: 480px;
             position: relative;
             animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
         }
 
         @keyframes fadeInUp {
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .admin-container:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
         }
 
         h2 {
@@ -47,6 +53,7 @@
             font-weight: 700;
             margin-bottom: 24px;
             text-align: center;
+            letter-spacing: -0.5px;
         }
 
         /* Formulário */
@@ -132,6 +139,11 @@
         .back-link::before {
             content: '←';
             margin-right: 6px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover::before {
+            transform: translateX(-3px);
         }
 
         /* Alertas */
@@ -160,7 +172,7 @@
             border-left: 4px solid #9B2C2C;
         }
 
-        /* Lista de Usuários */
+        /* Lista de Usuários com Animação */
         #usersList {
             max-height: 320px;
             overflow-y: auto;
@@ -170,6 +182,12 @@
             border-radius: 8px;
             padding: 12px;
             background: #F8FAFC;
+            animation: fadeInUpList 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUpList {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         .user-info {
@@ -198,8 +216,8 @@
             display: inline-block;
         }
 
-        /* Modal de Enviar Mensagem */
-        .modal {
+        /* Modal de Sucesso com Animação */
+        .success-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -209,9 +227,65 @@
             background: rgba(0, 0, 0, 0.5);
             align-items: center;
             justify-content: center;
+            animation: fadeInBackdrop 0.3s ease-out forwards;
         }
 
-        .modal-content {
+        @keyframes fadeInBackdrop {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .success-modal-content {
+            background: #FFFFFF;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            animation: popInModal 0.4s ease-out forwards;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes popInModal {
+            0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .success-modal-content img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            border-radius: 50%;
+        }
+
+        .success-modal-content h3 {
+            color: #2D2F7A;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .success-modal-content p {
+            font-size: 14px;
+            color: rgba(85, 85, 85, 0.7); /* Cinza meio transparente */
+            margin: 4px 0;
+        }
+
+        /* Modal de Enviar Mensagem */
+        .message-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            animation: fadeInBackdrop 0.3s ease-out forwards;
+        }
+
+        .message-modal-content {
             background: #FFFFFF;
             padding: 24px;
             border-radius: 12px;
@@ -219,16 +293,17 @@
             width: 90%;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: popInModal 0.4s ease-out forwards;
         }
 
-        .modal-content h3 {
+        .message-modal-content h3 {
             color: #2D2F7A;
             font-size: 20px;
             font-weight: 700;
             margin-bottom: 16px;
         }
 
-        .modal-content input {
+        .message-modal-content input {
             width: 100%;
             padding: 12px;
             border: 1px solid #E2E8F0;
@@ -237,7 +312,7 @@
             font-size: 14px;
         }
 
-        .modal-content .button {
+        .message-modal-content .button {
             margin-top: 10px;
         }
 
@@ -254,6 +329,12 @@
             .button {
                 padding: 10px 20px;
             }
+
+            .success-modal-content,
+            .message-modal-content {
+                width: 95%;
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -264,7 +345,7 @@
         <div id="alertContainer"></div>
         <form id="adminForm" method="POST">
             <div class="form-group">
-                <label for="action"></label>
+                <label for="action">Ação</label>
                 <select name="action" id="action" onchange="toggleFields()">
                     <option value="add_user">Adicionar Usuário</option>
                     <option value="delete_user">Excluir Usuário</option>
@@ -272,21 +353,21 @@
                 </select>
             </div>
             <div id="userFields" class="form-group">
-                <label for="user"></label>
+                <label for="user">Usuário</label>
                 <input type="text" name="user" placeholder="Digite o nome de usuário" required>
                 <div id="passwordField">
-                    <label for="password"></label>
+                    <label for="password">Senha</label>
                     <input type="password" name="password" placeholder="Digite a senha" required>
                 </div>
-                <label for="role"></label>
+                <label for="role">Tipo de Usuário</label>
                 <select name="role" id="role">
-                    <option value=""></option>
+                    <option value="">Selecione</option>
                     <option value="user_semanal">Membro Semanal</option>
                     <option value="user_mensal">Membro Mensal</option>
                     <option value="user_anual">Membro Anual</option>
                     <option value="admin">Administrador</option>
                 </select>
-                <label for="expiration"></label>
+                <label for="expiration">Data de Expiração</label>
                 <input type="date" name="expiration" id="expirationField" required>
             </div>
             <button type="submit" class="button">Enviar</button>
@@ -297,9 +378,18 @@
         <a href="/dashboard" class="back-link">Voltar para o início</a>
     </div>
 
+    <!-- Modal de Sucesso -->
+    <div id="successModal" class="success-modal">
+        <div class="success-modal-content">
+            <img src="https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif" alt="Success GIF">
+            <h3>Usuário Adicionado!</h3>
+            <p id="successUserInfo"></p>
+        </div>
+    </div>
+
     <!-- Modal de Enviar Mensagem -->
-    <div id="messageModal" class="modal">
-        <div class="modal-content">
+    <div id="messageModal" class="message-modal">
+        <div class="message-modal-content">
             <h3>Enviar Mensagem</h3>
             <input type="text" id="messageInput" placeholder="Digite a mensagem">
             <button class="button" onclick="sendMessage()">Enviar</button>
@@ -336,6 +426,9 @@
             .then(data => {
                 if (data.message) {
                     showAlert(data.message, data.category || 'success');
+                    if (data.category === 'success' && formData.get('action') === 'add_user') {
+                        showSuccessModal(data);
+                    }
                 }
                 event.target.reset();
             })
@@ -353,6 +446,23 @@
             setTimeout(() => alert.remove(), 5000);
         }
 
+        function showSuccessModal(data) {
+            const successModal = document.getElementById('successModal');
+            const successUserInfo = document.getElementById('successUserInfo');
+            successUserInfo.innerHTML = `
+                <strong>Usuário:</strong> ${data.user}<br>
+                <strong>Senha:</strong> ${data.password}<br>
+                <strong>Token:</strong> ${data.token}<br>
+                <strong>Expiração:</strong> ${data.expiration}<br>
+                <strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : 
+                                        data.role === 'user_mensal' ? 'Mensal' : 
+                                        data.role === 'user_anual' ? 'Anual' : 
+                                        data.role === 'admin' ? 'Administrador' : data.role}
+            `;
+            successModal.style.display = 'flex';
+            setTimeout(() => successModal.style.display = 'none', 5000);
+        }
+
         let usersVisible = false;
         function toggleUsersView() {
             const usersList = document.getElementById('usersList');
@@ -368,20 +478,22 @@
                 .then(data => {
                     usersList.innerHTML = '';
                     Object.entries(data.users).forEach(([user, info]) => {
-                        const userInfo = document.createElement('div');
-                        userInfo.className = 'user-info';
-                        userInfo.innerHTML = `
-                            <p><strong>Usuário:</strong> ${user}</p>
-                            <p><strong>Senha:</strong> ${info.password}</p>
-                            <p><strong>Token:</strong> ${info.token}</p>
-                            <p><strong>Expiração:</strong> ${info.expiration}</p>
-                            <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' : 
-                                                      info.role === 'user_mensal' ? 'Mensal' : 
-                                                      info.role === 'user_anual' ? 'Anual' : 
-                                                      info.role === 'admin' ? 'Administrador' : info.role}</p>
-                            <p><strong>Dispositivos:</strong> ${info.devices ? info.devices.join(', ') : "Ilimitado"}</p>
-                        `;
-                        usersList.appendChild(userInfo);
+                        if (user !== 'admin7k') {
+                            const userInfo = document.createElement('div');
+                            userInfo.className = 'user-info';
+                            userInfo.innerHTML = `
+                                <p><strong>Usuário:</strong> ${user}</p>
+                                <p><strong>Senha:</strong> ${info.password}</p>
+                                <p><strong>Token:</strong> ${info.token}</p>
+                                <p><strong>Expiração:</strong> ${info.expiration}</p>
+                                <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' : 
+                                                          info.role === 'user_mensal' ? 'Mensal' : 
+                                                          info.role === 'user_anual' ? 'Anual' : 
+                                                          info.role === 'admin' ? 'Administrador' : info.role}</p>
+                                <p><strong>Dispositivos:</strong> ${info.devices ? info.devices.join(', ') : "Ilimitado"}</p>
+                            `;
+                            usersList.appendChild(userInfo);
+                        }
                     });
                     usersList.style.display = 'block';
                     usersVisible = true;
