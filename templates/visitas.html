@@ -290,7 +290,8 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 15px 20px;
             border: 2px solid rgba(123, 63, 228, 0.5);
@@ -302,7 +303,16 @@
             transition: all 0.4s ease;
         }
 
-        .form-group input:focus {
+        .form-group select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%237B3FE4" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            cursor: pointer;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 15px var(--glow);
@@ -310,9 +320,15 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        .form-group input::placeholder {
+        .form-group input::placeholder,
+        .form-group select:invalid {
             color: var(--text-light);
             font-weight: 400;
+        }
+
+        .form-group select option {
+            background: var(--card-bg);
+            color: var(--text-dark);
         }
 
         .button {
@@ -468,7 +484,8 @@
                 font-size: 24px;
             }
 
-            .form-group input {
+            .form-group input,
+            .form-group select {
                 font-size: 14px;
                 padding: 12px 15px;
             }
@@ -528,10 +545,11 @@
             {% endif %}
             <div class="form-group">
                 <select name="visits" required>
-                    <option value="150">150+ Visitas (10) Requisições</option>
-                    <option value="300">1,500+ Visitas (30) Requisições</option>
-                    <option value="500">3,500+ Visitas (70) Requisições</option>
-                    <option value="10000">25,000+ Visitas (500) Requisições</option>
+                    <option value="" disabled selected>Escolha o número de visitas</option>
+                    <option value="150">150+ Visitas (10 Requisições)</option>
+                    <option value="300">1,500+ Visitas (30 Requisições)</option>
+                    <option value="500">3,500+ Visitas (70 Requisições)</option>
+                    <option value="10000">25,000+ Visitas (500 Requisições)</option>
                 </select>
             </div>
             <button type="submit" class="button">
@@ -546,7 +564,7 @@
                     <p><strong>Banido:</strong> {{ result.banido }}</p>
                     <p><strong>Região:</strong> {{ result.região }}</p>
                     <p><strong>Requisições:</strong> {{ result.message }}</p>
-                    <p><strong>Aviso:</strong>Após Enviar As Visitas, Relogue Novamente ao Jogo. (obrigatório)</p>
+                    <p><strong>Aviso:</strong> Após Enviar As Visitas, Relogue Novamente ao Jogo. (obrigatório)</p>
                 </div>
             {% else %}
                 <div class="alert alert-error">
