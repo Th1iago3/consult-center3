@@ -289,18 +289,35 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) translateX(100vw) rotate(5deg);
-            border: 2px solid rgba(110, 68, 255, 0.3);
             opacity: 0;
-            transition: all 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border: 2px solid rgba(110, 68, 255, 0.3);
             z-index: 10;
             pointer-events: none;
         }
 
         .login-screen.active {
             opacity: 1;
-            transform: translate(-50%, -50%) translateX(0) rotate(0deg);
             pointer-events: auto;
+        }
+
+        /* Animação padrão (deslizar da direita) */
+        .login-screen {
+            transform: translate(-50%, -50%) translateX(100vw) rotate(5deg);
+            transition: all 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .login-screen.active {
+            transform: translate(-50%, -50%) translateX(0) rotate(0deg);
+        }
+
+        /* Animação de fade quando backinUP=true */
+        .login-screen.fade {
+            transform: translate(-50%, -50%);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .login-screen.fade.active {
+            transform: translate(-50%, -50%);
         }
 
         .login-screen:hover {
@@ -742,15 +759,11 @@
             }
         }
 
-        // Função para controlar a exibição da tela de boas-vindas
+        // Função para verificar se deve mostrar a tela de boas-vindas
         function shouldShowWelcomeScreen() {
-            // Verifica se já foi exibida na sessão
             const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
-            // Verifica parâmetro na URL
             const urlParams = new URLSearchParams(window.location.search);
             const backinUP = urlParams.get('backinUP');
-
-            // Se backinUP for 'true' ou já foi vista, não mostra
             return !hasSeenWelcome && backinUP !== 'true';
         }
 
@@ -761,6 +774,13 @@
             const mainContainer = document.getElementById('mainContainer');
             const loginScreen = document.getElementById('loginScreen');
             const accessButton = document.getElementById('accessButton');
+            const urlParams = new URLSearchParams(window.location.search);
+            const backinUP = urlParams.get('backinUP');
+
+            // Ajusta a animação com base em backinUP
+            if (backinUP === 'true') {
+                loginScreen.classList.add('fade');
+            }
 
             // Verifica se deve mostrar a tela de boas-vindas
             if (shouldShowWelcomeScreen()) {
