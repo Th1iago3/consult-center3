@@ -24,7 +24,7 @@
             padding: 20px;
         }
 
-        /* Container Principal com Animação de Entrada */
+        /* Container Principal */
         .admin-container {
             background: #FFFFFF;
             border-radius: 16px;
@@ -34,23 +34,11 @@
             max-width: 480px;
             position: relative;
             animation: fadeInUp 0.6s ease-out forwards;
-            opacity: 0; /* Começa invisível para a animação */
         }
 
         @keyframes fadeInUp {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .admin-container:hover {
-            transform: translateY(-5px);
-            transition: transform 0.3s ease;
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         h2 {
@@ -59,7 +47,6 @@
             font-weight: 700;
             margin-bottom: 24px;
             text-align: center;
-            letter-spacing: -0.5px; /* Detalhe sutil para tipografia */
         }
 
         /* Formulário */
@@ -145,11 +132,6 @@
         .back-link::before {
             content: '←';
             margin-right: 6px;
-            transition: transform 0.3s ease;
-        }
-
-        .back-link:hover::before {
-            transform: translateX(-3px); /* Pequena animação no ícone */
         }
 
         /* Alertas */
@@ -178,7 +160,7 @@
             border-left: 4px solid #9B2C2C;
         }
 
-        /* Lista de Usuários com Animação */
+        /* Lista de Usuários */
         #usersList {
             max-height: 320px;
             overflow-y: auto;
@@ -188,12 +170,6 @@
             border-radius: 8px;
             padding: 12px;
             background: #F8FAFC;
-            animation: fadeInUpList 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeInUpList {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
         }
 
         .user-info {
@@ -222,8 +198,8 @@
             display: inline-block;
         }
 
-        /* Modal de Sucesso com Animação */
-        .success-modal {
+        /* Modal de Enviar Mensagem */
+        .modal {
             display: none;
             position: fixed;
             top: 0;
@@ -233,48 +209,36 @@
             background: rgba(0, 0, 0, 0.5);
             align-items: center;
             justify-content: center;
-            animation: fadeInBackdrop 0.3s ease-out forwards;
         }
 
-        @keyframes fadeInBackdrop {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        .success-modal-content {
+        .modal-content {
             background: #FFFFFF;
             padding: 24px;
             border-radius: 12px;
             max-width: 400px;
             width: 90%;
             text-align: center;
-            animation: popInModal 0.4s ease-out forwards;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
-        @keyframes popInModal {
-            0% { transform: scale(0.9) translateY(20px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
-        .success-modal-content img {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 16px;
-            border-radius: 50%; /* Detalhe estético */
-        }
-
-        .success-modal-content h3 {
+        .modal-content h3 {
             color: #2D2F7A;
             font-size: 20px;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
-        .success-modal-content p {
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            margin-bottom: 16px;
             font-size: 14px;
-            color: #555;
-            margin: 4px 0;
+        }
+
+        .modal-content .button {
+            margin-top: 10px;
         }
 
         /* Responsividade */
@@ -289,11 +253,6 @@
 
             .button {
                 padding: 10px 20px;
-            }
-
-            .success-modal-content {
-                width: 95%;
-                padding: 20px;
             }
         }
     </style>
@@ -334,15 +293,17 @@
         </form>
 
         <div id="usersList"></div>
+        <button class="button secondary" onclick="openMessageModal()">Enviar Mensagem</button>
         <a href="/dashboard" class="back-link">Voltar para o início</a>
     </div>
 
-    <!-- Modal de Sucesso -->
-    <div id="successModal" class="success-modal">
-        <div class="success-modal-content">
-            <img src="https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif" alt="Success GIF">
-            <h3>Usuário Adicionado!</h3>
-            <p id="successUserInfo"></p>
+    <!-- Modal de Enviar Mensagem -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <h3>Enviar Mensagem</h3>
+            <input type="text" id="messageInput" placeholder="Digite a mensagem">
+            <button class="button" onclick="sendMessage()">Enviar</button>
+            <button class="button secondary" onclick="closeMessageModal()">Fechar</button>
         </div>
     </div>
 
@@ -375,9 +336,6 @@
             .then(data => {
                 if (data.message) {
                     showAlert(data.message, data.category || 'success');
-                    if (data.category === 'success') {
-                        showSuccessModal(data);
-                    }
                 }
                 event.target.reset();
             })
@@ -395,26 +353,6 @@
             setTimeout(() => alert.remove(), 5000);
         }
 
-        function showSuccessModal(data) {
-            const successModal = document.getElementById('successModal');
-            const successUserInfo = document.getElementById('successUserInfo');
-            successUserInfo.innerHTML = `
-                <p><strong>Usuário:</strong> ${user}</p>
-                                <p><strong>Senha:</strong> ${data.password}</p>
-                                <p><strong>Token:</strong> ${data.token}</p>
-                                <p><strong>Expiração:</strong> ${data.expiration}</p>
-                                <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : 
-                                                           data.role === 'user_mensal' ? 'Mensal' : 
-                                                           data.role === 'user_anual' ? 'Anual' : 
-                                                           data.role === 'admin' ? 'admin' : data.role}</p>
-                                <p><strong>Dispositivos:</strong> ${data.devices ? data.devices.join(', ') : "Ilimitado"}</p>
-                                           
-                                           
-            `;
-            successModal.style.display = 'flex';
-            setTimeout(() => successModal.style.display = 'none', 5000);
-        }
-
         let usersVisible = false;
         function toggleUsersView() {
             const usersList = document.getElementById('usersList');
@@ -430,21 +368,20 @@
                 .then(data => {
                     usersList.innerHTML = '';
                     Object.entries(data.users).forEach(([user, info]) => {
-                        if (user !== 'admin7k') {
-                            const userInfo = document.createElement('div');
-                            userInfo.className = 'user-info';
-                            userInfo.innerHTML = `
-                                <p><strong>Usuário:</strong> ${user}</p>
-                                <p><strong>Senha:</strong> ${info.password}</p>
-                                <p><strong>Token:</strong> ${info.token}</p>
-                                <p><strong>Expiração:</strong> ${info.expiration}</p>
-                                <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' : 
-                                                          info.role === 'user_mensal' ? 'Mensal' : 
-                                                          info.role === 'user_anual' ? 'Anual' : 
-                                                          info.role === 'admin' ? 'Administrador' : info.role}</p>
-                            `;
-                            usersList.appendChild(userInfo);
-                        }
+                        const userInfo = document.createElement('div');
+                        userInfo.className = 'user-info';
+                        userInfo.innerHTML = `
+                            <p><strong>Usuário:</strong> ${user}</p>
+                            <p><strong>Senha:</strong> ${info.password}</p>
+                            <p><strong>Token:</strong> ${info.token}</p>
+                            <p><strong>Expiração:</strong> ${info.expiration}</p>
+                            <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' : 
+                                                      info.role === 'user_mensal' ? 'Mensal' : 
+                                                      info.role === 'user_anual' ? 'Anual' : 
+                                                      info.role === 'admin' ? 'Administrador' : info.role}</p>
+                            <p><strong>Dispositivos:</strong> ${info.devices ? info.devices.join(', ') : "Ilimitado"}</p>
+                        `;
+                        usersList.appendChild(userInfo);
                     });
                     usersList.style.display = 'block';
                     usersVisible = true;
@@ -453,6 +390,36 @@
                     showAlert('Erro ao carregar usuários: ' + error.message, 'error');
                 });
             }
+        }
+
+        function openMessageModal() {
+            document.getElementById('messageModal').style.display = 'flex';
+        }
+
+        function closeMessageModal() {
+            document.getElementById('messageModal').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('messageInput').value;
+            if (!message) {
+                showAlert('Por favor, insira uma mensagem.', 'error');
+                return;
+            }
+            fetch('/i/settings/admin', {
+                method: 'POST',
+                body: new URLSearchParams({ action: 'send_message', message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    showAlert(data.message, data.category || 'success');
+                    closeMessageModal();
+                }
+            })
+            .catch(error => {
+                showAlert('Erro ao enviar mensagem: ' + error.message, 'error');
+            });
         }
     </script>
 </body>
