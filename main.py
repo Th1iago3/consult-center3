@@ -1349,11 +1349,11 @@ def fotor():
 
     if request.method == 'POST':
         documento = request.form.get('documento', '')
-        selected_option = request.form.get('estado', 'fotoba')
+        selected_option = request.form.get('estado', '')
         if documento:
             try:
                 if not is_admin:
-                    token = request.form.get('token')
+                    token = request.form.get('token', '')
                     if not token:
                         flash('Token não fornecido.', 'error')
                         return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=token)
