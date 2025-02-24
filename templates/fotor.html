@@ -12,7 +12,7 @@
             --secondary-color: #FF00CC; /* Rosa neon */
             --accent-color: #FFD700; /* Dourado neon */
             --background: #0D1B2A; /* Azul escuro metálico */
-            --card-bg: rgba(20, 33, 61, 0.9); /* Fundo translúcido */
+            --card-bg: rgba(20, 33, 61, 0.9); /* Fondo translúcido */
             --text-dark: #E0E1DD; /* Texto claro */
             --text-light: #A3BFFA; /* Texto secundário */
             --success: #00FF85; /* Verde neon */
@@ -44,7 +44,7 @@
             to { opacity: 1; }
         }
 
-        /* Fundo animado */
+        /* Fondo animado */
         body::before {
             content: '';
             position: fixed;
@@ -561,9 +561,10 @@
             <div class="form-group">
                 <select name="estado" id="estado" onchange="toggleFields()" required>
                     <option value="">Selecione o Estado</option>
-                    <option value="fotoba">FOTO - BAHIA</option>
-                    <option value="fotorj">FOTO - RJ</option>
-                    <option value="fotosp">FOTO - SÃO PAULO</option>
+                    <option value="fotoba" {% if selected_option == 'fotoba' %}selected{% endif %}>FOTO - BAHIA</option>
+                    <option value="fotorj" {% if selected_option == 'fotorj' %}selected{% endif %}>FOTO - RJ</option>
+                    <option value="fotomg" {% if selected_option == 'fotomg' %}selected{% endif %}>FOTO - MINAS GERAIS</option>
+                    <option value="fotosp" {% if selected_option == 'fotosp' %}selected{% endif %}>FOTO - SÃO PAULO</option>
                 </select>
             </div>
             <div id="documentInput" class="form-group hidden">
@@ -571,34 +572,73 @@
             </div>
             {% if not is_admin %}
                 <div id="tokenInput" class="form-group hidden">
-                    <input type="text" name="token" placeholder="Digite seu token..." required>
+                    <input type="text" name="token" placeholder="Digite seu token..." value="{{ token }}" required>
                 </div>
             {% endif %}
             <button type="submit" class="button" id="submitButton" disabled>
                 <i class="fas fa-search"></i> Consultar
             </button>
         </form>
+
         {% if results %}
             <div class="image-container">
-                {% if results.foto %}
+                {% if selected_option == 'fotoba' and results.foto %}
                     <img src="data:image/png;base64,{{ results.foto }}" alt="Foto RG">
                     <a href="#" class="download-link" onclick="downloadImage(event)">
                         <i class="fas fa-download"></i> Baixar em .jpg
                     </a>
+                {% elif selected_option == 'fotorj' and results.resultado.Foto %}
+                    <img src="data:image/png;base64,{{ results.resultado.Foto }}" alt="Foto RG">
+                    <a href="#" class="download-link" onclick="downloadImage(event)">
+                        <i class="fas fa-download"></i> Baixar em .jpg
+                    </a>
+                {% elif selected_option == 'fotomg' and results.foto_base64 %}
+                    <img src="data:image/jpeg;base64,{{ results.foto_base64 }}" alt="Foto RG">
+                    <a href="#" class="download-link" onclick="downloadImage(event)">
+                        <i class="fas fa-download"></i> Baixar em .jpg
+                    </a>
                 {% else %}
-                    <p class="not-found">Não encontrado...</p>
+                    <p class="not-found">Foto não encontrada ou base indisponível.</p>
                 {% endif %}
             </div>
+
             <div class="profile-info">
                 <h3>Informações do RG</h3>
-                <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
-                <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
-                <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
-                <p><strong>Sexo:</strong> {{ results.sexo | default('Não disponível') }}</p>
-                <p><strong>Nascimento:</strong> {{ results.nascimento | default('Não disponível') }}</p>
-                <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
-                <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
-                <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
+                {% if selected_option == 'fotoba' %}
+                    <!-- FotoBA: Mantém a estrutura original -->
+                    <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
+                    <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
+                    <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
+                    <p><strong>Sexo:</strong> {{ results.sexo | default('Não disponível') }}</p>
+                    <p><strong>Nascimento:</strong> {{ results.nascimento | default('Não disponível') }}</p>
+                    <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
+                    <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
+                    <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
+
+                {% elif selected_option == 'fotorj' %}
+                    <!-- FotoRJ: Estrutura específica -->
+                    <p><strong>CPF:</strong> {{ results.resultado.CPF | default('Não disponível') }}</p>
+                    <p><strong>RG:</strong> {{ results.resultado.RG | default('Não disponível') }}</p>
+                    <p><strong>Cidadão:</strong> {{ results.resultado.Cidadão | default('Não disponível') }}</p>
+                    <p><strong>Nascimento:</strong> {{ results.resultado.Nascimento | default('Não disponível') }}</p>
+                    <p><strong>Mãe:</strong> {{ results.resultado.Mãe | default('Não disponível') }}</p>
+                    <p><strong>Autenticidade:</strong> {{ results.resultado.Autenticidade | default('Não disponível') }}</p>
+
+                {% elif selected_option == 'fotomg' %}
+                    <!-- FotoMG: Estrutura detalhada -->
+                    <p><strong>CPF:</strong> {{ results.CPF | default('Não disponível') }}</p>
+                    <p><strong>Nome:</strong> {{ results.Nome | default('Não disponível') }}</p>
+                    <p><strong>Nome da Mãe:</strong> {{ results['Nome da Mãe'] | default('Não disponível') }}</p>
+                    <p><strong>Nome do Pai:</strong> {{ results['Nome do Pai'] | default('Não disponível') }}</p>
+                    <p><strong>Data de Nascimento:</strong> {{ results['Data de Nascimento'] | default('Não disponível') }}</p>
+                    <p><strong>Categoria CNH Concedida:</strong> {{ results['Categoria CNH Concedida'] | default('Não disponível') }}</p>
+                    <p><strong>Validade CNH:</strong> {{ results['Validade CNH'] | default('Não disponível') }}</p>
+
+                {% elif selected_option == 'fotosp' %}
+                    <!-- FotoSP: Offline -->
+                    <p class="not-found">A base FotoSP está atualmente offline. Tente novamente mais tarde.</p>
+
+                {% endif %}
             </div>
         {% endif %}
     </div>
