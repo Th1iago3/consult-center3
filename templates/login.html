@@ -291,33 +291,20 @@
             left: 50%;
             transform: translate(-50%, -50%);
             border: 2px solid rgba(110, 68, 255, 0.3);
-            opacity: 0;
             z-index: 10;
+            opacity: 0;
             pointer-events: none;
+            transition: all 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
 
-        /* Animação padrão (deslizar da direita) */
-        .login-screen:not(.fade) {
-            transform: translate(-50%, -50%) translateX(100vw) rotate(5deg);
-            transition: all 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-
-        .login-screen:not(.fade).active {
+        .login-screen.active {
             opacity: 1;
-            transform: translate(-50%, -50%) translateX(0) rotate(0deg);
             pointer-events: auto;
+            transform: translate(-50%, -50%);
         }
 
-        /* Animação de fade quando backinUP=true */
         .login-screen.fade {
-            transform: translate(-50%, -50%);
             transition: opacity 0.5s ease-in-out;
-        }
-
-        .login-screen.fade.active {
-            opacity: 1;
-            transform: translate(-50%, -50%);
-            pointer-events: auto;
         }
 
         .login-screen:hover {
@@ -536,99 +523,34 @@
             border: 1px solid var(--success);
         }
 
-        /* Responsividade */
         @media (max-width: 768px) {
-            .welcome-title {
-                font-size: clamp(36px, 6vw, 48px);
-            }
-            .welcome-text {
-                font-size: clamp(14px, 2.5vw, 16px);
-            }
-            .welcome-button {
-                padding: 12px 25px;
-                font-size: 16px;
-            }
-            .modules-window {
-                padding: 20px;
-                margin: 30px auto;
-            }
-            .modules-container {
-                grid-template-columns: 1fr;
-            }
-            .module-card {
-                max-width: 350px;
-                margin: 0 auto;
-            }
-            .login-screen {
-                max-width: 90%;
-                padding: 25px;
-            }
+            .welcome-title { font-size: clamp(36px, 6vw, 48px); }
+            .welcome-text { font-size: clamp(14px, 2.5vw, 16px); }
+            .welcome-button { padding: 12px 25px; font-size: 16px; }
+            .modules-window { padding: 20px; margin: 30px auto; }
+            .modules-container { grid-template-columns: 1fr; }
+            .module-card { max-width: 350px; margin: 0 auto; }
+            .login-screen { max-width: 90%; padding: 25px; }
         }
 
         @media (max-width: 480px) {
-            .welcome-title {
-                font-size: 32px;
-            }
-            .welcome-text {
-                font-size: 14px;
-            }
-            .welcome-button {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-            .modules-window {
-                padding: 15px;
-                margin: 20px auto;
-            }
-            .module-card {
-                padding: 20px;
-            }
-            .login-screen {
-                padding: 25px 15px;
-            }
-            .login-screen h2 {
-                font-size: 28px;
-            }
-            .login-field {
-                margin: 20px 0;
-            }
-            .login-input {
-                padding: 12px 12px 12px 45px;
-                font-size: 14px;
-            }
-            .login-submit {
-                padding: 12px;
-                font-size: 14px;
-            }
-            .show-password label {
-                font-size: 12px;
-                padding-left: 30px;
-            }
-            .show-password label::before {
-                width: 18px;
-                height: 18px;
-            }
-            .show-password label::after {
-                width: 14px;
-                height: 14px;
-                left: 2px;
-            }
-            .show-password input[type="checkbox"]:checked + label::before {
-                width: 18px;
-                height: 18px;
-            }
-            .show-password input[type="checkbox"]:checked + label::after {
-                width: 18px;
-                height: 18px;
-                left: 0;
-            }
-            .signup-text {
-                font-size: 12px;
-            }
-            .alert {
-                font-size: 12px;
-                padding: 10px;
-            }
+            .welcome-title { font-size: 32px; }
+            .welcome-text { font-size: 14px; }
+            .welcome-button { padding: 10px 20px; font-size: 14px; }
+            .modules-window { padding: 15px; margin: 20px auto; }
+            .module-card { padding: 20px; }
+            .login-screen { padding: 25px 15px; }
+            .login-screen h2 { font-size: 28px; }
+            .login-field { margin: 20px 0; }
+            .login-input { padding: 12px 12px 12px 45px; font-size: 14px; }
+            .login-submit { padding: 12px; font-size: 14px; }
+            .show-password label { font-size: 12px; padding-left: 30px; }
+            .show-password label::before { width: 18px; height: 18px; }
+            .show-password label::after { width: 14px; height: 14px; left: 2px; }
+            .show-password input[type="checkbox"]:checked + label::before { width: 18px; height: 18px; }
+            .show-password input[type="checkbox"]:checked + label::after { width: 18px; height: 18px; left: 0; }
+            .signup-text { font-size: 12px; }
+            .alert { font-size: 12px; padding: 10px; }
         }
 
         @keyframes pulseGlow {
@@ -641,7 +563,6 @@
     <div class="particles" id="particlesContainer"></div>
 
     <div class="main-container" id="mainContainer">
-        <!-- Tela de boas-vindas -->
         <div class="welcome-screen" id="welcomeScreen">
             <div class="welcome-content">
                 <h1 class="welcome-title">CONSULT CENTER</h1>
@@ -654,7 +575,6 @@
             </div>
         </div>
 
-        <!-- Janela de módulos -->
         <div class="modules-window" id="modulesWindow">
             <div class="modules-container">
                 <div class="module-card">
@@ -689,7 +609,6 @@
         </div>
     </div>
 
-    <!-- Tela de login -->
     <div class="login-screen" id="loginScreen">
         <h2>Entrar</h2>
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -723,7 +642,6 @@
     </div>
 
     <script>
-        // Função para criar partículas dinamicamente
         function createParticle(container) {
             const particle = document.createElement('div');
             particle.classList.add('particle');
@@ -748,7 +666,6 @@
             });
         }
 
-        // Inicializar partículas
         function initParticles() {
             const particlesContainer = document.getElementById('particlesContainer');
             particlesContainer.innerHTML = '';
@@ -758,7 +675,6 @@
             }
         }
 
-        // Função para verificar se deve mostrar a tela de boas-vindas
         function shouldShowWelcomeScreen() {
             const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
             const urlParams = new URLSearchParams(window.location.search);
@@ -766,7 +682,6 @@
             return !hasSeenWelcome && backinUP !== 'true';
         }
 
-        // Inicialização da página
         window.addEventListener('load', () => {
             initParticles();
 
@@ -776,25 +691,20 @@
             const urlParams = new URLSearchParams(window.location.search);
             const backinUP = urlParams.get('backinUP');
 
-            // Ajusta a animação com base em backinUP
-            if (backinUP === 'true') {
-                loginScreen.classList.add('fade');
-                loginScreen.style.transform = 'translate(-50%, -50%)';
-            } else {
-                loginScreen.style.transform = 'translate(-50%, -50%) translateX(100vw) rotate(5deg)';
-            }
-
-            // Verifica se deve mostrar a tela de boas-vindas
             if (shouldShowWelcomeScreen()) {
                 mainContainer.style.display = 'flex';
-                loginScreen.classList.remove('active');
+                loginScreen.style.display = 'block';
                 sessionStorage.setItem('hasSeenWelcome', 'true');
             } else {
                 mainContainer.style.display = 'none';
+                loginScreen.style.display = 'block';
                 loginScreen.classList.add('active');
             }
 
-            // Evento do botão de acesso
+            if (backinUP === 'true') {
+                loginScreen.classList.add('fade');
+            }
+
             if (accessButton) {
                 accessButton.addEventListener('click', () => {
                     mainContainer.classList.add('hidden');
@@ -805,24 +715,21 @@
             }
         });
 
-        // Alternar visibilidade da senha
         document.getElementById('showPassword').addEventListener('change', function() {
             const passwordInput = document.getElementById('password');
             passwordInput.type = this.checked ? 'text' : 'password';
         });
 
-        // Gerar token e submit
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const tokenField = document.createElement('input');
             tokenField.type = 'hidden';
             tokenField.name = 'token';
-            tokenField.value = 'dummyToken'; // Substitua por lógica real
+            tokenField.value = 'dummyToken';
             this.appendChild(tokenField);
             this.submit();
         });
 
-        // Ajuste de altura da tela
         window.addEventListener('resize', () => {
             document.body.style.minHeight = window.innerHeight + 'px';
             initParticles();
