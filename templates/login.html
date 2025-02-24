@@ -34,15 +34,17 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            padding: 20px;
         }
 
         .screen {		
             background: linear-gradient(90deg, #5D54A4, #7C78B8);		
             position: relative;	
-            height: 600px;
-            width: 360px;	
-            box-shadow: 0px 0px 24px #5C5696;
-            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 20px;
+            box-shadow: 0px 0px 20px rgba(92, 86, 150, 0.4);
+            border-radius: 30px; /* Layout mais arredondado */
             animation: slideInScreen 0.8s ease-in-out;
         }
 
@@ -53,8 +55,7 @@
 
         .screen__content {
             z-index: 1;
-            position: relative;	
-            height: 100%;
+            position: relative;
         }
 
         .screen__background {		
@@ -65,7 +66,9 @@
             bottom: 0;
             z-index: 0;
             -webkit-clip-path: inset(0 0 0 0);
-            clip-path: inset(0 0 0 0);	
+            clip-path: inset(0 0 0 0);
+            border-radius: 30px;
+            overflow: hidden;
         }
 
         .screen__background__shape {
@@ -110,13 +113,12 @@
         }
 
         .login {
-            width: 320px;
-            padding: 30px;
-            padding-top: 156px;
+            width: 100%;
+            padding: 20px 0;
         }
 
         .login__field {
-            padding: 20px 0px;	
+            padding: 20px 0;	
             position: relative;	
         }
 
@@ -249,17 +251,15 @@
         }
 
         .show-password label::after {
-            content: '\f00c'; /* Ícone de check do Font Awesome */
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
+            content: '';
             position: absolute;
             left: 5px;
             top: 50%;
-            transform: translateY(-50%);
+            transform: translateY(-50%) rotate(-45deg);
             width: 10px;
-            height: 10px;
-            color: #fff;
-            font-size: 12px;
+            height: 5px;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #fff;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -310,22 +310,16 @@
             border-radius: 4px;
             text-align: left;
             font-size: 14px;
-            color: #fff;
-            opacity: 0;
-            animation: fadeInAlert 0.5s ease-in-out forwards;
-        }
-
-        @keyframes fadeInAlert {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .alert-error {
-            background-color: #a94442;
+            background-color: #f2dede;
+            color: #a94442;
         }
 
         .alert-success {
-            background-color: #3c763d;
+            background-color: #dff0d8;
+            color: #3c763d;
         }
 
         h2 {
@@ -333,7 +327,7 @@
             text-align: center;
             font-size: 24px;
             font-weight: 700;
-            padding-top: 30px;
+            margin-bottom: 30px;
             animation: fadeInH2 1s ease-in-out;
         }
 
@@ -345,20 +339,18 @@
         /* Responsividade */
         @media (max-width: 480px) {
             .screen {
-                width: 90%;
-                height: auto;
-                padding-bottom: 20px;
-                margin: 10px;
+                max-width: 100%;
+                padding: 30px 15px;
+                border-radius: 20px;
             }
 
             .login {
-                width: 100%;
-                padding: 20px;
-                padding-top: 120px;
+                padding: 10px 0;
             }
 
             h2 {
                 font-size: 20px;
+                margin-bottom: 20px;
             }
 
             .login__field {
@@ -381,6 +373,19 @@
             .signup-text {
                 font-size: 12px;
             }
+
+            .alert {
+                font-size: 12px;
+                padding: 8px;
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (min-width: 481px) and (max-width: 768px) {
+            .screen {
+                max-width: 450px;
+                padding: 40px 20px;
+            }
         }
     </style>
 </head>
@@ -388,6 +393,7 @@
     <div class="container">
         <div class="screen">
             <div class="screen__content">
+                <h2>Entrar</h2>
                 <!-- Exibição de mensagens de erro/sucesso -->
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
