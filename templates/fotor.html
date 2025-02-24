@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consulta - Foto RG</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #7B3FE4; /* Roxo vibrante */
-            --secondary-color: #A56EFF; /* Roxo claro */
-            --accent-color: #FF4D94; /* Rosa neon */
-            --background: #1C1D33; /* Fundo escuro futurista */
-            --card-bg: rgba(40, 42, 70, 0.9); /* Fundo translúcido */
-            --text-dark: #E8E9F3; /* Texto claro */
-            --text-light: #B0B3D6; /* Texto secundário */
-            --success: #00FFB3; /* Verde neon */
-            --error: #FF3366; /* Vermelho vibrante */
-            --glow: rgba(123, 63, 228, 0.5);
-            --shadow: rgba(0, 0, 0, 0.3);
+            --primary-color: #00D4FF; /* Ciano neon */
+            --secondary-color: #FF00CC; /* Rosa neon */
+            --accent-color: #FFD700; /* Dourado neon */
+            --background: #0D1B2A; /* Azul escuro metálico */
+            --card-bg: rgba(20, 33, 61, 0.9); /* Fundo translúcido */
+            --text-dark: #E0E1DD; /* Texto claro */
+            --text-light: #A3BFFA; /* Texto secundário */
+            --success: #00FF85; /* Verde neon */
+            --error: #FF4F4F; /* Vermelho neon */
+            --glow: rgba(0, 212, 255, 0.5);
+            --shadow: rgba(0, 0, 0, 0.4);
         }
 
         * {
@@ -29,13 +29,13 @@
         }
 
         body {
-            background: linear-gradient(135deg, var(--background), #2A2C4F);
+            background: linear-gradient(135deg, var(--background), #1B263B);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
-            animation: fadeInBody 1.2s ease-in-out;
+            animation: fadeInBody 1s ease-in-out;
             color: var(--text-dark);
         }
 
@@ -52,18 +52,18 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(123, 63, 228, 0.15), transparent 70%);
-            animation: pulseGlow 10s infinite alternate;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent 70%);
+            animation: pulseGlow 12s infinite alternate;
             z-index: -1;
         }
 
         /* Navbar */
         .navbar {
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             width: 100%;
             padding: 1.2rem 2rem;
-            box-shadow: 0 8px 30px var(--shadow), 0 0 20px var(--glow);
+            box-shadow: 0 8px 25px var(--shadow), 0 0 15px var(--glow);
             position: fixed;
             top: 0;
             left: 0;
@@ -71,12 +71,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.4s ease;
-            border-bottom: 1px solid rgba(123, 63, 228, 0.3);
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
         }
 
         .navbar:hover {
-            box-shadow: 0 12px 40px var(--shadow), 0 0 30px var(--glow);
+            box-shadow: 0 12px 35px var(--shadow), 0 0 25px var(--glow);
         }
 
         .navbar-toggle {
@@ -89,7 +89,8 @@
         }
 
         .navbar-toggle:hover {
-            transform: scale(1.1);
+            transform: scale(1.15);
+            color: var(--secondary-color);
         }
 
         .navbar-toggle i {
@@ -114,7 +115,7 @@
             box-shadow: 0 10px 30px var(--shadow);
             border-radius: 0 0 15px 15px;
             animation: slideDown 0.4s ease-out forwards;
-            border: 1px solid rgba(123, 63, 228, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
         .nav-links.active {
@@ -122,7 +123,7 @@
         }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-15px); }
+            from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -130,7 +131,7 @@
             color: var(--text-light);
             text-decoration: none;
             padding: 0.8rem 1.5rem;
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             gap: 0.6rem;
@@ -139,9 +140,9 @@
         }
 
         .nav-links a:hover {
-            background: rgba(123, 63, 228, 0.2);
-            color: var(--secondary-color);
-            transform: translateX(8px);
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--primary-color);
+            transform: translateX(5px);
             box-shadow: 0 0 10px var(--glow);
         }
 
@@ -150,7 +151,7 @@
             flex-direction: column;
             gap: 0.6rem;
             padding: 1rem;
-            background: rgba(123, 63, 228, 0.1);
+            background: rgba(0, 212, 255, 0.1);
             border-radius: 10px;
             margin-top: 0.6rem;
             animation: fadeInSub 0.3s ease-out;
@@ -173,14 +174,14 @@
         }
 
         .sub-navbar a:hover {
-            color: var(--accent-color);
+            color: var(--secondary-color);
             text-shadow: 0 0 5px var(--glow);
         }
 
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 1.2rem;
+            gap: 1rem;
         }
 
         .user-icon {
@@ -198,7 +199,7 @@
         }
 
         .user-icon:hover {
-            transform: scale(1.15) rotate(10deg);
+            transform: scale(1.1) rotate(15deg);
             box-shadow: 0 6px 20px var(--glow);
         }
 
@@ -211,7 +212,7 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.5rem;
             font-weight: 600;
             transition: all 0.3s ease;
             box-shadow: 0 4px 10px var(--shadow);
@@ -219,7 +220,7 @@
 
         .logout-btn:hover {
             background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 6px 15px var(--glow);
         }
 
@@ -227,43 +228,26 @@
         .container {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
-            border-radius: 25px;
-            box-shadow: 0 20px 50px var(--shadow), 0 0 30px var(--glow);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px var(--shadow), 0 0 20px var(--glow);
             padding: 40px;
-            width: 450px;
+            width: 480px;
             text-align: center;
             margin: 6rem auto 2rem;
             position: relative;
             overflow: hidden;
             animation: slideInContainer 0.6s ease-in-out;
-            border: 2px solid rgba(123, 63, 228, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
         .container:hover {
+            box-shadow: 0 20px 50px var(--shadow), 0 0 30px var(--glow);
             transform: scale(1.02);
-            box-shadow: 0 25px 60px var(--shadow), 0 0 40px var(--glow);
         }
 
         @keyframes slideInContainer {
-            from { transform: translateY(30px); opacity: 0; }
+            from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(123, 63, 228, 0.2), transparent 70%);
-            animation: shimmer 4s ease-in-out infinite;
-            z-index: -1;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         h2 {
@@ -271,7 +255,7 @@
             margin-bottom: 30px;
             font-weight: 700;
             font-size: 28px;
-            text-shadow: 0 0 10px var(--glow);
+            text-shadow: 0 0 8px var(--glow);
             animation: fadeInTitle 0.6s ease-in-out;
         }
 
@@ -286,33 +270,51 @@
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(25px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 15px 20px;
-            border: 2px solid rgba(123, 63, 228, 0.5);
+            border: 2px solid rgba(0, 212, 255, 0.5);
             border-radius: 15px;
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-dark);
             font-size: 16px;
             font-weight: 500;
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
         }
 
-        .form-group input:focus {
+        .form-group select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%2300D4FF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            cursor: pointer;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 15px var(--glow);
-            transform: scale(1.02);
+            box-shadow: 0 0 12px var(--glow);
             background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
         }
 
         .form-group input::placeholder {
             color: var(--text-light);
             font-weight: 400;
+        }
+
+        .form-group.hidden {
+            display: none;
+        }
+
+        .form-group.visible {
+            display: block;
         }
 
         .button {
@@ -328,12 +330,18 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
             width: 100%;
             box-shadow: 0 5px 15px var(--glow);
         }
 
-        .button:hover {
+        .button:disabled {
+            background: #6A6A8A;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .button:not(:disabled):hover {
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 10px 25px var(--glow);
             background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
@@ -347,7 +355,7 @@
         .alert {
             padding: 15px;
             margin-bottom: 20px;
-            border-radius: 12px;
+            border-radius: 10px;
             animation: fadeInAlert 0.5s ease-in;
             box-shadow: 0 5px 15px var(--shadow);
             font-weight: 500;
@@ -359,7 +367,7 @@
         }
 
         .alert-error {
-            background: rgba(255, 51, 102, 0.2);
+            background: rgba(255, 79, 79, 0.2);
             color: var(--error);
             border-left: 5px solid var(--error);
         }
@@ -368,7 +376,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.6rem;
-            color: var(--secondary-color);
+            color: var(--primary-color);
             font-weight: 600;
             text-decoration: none;
             margin-top: 25px;
@@ -378,7 +386,7 @@
 
         .download-link i {
             font-size: 1.3rem;
-            color: var(--secondary-color);
+            color: var(--primary-color);
             transition: transform 0.3s ease;
         }
 
@@ -392,30 +400,55 @@
             transform: scale(1.2);
         }
 
+        .image-container {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px var(--shadow), 0 0 10px var(--glow);
+            transition: transform 0.3s ease;
+        }
+
+        .image-container img:hover {
+            transform: scale(1.05);
+        }
+
+        .not-found {
+            color: var(--error);
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            text-shadow: 0 0 5px var(--glow);
+        }
+
         .profile-info {
-            background: rgba(123, 63, 228, 0.1);
+            background: rgba(0, 212, 255, 0.05);
             border-radius: 15px;
             padding: 20px;
             margin-top: 25px;
-            transition: all 0.4s ease;
-            box-shadow: 0 5px 20px var(--shadow);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px var(--shadow);
             text-align: left;
             animation: slideUpInfo 0.6s ease-out;
         }
 
         .profile-info:hover {
-            box-shadow: 0 10px 30px var(--shadow), 0 0 15px var(--glow);
+            box-shadow: 0 10px 25px var(--shadow), 0 0 15px var(--glow);
         }
 
         @keyframes slideUpInfo {
-            from { opacity: 0; transform: translateY(25px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .profile-info h3 {
             color: var(--text-dark);
             margin-bottom: 15px;
-            border-bottom: 2px solid rgba(123, 63, 228, 0.3);
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
             padding-bottom: 10px;
             font-weight: 600;
             text-shadow: 0 0 5px var(--glow);
@@ -459,26 +492,6 @@
             }
         }
 
-        .image-container {
-            margin-top: 20px; 
-            text-align: center;
-        }
-
-            .image-container img {
-                max-width: 100%; 
-                height: auto;
-                border-radius: 10px;
-                box-shadow: 0 4px 8px rgba (0, 0, 0, 0.1);
-            }
-
-
-    not-found {
-        color: #6C63FF; 
-        font-size: 16px;
-        font-weight: 600; 
-        margin-top: 10px; 
-    }
-
         @media (max-width: 480px) {
             .container {
                 padding: 20px;
@@ -488,7 +501,8 @@
                 font-size: 24px;
             }
 
-            .form-group input {
+            .form-group input,
+            .form-group select {
                 font-size: 14px;
                 padding: 12px 15px;
             }
@@ -505,6 +519,12 @@
             .profile-info p strong {
                 width: 100px;
             }
+        }
+
+        /* Animações */
+        @keyframes pulseGlow {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0.5; transform: scale(1.05); }
         }
     </style>
 </head>
@@ -539,7 +559,7 @@
         {% endwith %}
         <form method="POST" id="searchForm">
             <div class="form-group">
-                <select name="estado" id="estado" onchange="toggleFields()">
+                <select name="estado" id="estado" onchange="toggleFields()" required>
                     <option value="">Selecione o Estado</option>
                     <option value="fotoba">FOTO - BAHIA</option>
                     <option value="fotorj">FOTO - RJ</option>
@@ -570,6 +590,7 @@
                 {% endif %}
             </div>
             <div class="profile-info">
+                <h3>Informações do RG</h3>
                 <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
                 <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
                 <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
@@ -603,12 +624,17 @@
 
         // Alert
         function showAlert(message, type) {
-            const alertContainer = document.getElementById('alertContainer');
+            const alertContainer = document.createElement('div');
+            alertContainer.id = 'alertContainer';
+            document.body.appendChild(alertContainer);
             const alert = document.createElement('div');
             alert.className = `alert alert-${type}`;
             alert.textContent = message;
             alertContainer.appendChild(alert);
-            setTimeout(() => alert.remove(), 3000);
+            setTimeout(() => {
+                alert.remove();
+                if (!alertContainer.hasChildNodes()) alertContainer.remove();
+            }, 3000);
         }
 
         // Toggle visibility of form fields based on state selection
@@ -640,12 +666,11 @@
         // Form Validation
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             const estado = this.estado.value;
-            const documento = this.documento.value;
+            const documento = this.documento ? this.documento.value : '';
             if (!estado) {
                 showAlert('Por favor, selecione um estado.', 'error');
                 event.preventDefault();
-            }
-            if (documento && !/^\d{11}$/.test(documento)) {
+            } else if (documento && !/^\d{11}$/.test(documento)) {
                 showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
                 event.preventDefault();
             }
@@ -671,13 +696,16 @@
                 canvas.height = img.naturalHeight;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
-                
                 canvas.toBlob(function(blob) {
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
-                    link.download = generateRandomString() + '.jpg';
+                    link.download = `FotoRG_${generateRandomString()}.jpg`;
+                    document.body.appendChild(link);
                     link.click();
-                    URL.revokeObjectURL(link.href);
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(link.href);
+                    }, 100);
                 }, 'image/jpeg');
             }
         }
