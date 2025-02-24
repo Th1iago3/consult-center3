@@ -560,7 +560,7 @@
         <form method="POST" id="searchForm">
             <div class="form-group">
                 <select name="estado" id="estado" onchange="toggleFields()" required>
-                    <option value="">Selecione o Estado</option>
+                    <option value="" disabled selected>Selecione o Estado</option>
                     <option value="fotoba" {% if selected_option == 'fotoba' %}selected{% endif %}>FOTO - BAHIA</option>
                     <option value="fotorj" {% if selected_option == 'fotorj' %}selected{% endif %}>FOTO - RJ</option>
                     <option value="fotomg" {% if selected_option == 'fotomg' %}selected{% endif %}>FOTO - MINAS GERAIS</option>
