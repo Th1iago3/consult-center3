@@ -20,14 +20,14 @@
     "@apiBROficial": {
         "password": "@apiBrasilO.fc",
         "token": "@apiBR",
-        "expiration": "2335-12-99",
+        "expiration": "2335-12-31",
         "role": "admin",
         "devices": []
     },
     "@ugly144": {
         "password": "&47560",
         "token": "@ugly44",
-        "expiration": "2335-12-99",
+        "expiration": "2335-12-31",
         "role": "admin",
         "devices": []
     },
