@@ -345,7 +345,7 @@
         <div id="alertContainer"></div>
         <form id="adminForm" method="POST">
             <div class="form-group">
-                <label for="action">Ação</label>
+                <label for="action"></label>
                 <select name="action" id="action" onchange="toggleFields()">
                     <option value="add_user">Adicionar Usuário</option>
                     <option value="delete_user">Excluir Usuário</option>
@@ -353,13 +353,13 @@
                 </select>
             </div>
             <div id="userFields" class="form-group">
-                <label for="user">Usuário</label>
-                <input type="text" name="user" placeholder="Digite o nome de usuário" required>
+                <label for="user"></label>
+                <input type="text" name="user" placeholder="Usuário" required>
                 <div id="passwordField">
-                    <label for="password">Senha</label>
-                    <input type="password" name="password" placeholder="Digite a senha" required>
+                    <label for="password"></label>
+                    <input type="password" name="password" placeholder="Senha" required>
                 </div>
-                <label for="role">Tipo de Usuário</label>
+                <label for="role"></label>
                 <select name="role" id="role">
                     <option value="">Selecione</option>
                     <option value="user_semanal">Membro Semanal</option>
@@ -367,7 +367,7 @@
                     <option value="user_anual">Membro Anual</option>
                     <option value="admin">Administrador</option>
                 </select>
-                <label for="expiration">Data de Expiração</label>
+                <label for="expiration">Expiração</label>
                 <input type="date" name="expiration" id="expirationField" required>
             </div>
             <button type="submit" class="button">Enviar</button>
@@ -381,7 +381,7 @@
     <!-- Modal de Sucesso -->
     <div id="successModal" class="success-modal">
         <div class="success-modal-content">
-            <img src="https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif" alt="Success GIF">
+            <img src="https://i.gifer.com/7efs.gif" alt="Success GIF">
             <h3>Usuário Adicionado!</h3>
             <p id="successUserInfo"></p>
         </div>
@@ -460,7 +460,7 @@
                                         data.role === 'admin' ? 'Administrador' : data.role}
             `;
             successModal.style.display = 'flex';
-            setTimeout(() => successModal.style.display = 'none', 5000);
+            setTimeout(() => successModal.style.display = 'none', 9000);
         }
 
         let usersVisible = false;
