@@ -1345,7 +1345,7 @@ def fotor():
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     documento = ""
-    selected_option = "fotoba"  # Opção padrão
+    selected_option = ""  # Opção padrão
 
     if request.method == 'POST':
         documento = request.form.get('documento', '')
@@ -1353,14 +1353,14 @@ def fotor():
         if documento:
             try:
                 if not is_admin:
-                    token = request.form.get('token', '')
+                    token = request.form.get('token')
                     if not token:
                         flash('Token não fornecido.', 'error')
-                        return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=token)
+                        return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
 
                     if token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=token)
+                        return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
 
                 # Chamada à API para busca de foto baseada na opção selecionada
                 token = "a72566c8fac76174cb917c1501d94856"  # Token fixo (recomendo mover para config)
@@ -1427,7 +1427,7 @@ def fotor():
             except json.JSONDecodeError:
                 flash('Resposta da API inválida.', 'error')
 
-    return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option, token=session.get('token'))
+    return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
 
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 def nomelv():
