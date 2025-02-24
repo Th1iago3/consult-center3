@@ -499,6 +499,27 @@
             transform: scale(1.3);
         }
 
+        .alert {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+
+        .alert-error {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 156, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
         /* Responsividade */
         @media (max-width: 768px) {
             .welcome-title {
@@ -588,6 +609,10 @@
             .signup-text {
                 font-size: 12px;
             }
+            .alert {
+                font-size: 12px;
+                padding: 10px;
+            }
         }
 
         @keyframes pulseGlow {
@@ -608,8 +633,8 @@
                     Sua solução definitiva para consultas e serviços, com tecnologia avançada para simplificar sua rotina.
                 </p>
                 <button class="welcome-button" id="accessButton">
-    Acessar Serviços <span style="margin-left: 10px;"></span><i class="fas fa-arrow-right"></i>
-</button>
+                    Acessar Serviços <span style="margin-left: 10px;"></span><i class="fas fa-arrow-right"></i>
+                </button>
             </div>
         </div>
 
@@ -627,7 +652,7 @@
                     <i class="module-icon fas fa-phone"></i>
                     <h3 class="module-title">Módulo de Telefone</h3>
                     <p class="module-desc">
-                        Acesse dados de registros telefônicos com precisão e agilidade.
+                        Acesse dados de contato e histórico de números telefônicos com precisão e agilidade.
                     </p>
                 </div>
                 <div class="module-card">
@@ -648,9 +673,16 @@
         </div>
     </div>
 
-    <!-- Tela de login com elementos do script antigo -->
+    <!-- Tela de login -->
     <div class="login-screen" id="loginScreen">
         <h2>Entrar</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <form class="login-form" method="POST" action="/" id="loginForm">
             <div class="login-field">
                 <i class="login-icon fas fa-user"></i>
@@ -710,19 +742,45 @@
             }
         }
 
-        window.addEventListener('load', initParticles);
-        window.addEventListener('resize', initParticles);
+        // Função para controlar a exibição da tela de boas-vindas
+        function shouldShowWelcomeScreen() {
+            // Verifica se já foi exibida na sessão
+            const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
+            // Verifica parâmetro na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const backinUP = urlParams.get('backinUP');
 
-        // Transição entre telas
-        const mainContainer = document.getElementById('mainContainer');
-        const loginScreen = document.getElementById('loginScreen');
-        const accessButton = document.getElementById('accessButton');
+            // Se backinUP for 'true' ou já foi vista, não mostra
+            return !hasSeenWelcome && backinUP !== 'true';
+        }
 
-        accessButton.addEventListener('click', () => {
-            mainContainer.classList.add('hidden');
-            setTimeout(() => {
+        // Inicialização da página
+        window.addEventListener('load', () => {
+            initParticles();
+
+            const mainContainer = document.getElementById('mainContainer');
+            const loginScreen = document.getElementById('loginScreen');
+            const accessButton = document.getElementById('accessButton');
+
+            // Verifica se deve mostrar a tela de boas-vindas
+            if (shouldShowWelcomeScreen()) {
+                mainContainer.style.display = 'flex';
+                loginScreen.classList.remove('active');
+                sessionStorage.setItem('hasSeenWelcome', 'true');
+            } else {
+                mainContainer.style.display = 'none';
                 loginScreen.classList.add('active');
-            }, 50);
+            }
+
+            // Evento do botão de acesso
+            if (accessButton) {
+                accessButton.addEventListener('click', () => {
+                    mainContainer.classList.add('hidden');
+                    setTimeout(() => {
+                        loginScreen.classList.add('active');
+                    }, 50);
+                });
+            }
         });
 
         // Alternar visibilidade da senha
@@ -731,7 +789,7 @@
             passwordInput.type = this.checked ? 'text' : 'password';
         });
 
-        // Gerar token e submit (exemplo do script antigo)
+        // Gerar token e submit
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const tokenField = document.createElement('input');
@@ -745,6 +803,7 @@
         // Ajuste de altura da tela
         window.addEventListener('resize', () => {
             document.body.style.minHeight = window.innerHeight + 'px';
+            initParticles();
         });
         document.body.style.minHeight = window.innerHeight + 'px';
     </script>
