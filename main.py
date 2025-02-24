@@ -351,7 +351,7 @@ def security_check():
             response.raise_for_status()
             ip_data = response.json()
             ip_address = ip_data['ip']
-            vpn_check = requests.get(f'https://ipinfo.io/{ip_address}/json?token=your_api_token')
+            vpn_check = requests.get(f'https://ipinfo.io/{ip_address}/json?token=9db60cdc38ce1f')
             vpn_check.raise_for_status()
             vpn_data = vpn_check.json()
             if 'bogon' in vpn_data and vpn_data['bogon']:
