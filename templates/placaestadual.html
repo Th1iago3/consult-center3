@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta - PLACA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #7B3FE4; /* Roxo vibrante */
+            --secondary-color: #A56EFF; /* Roxo claro */
+            --accent-color: #FF4D94; /* Rosa neon */
+            --background: #1C1D33; /* Fundo escuro futurista */
+            --card-bg: rgba(40, 42, 70, 0.9); /* Fundo translúcido */
+            --text-dark: #E8E9F3; /* Texto claro */
+            --text-light: #B0B3D6; /* Texto secundário */
+            --success: #00FFB3; /* Verde neon */
+            --error: #FF3366; /* Vermelho vibrante */
+            --glow: rgba(123, 63, 228, 0.5);
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--background), #2A2C4F);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            animation: fadeInBody 1.2s ease-in-out;
+            color: var(--text-dark);
+        }
+
+        @keyframes fadeInBody {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(123, 63, 228, 0.15), transparent 70%);
+            animation: pulseGlow 10s infinite alternate;
+            z-index: -1;
+        }
+
+        .navbar {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            padding: 1.2rem 2rem;
+            box-shadow: 0 8px 30px var(--shadow), 0 0 20px var(--glow);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.4s ease;
+            border-bottom: 1px solid rgba(123, 63, 228, 0.3);
+        }
+
+        .navbar:hover {
+            box-shadow: 0 12px 40px var(--shadow), 0 0 30px var(--glow);
+        }
+
+        .navbar-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .navbar-toggle i {
+            transition: transform 0.4s ease;
+        }
+
+        .navbar-toggle.active i {
+            transform: rotate(90deg);
+            color: var(--accent-color);
+        }
+
+        .nav-links {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            box-shadow: 0 10px 30px var(--shadow);
+            border-radius: 0 0 15px 15px;
+            animation: slideDown 0.4s ease-out forwards;
+            border: 1px solid rgba(123, 63, 228, 0.3);
+        }
+
+        .nav-links.active {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(123, 63, 228, 0.2);
+            color: var(--secondary-color);
+            transform: translateX(8px);
+            box-shadow: 0 0 10px var(--glow);
+        }
+
+        .sub-navbar {
+            display: none;
+            flex-direction: column;
+            gap: 0.6rem;
+            padding: 1rem;
+            background: rgba(123, 63, 228, 0.1);
+            border-radius: 10px;
+            margin-top: 0.6rem;
+            animation: fadeInSub 0.3s ease-out;
+        }
+
+        .sub-navbar.active {
+            display: flex;
+        }
+
+        @keyframes fadeInSub {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .sub-navbar a {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            padding: 0.6rem;
+            transition: all 0.3s ease;
+        }
+
+        .sub-navbar a:hover {
+            color: var(--accent-color);
+            text-shadow: 0 0 5px var(--glow);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .user-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 15px var(--glow);
+            transition: all 0.3s ease;
+        }
+
+        .user-icon:hover {
+            transform: scale(1.15) rotate(10deg);
+            box-shadow: 0 6px 20px var(--glow);
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px var(--glow);
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 25px;
+            box-shadow: 0 20px 50px var(--shadow), 0 0 30px var(--glow);
+            padding: 40px;
+            width: 450px;
+            text-align: center;
+            margin: 6rem auto 2rem;
+            position: relative;
+            overflow: hidden;
+            animation: slideInContainer 0.6s ease-in-out;
+            border: 2px solid rgba(123, 63, 228, 0.3);
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 25px 60px var(--shadow), 0 0 40px var(--glow);
+        }
+
+        @keyframes slideInContainer {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(123, 63, 228, 0.2), transparent 70%);
+            animation: shimmer 4s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        h2 {
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 28px;
+            text-shadow: 0 0 10px var(--glow);
+            animation: fadeInTitle 0.6s ease-in-out;
+        }
+
+        @keyframes fadeInTitle {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .form-group {
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-in-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(123, 63, 228, 0.5);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dark);
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.4s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px var(--glow);
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: var(--white);
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            width: 100%;
+            box-shadow: 0 5px 15px var(--glow);
+        }
+
+        .button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px var(--glow);
+            background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+        }
+
+        .button:active {
+            transform: translateY(0) scale(1);
+            box-shadow: 0 5px 15px var(--glow);
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            animation: fadeInAlert 0.5s ease-in;
+            box-shadow: 0 5px 15px var(--shadow);
+            font-weight: 500;
+        }
+
+        @keyframes fadeInAlert {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-error {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--error);
+            border-left: 5px solid var(--error);
+        }
+
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--secondary-color);
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .download-link i {
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .download-link:hover {
+            color: var(--accent-color);
+            text-shadow: 0 0 5px var(--glow);
+        }
+
+        .download-link:hover i {
+            color: var(--accent-color);
+            transform: scale(1.2);
+        }
+
+        .profile-info {
+            background: rgba(123, 63, 228, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 25px;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 20px var(--shadow);
+            text-align: left;
+            animation: slideUpInfo 0.6s ease-out;
+        }
+
+        .profile-info:hover {
+            box-shadow: 0 10px 30px var(--shadow), 0 0 15px var(--glow);
+        }
+
+        @keyframes slideUpInfo {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-info h3 {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(123, 63, 228, 0.3);
+            padding-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 0 0 5px var(--glow);
+        }
+
+        .profile-info p {
+            margin: 8px 0;
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .profile-info p strong {
+            display: inline-block;
+            width: 150px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem 1.5rem;
+            }
+
+            .container {
+                width: 90%;
+                padding: 30px;
+            }
+
+            .nav-links {
+                padding: 1rem;
+            }
+
+            .nav-links a {
+                padding: 0.6rem 1rem;
+            }
+
+            .profile-info p strong {
+                width: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .form-group input {
+                font-size: 14px;
+                padding: 12px 15px;
+            }
+
+            .button {
+                font-size: 14px;
+                padding: 12px 25px;
+            }
+
+            .profile-info p {
+                font-size: 13px;
+            }
+
+            .profile-info p strong {
+                width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
+            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
+            <div class="sub-navbar" id="subNavbar">
+                <a href="#">Base: SENATRAN</a>
+            </div>
+        </div>
+        <div class="user-profile">
+            <div class="user-icon"><i class="fas fa-user"></i></div>
+            <button class="logout-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Consulta - Placa</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST" id="searchForm">
+            <div class="form-group">
+                <input type="text" name="placa" placeholder="Digite a placa..." value="{{ placa }}" required>
+            </div>
+            {% if not is_admin %}
+                <div class="form-group">
+                    <input type="text" name="token" placeholder="Digite seu token..." required>
+                </div>
+            {% endif %}
+            <button type="submit" class="button">
+                <i class="fas fa-search"></i> Consultar
+            </button>
+        </form>
+        {% if results %}
+            <a href="#" class="download-link" onclick="generateAndDownloadTxt(event)">
+                <i class="fas fa-download"></i> Baixar em .txt
+            </a>
+            {% for result in results %}
+                <div class="profile-info">
+                    <p><strong>ID:</strong> {{ result.id | default('Não encontrado') }}</p>
+                    <p><strong>Placa:</strong> {{ result.placa | default('Não encontrado') }}</p>
+                    <p><strong>Roubo:</strong> {{ result.roubo | default('Não encontrado') }}</p>
+                    <p><strong>Clone:</strong> {{ result.clone | default('Não encontrado') }}</p>
+                    <p><strong>Marca:</strong> {{ result.marca | default('Não encontrado') }}</p>
+                    <p><strong>Renavam:</strong> {{ result.renavam | default('Não encontrado') }}</p>
+                    <p><strong>Chassi:</strong> {{ result.chassi | default('Não encontrado') }}</p>
+                    <p><strong>Cor:</strong> {{ result.cor | default('Não encontrado') }}</p>
+                    <p><strong>Ano Modelo:</strong> {{ result.anoModelo | default('Não encontrado') }}</p>
+                    <p><strong>Ano Fabricação:</strong> {{ result.anoFabricacao | default('Não encontrado') }}</p>
+                    <p><strong>Categoria:</strong> {{ result.categoria | default('Não encontrado') }}</p>
+                    <p><strong>Combustível:</strong> {{ result.combustivel | default('Não encontrado') }}</p>
+                    <p><strong>Espécie:</strong> {{ result.especie | default('Não encontrado') }}</p>
+                    <p><strong>Tipo:</strong> {{ result.tipo | default('Não encontrado') }}</p>
+                    <p><strong>Nome do Proprietário:</strong> {{ result.nomeProprietario | default('Não encontrado') }}</p>
+                    <p><strong>Tipo de Documento:</strong> {{ result.tipoDocumento | default('Não encontrado') }}</p>
+                    <p><strong>Número do Documento:</strong> {{ result.numeroDocumento | default('Não encontrado') }}</p>
+                    <p><strong>Endereço:</strong> {{ result.endereco | default('Não encontrado') }}</p>
+                    <p><strong>Nome do Possuidor:</strong> {{ result.nomePossuidor | default('Não encontrado') }}</p>
+                    <p><strong>Tipo de Documento do Possuidor:</strong> {{ result.tipoDocumentoPossuidor | default('Não encontrado') }}</p>
+                    <p><strong>Número de Documento do Possuidor:</strong> {{ result.numeroDocumentoPossuidor | default('Não encontrado') }}</p>
+                    <p><strong>Endereço do Possuidor:</strong> {{ result.enderecoPossuidor | default('Não encontrado') }}</p>
+                    <p><strong>Restrição 1:</strong> {{ result.restricao1 | default('Não encontrado') }}</p>
+                    <p><strong>Restrições:</strong> 
+                        {% if result.restricao %}
+                            {% for restricao in result.restricao %}
+                                Data Ocorrência: {{ restricao.dataOcorrencia | default('Não informado') }}, 
+                                Natureza: {{ restricao.naturezaOcorrencia | default('Não informado') }}, 
+                                Sistema: {{ restricao.sistema | default('Não informado') }}
+                                {% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Não encontrado
+                        {% endif %}
+                    </p>
+                    <p><strong>Ano IPVA:</strong> {{ result.anoIpva | default('Não encontrado') }}</p>
+                    <p><strong>Ano Licença:</strong> {{ result.anoLicenca | default('Não encontrado') }}</p>
+                    <p><strong>Último IPVA:</strong> {{ result.ultimoIpva | default('Não encontrado') }}</p>
+                    <p><strong>Cota Única:</strong> {{ result.cotaUnica | default('Não encontrado') }}</p>
+                    <p><strong>Isento IPVA:</strong> {{ result.isentoIpva | default('Não encontrado') }}</p>
+                    <p><strong>Restrição Administrativa:</strong> {{ result.restricaoAdministrativa | default('Não encontrado') }}</p>
+                    <p><strong>Restrição Financeira:</strong> {{ result.restricaoFinanceira | default('Não encontrado') }}</p>
+                    <p><strong>Restrição Jurídica:</strong> {{ result.restricaoJuridica | default('Não encontrado') }}</p>
+                    <p><strong>Total IPVA:</strong> {{ result.totalIpva | default('Não encontrado') }}</p>
+                    <p><strong>DPVAT Anterior:</strong> {{ result.dpvatAnterior | default('Não encontrado') }}</p>
+                    <p><strong>DPVAT Atual:</strong> {{ result.dpvatAtual | default('Não encontrado') }}</p>
+                    <p><strong>IPVA Anterior:</strong> {{ result.ipvaAnterior | default('Não encontrado') }}</p>
+                    <p><strong>Licença Anterior:</strong> {{ result.licencaAnterior | default('Não encontrado') }}</p>
+                    <p><strong>Licença Atual:</strong> {{ result.licencaAtual | default('Não encontrado') }}</p>
+                    <p><strong>Valor Multa:</strong> {{ result.valorMulta | default('Não encontrado') }}</p>
+                    <p><strong>Multa em Tramitação:</strong> {{ result.multaTramitacao | default('Não encontrado') }}</p>
+                    <p><strong>Base:</strong> {{ result.base | default('Não encontrado') }}</p>
+                    <p><strong>Motor:</strong> {{ result.motor | default('Não encontrado') }}</p>
+                    <p><strong>Município:</strong> {{ result.municipio | default('Não encontrado') }}</p>
+                    <p><strong>Cidade:</strong> {{ result.cidade | default('Não encontrado') }}</p>
+                    <p><strong>UF Veículo:</strong> {{ result.ufVeiculo | default('Não encontrado') }}</p>
+                    <p><strong>UF:</strong> {{ result.uf | default('Não encontrado') }}</p>
+                    <p><strong>Situação:</strong> {{ result.situacao | default('Não encontrado') }}</p>
+                    <p><strong>Temporário:</strong> {{ result.temporario | default('Não encontrado') }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        function toggleNavbar() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.navbar-toggle');
+            const toggleIcon = toggleBtn.querySelector('i');
+            navLinks.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+            toggleIcon.classList.toggle('fa-arrow-right');
+            toggleIcon.classList.toggle('fa-arrow-down');
+        }
+
+        function toggleDropdown(event) {
+            event.preventDefault();
+            const subNavbar = document.getElementById('subNavbar');
+            subNavbar.classList.toggle('active');
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.createElement('div');
+            alertContainer.id = 'alertContainer';
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            document.querySelector('.container').insertBefore(alertContainer, document.querySelector('.container').firstChild);
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            const placa = this.placa.value.trim();
+            if (placa.length < 7) {
+                showAlert('Por favor, insira uma placa com pelo menos 7 caracteres.', 'error');
+                event.preventDefault();
+            }
+        });
+
+        function generateAndDownloadTxt(event) {
+            event.preventDefault();
+
+            const profileInfos = document.querySelectorAll('.profile-info');
+            if (!profileInfos.length) {
+                showAlert('Nenhum resultado disponível para download.', 'error');
+                return;
+            }
+
+            const resultText = Array.from(profileInfos).reduce((acc, info) => {
+                const infoText = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
+                return acc + '\n\n' + infoText;
+            }, '');
+
+            const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
+            const fileName = `${currentDate}-PLACA-CONSULT-CENTER.txt`;
+
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        document.addEventListener('click', (e) => {
+            const subNavbar = document.getElementById('subNavbar');
+            const navLinks = document.getElementById('navLinks');
+            if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
+                subNavbar.classList.remove('active');
+            }
+            if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
+                toggleNavbar();
+            }
+        });
+    </script>
+</body>
+</html>
