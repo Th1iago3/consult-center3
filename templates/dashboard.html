@@ -859,7 +859,7 @@ body::before {
             </div>
 
             <div class="module-card" onclick="navigateTo('/modulos/pix')">
-                <i class="module-icon fab fa-pix"></i>
+                <i class="module-icon fas fa-pix"></i>
                 <h3 class="module-title">Consulta - PIX (NACIONAL)</h3>
                 <p class="module-description">Em Andamento...</p>
                 {% with module_usage=users.get(g.user_id, {}).get('pix', {}).get('pix', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
