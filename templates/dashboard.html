@@ -769,18 +769,29 @@
             <i class="fas fa-user"></i>
         </div>
         <div class="profile-info">
-            <h3>{{ g.user_id }}</h3>
+            <h3>Bem-vindo(a), {{ g.user_id }}.</h3>
             <div class="info-item">
-                <span>Token</span>
                 <div class="value">
                     <span class="token-text">{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}</span>
                     <button class="copy-btn" onclick="copyToken(this, '{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}')"><i class="fas fa-copy"></i></button>
                 </div>
             </div>
-            <div class="info-item">
-                <span>Plano</span>
-                <div class="value">{{ users[g.user_id]['role'] if users[g.user_id]['role'] else 'N/A' }}</div>
-            </div>
+           <div class="info-item">
+               <span>Plano</span>
+               <div class="value">
+                   {% if users[g.user_id]['role'] == 'user_semanal' %}
+                   Semanal
+                   {% elif users[g.user_id]['role'] == 'user_mensal' %}
+                   Mensal
+                   {% elif users[g.user_id]['role'] == 'user_anual' %}
+                   Anual
+                   {% elif users[g.user_id]['role'] == 'admin' %}
+                   Administrador
+                   {% else %}
+                   N/A
+                   {% endif %}
+               </div>
+           </div>
             <div class="info-item">
                 <span>Validade</span>
                 <div class="value">{{ users[g.user_id]['expiration'] }}</div>
