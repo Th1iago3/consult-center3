@@ -747,20 +747,20 @@
     <div class="overlay" id="overlay"></div>
 
     <!-- User Panel -->
-    <div class="user-panel">
-        <img src="https://cdn-icons-png.flaticon.com/512/6522/6522516.png" alt="Ícone do Usuário" width="30" class="profile-icon" onclick="toggleProfile()">
-        <div class="user-info">
-            <h3>Bem-vindo(a), {{ g.user_id }}.</h3>
-            <p>Validade: {{ users[g.user_id]['expiration'] }}</p>
-        </div>
-        <div style="position: relative;">
-            <img src="https://cdn-icons-png.flaticon.com/512/3119/3119338.png" alt="Notificações" width="25" onclick="toggleNotifications()">
-            <div class="notification-badge" id="notificationCount">{{ notifications.get(g.user_id, []).__len__() }}</div>
-        </div>
-        {% if admin %}
-            <button onclick="window.location.href='/i/settings/admin'" style="background: none; border: none; color: var(--text-light); font-size: 14px; cursor: pointer; margin-left: 15px; transition: color 0.3s;">Administração</button>
-        {% endif %}
+<div class="user-panel">
+    <i class="fas fa-user-circle profile-icon" onclick="toggleProfile()" style="font-size: 30px; color: var(--primary-color); cursor: pointer;"></i>
+    <div class="user-info">
+        <h3>Bem-vindo(a), {{ g.user_id }}.</h3>
+        <p>Validade: {{ users[g.user_id]['expiration'] }}</p>
     </div>
+    <div style="position: relative;">
+        <i class="fas fa-bell" onclick="toggleNotifications()" style="font-size: 25px; color: var(--primary-color); cursor: pointer;"></i>
+        <div class="notification-badge" id="notificationCount">{{ notifications.get(g.user_id, []).__len__() }}</div>
+    </div>
+    {% if admin %}
+        <button onclick="window.location.href='/i/settings/admin'" style="background: none; border: none; color: var(--text-light); font-size: 14px; cursor: pointer; margin-left: 15px; transition: color 0.3s;">Administração</button>
+    {% endif %}
+</div>
 
     <!-- Profile Card -->
     <div class="profile-card" id="profileCard">
