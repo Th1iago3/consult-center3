@@ -886,7 +886,7 @@
                     </div>
                     <p class="request-count">{{ module_usage }}/{{ max_requests }}</p>
                 {% endwith %}
-                <div class="status-dot bolinha-verde"></div>
+                <div class="status-dot bolinha-vermelha"></div>
             </div>
             <div class="module-card" onclick="navigateTo('/modulos/cpf')" data-module-id="cpf">
                 <i class="module-icon fas fa-file-alt"></i>
@@ -968,7 +968,7 @@
                     </div>
                     <p class="request-count">{{ module_usage }}/{{ max_requests }}</p>
                 {% endwith %}
-                <div class="status-dot bolinha-verde"></div>
+                <div class="status-dot bolinha-vermelha"></div>
             </div>
             <div class="module-card" onclick="navigateTo('/modulos/nome2')" data-module-id="nome2">
                 <i class="module-icon fas fa-file-alt"></i>
@@ -1007,7 +1007,7 @@
                     </div>
                     <p class="request-count">{{ module_usage }}/{{ max_requests }}</p>
                 {% endwith %}
-                <div class="status-dot bolinha-verde"></div>
+                <div class="status-dot bolinha-vermelha"></div>
             </div>
             <div class="module-card" onclick="navigateTo('/modulos/teldual')" data-module-id="teldual">
                 <i class="module-icon fas fa-phone"></i>
@@ -1020,7 +1020,7 @@
                     </div>
                     <p class="request-count">{{ module_usage }}/{{ max_requests }}</p>
                 {% endwith %}
-                <div class="status-dot bolinha-verde"></div>
+                <div class="status-dot bolinha-vermelha"></div>
             </div>
             <div class="module-card" onclick="navigateTo('/modulos/datanome')" data-module-id="datanome">
                 <i class="module-icon fas fa-calendar-days"></i>
@@ -1082,7 +1082,7 @@
                 <i class="module-icon fab fa-pix"></i>
                 <h3 class="module-title">Consulta - PIX (NACIONAL)</h3>
                 <p class="module-description">Em Andamento...</p>
-                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), user_role=users.get(g Garanta que o layout seja responsivo e mantenha a beleza estética em todos os dispositivos.user_id, {}).get('role', 'user_semanal') %}
+                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100) | round | int }}%"></div>
@@ -1113,19 +1113,6 @@
                 <h3 class="module-title">Consulta - IP (localização)</h3>
                 <p class="module-description">Consulte a Localização de qualquer IP.</p>
                 {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
-                    {% set max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user_role, 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (module_usage / max_requests * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ module_usage }}/{{ max_requests }}</p>
-                {% endwith %}
-                <div class="status-dot bolinha-verde"></div>
-            </div>
-            <div class="module-card" onclick="navigateTo('/modulos/visitas')" data-module-id="visitas">
-                <i class="module-icon fas fa-user-plus"></i>
-                <h3 class="module-title">Adicionar - Visitas (FREEFIRE)</h3>
-                <p class="module-description">Adicione Visitas ao seu Perfil no FREEFIRE!</p>
-                {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('visitas', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
                     {% set max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user_role, 30) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (module_usage / max_requests * 100) | round | int }}%"></div>
