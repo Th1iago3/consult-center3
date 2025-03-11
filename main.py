@@ -648,7 +648,7 @@ def cpf():
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
                     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
             # API Call for CPF lookup
-            url = f"https://br4s1l.space/apix.php?base=cpf&query={cpf}"
+            url = f"http://br4s1l.space/apix.php?base=cpf&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -694,7 +694,7 @@ def cpf2():
 
     try:
         # API Call for CPF lookup
-        url = f"https://br4s1l.space/apix.php?base=cpf1&query={cpf}"
+        url = f"http://br4s1l.space/apix.php?base=cpf1&query={cpf}"
         response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
         response.raise_for_status()  # Raises HTTPError for bad responses
         data = response.json()
@@ -741,7 +741,7 @@ def cpfdata():
 
         try:
             # API Call for CPF lookup
-            url = f"https://br4s1l.space/apix.php?base=cpfDatasus&query={cpf}"
+            url = f"http://br4s1l.space/apix.php?base=cpfDatasus&query={cpf}"
             response = requests.get(url, verify=False)  
             response.raise_for_status()  
             data = response.json()
@@ -821,7 +821,7 @@ def cpf3():
 
     try:
         # API Call for CPF lookup
-        url = f"https://br4s1l.space/apix.php?base=cpfSipni&query={cpf}"
+        url = f"http://br4s1l.space/apix.php?base=cpfSipni&query={cpf}"
         response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
         response.raise_for_status()  # Raises HTTPError for bad responses
         data = response.json()
@@ -871,7 +871,7 @@ def cpflv():
                         return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
                 # API Call for CPF lookup
-                url = f"https://br4s1l.space/apix.php?base=cpfLv&query={cpf}"
+                url = f"http://br4s1l.space/apix.php?base=cpfLv&query={cpf}"
                 response = requests.get(url, verify=False)
                 response.raise_for_status()
                 data = response.json()
@@ -928,7 +928,7 @@ def cpf5():
                     return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
 
             # API Call for CPF lookup
-            url = f"https://br4s1l.space/apix.php?base=vacinas&query={cpf}"
+            url = f"http://br4s1l.space/apix.php?base=vacinas&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -969,7 +969,7 @@ def datanome():
         else:
             try:
                 # API Call for name lookup
-                url = f"https://br4s1l.space/apix.php?base=nome&query={nome}"
+                url = f"http://br4s1l.space/apix.php?base=nome&query={nome}"
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
@@ -1033,7 +1033,7 @@ def placalv():
                     return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
             # API Call for plate lookup
-            url = f"https://br4s1l.space/apix.php?base=placaLv&query={placa}"
+            url = f"http://br4s1l.space/apix.php?base=placaLv&query={placa}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1083,7 +1083,7 @@ def tellv():
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
 
             # API Call for telephone lookup
-            url = f"https://br4s1l.space/apix.php?base=telefoneLv&query={telefone}"
+            url = f"http://br4s1l.space/apix.php?base=telefoneLv&query={telefone}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1142,7 +1142,7 @@ def teldual():
                     return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
 
             # API Call for telephone lookup
-            url = f"https://br4s1l.space/apix.php?base=teldual&query={telefone}"
+            url = f"http://br4s1l.space/apix.php?base=teldual&query={telefone}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1193,7 +1193,7 @@ def tel():
                         return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
 
                 # API Call for telephone lookup
-                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=telcredlink&query={tel}"
+                url = f"http://apibr.lat/painel/apix.php?token=a72566c8fac76174cb917c1501d94856&base=telcredlink&query={tel}"
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
@@ -1245,7 +1245,7 @@ def placa():
                     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
             # API Call for plate lookup
-            url = f"https://br4s1l.space/apix.php?base=placanacional&query={placa}"
+            url = f"http://br4s1l.space/apix.php?base=placanacional&query={placa}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1304,7 +1304,7 @@ def placaestadual():
                     return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
             # API Call for plate lookup
-            url = f"https://br4s1l.space/apix.php?base=placaestadual&query={placa}"
+            url = f"http://br4s1l.space/apix.php?base=placaestadual&query={placa}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1457,7 +1457,7 @@ def nomelv():
                     return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
             # API Call for name lookup
-            url = f"https://br4s1l.space/api.php?base=nome&query={nome}"
+            url = f"http://br4s1l.space/api.php?base=nome&query={nome}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1505,7 +1505,7 @@ def nome():
                     return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
             # API Call for name lookup
-            url = f"https://br4s1l.space/apix.php?base=nome&query={nome}"
+            url = f"http://br4s1l.space/apix.php?base=nome&query={nome}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1611,7 +1611,7 @@ def nome2():
                     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
             # API Call for name lookup
-            url = f"https://br4s1l.space/api.php?base=nomeData&query={nome}"
+            url = f"http://br4s1l.space/api.php?base=nomeData&query={nome}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
