@@ -648,7 +648,7 @@ def cpf():
                     flash('Token inválido ou não corresponde ao usuário logado.', 'error')
                     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
             # API Call for CPF lookup
-            url = f"https://br4s1l.space/api.php?base=cpf&query={cpf}"
+            url = f"https://br4s1l.space/apix.php?base=cpf&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -694,7 +694,7 @@ def cpf2():
 
     try:
         # API Call for CPF lookup
-        url = f"https://br4s1l.space/api.php?base=cpf1&query={cpf}"
+        url = f"https://br4s1l.space/apix.php?base=cpf1&query={cpf}"
         response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
         response.raise_for_status()  # Raises HTTPError for bad responses
         data = response.json()
@@ -741,7 +741,7 @@ def cpfdata():
 
         try:
             # API Call for CPF lookup
-            url = f"https://br4s1l.space/api.php?base=cpfDatasus&query={cpf}"
+            url = f"https://br4s1l.space/apix.php?base=cpfDatasus&query={cpf}"
             response = requests.get(url, verify=False)  
             response.raise_for_status()  
             data = response.json()
@@ -821,7 +821,7 @@ def cpf3():
 
     try:
         # API Call for CPF lookup
-        url = f"https://br4s1l.space/api.php?base=cpfSipni&query={cpf}"
+        url = f"https://br4s1l.space/apix.php?base=cpfSipni&query={cpf}"
         response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
         response.raise_for_status()  # Raises HTTPError for bad responses
         data = response.json()
@@ -871,7 +871,7 @@ def cpflv():
                         return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
                 # API Call for CPF lookup
-                url = f"https://br4s1l.space/api.php?base=cpfLv&query={cpf}"
+                url = f"https://br4s1l.space/apix.php?base=cpfLv&query={cpf}"
                 response = requests.get(url, verify=False)
                 response.raise_for_status()
                 data = response.json()
@@ -928,7 +928,7 @@ def cpf5():
                     return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
 
             # API Call for CPF lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=vacinas&query={cpf}"
+            url = f"https://br4s1l.space/apix.php?base=vacinas&query={cpf}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -969,7 +969,7 @@ def datanome():
         else:
             try:
                 # API Call for name lookup
-                url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nome&query={nome}"
+                url = f"https://br4s1l.space/apix.php?base=nome&query={nome}"
                 response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
                 response.raise_for_status()  # Raises HTTPError for bad responses
                 data = response.json()
@@ -1033,7 +1033,7 @@ def placalv():
                     return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
             # API Call for plate lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=placaLv&query={placa}"
+            url = f"https://br4s1l.space/apix.php?base=placaLv&query={placa}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1083,7 +1083,7 @@ def tellv():
                     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
 
             # API Call for telephone lookup
-            url = f"https://br4s1l.space/api.php?base=telefoneLv&query={telefone}"
+            url = f"https://br4s1l.space/apix.php?base=telefoneLv&query={telefone}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1142,7 +1142,7 @@ def teldual():
                     return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
 
             # API Call for telephone lookup
-            url = f"https://br4s1l.space/api.php?base=teldual&query={telefone}"
+            url = f"https://br4s1l.space/apix.php?base=teldual&query={telefone}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1245,7 +1245,7 @@ def placa():
                     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
             # API Call for plate lookup
-            url = f"https://br4s1l.space/api.php?base=placanacional&query={placa}"
+            url = f"https://br4s1l.space/apix.php?base=placanacional&query={placa}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1304,7 +1304,7 @@ def placaestadual():
                     return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
             # API Call for plate lookup
-            url = f"https://br4s1l.space/api.php?base=placaestadual&query={placa}"
+            url = f"https://br4s1l.space/apix.php?base=placaestadual&query={placa}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1365,7 +1365,7 @@ def fotor():
                 # Chamada à API para busca de foto baseada na opção selecionada
                 token = "a72566c8fac76174cb917c1501d94856"  # Token fixo (recomendo mover para config)
                 if selected_option == "fotoba":
-                    url = f"http://br4s1l.space/api.php?base=FotoBA&query={documento}"
+                    url = f"http://br4s1l.space/apix.php?base=FotoBA&query={documento}"
                     response = requests.get(url, verify=False)
                     response.raise_for_status()
                     data = response.json()
@@ -1375,7 +1375,7 @@ def fotor():
                         flash('Nenhum resultado encontrado para FotoBA.', 'error')
 
                 elif selected_option == "fotorj":
-                    url = f"http://br4s1l.space/api.php?base=FotoRJ&query={documento}"
+                    url = f"http://br4s1l.space/apix.php?base=FotoRJ&query={documento}"
                     response = requests.get(url, verify=False)
                     response.raise_for_status()
                     data = response.json()
@@ -1406,7 +1406,7 @@ def fotor():
                         flash('Nenhum resultado encontrado ou foto indisponível para FotoMG.', 'error')
 
                 else:  # fotosp
-                    url = f"http://br4s1l.space/api.php?base=FotoSP&query={documento}"
+                    url = f"http://br4s1l.space/apix.php?base=FotoSP&query={documento}"
                     response = requests.get(url, verify=False)
                     response.raise_for_status()
                     data = response.json()
@@ -1457,7 +1457,7 @@ def nomelv():
                     return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
             # API Call for name lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nomeLv&query={nome}"
+            url = f"https://br4s1l.space/api.php?base=nome&query={nome}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1505,7 +1505,7 @@ def nome():
                     return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
             # API Call for name lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nome&query={nome}"
+            url = f"https://br4s1l.space/apix.php?base=nome&query={nome}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1611,7 +1611,7 @@ def nome2():
                     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
             # API Call for name lookup
-            url = f"https://apibr.lat/painel/api.php?token=a72566c8fac76174cb917c1501d94856&base=nomeData&query={nome}"
+            url = f"https://br4s1l.space/api.php?base=nomeData&query={nome}"
             response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
@@ -1631,83 +1631,7 @@ def nome2():
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
-@app.route('/modulos/visitas', methods=['GET', 'POST'])
-def visitas():
-    if 'user_id' not in g:
-        flash('Você precisa estar logado para acessar esta página.', 'error')
-        return redirect('/')
 
-    users = load_data('users.json')
-    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
-    user_notifications = len(notifications.get(g.user_id, []))
-    uid = request.form.get('uid', '') if request.method == 'POST' else ''
-    token = request.form.get('token', '') if request.method == 'POST' else ''
-    visits = int(request.form.get('visits', '50')) if request.method == 'POST' else 50
-    result = None
-
-    if not uid and request.method == 'POST':
-        flash('UID não fornecido.', 'error')
-        return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, visits=visits)
-
-    if not is_admin and request.method == 'POST':
-        if not token or token != users.get(g.user_id, {}).get('token'):
-            flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, visits=visits)
-
-    if request.method == 'POST':
-        try:
-            region, nickname = get_player_info(uid)
-            is_banned = check_ban(uid)
-
-            if is_banned is None:
-                flash('Não foi possível verificar o status de banimento.', 'error')
-                return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=None, uid=uid, visits=visits)
-
-            # Determine how many requests are needed based on the number of visits
-            requests_needed = {
-                150: 10,
-                300: 30,
-                500: 70,
-                10000: 500
-            }.get(visits, 1)
-
-            total_visits_sent = 0
-            requests_made = 0
-
-            async def send_visit():
-                nonlocal total_visits_sent, requests_made
-                async with httpx.AsyncClient() as client:
-                    while requests_made < requests_needed:
-                        try:
-                            time.sleep(6)
-                            response = await client.get(f'https://teamxdarks-api.vercel.app/spam_visit?uid={uid}&region={region}&key=teamXKrishna')
-                            response.raise_for_status()
-                            total_visits_sent += 1
-                            requests_made += 1
-                            if not manage_module_usage(g.user_id, 'visitas'):
-                                flash('Limite de uso atingido para VISITAS.', 'error')
-                                break
-                        except httpx.RequestError as e:
-                            flash(f'Erro ao enviar visitas na requisição {requests_made + 1}: {str(e)}', 'error')
-                            break
-
-            asyncio.run(send_visit())
-
-            result = {
-                'status': 'success' if total_visits_sent > 0 else 'error',
-                'nick': nickname,
-                'banido': 'Sim' if is_banned else 'Não',
-                'região': region,
-                'visits_sent': total_visits_sent,
-                'message': f'{requests_made} requisições feitas.' if total_visits_sent > 0 else 'Falha ao adicionar visitas.'
-            }
-            reset_all()
-
-        except Exception as e:
-            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-
-    return render_template('visitas.html', is_admin=is_admin, notifications=user_notifications, result=result, uid=uid, visits=visits)
 # Fim :D
 if __name__ == '__main__':
     initialize_json('users.json')
