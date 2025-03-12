@@ -649,7 +649,7 @@ def cpf():
                     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
             # API Call for CPF lookup
             url = f"https://api.bygrower.online/core/?token=gustta&base=cpf&query={cpf}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
+            response = requests.get(url)  # Note: verify=False to disable SSL verification, use with caution!
             response.raise_for_status()  # Raises HTTPError for bad responses
             data = response.json()
 
