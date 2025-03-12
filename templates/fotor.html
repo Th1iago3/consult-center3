@@ -2,23 +2,24 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta - Foto RG</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ConsultCenter - Sistema Integrado de Consultas (Consulta - Foto RG)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #00D4FF; /* Ciano neon */
-            --secondary-color: #FF00CC; /* Rosa neon */
-            --accent-color: #FFD700; /* Dourado neon */
-            --background: #0D1B2A; /* Azul escuro metálico */
-            --card-bg: rgba(20, 33, 61, 0.9); /* Fondo translúcido */
-            --text-dark: #E0E1DD; /* Texto claro */
-            --text-light: #A3BFFA; /* Texto secundário */
-            --success: #00FF85; /* Verde neon */
-            --error: #FF4F4F; /* Vermelho neon */
-            --glow: rgba(0, 212, 255, 0.5);
-            --shadow: rgba(0, 0, 0, 0.4);
+            --primary-color: #6E44FF;
+            --secondary-color: #A06CFF;
+            --accent-color: #FF6BD6;
+            --background: #0F1123;
+            --card-bg: rgba(20, 22, 40, 0.95);
+            --text-dark: #F4F4F9;
+            --text-light: rgba(176, 179, 193, 0.8);
+            --white: #FFFFFF;
+            --success: #00E676;
+            --error: #FF3366;
+            --shadow: rgba(0, 0, 0, 0.5);
+            --glow: rgba(110, 68, 255, 0.7);
         }
 
         * {
@@ -29,284 +30,256 @@
         }
 
         body {
-            background: linear-gradient(135deg, var(--background), #1B263B);
+            background: linear-gradient(145deg, var(--background), #1C2526);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
-            animation: fadeInBody 1s ease-in-out;
             color: var(--text-dark);
+            overflow-x: hidden;
+            position: relative;
+            will-change: background;
         }
 
-        @keyframes fadeInBody {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Fondo animado */
-        body::before {
+        body::after {
             content: '';
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent 70%);
-            animation: pulseGlow 12s infinite alternate;
+            background: radial-gradient(circle at 30% 20%, rgba(110, 68, 255, 0.15), transparent 60%);
             z-index: -1;
+            opacity: 0.3;
+            animation: subtlePulse 12s infinite ease-in-out;
         }
 
-        /* Navbar */
+        @keyframes subtlePulse {
+            0% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+            100% { opacity: 0.2; }
+        }
+
         .navbar {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            width: 100%;
-            padding: 1.2rem 2rem;
-            box-shadow: 0 8px 25px var(--shadow), 0 0 15px var(--glow);
             position: fixed;
             top: 0;
             left: 0;
+            width: 100%;
+            background: linear-gradient(180deg, var(--card-bg), rgba(30, 32, 54, 0.9));
+            padding: 20px;
             z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
-        }
-
-        .navbar:hover {
-            box-shadow: 0 12px 35px var(--shadow), 0 0 25px var(--glow);
+            border-bottom: 2px solid rgba(110, 68, 255, 0.6);
+            box-shadow: 0 5px 20px var(--shadow);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
 
         .navbar-toggle {
-            background: none;
+            background: var(--primary-color);
             border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--white);
+            font-size: 18px;
             cursor: pointer;
-            font-size: 1.8rem;
-            color: var(--primary-color);
-            transition: transform 0.3s ease;
+            transition: background 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 0 12px var(--glow);
         }
 
         .navbar-toggle:hover {
-            transform: scale(1.15);
-            color: var(--secondary-color);
+            background: var(--secondary-color);
+            transform: scale(1.1);
         }
 
         .navbar-toggle i {
-            transition: transform 0.4s ease;
+            transition: transform 0.3s ease;
         }
 
         .navbar-toggle.active i {
-            transform: rotate(90deg);
-            color: var(--accent-color);
+            transform: rotate(180deg);
         }
 
         .nav-links {
             display: none;
-            flex-direction: column;
-            gap: 1rem;
-            width: 100%;
-            background: var(--card-bg);
-            padding: 1.5rem;
             position: absolute;
             top: 100%;
             left: 0;
-            box-shadow: 0 10px 30px var(--shadow);
-            border-radius: 0 0 15px 15px;
-            animation: slideDown 0.4s ease-out forwards;
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            width: 250px;
+            background: linear-gradient(180deg, var(--card-bg), rgba(30, 32, 54, 0.9));
+            padding: 15px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 8px 25px var(--shadow);
+            transition: opacity 0.4s ease-in-out;
         }
 
         .nav-links.active {
             display: flex;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            flex-direction: column;
+            gap: 10px;
         }
 
         .nav-links a {
-            color: var(--text-light);
-            text-decoration: none;
-            padding: 0.8rem 1.5rem;
+            padding: 12px 15px;
             border-radius: 10px;
+            transition: background 0.3s ease, transform 0.3s ease, color 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 12px;
+            cursor: pointer;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 14px;
             font-weight: 500;
-            transition: all 0.3s ease;
         }
 
         .nav-links a:hover {
-            background: rgba(0, 212, 255, 0.2);
-            color: var(--primary-color);
+            background: rgba(110, 68, 255, 0.2);
+            color: var(--text-dark);
             transform: translateX(5px);
-            box-shadow: 0 0 10px var(--glow);
+            box-shadow: 0 0 12px var(--glow);
+        }
+
+        .nav-links a i {
+            font-size: 18px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .nav-links a:hover i {
+            transform: scale(1.15);
+            color: var(--accent-color);
         }
 
         .sub-navbar {
             display: none;
             flex-direction: column;
-            gap: 0.6rem;
-            padding: 1rem;
-            background: rgba(0, 212, 255, 0.1);
-            border-radius: 10px;
-            margin-top: 0.6rem;
-            animation: fadeInSub 0.3s ease-out;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(110, 68, 255, 0.1);
+            border-radius: 8px;
+            margin-top: 5px;
         }
 
         .sub-navbar.active {
             display: flex;
         }
 
-        @keyframes fadeInSub {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
         .sub-navbar a {
-            color: var(--text-light);
-            font-size: 0.9rem;
-            padding: 0.6rem;
-            transition: all 0.3s ease;
-        }
-
-        .sub-navbar a:hover {
-            color: var(--secondary-color);
-            text-shadow: 0 0 5px var(--glow);
+            font-size: 12px;
+            padding: 8px;
         }
 
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 15px;
         }
 
         .user-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: var(--white);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            box-shadow: 0 4px 15px var(--glow);
-            transition: all 0.3s ease;
+            font-size: 30px;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: transform 0.3s ease, color 0.3s ease;
         }
 
         .user-icon:hover {
-            transform: scale(1.1) rotate(15deg);
-            box-shadow: 0 6px 20px var(--glow);
+            transform: scale(1.1);
+            color: var(--accent-color);
         }
 
         .logout-btn {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: var(--white);
+            background: var(--primary-color);
             border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 12px;
+            padding: 10px 25px;
+            border-radius: 20px;
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px var(--shadow);
+            gap: 8px;
+            box-shadow: 0 0 12px var(--glow);
         }
 
         .logout-btn:hover {
-            background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px var(--glow);
+            background: var(--secondary-color);
+            transform: scale(1.05);
         }
 
-        /* Container */
         .container {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            box-shadow: 0 15px 40px var(--shadow), 0 0 20px var(--glow);
-            padding: 40px;
-            width: 480px;
-            text-align: center;
-            margin: 6rem auto 2rem;
+            background: linear-gradient(135deg, var(--card-bg), rgba(30, 32, 54, 0.9));
+            border-radius: 12px;
+            box-shadow: 0 8px 25px var(--shadow);
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            margin: 80px auto 20px;
             position: relative;
             overflow: hidden;
-            animation: slideInContainer 0.6s ease-in-out;
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 2px solid rgba(110, 68, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .container:hover {
-            box-shadow: 0 20px 50px var(--shadow), 0 0 30px var(--glow);
-            transform: scale(1.02);
-        }
-
-        @keyframes slideInContainer {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px var(--shadow), 0 0 15px var(--glow);
         }
 
         h2 {
+            font-size: 26px;
+            font-weight: 600;
             color: var(--text-dark);
-            margin-bottom: 30px;
-            font-weight: 700;
-            font-size: 28px;
-            text-shadow: 0 0 8px var(--glow);
-            animation: fadeInTitle 0.6s ease-in-out;
-        }
-
-        @keyframes fadeInTitle {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .form-group {
-            margin: 25px 0;
-            animation: fadeInUp 0.6s ease-in-out;
+            margin: 20px 0;
+            position: relative;
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group input {
             width: 100%;
-            padding: 15px 20px;
-            border: 2px solid rgba(0, 212, 255, 0.5);
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 15px 12px 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(110, 68, 255, 0.3);
+            background: var(--card-bg);
             color: var(--text-dark);
-            font-size: 16px;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            font-size: 14px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .form-group select {
             appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="%2300D4FF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%236E44FF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
             background-repeat: no-repeat;
             background-position: right 15px top 50%;
             cursor: pointer;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
+        .form-group select:focus,
+        .form-group input:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 12px var(--glow);
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.02);
+            outline: none;
+            box-shadow: 0 0 10px var(--glow);
         }
 
         .form-group input::placeholder {
             color: var(--text-light);
-            font-weight: 400;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 16px;
         }
 
         .form-group.hidden {
@@ -318,21 +291,21 @@
         }
 
         .button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-color);
             border: none;
+            padding: 12px 25px;
+            border-radius: 20px;
             color: var(--white);
-            padding: 15px 35px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 12px var(--glow);
             width: 100%;
-            box-shadow: 0 5px 15px var(--glow);
+            justify-content: center;
         }
 
         .button:disabled {
@@ -342,208 +315,188 @@
         }
 
         .button:not(:disabled):hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 10px 25px var(--glow);
-            background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
-        }
-
-        .button:active {
-            transform: translateY(0) scale(1);
-            box-shadow: 0 5px 15px var(--glow);
+            background: var(--secondary-color);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow);
         }
 
         .alert {
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 12px;
+            margin-bottom: 15px;
             border-radius: 10px;
-            animation: fadeInAlert 0.5s ease-in;
-            box-shadow: 0 5px 15px var(--shadow);
+            font-size: 14px;
             font-weight: 500;
-        }
-
-        @keyframes fadeInAlert {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            transition: opacity 0.3s ease;
         }
 
         .alert-error {
-            background: rgba(255, 79, 79, 0.2);
+            background: rgba(255, 51, 102, 0.15);
             color: var(--error);
-            border-left: 5px solid var(--error);
+            border-left: 4px solid var(--error);
         }
 
-        .download-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            color: var(--primary-color);
-            font-weight: 600;
-            text-decoration: none;
-            margin-top: 25px;
-            transition: all 0.3s ease;
+        .profile-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 16px;
             cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px var(--glow);
         }
 
-        .download-link i {
-            font-size: 1.3rem;
-            color: var(--primary-color);
-            transition: transform 0.3s ease;
-        }
-
-        .download-link:hover {
-            color: var(--accent-color);
-            text-shadow: 0 0 5px var(--glow);
-        }
-
-        .download-link:hover i {
-            color: var(--accent-color);
-            transform: scale(1.2);
-        }
-
-        .image-container {
-            margin-top: 25px;
-            text-align: center;
-        }
-
-        .image-container img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px var(--shadow), 0 0 10px var(--glow);
-            transition: transform 0.3s ease;
-        }
-
-        .image-container img:hover {
+        .action-btn:hover {
+            background: var(--secondary-color);
             transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow);
+        }
+
+        .action-btn.copied {
+            background: var(--success);
+        }
+
+        .profile-info {
+            background: linear-gradient(135deg, rgba(30, 32, 54, 0.9), rgba(20, 22, 40, 0.95));
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 20px var(--shadow);
+            border: 2px solid rgba(110, 68, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-info:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px var(--shadow), 0 0 15px var(--glow);
+        }
+
+        .profile-info img {
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .profile-info .info-text {
+            flex: 1;
+        }
+
+        .profile-info p {
+            color: var(--text-light);
+            font-size: 12px;
+            margin: 8px 0;
+        }
+
+        .profile-info p strong {
+            color: var(--text-dark);
+            font-weight: 600;
+            display: inline-block;
+            width: 180px;
         }
 
         .not-found {
             color: var(--error);
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             margin-top: 15px;
-            text-shadow: 0 0 5px var(--glow);
         }
 
-        .profile-info {
-            background: rgba(0, 212, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 25px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px var(--shadow);
-            text-align: left;
-            animation: slideUpInfo 0.6s ease-out;
-        }
-
-        .profile-info:hover {
-            box-shadow: 0 10px 25px var(--shadow), 0 0 15px var(--glow);
-        }
-
-        @keyframes slideUpInfo {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .profile-info h3 {
-            color: var(--text-dark);
-            margin-bottom: 15px;
-            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
-            padding-bottom: 10px;
-            font-weight: 600;
-            text-shadow: 0 0 5px var(--glow);
-        }
-
-        .profile-info p {
-            margin: 8px 0;
-            color: var(--text-light);
-            font-size: 14px;
-            font-weight: 400;
-        }
-
-        .profile-info p strong {
-            display: inline-block;
-            width: 150px;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
-
-        /* Responsividade */
         @media (max-width: 768px) {
-            .navbar {
-                padding: 1rem 1.5rem;
-            }
-
             .container {
                 width: 90%;
-                padding: 30px;
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 22px;
             }
 
             .nav-links {
-                padding: 1rem;
+                width: 100%;
             }
 
-            .nav-links a {
-                padding: 0.6rem 1rem;
+            .profile-info {
+                flex-direction: column;
+                align-items: flex-start;
             }
 
-            .profile-info p strong {
+            .profile-info img {
                 width: 120px;
+                height: 160px;
             }
         }
 
         @media (max-width: 480px) {
             .container {
-                padding: 20px;
+                padding: 15px;
             }
 
             h2 {
-                font-size: 24px;
+                font-size: 20px;
             }
 
-            .form-group input,
-            .form-group select {
-                font-size: 14px;
-                padding: 12px 15px;
+            .form-group select,
+            .form-group input {
+                font-size: 13px;
+                padding: 10px 15px 10px 35px;
             }
 
             .button {
-                font-size: 14px;
-                padding: 12px 25px;
-            }
-
-            .profile-info p {
                 font-size: 13px;
+                padding: 10px 20px;
             }
 
             .profile-info p strong {
-                width: 100px;
+                width: 120px;
             }
-        }
 
-        /* Animações */
-        @keyframes pulseGlow {
-            0% { opacity: 0.3; transform: scale(1); }
-            100% { opacity: 0.5; transform: scale(1.05); }
+            .action-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .profile-info img {
+                width: 100px;
+                height: 130px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="navbar">
         <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
-            <i class="fas fa-arrow-right"></i>
+            <i class="fas fa-chevron-right"></i>
         </button>
         <div class="nav-links" id="navLinks">
-            <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
-            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
+            <a href="/dashboard"><i class="fas fa-home"></i> <span>Página Principal</span></a>
+            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> <span>Informações Adicionais</span></a>
             <div class="sub-navbar" id="subNavbar">
                 <a href="#">Base: DATA</a>
             </div>
         </div>
         <div class="user-profile">
-            <div class="user-icon"><i class="fas fa-user"></i></div>
+            <i class="fas fa-user-circle user-icon"></i>
             <button class="logout-btn" onclick="window.location.href='/logout'">
-                <i class="fas fa-sign-out-alt"></i> Sair
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
             </button>
         </div>
     </div>
@@ -559,6 +512,7 @@
         {% endwith %}
         <form method="POST" id="searchForm">
             <div class="form-group">
+                <i class="fas fa-map-marker-alt"></i>
                 <select name="estado" id="estado" onchange="toggleFields()" required>
                     <option value="" disabled selected>Selecione o Estado</option>
                     <option value="fotoba" {% if selected_option == 'fotoba' %}selected{% endif %}>FOTO - BAHIA</option>
@@ -568,10 +522,12 @@
                 </select>
             </div>
             <div id="documentInput" class="form-group hidden">
+                <i class="fas fa-id-card"></i>
                 <input type="text" name="documento" placeholder="Digite o CPF..." value="{{ documento }}" required>
             </div>
             {% if not is_admin %}
                 <div id="tokenInput" class="form-group hidden">
+                    <i class="fas fa-key"></i>
                     <input type="text" name="token" placeholder="Digite seu token..." value="{{ token }}" required>
                 </div>
             {% endif %}
@@ -581,31 +537,18 @@
         </form>
 
         {% if results %}
-            <div class="image-container">
-                {% if selected_option == 'fotoba' and results.foto %}
-                    <img src="data:image/png;base64,{{ results.foto }}" alt="Foto RG">
-                    <a href="#" class="download-link" onclick="downloadImage(event)">
-                        <i class="fas fa-download"></i> Baixar em .jpg
-                    </a>
-                {% elif selected_option == 'fotorj' and results.resultado.resultado.Foto %}
-                    <img src="data:image/png;base64,{{ results.resultado.resultado.Foto }}" alt="Foto RG">
-                    <a href="#" class="download-link" onclick="downloadImage(event)">
-                        <i class="fas fa-download"></i> Baixar em .jpg
-                    </a>
-                {% elif selected_option == 'fotomg' and results.foto_base64 %}
-                    <img src="data:image/jpeg;base64,{{ results.foto_base64 }}" alt="Foto RG">
-                    <a href="#" class="download-link" onclick="downloadImage(event)">
-                        <i class="fas fa-download"></i> Baixar em .jpg
-                    </a>
-                {% else %}
-                    <p class="not-found">Foto não encontrada ou base indisponível.</p>
-                {% endif %}
-            </div>
-
-            <div class="profile-info">
-                <h3>Informações do RG</h3>
-                {% if selected_option == 'fotoba' %}
-                    <!-- FotoBA: Mantém a estrutura original -->
+        <div class="profile-actions">
+            <button class="action-btn" onclick="copyResult(this)" title="Copiar">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button class="action-btn" onclick="downloadImage()" title="Baixar Foto">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+        <div class="profile-info">
+            {% if selected_option == 'fotoba' and results.foto %}
+                <img src="data:image/png;base64,{{ results.foto }}" alt="Foto RG">
+                <div class="info-text">
                     <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
                     <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
                     <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
@@ -614,18 +557,20 @@
                     <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
                     <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
                     <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
-
-                {% elif selected_option == 'fotorj' %}
-                    <!-- FotoRJ: Estrutura específica -->
+                </div>
+            {% elif selected_option == 'fotorj' and results.resultado.resultado.Foto %}
+                <img src="data:image/png;base64,{{ results.resultado.resultado.Foto }}" alt="Foto RG">
+                <div class="info-text">
                     <p><strong>CPF:</strong> {{ results.resultado.resultado.CPF | default('Não disponível') }}</p>
                     <p><strong>RG:</strong> {{ results.resultado.resultado.RG | default('Não disponível') }}</p>
                     <p><strong>Cidadão:</strong> {{ results.resultado.resultado.Cidadão | default('Não disponível') }}</p>
                     <p><strong>Nascimento:</strong> {{ results.resultado.resultado.Nascimento | default('Não disponível') }}</p>
                     <p><strong>Mãe:</strong> {{ results.resultado.resultado.Mãe | default('Não disponível') }}</p>
                     <p><strong>Autenticidade:</strong> {{ results.resultado.resultado.Autenticidade | default('Não disponível') }}</p>
-
-                {% elif selected_option == 'fotomg' %}
-                    <!-- FotoMG: Estrutura detalhada -->
+                </div>
+            {% elif selected_option == 'fotomg' and results.foto_base64 %}
+                <img src="data:image/jpeg;base64,{{ results.foto_base64 }}" alt="Foto RG">
+                <div class="info-text">
                     <p><strong>CPF:</strong> {{ results.CPF | default('Não disponível') }}</p>
                     <p><strong>Nome:</strong> {{ results.Nome | default('Não disponível') }}</p>
                     <p><strong>Mãe:</strong> {{ results['Nome da Mãe'] | default('Não disponível') }}</p>
@@ -633,51 +578,57 @@
                     <p><strong>Nascimento:</strong> {{ results['Data de Nascimento'] | default('Não disponível') }}</p>
                     <p><strong>Categoria CNH Concedida:</strong> {{ results['Categoria CNH Concedida'] | default('Não disponível') }}</p>
                     <p><strong>Validade CNH:</strong> {{ results['Validade CNH'] | default('Não disponível') }}</p>
-
-                {% elif selected_option == 'fotosp' %}
-                    <!-- FotoSP: Offline -->
-                    <p class="not-found">A base FotoSP está atualmente offline. Tente novamente mais tarde.</p>
-
-                {% endif %}
-            </div>
+                </div>
+            {% else %}
+                <div class="info-text">
+                    <p class="not-found">Foto não encontrada ou base indisponível.</p>
+                    {% if selected_option == 'fotoba' %}
+                        <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
+                        <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
+                        <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
+                        <p><strong>Sexo:</strong> {{ results.sexo | default('Não disponível') }}</p>
+                        <p><strong>Nascimento:</strong> {{ results.nascimento | default('Não disponível') }}</p>
+                        <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
+                        <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
+                        <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
+                    {% elif selected_option == 'fotorj' %}
+                        <p><strong>CPF:</strong> {{ results.resultado.resultado.CPF | default('Não disponível') }}</p>
+                        <p><strong>RG:</strong> {{ results.resultado.resultado.RG | default('Não disponível') }}</p>
+                        <p><strong>Cidadão:</strong> {{ results.resultado.resultado.Cidadão | default('Não disponível') }}</p>
+                        <p><strong>Nascimento:</strong> {{ results.resultado.resultado.Nascimento | default('Não disponível') }}</p>
+                        <p><strong>Mãe:</strong> {{ results.resultado.resultado.Mãe | default('Não disponível') }}</p>
+                        <p><strong>Autenticidade:</strong> {{ results.resultado.resultado.Autenticidade | default('Não disponível') }}</p>
+                    {% elif selected_option == 'fotomg' %}
+                        <p><strong>CPF:</strong> {{ results.CPF | default('Não disponível') }}</p>
+                        <p><strong>Nome:</strong> {{ results.Nome | default('Não disponível') }}</p>
+                        <p><strong>Mãe:</strong> {{ results['Nome da Mãe'] | default('Não disponível') }}</p>
+                        <p><strong>Pai:</strong> {{ results['Nome do Pai'] | default('Não disponível') }}</p>
+                        <p><strong>Nascimento:</strong> {{ results['Data de Nascimento'] | default('Não disponível') }}</p>
+                        <p><strong>Categoria CNH Concedida:</strong> {{ results['Categoria CNH Concedida'] | default('Não disponível') }}</p>
+                        <p><strong>Validade CNH:</strong> {{ results['Validade CNH'] | default('Não disponível') }}</p>
+                    {% elif selected_option == 'fotosp' %}
+                        <p class="not-found">A base FotoSP está atualmente offline. Tente novamente mais tarde.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
         {% endif %}
     </div>
 
     <script>
-        // Toggle Navbar with Animation
         function toggleNavbar() {
             const navLinks = document.getElementById('navLinks');
             const toggleBtn = document.querySelector('.navbar-toggle');
-            const toggleIcon = toggleBtn.querySelector('i');
             navLinks.classList.toggle('active');
             toggleBtn.classList.toggle('active');
-            toggleIcon.classList.toggle('fa-arrow-right');
-            toggleIcon.classList.toggle('fa-arrow-down');
         }
 
-        // Toggle Dropdown
         function toggleDropdown(event) {
             event.preventDefault();
             const subNavbar = document.getElementById('subNavbar');
             subNavbar.classList.toggle('active');
         }
 
-        // Alert
-        function showAlert(message, type) {
-            const alertContainer = document.createElement('div');
-            alertContainer.id = 'alertContainer';
-            document.body.appendChild(alertContainer);
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            alertContainer.appendChild(alert);
-            setTimeout(() => {
-                alert.remove();
-                if (!alertContainer.hasChildNodes()) alertContainer.remove();
-            }, 3000);
-        }
-
-        // Toggle visibility of form fields based on state selection
         function toggleFields() {
             const estado = document.getElementById('estado').value;
             const documentInput = document.getElementById('documentInput');
@@ -703,20 +654,51 @@
             }
         }
 
-        // Form Validation
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             const estado = this.estado.value;
-            const documento = this.documento ? this.documento.value : '';
+            const documento = this.documento ? this.documento.value.replace(/\D/g, '') : '';
             if (!estado) {
-                showAlert('Por favor, selecione um estado.', 'error');
                 event.preventDefault();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Por favor, selecione um estado.';
+                this.insertBefore(alert, this.firstChild);
+                setTimeout(() => alert.remove(), 3000);
             } else if (documento && !/^\d{11}$/.test(documento)) {
-                showAlert('Por favor, insira um CPF válido com 11 dígitos.', 'error');
                 event.preventDefault();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Por favor, insira um CPF válido com 11 dígitos.';
+                this.insertBefore(alert, this.firstChild);
+                setTimeout(() => alert.remove(), 3000);
             }
         });
 
-        // Generate random string for file naming
+        function copyResult(button) {
+            const profileInfo = document.querySelector('.profile-info .info-text');
+            if (!profileInfo) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Nenhum resultado disponível para copiar.';
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
+                setTimeout(() => alert.remove(), 3000);
+                return;
+            }
+
+            const text = Array.from(profileInfo.querySelectorAll('p')).map(p => p.textContent).join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                button.classList.add('copied');
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar: ', err);
+                alert('Falha ao copiar o texto.');
+            });
+        }
+
         function generateRandomString(length = 32) {
             const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let result = '';
@@ -726,34 +708,39 @@
             return result;
         }
 
-        // Download image functionality
-        function downloadImage(event) {
-            event.preventDefault();
-            const img = document.querySelector('.image-container img');
-            if (img) {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.naturalWidth;
-                canvas.height = img.naturalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                canvas.toBlob(function(blob) {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = `FotoRG_${generateRandomString()}.jpg`;
-                    document.body.appendChild(link);
-                    link.click();
-                    setTimeout(() => {
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(link.href);
-                    }, 100);
-                }, 'image/jpeg');
+        function downloadImage() {
+            const img = document.querySelector('.profile-info img');
+            if (!img) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Nenhuma foto disponível para download.';
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
+                setTimeout(() => alert.remove(), 3000);
+                return;
             }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob(function(blob) {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `FotoRG_${generateRandomString()}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                }, 100);
+            }, 'image/jpeg');
         }
 
-        // Close Dropdown and Navbar on Outside Click
         document.addEventListener('click', (e) => {
             const subNavbar = document.getElementById('subNavbar');
             const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.navbar-toggle');
             if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
                 subNavbar.classList.remove('active');
             }
