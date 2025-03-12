@@ -111,6 +111,12 @@ def generate_custom_cookies():
     }
     return cookies
 
+def decode_json_with_bom(response_text):
+    # Remove o BOM (Byte Order Mark) se presente
+    if response_text.startswith('\ufeff'):
+        response_text = response_text[1:]
+    return json.loads(response_text)
+
 def check_referrer():
     referrer = request.headers.get('Referer', '')
     if not referrer.startswith('https://consult-center3.onrender.com'):
