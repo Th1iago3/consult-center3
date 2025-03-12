@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Consulta - IP</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -35,16 +35,10 @@
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
-            animation: fadeInBody 1s ease-in-out;
             color: var(--text-dark);
+            position: relative;
         }
 
-        @keyframes fadeInBody {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Fundo animado */
         body::before {
             content: '';
             position: fixed;
@@ -57,7 +51,11 @@
             z-index: -1;
         }
 
-        /* Navbar */
+        @keyframes pulseGlow {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0.5; transform: scale(1.05); }
+        }
+
         .navbar {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
@@ -80,17 +78,21 @@
         }
 
         .navbar-toggle {
-            background: none;
+            background: var(--primary-color);
             border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--white);
+            font-size: 18px;
             cursor: pointer;
-            font-size: 1.8rem;
-            color: var(--primary-color);
-            transition: transform 0.3s ease;
+            transition: background 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 0 12px var(--glow);
         }
 
         .navbar-toggle:hover {
+            background: var(--secondary-color);
             transform: scale(1.1);
-            color: var(--accent-color);
         }
 
         .navbar-toggle i {
@@ -98,15 +100,14 @@
         }
 
         .navbar-toggle.active i {
-            transform: rotate(90deg);
-            color: var(--secondary-color);
+            transform: rotate(180deg);
         }
 
         .nav-links {
             display: none;
             flex-direction: column;
             gap: 1rem;
-            width: 100%;
+            width: 250px;
             background: var(--card-bg);
             padding: 1.5rem;
             position: absolute;
@@ -114,17 +115,11 @@
             left: 0;
             box-shadow: 0 10px 30px var(--shadow);
             border-radius: 0 0 15px 15px;
-            animation: slideDown 0.4s ease-out forwards;
-            border: 1px solid rgba(0, 180, 216, 0.3);
+            transition: opacity 0.4s ease-in-out;
         }
 
         .nav-links.active {
             display: flex;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .nav-links a {
@@ -154,16 +149,10 @@
             background: rgba(0, 180, 216, 0.1);
             border-radius: 10px;
             margin-top: 0.6rem;
-            animation: fadeInSub 0.3s ease-out;
         }
 
         .sub-navbar.active {
             display: flex;
-        }
-
-        @keyframes fadeInSub {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
         }
 
         .sub-navbar a {
@@ -224,30 +213,24 @@
             box-shadow: 0 6px 15px var(--glow);
         }
 
-        /* Container */
         .container {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
             border-radius: 20px;
             box-shadow: 0 15px 40px var(--shadow), 0 0 20px var(--glow);
             padding: 40px;
-            width: 480px;
-            text-align: center;
+            width: 90%;
+            max-width: 480px;
             margin: 6rem auto 2rem;
             position: relative;
             overflow: hidden;
-            animation: slideInContainer 0.6s ease-in-out;
             border: 1px solid rgba(0, 180, 216, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .container:hover {
-            box-shadow: 0 20px 50px var(--shadow), 0 0 30px var(--glow);
             transform: scale(1.02);
-        }
-
-        @keyframes slideInContainer {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            box-shadow: 0 20px 50px var(--shadow), 0 0 30px var(--glow);
         }
 
         h2 {
@@ -256,28 +239,16 @@
             font-weight: 700;
             font-size: 28px;
             text-shadow: 0 0 8px var(--glow);
-            animation: fadeInTitle 0.6s ease-in-out;
-        }
-
-        @keyframes fadeInTitle {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
         }
 
         .form-group {
             margin: 25px 0;
             position: relative;
-            animation: fadeInUp 0.6s ease-in-out;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .form-group input {
             width: 100%;
-            padding: 15px 20px;
+            padding: 15px 20px 15px 40px;
             border: 2px solid rgba(0, 180, 216, 0.5);
             border-radius: 15px;
             background: rgba(255, 255, 255, 0.05);
@@ -295,48 +266,36 @@
             transform: scale(1.02);
         }
 
-        .form-group input:placeholder-shown + label {
+        .form-group i {
+            position: absolute;
+            left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            opacity: 0.7;
+            color: var(--text-light);
             font-size: 16px;
         }
 
-        .form-group input:focus + label,
-        .form-group input:not(:placeholder-shown) + label {
-            top: -10px;
-            font-size: 12px;
-            opacity: 1;
-            color: var(--primary-color);
-            background: var(--card-bg);
-            padding: 0 5px;
-        }
-
-        .form-group label {
-            position: absolute;
-            left: 20px;
+        .form-group input::placeholder {
             color: var(--text-light);
-            pointer-events: none;
-            transition: all 0.3s ease;
-            font-weight: 400;
         }
 
         .button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             border: none;
-            color: var(--white);
             padding: 15px 35px;
             border-radius: 50px;
+            color: var(--white);
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
             box-shadow: 0 5px 15px var(--glow);
+            margin-bottom: 30px; /* Espaço entre botão e resultados */
         }
 
         .button:hover {
@@ -345,23 +304,12 @@
             background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
         }
 
-        .button:active {
-            transform: translateY(0) scale(1);
-            box-shadow: 0 5px 15px var(--glow);
-        }
-
         .alert {
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 10px;
-            animation: fadeInAlert 0.5s ease-in;
             box-shadow: 0 5px 15px var(--shadow);
             font-weight: 500;
-        }
-
-        @keyframes fadeInAlert {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .alert-error {
@@ -370,24 +318,51 @@
             border-left: 5px solid var(--error);
         }
 
+        .profile-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px var(--glow);
+        }
+
+        .action-btn:hover {
+            background: var(--secondary-color);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow);
+        }
+
+        .action-btn.copied {
+            background: var(--success);
+        }
+
         .profile-info {
             background: rgba(0, 180, 216, 0.05);
             border-radius: 15px;
             padding: 20px;
-            margin-top: 25px;
-            transition: all 0.3s ease;
             box-shadow: 0 5px 15px var(--shadow);
             text-align: left;
-            animation: slideUpInfo 0.6s ease-out;
+            transition: all 0.3s ease;
+            overflow-x: auto; /* Evita saída horizontal */
         }
 
         .profile-info:hover {
             box-shadow: 0 10px 25px var(--shadow), 0 0 15px var(--glow);
-        }
-
-        @keyframes slideUpInfo {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .profile-info h3 {
@@ -404,6 +379,9 @@
             color: var(--text-light);
             font-size: 14px;
             font-weight: 400;
+            white-space: nowrap; /* Evita quebra de linha */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Adiciona reticências se cortado */
         }
 
         .profile-info p strong {
@@ -411,6 +389,9 @@
             width: 150px;
             color: var(--text-dark);
             font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .open-map-link {
@@ -436,22 +417,22 @@
         }
 
         .open-map-link:hover i {
-            color: var(--accent-color);
             transform: scale(1.2);
+            color: var(--accent-color);
         }
 
-        /* Responsividade */
         @media (max-width: 768px) {
             .navbar {
                 padding: 1rem 1.5rem;
             }
 
             .container {
-                width: 90%;
+                width: 95%;
                 padding: 30px;
             }
 
             .nav-links {
+                width: 100%;
                 padding: 1rem;
             }
 
@@ -475,12 +456,13 @@
 
             .form-group input {
                 font-size: 14px;
-                padding: 12px 15px;
+                padding: 12px 15px 12px 35px;
             }
 
             .button {
                 font-size: 14px;
                 padding: 12px 25px;
+                margin-bottom: 20px; /* Menor espaço em telas pequenas */
             }
 
             .profile-info p {
@@ -490,18 +472,19 @@
             .profile-info p strong {
                 width: 100px;
             }
-        }
 
-        @keyframes pulseGlow {
-            0% { opacity: 0.3; transform: scale(1); }
-            100% { opacity: 0.5; transform: scale(1.05); }
+            .action-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="navbar">
         <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
-            <i class="fas fa-arrow-right"></i>
+            <i class="fas fa-chevron-right"></i>
         </button>
         <div class="nav-links" id="navLinks">
             <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
@@ -529,13 +512,13 @@
         {% endwith %}
         <form method="POST" id="searchForm">
             <div class="form-group">
-                <input type="text" name="ip" id="ip" placeholder=" " value="{{ ip_address }}" required>
-                <label for="ip">Digite o IP...</label>
+                <i class="fas fa-network-wired"></i>
+                <input type="text" name="ip" id="ip" placeholder="Digite o IP..." value="{{ ip_address }}" required>
             </div>
             {% if not is_admin %}
                 <div class="form-group">
-                    <input type="text" name="token" id="token" placeholder=" " required>
-                    <label for="token">Digite seu token...</label>
+                    <i class="fas fa-key"></i>
+                    <input type="text" name="token" id="token" placeholder="Digite seu token..." required>
                 </div>
             {% endif %}
             <button type="submit" class="button">
@@ -543,6 +526,14 @@
             </button>
         </form>
         {% if results %}
+            <div class="profile-actions">
+                <button class="action-btn" onclick="copyResult(this)" title="Copiar">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="action-btn" onclick="downloadResult()" title="Baixar">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
             <div class="profile-info">
                 <h3>Resultados da Consulta</h3>
                 <p><strong>IP:</strong> {{ results.ip | default('Não disponível') }}</p>
@@ -563,53 +554,85 @@
     </div>
 
     <script>
-        // Toggle Navbar with Animation
         function toggleNavbar() {
             const navLinks = document.getElementById('navLinks');
             const toggleBtn = document.querySelector('.navbar-toggle');
-            const toggleIcon = toggleBtn.querySelector('i');
             navLinks.classList.toggle('active');
             toggleBtn.classList.toggle('active');
-            toggleIcon.classList.toggle('fa-arrow-right');
-            toggleIcon.classList.toggle('fa-arrow-down');
         }
 
-        // Toggle Dropdown
         function toggleDropdown(event) {
             event.preventDefault();
             const subNavbar = document.getElementById('subNavbar');
             subNavbar.classList.toggle('active');
         }
 
-        // Alert
-        function showAlert(message, type) {
-            const alertContainer = document.createElement('div');
-            alertContainer.id = 'alertContainer';
-            document.body.appendChild(alertContainer);
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            alertContainer.appendChild(alert);
-            setTimeout(() => {
-                alert.remove();
-                if (!alertContainer.hasChildNodes()) alertContainer.remove();
-            }, 3000);
-        }
-
-        // Form Validation
         document.getElementById('searchForm').addEventListener('submit', function(event) {
-            const ip = this.ip.value;
+            const ip = this.ip.value.trim();
             const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-            if (!ip) {
-                showAlert('Por favor, insira um endereço IP.', 'error');
+            if (!ip || !ipRegex.test(ip)) {
                 event.preventDefault();
-            } else if (!ipRegex.test(ip)) {
-                showAlert('Por favor, insira um endereço IP válido (ex: 192.168.0.1).', 'error');
-                event.preventDefault();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = !ip ? 'Por favor, insira um endereço IP.' : 'Por favor, insira um IP válido (ex: 192.168.0.1).';
+                this.insertBefore(alert, this.firstChild);
+                setTimeout(() => alert.remove(), 3000);
             }
         });
 
-        // Close Dropdown and Navbar on Outside Click
+        function copyResult(button) {
+            const profileInfo = document.querySelector('.profile-info');
+            if (!profileInfo) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Nenhum resultado disponível para copiar.';
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
+                setTimeout(() => alert.remove(), 3000);
+                return;
+            }
+
+            const text = Array.from(profileInfo.querySelectorAll('p')).map(p => p.textContent).join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                button.classList.add('copied');
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar: ', err);
+                alert('Falha ao copiar o texto.');
+            });
+        }
+
+        function downloadResult() {
+            const profileInfo = document.querySelector('.profile-info');
+            if (!profileInfo) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Nenhum resultado disponível para download.';
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
+                setTimeout(() => alert.remove(), 3000);
+                return;
+            }
+
+            const text = Array.from(profileInfo.querySelectorAll('p')).map(p => p.textContent).join('\n');
+            const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
+            const fileName = `${currentDate}-IP-DATA-CONSULT-CENTER.txt`;
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
         document.addEventListener('click', (e) => {
             const subNavbar = document.getElementById('subNavbar');
             const navLinks = document.getElementById('navLinks');
