@@ -1371,7 +1371,7 @@ def fotor():
                         "foto_base64": data.get("foto_base64", "")
                     }
                 elif data:
-                    results = data
+                    results = data['resultado']
 
                 if results and manage_module_usage(g.user_id, 'fotor'):
                     reset_all()
