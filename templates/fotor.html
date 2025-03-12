@@ -377,8 +377,12 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             margin-top: 20px;
             display: flex;
+            flex-direction: row-reverse;
             align-items: center;
             gap: 20px;
+            width: 100%;
+            max-width: 550px;
+            height: 220px;
         }
 
         .profile-info:hover {
@@ -397,12 +401,15 @@
 
         .profile-info .info-text {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .profile-info p {
             color: var(--text-light);
             font-size: 12px;
-            margin: 8px 0;
+            margin: 6px 0;
         }
 
         .profile-info p strong {
@@ -435,7 +442,8 @@
 
             .profile-info {
                 flex-direction: column;
-                align-items: flex-start;
+                height: auto;
+                max-width: 100%;
             }
 
             .profile-info img {
