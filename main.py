@@ -633,7 +633,7 @@ def cpf():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
     cpf = ""
@@ -654,8 +654,7 @@ def cpf():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado', {}).get('status') in ['OK', 'success']:
                     if manage_module_usage(g.user_id, 'cpf'):
@@ -668,7 +667,7 @@ def cpf():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -684,7 +683,7 @@ def cpf2():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
     cpf = request.form.get('cpf', '')
@@ -704,8 +703,7 @@ def cpf2():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado'):
                     if manage_module_usage(g.user_id, 'cpf2'):
@@ -718,7 +716,7 @@ def cpf2():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -734,7 +732,7 @@ def cpfdata():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
     cpf = request.form.get('cpf', '')
@@ -754,8 +752,7 @@ def cpfdata():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado'):
                     if manage_module_usage(g.user_id, 'cpfdata'):
@@ -768,43 +765,41 @@ def cpfdata():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
         if result:
-            formatted_result = {
+            result = {
                 'nome': result.get('nome', 'SEM INFORMAÇÃO'),
                 'cpf': result.get('cpf', 'SEM INFORMAÇÃO'),
                 'sexo': result.get('sexo', 'SEM INFORMAÇÃO'),
                 'dataNascimento': {
-                    'nascimento': result['dataNascimento'].get('nascimento', 'SEM INFORMAÇÃO'),
-                    'idade': result['dataNascimento'].get('idade', 'SEM INFORMAÇÃO'),
-                    'signo': result['dataNascimento'].get('signo', 'SEM INFORMAÇÃO')
+                    'nascimento': result.get('dataNascimento', {}).get('nascimento', 'SEM INFORMAÇÃO'),
+                    'idade': result.get('dataNascimento', {}).get('idade', 'SEM INFORMAÇÃO'),
+                    'signo': result.get('dataNascimento', {}).get('signo', 'SEM INFORMAÇÃO')
                 },
                 'nomeMae': result.get('nomeMae', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
                 'nomePai': result.get('nomePai', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
                 'telefone': [
                     {
-                        'ddi': phone['ddi'],
-                        'ddd': phone['ddd'],
-                        'numero': phone['numero']
+                        'ddi': phone.get('ddi', 'SEM INFORMAÇÃO'),
+                        'ddd': phone.get('ddd', 'SEM INFORMAÇÃO'),
+                        'numero': phone.get('numero', 'SEM INFORMAÇÃO')
                     }
                     for phone in result.get('telefone', [])
                 ] if result.get('telefone') else [{'ddi': 'SEM INFORMAÇÃO', 'ddd': 'SEM INFORMAÇÃO', 'numero': 'SEM INFORMAÇÃO'}],
                 'nacionalidade': {
-                    'municipioNascimento': result['nacionalidade'].get('municipioNascimento', 'SEM INFORMAÇÃO'),
-                    'paisNascimento': result['nacionalidade'].get('paisNascimento', 'SEM INFORMAÇÃO')
+                    'municipioNascimento': result.get('nacionalidade', {}).get('municipioNascimento', 'SEM INFORMAÇÃO'),
+                    'paisNascimento': result.get('nacionalidade', {}).get('paisNascimento', 'SEM INFORMAÇÃO')
                 },
                 'enderecos': result.get('enderecos', []),
                 'cnsDefinitivo': result.get('cnsDefinitivo', 'SEM INFORMAÇÃO')
             }
-        else:
-            formatted_result = None
 
-    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=formatted_result, cpf=cpf)
+    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
 def cpf3():
@@ -814,7 +809,7 @@ def cpf3():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
     cpf = request.form.get('cpf', '')
@@ -834,8 +829,7 @@ def cpf3():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado'):
                     if manage_module_usage(g.user_id, 'cpf3'):
@@ -848,7 +842,7 @@ def cpf3():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -864,7 +858,7 @@ def cpflv():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
     cpf = ""
@@ -885,8 +879,7 @@ def cpflv():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if (data.get('resultado') and 
                     data['resultado'].get('status') == 'success' and 
@@ -904,7 +897,7 @@ def cpflv():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -920,7 +913,7 @@ def cpf5():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     cpf = request.form.get('cpf', '')
@@ -940,8 +933,7 @@ def cpf5():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado'):
                     if manage_module_usage(g.user_id, 'cpf5'):
@@ -954,7 +946,7 @@ def cpf5():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -970,7 +962,7 @@ def datanome():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     nome = request.form.get('nome', '')
     datanasc = request.form.get('datanasc', '')
@@ -985,8 +977,7 @@ def datanome():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado') and len(data['resultado']) > 0:
                     for item in data['resultado']:
@@ -1007,7 +998,7 @@ def datanome():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1025,7 +1016,7 @@ def placalv():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
     placa = ""
@@ -1046,8 +1037,7 @@ def placalv():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado'):
                     if manage_module_usage(g.user_id, 'placalv'):
@@ -1060,7 +1050,7 @@ def placalv():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1076,7 +1066,7 @@ def tellv():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
     telefone = ""
@@ -1097,8 +1087,7 @@ def tellv():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if (data.get('resultado') and 
                     data['resultado'].get('status') == "success" and 
@@ -1115,7 +1104,7 @@ def tellv():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1131,7 +1120,7 @@ def teldual():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     telefone = ""
@@ -1152,8 +1141,7 @@ def teldual():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if 'resultado' in data and data['resultado'] and any('cpf' in item for item in data['resultado']):
                     if manage_module_usage(g.user_id, 'teldual'):
@@ -1166,7 +1154,7 @@ def teldual():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1182,7 +1170,7 @@ def tel():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     tel = ""
@@ -1203,8 +1191,7 @@ def tel():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if 'resultado' in data and 'cpf' in data['resultado']:
                     if manage_module_usage(g.user_id, 'tel'):
@@ -1217,7 +1204,7 @@ def tel():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1233,7 +1220,7 @@ def placa():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     placa = ""
@@ -1254,8 +1241,7 @@ def placa():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0 and data['resultado'][0].get('retorno') == 'ok':
                     if manage_module_usage(g.user_id, 'placa'):
@@ -1268,7 +1254,7 @@ def placa():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1284,7 +1270,7 @@ def placaestadual():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     placa = ""
@@ -1305,8 +1291,7 @@ def placaestadual():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0 and data['resultado'][0].get('retorno') == 'ok':
                     if manage_module_usage(g.user_id, 'placa'):
@@ -1319,7 +1304,7 @@ def placaestadual():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1335,7 +1320,7 @@ def fotor():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     documento = ""
@@ -1366,8 +1351,7 @@ def fotor():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if selected_option == "fotomg" and data and "foto_base64" in data:
                     results = {
@@ -1393,7 +1377,7 @@ def fotor():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1409,7 +1393,7 @@ def nomelv():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     nome = ""
@@ -1430,8 +1414,7 @@ def nomelv():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado') and len(data['resultado']) > 0:
                     if manage_module_usage(g.user_id, 'nomelv'):
@@ -1444,7 +1427,7 @@ def nomelv():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1460,7 +1443,7 @@ def nome():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     nome = ""
@@ -1481,8 +1464,7 @@ def nome():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado') and len(data['resultado']) > 0:
                     if manage_module_usage(g.user_id, 'nome'):
@@ -1495,7 +1477,7 @@ def nome():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1511,7 +1493,7 @@ def ip():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     ip_address = ""
@@ -1532,8 +1514,7 @@ def ip():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('success'):
                     if manage_module_usage(g.user_id, 'ip'):
@@ -1555,7 +1536,7 @@ def ip():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
@@ -1571,7 +1552,7 @@ def nome2():
 
     users = load_data('users.json')
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     nome = ""
@@ -1592,8 +1573,7 @@ def nome2():
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
-                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
-                data = response.json()
+                data = decode_json_with_bom(response.text)
 
                 if data.get('resultado') and 'itens' in data['resultado']:
                     if manage_module_usage(g.user_id, 'nome2'):
@@ -1606,15 +1586,13 @@ def nome2():
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
-    
-
 # Fim :D
 if __name__ == '__main__':
     initialize_json('users.json')
