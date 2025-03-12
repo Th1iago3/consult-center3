@@ -38,7 +38,6 @@
             color: var(--text-dark);
             overflow-x: hidden;
             position: relative;
-            will-change: background;
         }
 
         body::after {
@@ -73,7 +72,7 @@
             align-items: center;
             border-bottom: 2px solid rgba(110, 68, 255, 0.6);
             box-shadow: 0 5px 20px var(--shadow);
-            transition: background 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .navbar-toggle {
@@ -124,7 +123,7 @@
         .nav-links a {
             padding: 12px 15px;
             border-radius: 10px;
-            transition: background 0.3s ease, transform 0.3s ease, color 0.3s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -144,7 +143,7 @@
 
         .nav-links a i {
             font-size: 18px;
-            transition: transform 0.3s ease, color 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .nav-links a:hover i {
@@ -306,6 +305,7 @@
             box-shadow: 0 0 12px var(--glow);
             width: 100%;
             justify-content: center;
+            margin-bottom: 30px; /* Espaço maior entre Consultar e botões de ação */
         }
 
         .button:disabled {
@@ -339,7 +339,7 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .action-btn {
@@ -375,14 +375,13 @@
             box-shadow: 0 6px 20px var(--shadow);
             border: 2px solid rgba(110, 68, 255, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-top: 20px;
             display: flex;
-            flex-direction: row-reverse;
-            align-items: center;
+            flex-direction: row;
+            align-items: flex-start;
             gap: 20px;
             width: 100%;
-            max-width: 550px;
-            height: 220px;
+            max-width: 100%; /* Ajustado para ocupar a largura disponível */
+            overflow-x: auto; /* Adicionado para evitar saída horizontal */
         }
 
         .profile-info:hover {
@@ -397,19 +396,24 @@
             border: 3px solid var(--primary-color);
             border-radius: 8px;
             box-shadow: 0 4px 15px var(--shadow);
+            flex-shrink: 0; /* Impede que a imagem seja comprimida */
         }
 
         .profile-info .info-text {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
+            min-width: 0; /* Evita que o texto force a expansão além da div */
         }
 
         .profile-info p {
             color: var(--text-light);
             font-size: 12px;
             margin: 6px 0;
+            white-space: nowrap; /* Evita quebra de linha em cada item */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Adiciona reticências se o texto for cortado */
         }
 
         .profile-info p strong {
@@ -417,6 +421,9 @@
             font-weight: 600;
             display: inline-block;
             width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .not-found {
@@ -427,8 +434,12 @@
         }
 
         @media (max-width: 768px) {
+            .navbar {
+                padding: 15px;
+            }
+
             .container {
-                width: 90%;
+                width: 95%;
                 padding: 20px;
             }
 
@@ -442,13 +453,17 @@
 
             .profile-info {
                 flex-direction: column;
+                align-items: center;
                 height: auto;
-                max-width: 100%;
             }
 
             .profile-info img {
                 width: 120px;
                 height: 160px;
+            }
+
+            .profile-info p strong {
+                width: 150px;
             }
         }
 
@@ -470,10 +485,11 @@
             .button {
                 font-size: 13px;
                 padding: 10px 20px;
+                margin-bottom: 20px; /* Menor espaço em telas pequenas */
             }
 
-            .profile-info p strong {
-                width: 120px;
+            .profile-actions {
+                gap: 8px;
             }
 
             .action-btn {
@@ -485,6 +501,14 @@
             .profile-info img {
                 width: 100px;
                 height: 130px;
+            }
+
+            .profile-info p {
+                font-size: 11px;
+            }
+
+            .profile-info p strong {
+                width: 120px;
             }
         }
     </style>
@@ -545,52 +569,18 @@
         </form>
 
         {% if results %}
-        <div class="profile-actions">
-            <button class="action-btn" onclick="copyResult(this)" title="Copiar">
-                <i class="fas fa-copy"></i>
-            </button>
-            <button class="action-btn" onclick="downloadImage()" title="Baixar Foto">
-                <i class="fas fa-download"></i>
-            </button>
-        </div>
-        <div class="profile-info">
-            {% if selected_option == 'fotoba' and results.foto %}
-                <img src="data:image/png;base64,{{ results.foto }}" alt="Foto RG">
-                <div class="info-text">
-                    <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
-                    <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
-                    <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
-                    <p><strong>Sexo:</strong> {{ results.sexo | default('Não disponível') }}</p>
-                    <p><strong>Nascimento:</strong> {{ results.nascimento | default('Não disponível') }}</p>
-                    <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
-                    <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
-                    <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
-                </div>
-            {% elif selected_option == 'fotorj' and results.resultado.resultado.Foto %}
-                <img src="data:image/png;base64,{{ results.resultado.resultado.Foto }}" alt="Foto RG">
-                <div class="info-text">
-                    <p><strong>CPF:</strong> {{ results.resultado.resultado.CPF | default('Não disponível') }}</p>
-                    <p><strong>RG:</strong> {{ results.resultado.resultado.RG | default('Não disponível') }}</p>
-                    <p><strong>Cidadão:</strong> {{ results.resultado.resultado.Cidadão | default('Não disponível') }}</p>
-                    <p><strong>Nascimento:</strong> {{ results.resultado.resultado.Nascimento | default('Não disponível') }}</p>
-                    <p><strong>Mãe:</strong> {{ results.resultado.resultado.Mãe | default('Não disponível') }}</p>
-                    <p><strong>Autenticidade:</strong> {{ results.resultado.resultado.Autenticidade | default('Não disponível') }}</p>
-                </div>
-            {% elif selected_option == 'fotomg' and results.foto_base64 %}
-                <img src="data:image/jpeg;base64,{{ results.foto_base64 }}" alt="Foto RG">
-                <div class="info-text">
-                    <p><strong>CPF:</strong> {{ results.CPF | default('Não disponível') }}</p>
-                    <p><strong>Nome:</strong> {{ results.Nome | default('Não disponível') }}</p>
-                    <p><strong>Mãe:</strong> {{ results['Nome da Mãe'] | default('Não disponível') }}</p>
-                    <p><strong>Pai:</strong> {{ results['Nome do Pai'] | default('Não disponível') }}</p>
-                    <p><strong>Nascimento:</strong> {{ results['Data de Nascimento'] | default('Não disponível') }}</p>
-                    <p><strong>Categoria CNH Concedida:</strong> {{ results['Categoria CNH Concedida'] | default('Não disponível') }}</p>
-                    <p><strong>Validade CNH:</strong> {{ results['Validade CNH'] | default('Não disponível') }}</p>
-                </div>
-            {% else %}
-                <div class="info-text">
-                    <p class="not-found">Foto não encontrada ou base indisponível.</p>
-                    {% if selected_option == 'fotoba' %}
+            <div class="profile-actions">
+                <button class="action-btn" onclick="copyResult(this)" title="Copiar">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="action-btn" onclick="downloadImage()" title="Baixar Foto">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+            <div class="profile-info">
+                {% if selected_option == 'fotoba' and results.foto %}
+                    <img src="data:image/png;base64,{{ results.foto }}" alt="Foto RG">
+                    <div class="info-text">
                         <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
                         <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
                         <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
@@ -599,14 +589,20 @@
                         <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
                         <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
                         <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
-                    {% elif selected_option == 'fotorj' %}
+                    </div>
+                {% elif selected_option == 'fotorj' and results.resultado.resultado.Foto %}
+                    <img src="data:image/png;base64,{{ results.resultado.resultado.Foto }}" alt="Foto RG">
+                    <div class="info-text">
                         <p><strong>CPF:</strong> {{ results.resultado.resultado.CPF | default('Não disponível') }}</p>
                         <p><strong>RG:</strong> {{ results.resultado.resultado.RG | default('Não disponível') }}</p>
                         <p><strong>Cidadão:</strong> {{ results.resultado.resultado.Cidadão | default('Não disponível') }}</p>
                         <p><strong>Nascimento:</strong> {{ results.resultado.resultado.Nascimento | default('Não disponível') }}</p>
                         <p><strong>Mãe:</strong> {{ results.resultado.resultado.Mãe | default('Não disponível') }}</p>
                         <p><strong>Autenticidade:</strong> {{ results.resultado.resultado.Autenticidade | default('Não disponível') }}</p>
-                    {% elif selected_option == 'fotomg' %}
+                    </div>
+                {% elif selected_option == 'fotomg' and results.foto_base64 %}
+                    <img src="data:image/jpeg;base64,{{ results.foto_base64 }}" alt="Foto RG">
+                    <div class="info-text">
                         <p><strong>CPF:</strong> {{ results.CPF | default('Não disponível') }}</p>
                         <p><strong>Nome:</strong> {{ results.Nome | default('Não disponível') }}</p>
                         <p><strong>Mãe:</strong> {{ results['Nome da Mãe'] | default('Não disponível') }}</p>
@@ -614,12 +610,40 @@
                         <p><strong>Nascimento:</strong> {{ results['Data de Nascimento'] | default('Não disponível') }}</p>
                         <p><strong>Categoria CNH Concedida:</strong> {{ results['Categoria CNH Concedida'] | default('Não disponível') }}</p>
                         <p><strong>Validade CNH:</strong> {{ results['Validade CNH'] | default('Não disponível') }}</p>
-                    {% elif selected_option == 'fotosp' %}
-                        <p class="not-found">A base FotoSP está atualmente offline. Tente novamente mais tarde.</p>
-                    {% endif %}
-                </div>
-            {% endif %}
-        </div>
+                    </div>
+                {% else %}
+                    <div class="info-text">
+                        <p class="not-found">Foto não encontrada ou base indisponível.</p>
+                        {% if selected_option == 'fotoba' %}
+                            <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
+                            <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
+                            <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
+                            <p><strong>Sexo:</strong> {{ results.sexo | default('Não disponível') }}</p>
+                            <p><strong>Nascimento:</strong> {{ results.nascimento | default('Não disponível') }}</p>
+                            <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
+                            <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
+                            <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
+                        {% elif selected_option == 'fotorj' %}
+                            <p><strong>CPF:</strong> {{ results.resultado.resultado.CPF | default('Não disponível') }}</p>
+                            <p><strong>RG:</strong> {{ results.resultado.resultado.RG | default('Não disponível') }}</p>
+                            <p><strong>Cidadão:</strong> {{ results.resultado.resultado.Cidadão | default('Não disponível') }}</p>
+                            <p><strong>Nascimento:</strong> {{ results.resultado.resultado.Nascimento | default('Não disponível') }}</p>
+                            <p><strong>Mãe:</strong> {{ results.resultado.resultado.Mãe | default('Não disponível') }}</p>
+                            <p><strong>Autenticidade:</strong> {{ results.resultado.resultado.Autenticidade | default('Não disponível') }}</p>
+                        {% elif selected_option == 'fotomg' %}
+                            <p><strong>CPF:</strong> {{ results.CPF | default('Não disponível') }}</p>
+                            <p><strong>Nome:</strong> {{ results.Nome | default('Não disponível') }}</p>
+                            <p><strong>Mãe:</strong> {{ results['Nome da Mãe'] | default('Não disponível') }}</p>
+                            <p><strong>Pai:</strong> {{ results['Nome do Pai'] | default('Não disponível') }}</p>
+                            <p><strong>Nascimento:</strong> {{ results['Data de Nascimento'] | default('Não disponível') }}</p>
+                            <p><strong>Categoria CNH Concedida:</strong> {{ results['Categoria CNH Concedida'] | default('Não disponível') }}</p>
+                            <p><strong>Validade CNH:</strong> {{ results['Validade CNH'] | default('Não disponível') }}</p>
+                        {% elif selected_option == 'fotosp' %}
+                            <p class="not-found">A base FotoSP está atualmente offline. Tente novamente mais tarde.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
         {% endif %}
     </div>
 
@@ -748,7 +772,6 @@
         document.addEventListener('click', (e) => {
             const subNavbar = document.getElementById('subNavbar');
             const navLinks = document.getElementById('navLinks');
-            const toggleBtn = document.querySelector('.navbar-toggle');
             if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
                 subNavbar.classList.remove('active');
             }
@@ -756,6 +779,9 @@
                 toggleNavbar();
             }
         });
+
+        // Inicializa os campos visíveis com base no estado selecionado
+        window.onload = toggleFields;
     </script>
 </body>
 </html>
