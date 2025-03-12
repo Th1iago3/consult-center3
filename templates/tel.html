@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta - Telefone</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ConsultCenter - Sistema Integrado de Consultas. (Consulta - Telefone)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -35,16 +35,10 @@
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
-            animation: fadeInBody 1.2s ease-in-out;
             color: var(--text-dark);
+            position: relative;
         }
 
-        @keyframes fadeInBody {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Fundo animado */
         body::before {
             content: '';
             position: fixed;
@@ -57,7 +51,11 @@
             z-index: -1;
         }
 
-        /* Navbar */
+        @keyframes pulseGlow {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0.5; transform: scale(1.05); }
+        }
+
         .navbar {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
@@ -80,15 +78,20 @@
         }
 
         .navbar-toggle {
-            background: none;
+            background: var(--primary-color);
             border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--white);
+            font-size: 18px;
             cursor: pointer;
-            font-size: 1.8rem;
-            color: var(--primary-color);
-            transition: transform 0.3s ease;
+            transition: background 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 0 12px var(--glow);
         }
 
         .navbar-toggle:hover {
+            background: var(--secondary-color);
             transform: scale(1.1);
         }
 
@@ -97,15 +100,14 @@
         }
 
         .navbar-toggle.active i {
-            transform: rotate(90deg);
-            color: var(--accent-color);
+            transform: rotate(180deg);
         }
 
         .nav-links {
             display: none;
             flex-direction: column;
             gap: 1rem;
-            width: 100%;
+            width: 250px;
             background: var(--card-bg);
             padding: 1.5rem;
             position: absolute;
@@ -113,17 +115,11 @@
             left: 0;
             box-shadow: 0 10px 30px var(--shadow);
             border-radius: 0 0 15px 15px;
-            animation: slideDown 0.4s ease-out forwards;
-            border: 1px solid rgba(123, 63, 228, 0.3);
+            transition: opacity 0.4s ease-in-out;
         }
 
         .nav-links.active {
             display: flex;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .nav-links a {
@@ -153,16 +149,10 @@
             background: rgba(123, 63, 228, 0.1);
             border-radius: 10px;
             margin-top: 0.6rem;
-            animation: fadeInSub 0.3s ease-out;
         }
 
         .sub-navbar.active {
             display: flex;
-        }
-
-        @keyframes fadeInSub {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
         }
 
         .sub-navbar a {
@@ -223,47 +213,24 @@
             box-shadow: 0 6px 15px var(--glow);
         }
 
-        /* Container */
         .container {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
             border-radius: 25px;
             box-shadow: 0 20px 50px var(--shadow), 0 0 30px var(--glow);
             padding: 40px;
-            width: 450px;
-            text-align: center;
+            width: 90%;
+            max-width: 450px;
             margin: 6rem auto 2rem;
             position: relative;
             overflow: hidden;
-            animation: slideInContainer 0.6s ease-in-out;
             border: 2px solid rgba(123, 63, 228, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .container:hover {
             transform: scale(1.02);
             box-shadow: 0 25px 60px var(--shadow), 0 0 40px var(--glow);
-        }
-
-        @keyframes slideInContainer {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(123, 63, 228, 0.2), transparent 70%);
-            animation: shimmer 4s ease-in-out infinite;
-            z-index: -1;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         h2 {
@@ -272,27 +239,16 @@
             font-weight: 700;
             font-size: 28px;
             text-shadow: 0 0 10px var(--glow);
-            animation: fadeInTitle 0.6s ease-in-out;
-        }
-
-        @keyframes fadeInTitle {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
         }
 
         .form-group {
             margin: 25px 0;
-            animation: fadeInUp 0.6s ease-in-out;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(25px); }
-            to { opacity: 1; transform: translateY(0); }
+            position: relative;
         }
 
         .form-group input {
             width: 100%;
-            padding: 15px 20px;
+            padding: 15px 20px 15px 40px;
             border: 2px solid rgba(123, 63, 228, 0.5);
             border-radius: 15px;
             background: rgba(255, 255, 255, 0.05);
@@ -312,25 +268,34 @@
 
         .form-group input::placeholder {
             color: var(--text-light);
-            font-weight: 400;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 16px;
         }
 
         .button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             border: none;
-            color: var(--white);
             padding: 15px 35px;
             border-radius: 50px;
+            color: var(--white);
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.4s ease;
             width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
             box-shadow: 0 5px 15px var(--glow);
+            margin-bottom: 30px; /* Espaço entre botão e resultados */
         }
 
         .button:hover {
@@ -339,23 +304,12 @@
             background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
         }
 
-        .button:active {
-            transform: translateY(0) scale(1);
-            box-shadow: 0 5px 15px var(--glow);
-        }
-
         .alert {
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 12px;
-            animation: fadeInAlert 0.5s ease-in;
             box-shadow: 0 5px 15px var(--shadow);
             font-weight: 500;
-        }
-
-        @keyframes fadeInAlert {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .alert-error {
@@ -364,52 +318,52 @@
             border-left: 5px solid var(--error);
         }
 
-        .download-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            color: var(--secondary-color);
-            font-weight: 600;
-            text-decoration: none;
-            margin-top: 25px;
-            transition: all 0.3s ease;
+        .profile-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 16px;
             cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px var(--glow);
         }
 
-        .download-link i {
-            font-size: 1.3rem;
-            color: var(--secondary-color);
-            transition: transform 0.3s ease;
+        .action-btn:hover {
+            background: var(--secondary-color);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow);
         }
 
-        .download-link:hover {
-            color: var(--accent-color);
-            text-shadow: 0 0 5px var(--glow);
-        }
-
-        .download-link:hover i {
-            color: var(--accent-color);
-            transform: scale(1.2);
+        .action-btn.copied {
+            background: var(--success);
         }
 
         .profile-info {
             background: rgba(123, 63, 228, 0.1);
             border-radius: 15px;
             padding: 20px;
-            margin-top: 25px;
+            margin-top: 15px;
             transition: all 0.4s ease;
             box-shadow: 0 5px 20px var(--shadow);
             text-align: left;
-            animation: slideUpInfo 0.6s ease-out;
+            overflow-x: auto; /* Evita saída horizontal */
         }
 
         .profile-info:hover {
             box-shadow: 0 10px 30px var(--shadow), 0 0 15px var(--glow);
-        }
-
-        @keyframes slideUpInfo {
-            from { opacity: 0; transform: translateY(25px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .profile-info h3 {
@@ -426,6 +380,9 @@
             color: var(--text-light);
             font-size: 14px;
             font-weight: 400;
+            white-space: nowrap; /* Evita quebra de linha */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Adiciona reticências se cortado */
         }
 
         .profile-info p strong {
@@ -433,21 +390,23 @@
             width: 150px;
             color: var(--text-dark);
             font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Responsividade */
         @media (max-width: 768px) {
             .navbar {
                 padding: 1rem 1.5rem;
             }
 
             .container {
-                width: 90%;
+                width: 95%;
                 padding: 30px;
             }
 
             .nav-links {
-                padding: 1rem;
+                width: 100%;
             }
 
             .nav-links a {
@@ -470,12 +429,13 @@
 
             .form-group input {
                 font-size: 14px;
-                padding: 12px 15px;
+                padding: 12px 15px 12px 35px;
             }
 
             .button {
                 font-size: 14px;
                 padding: 12px 25px;
+                margin-bottom: 20px; /* Menor espaço em telas pequenas */
             }
 
             .profile-info p {
@@ -485,13 +445,19 @@
             .profile-info p strong {
                 width: 100px;
             }
+
+            .action-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="navbar">
         <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
-            <i class="fas fa-arrow-right"></i>
+            <i class="fas fa-chevron-right"></i>
         </button>
         <div class="nav-links" id="navLinks">
             <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
@@ -519,10 +485,12 @@
         {% endwith %}
         <form method="POST" id="searchForm">
             <div class="form-group">
+                <i class="fas fa-phone"></i>
                 <input type="text" name="tel" placeholder="Digite o telefone..." value="{{ tel }}" required>
             </div>
             {% if not is_admin %}
                 <div class="form-group">
+                    <i class="fas fa-key"></i>
                     <input type="text" name="token" placeholder="Digite seu token..." required>
                 </div>
             {% endif %}
@@ -531,108 +499,122 @@
             </button>
         </form>
         {% if results %}
-            <a href="#" class="download-link" onclick="generateAndDownloadTxt(event)">
-                <i class="fas fa-download"></i> Baixar em .txt
-            </a>
-            {% for result in results %}
-            <div class="profile-info">
-                <p><strong>Nome:</strong> {{ result.nome | default('Não disponível') }}</p>
-                <p><strong>CPF:</strong> {{ result.cpf_cnpj | default('Não disponível') }}</p>
-                <p><strong>Endereço:</strong>
-                {% if result.endereco %}
-                    {% set endereco_str = "" %}
-                    {% if result.endereco.tipoLogradouro %} {{ result.endereco.tipoLogradouro }} {% endif %}
-                    {% if result.endereco.logradouro %} {{ result.endereco.logradouro }} {% endif %}
-                    {% if result.endereco.logradouroNumero %} {{ result.endereco.logradouroNumero }} {% endif %}
-                    {% if result.endereco.bairro %}, {{ result.endereco.bairro }}{% endif %}
-                    {% if result.endereco.cidade %}, {{ result.endereco.cidade }}{% endif %}
-                    {% if result.endereco.uf %} - {{ result.endereco.uf }}{% endif %}
-                    {% if result.endereco.cep %} - CEP: {{ result.endereco.cep }}{% endif %}
-                    {{ endereco_str }}
-                {% else %}
-                    Não disponível
-                {% endif %}
-                </p>
+            <div class="profile-actions">
+                <button class="action-btn" onclick="copyResult(this)" title="Copiar">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="action-btn" onclick="downloadResult()" title="Baixar">
+                    <i class="fas fa-download"></i>
+                </button>
             </div>
+            {% for result in results %}
+                <div class="profile-info">
+                    <h3>Resultado ({{ loop.index }}):</h3>
+                    <p><strong>Nome:</strong> {{ result.nome | default('Não disponível') }}</p>
+                    <p><strong>CPF:</strong> {{ result.cpf_cnpj | default('Não disponível') }}</p>
+                    <p><strong>Endereço:</strong>
+                        {% if result.endereco %}
+                            {% set endereco_str = [] %}
+                            {% if result.endereco.tipoLogradouro %}{{ endereco_str.append(result.endereco.tipoLogradouro) }}{% endif %}
+                            {% if result.endereco.logradouro %}{{ endereco_str.append(result.endereco.logradouro) }}{% endif %}
+                            {% if result.endereco.logradouroNumero %}{{ endereco_str.append(result.endereco.logradouroNumero) }}{% endif %}
+                            {% if result.endereco.bairro %}{{ endereco_str.append(', ' + result.endereco.bairro) }}{% endif %}
+                            {% if result.endereco.cidade %}{{ endereco_str.append(', ' + result.endereco.cidade) }}{% endif %}
+                            {% if result.endereco.uf %}{{ endereco_str.append(' - ' + result.endereco.uf) }}{% endif %}
+                            {% if result.endereco.cep %}{{ endereco_str.append(' - CEP: ' + result.endereco.cep) }}{% endif %}
+                            {{ endereco_str | join(' ') }}
+                        {% else %}
+                            Não disponível
+                        {% endif %}
+                    </p>
+                </div>
             {% endfor %}
         {% endif %}
     </div>
 
     <script>
-        // Toggle Navbar with Animation
         function toggleNavbar() {
             const navLinks = document.getElementById('navLinks');
             const toggleBtn = document.querySelector('.navbar-toggle');
-            const toggleIcon = toggleBtn.querySelector('i');
             navLinks.classList.toggle('active');
             toggleBtn.classList.toggle('active');
-            toggleIcon.classList.toggle('fa-arrow-right');
-            toggleIcon.classList.toggle('fa-arrow-down');
         }
 
-        // Toggle Dropdown
         function toggleDropdown(event) {
             event.preventDefault();
             const subNavbar = document.getElementById('subNavbar');
             subNavbar.classList.toggle('active');
         }
 
-        // Alert
-        function showAlert(message, type) {
-            const alertContainer = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            alertContainer.appendChild(alert);
-            setTimeout(() => alert.remove(), 3000);
-        }
-
-        // Form Validation
         document.getElementById('searchForm').addEventListener('submit', function(event) {
-            const tel = this.tel.value.trim();
+            const tel = this.tel.value.trim().replace(/\D/g, '');
             if (!/^[0-9]{10,11}$/.test(tel)) {
-                showAlert('Por favor, insira um número de telefone válido (10 ou 11 dígitos).', 'error');
                 event.preventDefault();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Por favor, insira um número de telefone válido (10 ou 11 dígitos).';
+                this.insertBefore(alert, this.firstChild);
+                setTimeout(() => alert.remove(), 3000);
             }
         });
 
-        // Generate and Download TXT File with Cleanup
-        function generateAndDownloadTxt(event) {
-            event.preventDefault();
-
+        function copyResult(button) {
             const profileInfos = document.querySelectorAll('.profile-info');
             if (!profileInfos.length) {
-                showAlert('Nenhum resultado disponível para download.', 'error');
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Nenhum resultado disponível para copiar.';
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
+                setTimeout(() => alert.remove(), 3000);
                 return;
             }
 
-            // Gerar o conteúdo do arquivo
-            const resultText = Array.from(profileInfos).reduce((acc, info) => {
-                const infoText = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
-                return acc + '\n\n' + infoText;
-            }, '');
+            const text = Array.from(profileInfos).map(info => {
+                return Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
+            }).join('\n\n');
+            navigator.clipboard.writeText(text).then(() => {
+                button.classList.add('copied');
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar: ', err);
+                alert('Falha ao copiar o texto.');
+            });
+        }
 
-            // Formatar a data atual para o nome do arquivo
+        function downloadResult() {
+            const profileInfos = document.querySelectorAll('.profile-info');
+            if (!profileInfos.length) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Nenhum resultado disponível para download.';
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
+                setTimeout(() => alert.remove(), 3000);
+                return;
+            }
+
+            const text = Array.from(profileInfos).map(info => {
+                return Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
+            }).join('\n\n');
             const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
             const fileName = `${currentDate}-TELEFONE-DATA-CONSULT-CENTER.txt`;
 
-            // Criar o arquivo e iniciar o download
-            const blob = new Blob([resultText], { type: 'text/plain' });
+            const blob = new Blob([text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.download = fileName;
             document.body.appendChild(link);
             link.click();
-
-            // Limpar o arquivo do cache após o download
             setTimeout(() => {
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
             }, 100);
         }
 
-        // Close Dropdown and Navbar on Outside Click
         document.addEventListener('click', (e) => {
             const subNavbar = document.getElementById('subNavbar');
             const navLinks = document.getElementById('navLinks');
