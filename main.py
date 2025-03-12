@@ -20,6 +20,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import httpx
 import asyncio
+import logging 
+
 
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -623,7 +625,7 @@ def logout():
 # Module Routes (implement each with manage_module_usage)
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 def cpf():
-    if 'user_id' not in g:  # Ensure user is logged in
+    if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
 
@@ -635,37 +637,40 @@ def cpf():
     cpf = ""
 
     if request.method == 'POST':
-        try:
-            cpf = request.form.get('cpf', '')
-            if not is_admin:
-                token = request.form.get('token')
+        cpf = request.form.get('cpf', '').strip()
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                if not cpf or not token:
-                    flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=cpf&query={cpf}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-            # API Call for CPF lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=cpf&query={cpf}"
-            response = requests.get(url)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            if data.get('resultado', {}).get('status') == 'OK':
-                # Increment module usage on success
-                if manage_module_usage(g.user_id, 'cpf'):
-                    result = data['resultado']
-                    reset_all()
+                if data.get('resultado', {}).get('status') in ['OK', 'success']:
+                    if manage_module_usage(g.user_id, 'cpf'):
+                        result = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para CPF.', 'error')
                 else:
-                    flash('Limite de uso atingido para CPF.', 'error')
-            else:
-                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
@@ -682,39 +687,43 @@ def cpf2():
     result = None
     cpf = request.form.get('cpf', '')
 
-    if not is_admin:
-        token = request.form.get('token', '')
-        if not token or token != users.get(g.user_id, {}).get('token'):
-            flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
-    if not cpf:
-        flash('CPF não fornecido.', 'error')
-        return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
-    try:
-        # API Call for CPF lookup
-        url = f"https://api.bygrower.online/core/?token=gustta&base=cpf1&query={cpf}"
-        response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-        response.raise_for_status()  # Raises HTTPError for bad responses
-        data = response.json()
-
-        if data.get('resultado'):
-            # Increment module usage on success
-            if manage_module_usage(g.user_id, 'cpf2'):
-                result = data['resultado']
-                reset_all()
-            else:
-                flash('Limite de uso atingido para CPF3.', 'error')
+    if request.method == 'POST':
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
         else:
-            flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-    except requests.RequestException:
-        flash('Erro ao conectar com o servidor da API.', 'error')
-    except json.JSONDecodeError:
-        flash('Resposta da API inválida.', 'error')
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+                url = f"https://api.bygrower.online/core/?token=gustta&base=cpf1&query={cpf}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
+
+                if data.get('resultado'):
+                    if manage_module_usage(g.user_id, 'cpf2'):
+                        result = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para CPF2.', 'error')
+                else:
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-    
+
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 def cpfdata():
     if 'user_id' not in g:
@@ -729,73 +738,72 @@ def cpfdata():
     cpf = request.form.get('cpf', '')
 
     if request.method == 'POST':
-        if not is_admin:
-            token = request.form.get('token', '')
-            if not token or token != users.get(g.user_id, {}).get('token'):
-                flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
         if not cpf:
             flash('CPF não fornecido.', 'error')
-            return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-        try:
-            # API Call for CPF lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=cpfDatasus&query={cpf}"
-            response = requests.get(url, verify=False)  
-            response.raise_for_status()  
-            data = response.json()
+                url = f"https://api.bygrower.online/core/?token=gustta&base=cpfDatasus&query={cpf}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-            if data.get('resultado'):
-                # Increment module usage on success
-                if manage_module_usage(g.user_id, 'cpfdata'):
-                    result = data['resultado']
-                    reset_all()
+                if data.get('resultado'):
+                    if manage_module_usage(g.user_id, 'cpfdata'):
+                        result = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para CPFDATA.', 'error')
                 else:
-                    flash('Limite de uso atingido para CPFDATA.', 'error')
-            else:
-                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-        except requests.RequestException as e:
-            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida. Erro ao decodificar JSON.', 'error')
-        except KeyError:
-            flash('Resposta da API não contém a chave esperada.', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
-    # Prepare data for rendering in the template
-    if result:
-        formatted_result = {
-            'nome': result.get('nome', 'SEM INFORMAÇÃO'),
-            'cpf': result.get('cpf', 'SEM INFORMAÇÃO'),
-            'sexo': result.get('sexo', 'SEM INFORMAÇÃO'),
-            'dataNascimento': {
-                'nascimento': result['dataNascimento'].get('nascimento', 'SEM INFORMAÇÃO'),
-                'idade': result['dataNascimento'].get('idade', 'SEM INFORMAÇÃO'),
-                'signo': result['dataNascimento'].get('signo', 'SEM INFORMAÇÃO')
-            },
-            'nomeMae': result.get('nomeMae', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
-            'nomePai': result.get('nomePai', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
-            'telefone': [
-                {
-                    'ddi': phone['ddi'],
-                    'ddd': phone['ddd'],
-                    'numero': phone['numero']
-                }
-                for phone in result.get('telefone', [])
-            ] if result.get('telefone') else [{'ddi': 'SEM INFORMAÇÃO', 'ddd': 'SEM INFORMAÇÃO', 'numero': 'SEM INFORMAÇÃO'}],
-            'nacionalidade': {
-                'municipioNascimento': result['nacionalidade'].get('municipioNascimento', 'SEM INFORMAÇÃO'),
-                'paisNascimento': result['nacionalidade'].get('paisNascimento', 'SEM INFORMAÇÃO')
-            },
-            'enderecos': result.get('enderecos', []),
-            'cnsDefinitivo': result.get('cnsDefinitivo', 'SEM INFORMAÇÃO')
-        }
-        reset_all()
-    else:
-        formatted_result = None
+        if result:
+            formatted_result = {
+                'nome': result.get('nome', 'SEM INFORMAÇÃO'),
+                'cpf': result.get('cpf', 'SEM INFORMAÇÃO'),
+                'sexo': result.get('sexo', 'SEM INFORMAÇÃO'),
+                'dataNascimento': {
+                    'nascimento': result['dataNascimento'].get('nascimento', 'SEM INFORMAÇÃO'),
+                    'idade': result['dataNascimento'].get('idade', 'SEM INFORMAÇÃO'),
+                    'signo': result['dataNascimento'].get('signo', 'SEM INFORMAÇÃO')
+                },
+                'nomeMae': result.get('nomeMae', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
+                'nomePai': result.get('nomePai', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
+                'telefone': [
+                    {
+                        'ddi': phone['ddi'],
+                        'ddd': phone['ddd'],
+                        'numero': phone['numero']
+                    }
+                    for phone in result.get('telefone', [])
+                ] if result.get('telefone') else [{'ddi': 'SEM INFORMAÇÃO', 'ddd': 'SEM INFORMAÇÃO', 'numero': 'SEM INFORMAÇÃO'}],
+                'nacionalidade': {
+                    'municipioNascimento': result['nacionalidade'].get('municipioNascimento', 'SEM INFORMAÇÃO'),
+                    'paisNascimento': result['nacionalidade'].get('paisNascimento', 'SEM INFORMAÇÃO')
+                },
+                'enderecos': result.get('enderecos', []),
+                'cnsDefinitivo': result.get('cnsDefinitivo', 'SEM INFORMAÇÃO')
+            }
+        else:
+            formatted_result = None
 
     return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=formatted_result, cpf=cpf)
-    
+
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
 def cpf3():
     if 'user_id' not in g:
@@ -809,36 +817,40 @@ def cpf3():
     result = None
     cpf = request.form.get('cpf', '')
 
-    if not is_admin:
-        token = request.form.get('token', '')
-        if not token or token != users.get(g.user_id, {}).get('token'):
-            flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-            return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
-    if not cpf:
-        flash('CPF não fornecido.', 'error')
-        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
-    try:
-        # API Call for CPF lookup
-        url = f"https://api.bygrower.online/core/?token=gustta&base=cpfSipni&query={cpf}"
-        response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-        response.raise_for_status()  # Raises HTTPError for bad responses
-        data = response.json()
-
-        if data.get('resultado'):
-            # Increment module usage on success
-            if manage_module_usage(g.user_id, 'cpf3'):
-                result = data['resultado']
-                reset_all()
-            else:
-                flash('Limite de uso atingido para CPF3.', 'error')
+    if request.method == 'POST':
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
         else:
-            flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-    except requests.RequestException:
-        flash('Erro ao conectar com o servidor da API.', 'error')
-    except json.JSONDecodeError:
-        flash('Resposta da API inválida.', 'error')
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+                url = f"https://api.bygrower.online/core/?token=gustta&base=cpfSipni&query={cpf}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
+
+                if data.get('resultado'):
+                    if manage_module_usage(g.user_id, 'cpf3'):
+                        result = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para CPF3.', 'error')
+                else:
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
@@ -863,44 +875,41 @@ def cpflv():
             try:
                 if not is_admin:
                     token = request.form.get('token', '')
-                    if not token:
-                        flash('Token não fornecido.', 'error')
-                        return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-                    if token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                # API Call for CPF lookup
                 url = f"https://api.bygrower.online/core/?token=gustta&base=cpfLv&query={cpf}"
-                response = requests.get(url, verify=False)
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
                 data = response.json()
 
-                # Verifica se o CPF está na estrutura esperada
                 if (data.get('resultado') and 
                     data['resultado'].get('status') == 'success' and 
                     'data' in data['resultado'] and 
                     'pessoa' in data['resultado']['data'] and 
                     'identificacao' in data['resultado']['data']['pessoa'] and 
-                    'cpf' in data['resultado']['data']['pessoa']['identificacao'] and 
-                    data['resultado']['data']['pessoa']['identificacao']['cpf'] == cpf):
+                    'cpf' in data['resultado']['data']['pessoa']['identificacao']):
                     if manage_module_usage(g.user_id, 'cpflv'):
                         result = data['resultado']
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPFLV.', 'error')
                 else:
-                    flash('CPF não encontrado na resposta da API ou dados inválidos.', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash('Resposta da API inválida.', 'error')
-            except Exception as e:
-                flash(f'Erro inesperado: {str(e)}', 'error')
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
-    
-    
+
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def cpf5():
     if 'user_id' not in g:
@@ -911,44 +920,46 @@ def cpf5():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_notifications()
     user_notifications = len(notifications.get(g.user_id, []))
-    results = None  # Changed from 'result' to 'results' for consistency with the template
+    results = None
     cpf = request.form.get('cpf', '')
 
     if request.method == 'POST':
-        try:
-            if not is_admin:
-                token = request.form.get('token')
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
 
-                if not cpf or not token:
-                    flash('CPF ou Token não fornecido.', 'error')
-                    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=vacinas&query={cpf}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
-
-            # API Call for CPF lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=vacinas&query={cpf}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            if data.get('resultado'):
-                if manage_module_usage(g.user_id, 'cpf5'):
-                    # Here we correct the naming to match the template expectation
-                    results = data['resultado']
-                    reset_all()
+                if data.get('resultado'):
+                    if manage_module_usage(g.user_id, 'cpf5'):
+                        results = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para CPF5.', 'error')
                 else:
-                    flash('Limite de uso atingido para CPFLV.', 'error')
-            else:
-                flash('Nenhum resultado encontrado para o CPF fornecido.', 'error')
-        except requests.RequestException as e:
-            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf, token=session.get('token'))
-    
+
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 def datanome():
     if 'user_id' not in g:
@@ -968,42 +979,41 @@ def datanome():
             flash('Nome e data de nascimento são obrigatórios.', 'error')
         else:
             try:
-                # API Call for name lookup
                 url = f"https://api.bygrower.online/core/?token=gustta&base=nome&query={nome}"
-                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-                response.raise_for_status()  # Raises HTTPError for bad responses
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
                 data = response.json()
 
                 if data.get('resultado') and len(data['resultado']) > 0:
-                    # Filter results by birth date
                     for item in data['resultado']:
                         if 'nascimento' in item:
-                            # Convert the birth date string to a datetime object for comparison
                             api_date = datetime.strptime(item['nascimento'].strip(), '%d/%m/%Y')
-                            user_date = datetime.strptime(datanasc, '%Y-%m-%d')  # Date from form is in ISO format
+                            user_date = datetime.strptime(datanasc, '%Y-%m-%d')
                             if api_date == user_date:
                                 result.append(item)
                     
-                    if result:
-                        if manage_module_usage(g.user_id, 'datanome'):
-                            reset_all()
-                            pass  # Usage has been incremented
-                        else:
-                            flash('Limite de uso atingido para DATANOME.', 'error')
-                            result = []
+                    if result and manage_module_usage(g.user_id, 'datanome'):
+                        reset_all()
+                    elif not result:
+                        flash(f'Nenhum resultado encontrado para o nome e data fornecidos. Resposta: {data}', 'error')
                     else:
-                        flash('Nenhum resultado encontrado para o nome e data de nascimento fornecidos.', 'error')
+                        flash('Limite de uso atingido para DATANOME.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
-            except requests.RequestException:
-                flash('Erro ao conectar com o servidor da API.', 'error')
+                    flash(f'Nenhum resultado encontrado para o nome fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash('Resposta da API inválida.', 'error')
+                flash(f'Resposta da API inválida: {response.text}', 'error')
             except ValueError:
                 flash('Formato de data inválido.', 'error')
 
     return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome, datanasc=datanasc, token=session.get('token'))
-
 
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
 def placalv():
@@ -1019,37 +1029,40 @@ def placalv():
     placa = ""
 
     if request.method == 'POST':
-        try:
-            placa = request.form.get('placa', '')
-            if not is_admin:
-                token = request.form.get('token')
+        placa = request.form.get('placa', '').strip()
+        if not placa:
+            flash('Placa não fornecida.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
-                if not placa or not token:
-                    flash('PLACA ou Token não fornecido.', 'error')
-                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=placaLv&query={placa}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
-
-            # API Call for plate lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=placaLv&query={placa}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            if data.get('resultado'):
-                if manage_module_usage(g.user_id, 'placalv'):
-                    result = data['resultado']
-                    reset_all()
+                if data.get('resultado'):
+                    if manage_module_usage(g.user_id, 'placalv'):
+                        result = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para PLACALV.', 'error')
                 else:
-                    flash('Limite de uso atingido para PLACALV.', 'error')
-            else:
-                flash('Nenhum resultado encontrado para a PLACA fornecida.', 'error')
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
+                    flash(f'Nenhum resultado encontrado para a placa fornecida. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
@@ -1067,52 +1080,46 @@ def tellv():
     telefone = ""
 
     if request.method == 'POST':
-        try:
-            telefone = request.form.get('telefone', '').strip()
-            if not telefone:
-                flash('TELEFONE não fornecido.', 'error')
-                return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
+        telefone = request.form.get('telefone', '').strip()
+        if not telefone:
+            flash('Telefone não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
 
-            if not is_admin:
-                token = request.form.get('token', '')
-                if not token:
-                    flash('Token não fornecido.', 'error')
-                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=telefoneLv&query={telefone}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-            # API Call for telephone lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=telefoneLv&query={telefone}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            # Verifica o 'status' e a presença de 'cpf' no resultado
-            if data.get('status') == "not_found":
-                flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-            elif (data.get('resultado') and 
-                  data['resultado'].get('status') == "success" and 
-                  'data' in data['resultado'] and 
-                  isinstance(data['resultado']['data'], list) and 
-                  any('cpf' in item.get('identificacao', {}) for item in data['resultado']['data'])):
-                if manage_module_usage(g.user_id, 'tellv'):
-                    result = data['resultado']['data'][0]  # Pega o primeiro item da lista (assumindo que há apenas um resultado principal)
-                    reset_all()
+                if (data.get('resultado') and 
+                    data['resultado'].get('status') == "success" and 
+                    'data' in data['resultado'] and 
+                    isinstance(data['resultado']['data'], list) and 
+                    any('cpf' in item.get('identificacao', {}) for item in data['resultado']['data'])):
+                    if manage_module_usage(g.user_id, 'tellv'):
+                        result = data['resultado']['data'][0]
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para TELLV.', 'error')
                 else:
-                    flash('Limite de uso atingido para TELLV.', 'error')
-            else:
-                flash('Nenhum CPF encontrado na resposta da API ou estrutura inválida.', 'error')
-
-        except requests.RequestException as e:
-            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
-        except Exception as e:
-            flash(f'Erro inesperado: {str(e)}', 'error')
+                    flash(f'Nenhum resultado encontrado para o telefone fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
-    
 
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
 def teldual():
@@ -1128,43 +1135,43 @@ def teldual():
     telefone = ""
 
     if request.method == 'POST':
-        try:
-            telefone = request.form.get('telefone', '')
-            if not is_admin:
-                token = request.form.get('token')
+        telefone = request.form.get('telefone', '').strip()
+        if not telefone:
+            flash('Telefone não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
 
-                if not telefone or (not is_admin and not token):
-                    flash('TELEFONE ou Token não fornecido.', 'error')
-                    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=teldual&query={telefone}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if not is_admin and token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
-
-            # API Call for telephone lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=teldual&query={telefone}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-            
-            # Verifica se 'resultado' existe e se há itens na lista com 'cpf'
-            if 'resultado' not in data or not data['resultado'] or not any('cpf' in item for item in data['resultado']):
-                flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-            else:
-                # Se há resultados e 'cpf' está presente em pelo menos um item
-                if manage_module_usage(g.user_id, 'teldual'):
-                    results = data['resultado']
-                    reset_all()
+                if 'resultado' in data and data['resultado'] and any('cpf' in item for item in data['resultado']):
+                    if manage_module_usage(g.user_id, 'teldual'):
+                        results = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para TELDUAL.', 'error')
                 else:
-                    flash('Limite de uso atingido para TELDUAL.', 'error')
-                
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
+                    flash(f'Nenhum resultado encontrado para o telefone fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=session.get('token'))
-    
+
 @app.route('/modulos/tel', methods=['GET', 'POST'])
 def tel():
     if 'user_id' not in g:
@@ -1179,41 +1186,43 @@ def tel():
     tel = ""
 
     if request.method == 'POST':
-        tel = request.form.get('tel', '')
-        if tel:
+        tel = request.form.get('tel', '').strip()
+        if not tel:
+            flash('Telefone não fornecido.', 'error')
+        else:
             try:
                 if not is_admin:
-                    token = request.form.get('token')
-                    if not token:
-                        flash('Token não fornecido.', 'error')
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
                         return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
 
-                    if token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
-
-                # API Call for telephone lookup
                 url = f"https://api.bygrower.online/core/?token=gustta&base=telcredlink&query={tel}"
-                response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-                response.raise_for_status()  # Raises HTTPError for bad responses
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
                 data = response.json()
 
-                if 'resultado' in data and data['resultado'] == {"status": "OK", "consulta": f"{tel}", "total": 0}:
-                    flash('Nenhum resultado encontrado para o TELEFONE fornecido.', 'error')
-                elif 'cpf' in data['resultado']:
+                if 'resultado' in data and 'cpf' in data['resultado']:
                     if manage_module_usage(g.user_id, 'tel'):
                         results = data['resultado']['msg']
                         reset_all()
                     else:
                         flash('Limite de uso atingido para TEL.', 'error')
                 else:
-                    flash('Erro ao processar a consulta.', 'error')
-            except requests.RequestException:
-                flash('Erro ao conectar com o servidor da API.', 'error')
+                    flash(f'Nenhum resultado encontrado para o telefone fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash('Resposta da API inválida.', 'error')
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
+
 @app.route('/modulos/placa', methods=['GET', 'POST'])
 def placa():
     if 'user_id' not in g:
@@ -1228,48 +1237,40 @@ def placa():
     placa = ""
 
     if request.method == 'POST':
-        placa = request.form.get('placa', '').strip().upper()  # Normalize placa to uppercase and remove whitespace
+        placa = request.form.get('placa', '').strip().upper()
         if not placa:
             flash('Placa não fornecida.', 'error')
-            return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-        try:
-            if not is_admin:
-                token = request.form.get('token', '')
-                if not token:
-                    flash('Token não fornecido.', 'error')
-                    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=placanacional&query={placa}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
-
-            # API Call for plate lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=placanacional&query={placa}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            # Check if 'resultado' exists and if 'retorno' is "ok"
-            if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0:
-                result_data = data['resultado'][0]  # Assuming API returns a list with one result
-                if result_data.get('retorno') == 'ok':
+                if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0 and data['resultado'][0].get('retorno') == 'ok':
                     if manage_module_usage(g.user_id, 'placa'):
-                        results = data['resultado']  # Store the successful result
-                        reset_all()  # Reset cookies or session as per your security logic
+                        results = data['resultado']
+                        reset_all()
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para a placa fornecida.', 'error')
-            else:
-                flash('Nenhum resultado encontrado. Verifique o formato da placa (exemplo: ABC1234).', 'error')
-
-        except requests.RequestException as e:
-            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
-        except Exception as e:
-            flash(f'Erro inesperado: {str(e)}', 'error')
+                    flash(f'Nenhum resultado encontrado para a placa fornecida. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
@@ -1287,52 +1288,43 @@ def placaestadual():
     placa = ""
 
     if request.method == 'POST':
-        placa = request.form.get('placa', '').strip().upper()  # Normalize placa to uppercase and remove whitespace
+        placa = request.form.get('placa', '').strip().upper()
         if not placa:
             flash('Placa não fornecida.', 'error')
-            return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-        try:
-            if not is_admin:
-                token = request.form.get('token', '')
-                if not token:
-                    flash('Token não fornecido.', 'error')
-                    return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=placaestadual&query={placa}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
-
-            # API Call for plate lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=placaestadual&query={placa}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            # Check if 'resultado' exists and if 'retorno' is "ok"
-            if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0:
-                result_data = data['resultado'][0]  # Assuming API returns a list with one result
-                if result_data.get('retorno') == 'ok':
+                if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0 and data['resultado'][0].get('retorno') == 'ok':
                     if manage_module_usage(g.user_id, 'placa'):
-                        results = data['resultado']  # Store the successful result
-                        reset_all()  # Reset cookies or session as per your security logic
+                        results = data['resultado']
+                        reset_all()
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para a placa fornecida.', 'error')
-            else:
-                flash('Nenhum resultado encontrado. Verifique o formato da placa (exemplo: ABC1234).', 'error')
-
-        except requests.RequestException as e:
-            flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
-        except Exception as e:
-            flash(f'Erro inesperado: {str(e)}', 'error')
+                    flash(f'Nenhum resultado encontrado para a placa fornecida. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
-    
-    
+
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 def fotor():
     if 'user_id' not in g:
@@ -1345,87 +1337,65 @@ def fotor():
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
     documento = ""
-    selected_option = ""  # Opção padrão
+    selected_option = ""
 
     if request.method == 'POST':
-        documento = request.form.get('documento', '')
+        documento = request.form.get('documento', '').strip()
         selected_option = request.form.get('estado', '')
-        if documento:
+        if not documento:
+            flash('Documento não fornecido.', 'error')
+        else:
             try:
                 if not is_admin:
-                    token = request.form.get('token')
-                    if not token:
-                        flash('Token não fornecido.', 'error')
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
                         return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
 
-                    if token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
-
-                # Chamada à API para busca de foto baseada na opção selecionada
-                token = "a72566c8fac76174cb917c1501d94856"  # Token fixo (recomendo mover para config)
                 if selected_option == "fotoba":
                     url = f"https://api.bygrower.online/core/?token=gustta&base=FotoBA&query={documento}"
-                    response = requests.get(url, verify=False)
-                    response.raise_for_status()
-                    data = response.json()
-                    if data:
-                        results = data  # Usando diretamente os dados retornados
-                    else:
-                        flash('Nenhum resultado encontrado para FotoBA.', 'error')
-
                 elif selected_option == "fotorj":
                     url = f"https://api.bygrower.online/core/?token=gustta&base=FotoRJ&query={documento}"
-                    response = requests.get(url, verify=False)
-                    response.raise_for_status()
-                    data = response.json()
-                    if data:
-                        results = data
-                    else:
-                        flash('Nenhum resultado encontrado para FotoRJ.', 'error')
-
                 elif selected_option == "fotomg":
                     url = f"http://82.29.58.211:2000/mg_cpf_foto/{documento}"
-                    response = requests.get(url, verify=False)
-                    response.raise_for_status()
-                    data = response.json()
-                    if data and "foto_base64" in data:
-                        # Lógica específica para fotomg: garantir que os dados sejam tratados corretamente
-                        results = {
-                            "CPF": data.get("CPF", ""),
-                            "Nome": data.get("Nome", ""),
-                            "Nome da Mãe": data.get("Nome da Mãe", ""),
-                            "Nome do Pai": data.get("Nome do Pai", ""),
-                            "Data de Nascimento": data.get("Data de Nascimento", ""),
-                            "Categoria CNH Concedida": data.get("Categoria CNH Concedida", ""),
-                            "Validade CNH": data.get("Validade CNH", ""),
-                            "foto_base64": data.get("foto_base64", ""),
-                            # Adicione outros campos conforme necessário
-                        }
-                    else:
-                        flash('Nenhum resultado encontrado ou foto indisponível para FotoMG.', 'error')
-
-                else:  # fotosp
+                else:
                     url = f"https://api.bygrower.online/core/?token=gustta&base=FotoSP&query={documento}"
-                    response = requests.get(url, verify=False)
-                    response.raise_for_status()
-                    data = response.json()
-                    if data:
-                        results = data
-                    else:
-                        flash('Nenhum resultado encontrado para FotoSP.', 'error')
 
-                # Verifica limite de uso e processa resultados
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
+
+                if selected_option == "fotomg" and data and "foto_base64" in data:
+                    results = {
+                        "CPF": data.get("CPF", ""),
+                        "Nome": data.get("Nome", ""),
+                        "Nome da Mãe": data.get("Nome da Mãe", ""),
+                        "Nome do Pai": data.get("Nome do Pai", ""),
+                        "Data de Nascimento": data.get("Data de Nascimento", ""),
+                        "Categoria CNH Concedida": data.get("Categoria CNH Concedida", ""),
+                        "Validade CNH": data.get("Validade CNH", ""),
+                        "foto_base64": data.get("foto_base64", "")
+                    }
+                elif data:
+                    results = data
+
                 if results and manage_module_usage(g.user_id, 'fotor'):
                     reset_all()
                 elif results:
                     flash('Limite de uso atingido para FOTOR.', 'error')
                     results = None
-
+                else:
+                    flash(f'Nenhum resultado encontrado para o documento fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash('Resposta da API inválida.', 'error')
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
 
@@ -1443,40 +1413,43 @@ def nomelv():
     nome = ""
 
     if request.method == 'POST':
-        try:
-            nome = request.form.get('nome', '')
-            if not is_admin:
-                token = request.form.get('token')
+        nome = request.form.get('nome', '').strip()
+        if not nome:
+            flash('Nome não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
-                if not nome or not token:
-                    flash('Nome ou Token não fornecido.', 'error')
-                    return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=nome&query={nome}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
-
-            # API Call for name lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=nome&query={nome}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            if data.get('resultado') and len(data['resultado']) > 0:
-                if manage_module_usage(g.user_id, 'nomelv'):
-                    results = data['resultado']
-                    reset_all()
+                if data.get('resultado') and len(data['resultado']) > 0:
+                    if manage_module_usage(g.user_id, 'nomelv'):
+                        results = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para NOMELV.', 'error')
                 else:
-                    flash('Limite de uso atingido para NOME.', 'error')
-            else:
-                flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
+                    flash(f'Nenhum resultado encontrado para o nome fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
-    
+
 @app.route('/modulos/nome', methods=['GET', 'POST'])
 def nome():
     if 'user_id' not in g:
@@ -1491,37 +1464,40 @@ def nome():
     nome = ""
 
     if request.method == 'POST':
-        try:
-            nome = request.form.get('nome', '')
-            if not is_admin:
-                token = request.form.get('token')
+        nome = request.form.get('nome', '').strip()
+        if not nome:
+            flash('Nome não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
-                if not nome or not token:
-                    flash('Nome ou Token não fornecido.', 'error')
-                    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=nome&query={nome}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
-
-            # API Call for name lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=nome&query={nome}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            if data.get('resultado') and len(data['resultado']) > 0:
-                if manage_module_usage(g.user_id, 'nome'):
-                    results = data['resultado']
-                    reset_all()
+                if data.get('resultado') and len(data['resultado']) > 0:
+                    if manage_module_usage(g.user_id, 'nome'):
+                        results = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para NOME.', 'error')
                 else:
-                    flash('Limite de uso atingido para NOME.', 'error')
-            else:
-                flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
+                    flash(f'Nenhum resultado encontrado para o nome fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
@@ -1539,24 +1515,22 @@ def ip():
     ip_address = ""
 
     if request.method == 'POST':
-        ip_address = request.form.get('ip', '')
-        if ip_address:
+        ip_address = request.form.get('ip', '').strip()
+        if not ip_address:
+            flash('IP não fornecido.', 'error')
+        else:
             try:
                 if not is_admin:
-                    token = request.form.get('token')
-                    if not token:
-                        flash('Token não fornecido.', 'error')
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
                         return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=token)
 
-                    if token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                        return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=token)
-
-                # Fetch IP information from ipwho.is
-                import requests
                 url = f"https://ipwho.is/{ip_address}"
-                response = requests.get(url)
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, timeout=10)
                 response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
                 data = response.json()
 
                 if data.get('success'):
@@ -1575,11 +1549,15 @@ def ip():
                     else:
                         flash('Limite de uso atingido para IP.', 'error')
                 else:
-                    flash('IP não encontrado ou inválido.', 'error')
-            except requests.RequestException:
-                flash('Erro ao conectar com o servidor da API.', 'error')
+                    flash(f'IP não encontrado ou inválido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash('Resposta da API inválida.', 'error')
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=session.get('token'))
 
@@ -1597,40 +1575,43 @@ def nome2():
     nome = ""
 
     if request.method == 'POST':
-        try:
-            nome = request.form.get('nome', '')
-            if not is_admin:
-                token = request.form.get('token')
+        nome = request.form.get('nome', '').strip()
+        if not nome:
+            flash('Nome não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
-                if not nome or not token:
-                    flash('Nome ou Token não fornecido.', 'error')
-                    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+                url = f"https://api.bygrower.online/core/?token=gustta&base=nomeData&query={nome}"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Resposta da API: {response.status_code} - {response.text}")
+                data = response.json()
 
-                if token != users.get(g.user_id, {}).get('token'):
-                    flash('Token inválido ou não corresponde ao usuário logado.', 'error')
-                    return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
-
-            # API Call for name lookup
-            url = f"https://api.bygrower.online/core/?token=gustta&base=nomeData&query={nome}"
-            response = requests.get(url, verify=False)  # Note: verify=False to disable SSL verification, use with caution!
-            response.raise_for_status()  # Raises HTTPError for bad responses
-            data = response.json()
-
-            if data.get('resultado') and 'itens' in data['resultado']:
-                if manage_module_usage(g.user_id, 'nome2'):
-                    results = data['resultado']['itens']
-                    reset_all()
+                if data.get('resultado') and 'itens' in data['resultado']:
+                    if manage_module_usage(g.user_id, 'nome2'):
+                        results = data['resultado']['itens']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para NOME2.', 'error')
                 else:
-                    flash('Limite de uso atingido para NOME2.', 'error')
-            else:
-                flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
-        except requests.RequestException:
-            flash('Erro ao conectar com o servidor da API.', 'error')
-        except json.JSONDecodeError:
-            flash('Resposta da API inválida.', 'error')
+                    flash(f'Nenhum resultado encontrado para o nome fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {response.status_code} - {response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
-
+    
 
 # Fim :D
 if __name__ == '__main__':
