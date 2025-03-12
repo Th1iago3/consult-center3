@@ -69,5 +69,33 @@
             "teldual": 0
         },
         "last_reset": "2025-02-10"
+    },
+    "@ExP334": {
+        "password": "@@97",
+        "token": "@ExP334-KEY3630e88fb9fe52c0cb51ed51cc.center",
+        "expiration": "2025-03-19",
+        "role": "user_semanal",
+        "devices": [],
+        "modules": {
+            "cpf": 0,
+            "cpf2": 0,
+            "cpf3": 0,
+            "cpfdata": 0,
+            "cpflv": 0,
+            "datanome": 0,
+            "placalv": 0,
+            "tellv": 0,
+            "placa": 0,
+            "tel": 0,
+            "ip": 0,
+            "fotor": 0,
+            "nome": 0,
+            "nome2": 0,
+            "nomelv": 0,
+            "cpf5": 0,
+            "visitas": 0,
+            "teldual": 0
+        },
+        "last_reset": "2025-03-12"
     }
 }
