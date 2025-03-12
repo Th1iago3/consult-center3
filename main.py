@@ -669,7 +669,7 @@ def cpf():
                     else:
                         flash('Limite de uso atingido para CPF.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -767,7 +767,7 @@ def cpfdata():
                     else:
                         flash('Limite de uso atingido para CPFDATA.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -844,7 +844,7 @@ def cpf3():
                     else:
                         flash('Limite de uso atingido para CPF3.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -899,7 +899,7 @@ def cpflv():
                     else:
                         flash('Limite de uso atingido para CPFLV.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -948,7 +948,7 @@ def cpf5():
                     else:
                         flash('Limite de uso atingido para CPF5.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1000,7 +1000,7 @@ def datanome():
                     else:
                         flash('Limite de uso atingido para DATANOME.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o nome fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o nome fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1106,7 +1106,7 @@ def tellv():
                     else:
                         flash('Limite de uso atingido para TELLV.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o telefone fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o telefone fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1206,7 +1206,7 @@ def tel():
                     else:
                         flash('Limite de uso atingido para TEL.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o telefone fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o telefone fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1256,7 +1256,7 @@ def placa():
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para a placa fornecida. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para a placa fornecida.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1379,7 +1379,7 @@ def fotor():
                     flash('Limite de uso atingido para FOTOR.', 'error')
                     results = None
                 else:
-                    flash(f'Nenhum resultado encontrado para o documento fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o documento fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1479,7 +1479,7 @@ def nome():
                     else:
                         flash('Limite de uso atingido para NOME.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o nome fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o nome fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1538,7 +1538,7 @@ def ip():
                     else:
                         flash('Limite de uso atingido para IP.', 'error')
                 else:
-                    flash(f'IP não encontrado ou inválido. Resposta: {data}', 'error')
+                    flash(f'IP não encontrado ou inválido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1588,7 +1588,7 @@ def nome2():
                     else:
                         flash('Limite de uso atingido para NOME2.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o nome fornecido. Resposta: {data}', 'error')
+                    flash(f'Nenhum resultado encontrado para o nome fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
