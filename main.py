@@ -32,6 +32,8 @@ app.config['RSA_PRIVATE_KEY'] = rsa.generate_private_key(
     backend=default_backend()
 )
 app.config['RSA_PUBLIC_KEY'] = app.config['RSA_PRIVATE_KEY'].public_key()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 colorama.init()
 
 # Encryption Functions
