@@ -1243,7 +1243,7 @@ def placa():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-                url = f"https://api.bygrower.online/core/?token=gustta&base=placanacional&query={placa}"
+                url = f"https://api.bygrower.online/core/?token=gustta&base=placa&query={placa}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
