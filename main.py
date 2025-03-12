@@ -1193,7 +1193,7 @@ def tel():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
 
-                url = f"https://api.bygrower.online/core/?token=gustta&base=telcredlink&query={tel}"
+                url = f"https://api.bygrower.online/core/?token=gustta&base=telefone&query={tel}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
