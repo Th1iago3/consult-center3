@@ -846,8 +846,8 @@
 <div class="modules-grid" id="page1">
     <div class="module-card" onclick="navigateTo('/modulos/cpfdata')" data-module-id="cpfdata">
         <i class="module-icon fas fa-file-alt"></i>
-        <h3 class="module-title">Consulta - CPF (DATASUS)</h3>
-        <p class="module-description">Consulta completa de dados através do CPF.</p>
+        <h3 class="module-title">Localizar - CPF (DATASUS)</h3>
+        <p class="module-description">Consulte Dados COMPLETOS de qualquer CPF. CPF & NOME & PARENTES & VIZINHOS & OUTROS.</p>
         {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
             {% set max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user_role, 30) %}
             <div class="request-bar-wrapper">
@@ -911,7 +911,7 @@
     </div>
     <div class="module-card" onclick="navigateTo('/modulos/cpf3')" data-module-id="cpf3">
         <i class="module-icon fas fa-file-alt"></i>
-        <h3 class="module-title">Consulta - CPF (SISREGII)</h3>
+        <h3 class="module-title">Localizar - CPF (SISREGII)</h3>
         <p class="module-description">Consulte Dados COMPLETOS de qualquer CPF. CPF & NOME & PARENTES & VIZINHOS & OUTROS.</p>
         {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
             {% set max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user_role, 10) %}
@@ -1050,7 +1050,7 @@
     <div class="module-card" onclick="navigateTo('/modulos/fotor')" data-module-id="fotor">
         <i class="module-icon fas fa-id-card"></i>
         <h3 class="module-title">Localizar - Foto do Registro Geral (C&C Plus)</h3>
-        <p class="module-description">Consulte a foto do RG através do CPF.</p>
+        <p class="module-description">Consulte Dados Cadastrais e a FOTO do RG de qualquer pessoa, Através do CPF.</p>
         {% with module_usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), user_role=users.get(g.user_id, {}).get('role', 'user_semanal') %}
             {% set max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user_role, 30) %}
             <div class="request-bar-wrapper">
