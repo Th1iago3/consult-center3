@@ -8,16 +8,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6E44FF; /* Roxo principal */
-            --secondary-color: #A06CFF; /* Roxo secundário */
-            --accent-color: #FF6BD6; /* Rosa neon */
-            --background: #0F1123; /* Fundo escuro */
-            --card-bg: rgba(20, 22, 40, 0.95); /* Fundo dos cards */
-            --text-dark: #F4F4F9; /* Texto principal */
-            --text-light: rgba(176, 179, 193, 0.8); /* Texto secundário */
+            --primary-color: #6E44FF;
+            --secondary-color: #A06CFF;
+            --accent-color: #FF6BD6;
+            --background: #0F1123;
+            --card-bg: rgba(20, 22, 40, 0.95);
+            --text-dark: #F4F4F9;
+            --text-light: rgba(176, 179, 193, 0.8);
             --white: #FFFFFF;
-            --success: #00E676; /* Verde */
-            --error: #FF3366; /* Vermelho */
+            --success: #00E676;
+            --error: #FF3366;
             --shadow: rgba(0, 0, 0, 0.5);
             --glow: rgba(110, 68, 255, 0.7);
         }
@@ -136,7 +136,10 @@
 
         .nav-links a:hover {
             background: rgba(110, 68, 255, 0.2);
-           Auction
+            color: var(--text-dark);
+            transform: translateX(5px);
+            box-shadow: 0 0 12px var(--glow);
+        }
 
         .nav-links a i {
             font-size: 18px;
@@ -175,7 +178,7 @@
 
         .user-icon {
             font-size: 30px;
-            color: var(-- kémprimary-color);
+            color: var(--primary-color);
             cursor: pointer;
             transition: transform 0.3s ease, color 0.3s ease;
         }
@@ -218,6 +221,7 @@
             overflow: hidden;
             border: 2px solid rgba(110, 68, 255, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
         }
 
         .container:hover {
@@ -349,6 +353,7 @@
             border: 2px solid rgba(110, 68, 255, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             margin-top: 15px;
+            text-align: left;
         }
 
         .profile-info:hover {
@@ -421,8 +426,8 @@
             <i class="fas fa-chevron-right"></i>
         </button>
         <div class="nav-links" id="navLinks">
-            <a href="/dashboard"><i class="fas fa-home"></i> Página Principal</a>
-            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> Informações Adicionais</a>
+            <a href="/dashboard"><i class="fas fa-home"></i> <span>Página Principal</span></a>
+            <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> <span>Informações Adicionais</span></a>
             <div class="sub-navbar" id="subNavbar">
                 <a href="#">Base: CREDLINK</a>
             </div>
@@ -430,7 +435,7 @@
         <div class="user-profile">
             <i class="fas fa-user-circle user-icon"></i>
             <button class="logout-btn" onclick="window.location.href='/logout'">
-                <i class="fas fa-sign-out-alt"></i> Sair
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
             </button>
         </div>
     </div>
@@ -492,32 +497,30 @@
             subNavbar.classList.toggle('active');
         }
 
-        function showAlert(message, type) {
-            const alertContainer = document.createElement('div');
-            alertContainer.className = `alert alert-${type}`;
-            alertContainer.textContent = message;
-            document.querySelector('.container').insertBefore(alertContainer, document.querySelector('form'));
-            setTimeout(() => alertContainer.remove(), 3000);
-        }
-
         document.getElementById('searchForm').addEventListener('submit', function(event) {
-            const telefone = this.telefone.value.trim().replace(/\D/g, '');
-            if (!/^[0-9]{10,11}$/.test(telefone)) {
-                showAlert('Por favor, insira um número de telefone válido (10 ou 11 dígitos).', 'error');
+            const tel = this.telefone.value.trim().replace(/\D/g, '');
+            if (!/^[0-9]{10,11}$/.test(tel)) {
                 event.preventDefault();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Por favor, insira um número de telefone válido (10 ou 11 dígitos).';
+                this.insertBefore(alert, this.firstChild);
+                setTimeout(() => alert.remove(), 3000);
             }
         });
 
         function copyResult(button) {
             const profileInfo = document.querySelector('.profile-info');
             if (!profileInfo) {
-                showAlert('Nenhum resultado disponível para copiar.', 'error');
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Nenhum resultado disponível para copiar.';
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
+                setTimeout(() => alert.remove(), 3000);
                 return;
             }
 
-            const text = Array.from(profileInfo.querySelectorAll('p'))
-                .map(p => p.textContent)
-                .join('\n');
+            const text = Array.from(profileInfo.querySelectorAll('p')).map(p => p.textContent).join('\n');
             navigator.clipboard.writeText(text).then(() => {
                 button.classList.add('copied');
                 button.innerHTML = '<i class="fas fa-check"></i>';
@@ -527,33 +530,32 @@
                 }, 2000);
             }).catch(err => {
                 console.error('Erro ao copiar: ', err);
-                showAlert('Falha ao copiar o texto.', 'error');
+                alert('Falha ao copiar o texto.');
             });
         }
 
         function downloadResult() {
             const profileInfo = document.querySelector('.profile-info');
             if (!profileInfo) {
-                showAlert('Nenhum resultado disponível para download.', 'error');
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Nenhum resultado disponível para download.';
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
+                setTimeout(() => alert.remove(), 3000);
                 return;
             }
 
-            const text = Array.from(profileInfo.querySelectorAll('p'))
-                .map(p => p.textContent)
-                .join('\n');
-            const currentDate = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-                .replace(/[^\d]/g, '-')
-                .replace(/-+/g, '-');
+            const text = Array.from(profileInfo.querySelectorAll('p')).map(p => p.textContent).join('\n');
+            const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
             const fileName = `${currentDate}-TELEFONE-DATA-CREDLINK.txt`;
 
-            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const blob = new Blob([text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.download = fileName;
             document.body.appendChild(link);
             link.click();
-
             setTimeout(() => {
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
