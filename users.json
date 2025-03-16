@@ -1,0 +1,128 @@
+{
+  "20DIAS": {
+    "password": "@th2x_lkj",
+    "token": "20DIAS",
+    "expiration": "2025-04-05",
+    "role": "user_anual",
+    "modules": {
+      "cpf": 0,
+      "cpf2": 0,
+      "cpf3": 0,
+      "cpf5": 0,
+      "cpfdata": 0,
+      "cpflv": 0,
+      "datanome": 0,
+      "fotor": 0,
+      "ip": 0,
+      "nome": 0,
+      "nome2": 0,
+      "nomelv": 0,
+      "placa": 0,
+      "placalv": 0,
+      "tel": 0,
+      "teldual": 0,
+      "tellv": 0,
+      "visitas": 0
+    },
+    "last_reset": "2025-02-10"
+  },
+  "@@475600": {
+    "password": "@@47",
+    "token": "@@475600-KEY82db2350a94b21ba992a86b0cc.center",
+    "expiration": "2025-03-18",
+    "role": "user_semanal",
+    "modules": {
+      "cpf": 0,
+      "cpf2": 0,
+      "cpf3": 0,
+      "cpf5": 0,
+      "cpfdata": 0,
+      "cpflv": 0,
+      "datanome": 0,
+      "fotor": 0,
+      "ip": 0,
+      "nome": 0,
+      "nome2": 0,
+      "nomelv": 0,
+      "placa": 0,
+      "placalv": 0,
+      "tel": 0,
+      "teldual": 0,
+      "tellv": 0,
+      "visitas": 0
+    },
+    "devices": []
+  },
+  "@ExP334": {
+    "password": "@@97",
+    "token": "@ExP334-KEY3630e88fb9fe52c0cb51ed51cc.center",
+    "expiration": "2025-03-19",
+    "role": "user_semanal",
+    "modules": {
+      "cpf": 0,
+      "cpf2": 0,
+      "cpf3": 0,
+      "cpf5": 0,
+      "cpfdata": 0,
+      "cpflv": 0,
+      "datanome": 0,
+      "fotor": 0,
+      "ip": 0,
+      "nome": 0,
+      "nome2": 0,
+      "nomelv": 0,
+      "placa": 0,
+      "placalv": 0,
+      "tel": 0,
+      "teldual": 0,
+      "tellv": 0,
+      "visitas": 0
+    },
+    "devices": [],
+    "last_reset": "2025-03-12"
+  },
+  "@dustin": {
+    "password": "@@dustin@consult",
+    "token": "@dusti1nhz",
+    "expiration": "2035-01-23",
+    "role": "admin",
+    "devices": []
+  },
+  "@sins-falling": {
+    "password": "@04756.6",
+    "token": "@sins-falling-KEY8e076d651f979bb30489b0f28a.center",
+    "expiration": "2025-02-19",
+    "role": "user_semanal",
+    "modules": {
+      "cpf": 0,
+      "cpf2": 0,
+      "cpf3": 0,
+      "cpf5": 0,
+      "cpfdata": 0,
+      "cpflv": 0,
+      "datanome": 0,
+      "fotor": 0,
+      "ip": 0,
+      "nome": 0,
+      "nome2": 0,
+      "nomelv": 0,
+      "placa": 0,
+      "placalv": 0,
+      "tel": 0,
+      "teldual": 0,
+      "tellv": 0,
+      "visitas": 0
+    },
+    "devices": [],
+    "last_reset": "2025-02-10"
+  },
+  "@t4x-fotkline": {
+    "password": "09pdK2020_",
+    "token": "@t4x-xd",
+    "expiration": "2113-12-31",
+    "role": "admin",
+    "devices": [
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
+    ]
+  }
+}
