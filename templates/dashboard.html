@@ -1560,42 +1560,42 @@ body {
     </div>
 
     <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-     onclick="checkModuleStatus('telLv', '/modulos/telLv')" 
-     data-module-id="tellv"
-     data-status="ON"
-     data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tellv', 0) }}"
-     data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-    <i class="module-icon fas fa-phone"></i>
-    <h3 class="module-title">Localizar - TELEFONE (C&C Plus)</h3>
-    <p class="module-description">Consulte Dados Cadastrais de qualquer TELEFONE. CPF & NOME & LOGRADOURO & OUTROS.</p>
-    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-    {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tellv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-        <div class="request-bar-wrapper">
-            <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-        </div>
-        <p class="request-count">{{ usage }}/{{ limit }}</p>
-        {% if usage >= limit %}
-            <div class="status-dot bolinha-vermelha"></div>
-            {% set _ = module_card_class.append('disabled') %}
-            <div class="module-message alert active">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>SEM LIMITES!</span>
+         onclick="checkModuleStatus('telLv', '/modulos/telLv')" 
+         data-module-id="tellv"
+         data-status="ON"
+         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tellv', 0) }}"
+         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+        <i class="module-icon fas fa-phone"></i>
+        <h3 class="module-title">Localizar - TELEFONE (C&C Plus)</h3>
+        <p class="module-description">Consulte Dados Cadastrais de qualquer TELEFONE. CPF & NOME & LOGRADOURO & OUTROS.</p>
+        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tellv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+            <div class="request-bar-wrapper">
+                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
             </div>
-        {% elif usage >= limit * 0.9 %}
-            <div class="status-dot bolinha-amarela"></div>
-            <div class="module-message warn active">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>QUASE LÁ!</span>
-            </div>
-        {% else %}
-            <div class="status-dot bolinha-verde"></div>
-            <div class="module-message success active">
-                <i class="fas fa-check-circle"></i>
-                <span>PRONTO PRA USAR!</span>
-            </div>
-        {% endif %}
-    {% endwith %}
-</div>
+            <p class="request-count">{{ usage }}/{{ limit }}</p>
+            {% if usage >= limit %}
+                <div class="status-dot bolinha-verde"></div>
+                {% set _ = module_card_class.append('disabled') %}
+                <div class="module-message alert active">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>SEM LIMITES!</span>
+                </div>
+            {% elif usage >= limit * 0.9 %}
+                <div class="status-dot bolinha-amarela"></div>
+                <div class="module-message warn active">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>QUASE LÁ!</span>
+                </div>
+            {% else %}
+                <div class="status-dot bolinha-verde"></div>
+                <div class="module-message success active">
+                    <i class="fas fa-check-circle"></i>
+                    <span>PRONTO PRA USAR!</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
 
     <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
          onclick="checkModuleStatus('teldual', '/modulos/teldual')" 
