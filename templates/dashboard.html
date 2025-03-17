@@ -1909,6 +1909,7 @@ body {
         {% endwith %}
     </div>
 
+    {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
     <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
          onclick="checkModuleStatus('likeff', '/modulos/likeff')" 
          data-module-id="likeff"
@@ -1917,9 +1918,9 @@ body {
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-network-wired"></i>
         <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
-        <p class="module-description">Aumente os likes no seu perfil no freefire.</p>
+        <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
                 <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
             </div>
@@ -1946,8 +1947,8 @@ body {
             {% endif %}
         {% endwith %}
     </div>
+    {% endif %}
 </div>
-
 <!-- Pagination -->
 <div class="pagination">
     <button class="page-arrow left-arrow" onclick="previousPage()">
