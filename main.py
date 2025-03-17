@@ -274,8 +274,6 @@ def check_ban(uid):
         print(f"Erro {response.status_code}: Não foi possível acessar a API de banimento.")
     return None  # Return None if there was an error in fetching ban status
 
-
-
 # Module Usage Management
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
@@ -312,6 +310,49 @@ def manage_module_usage(user_id, module, increment=True):
     save_data(users, 'users.json')
     return True
 
+# Sistema de Sessão para Proteção Contra Login por Cookies
+def invalidate_session(user_id):
+    """Invalida a sessão de um usuário e remove-o do sistema temporariamente."""
+    users = load_data('users.json')
+    if user_id in users:
+        del users[user_id]  # Remove o usuário do sistema
+        save_data(users, 'users.json')
+        session.clear()  # Limpa a sessão atual
+        log_access("Session Invalidated", f"User {user_id} removed due to suspicious activity.")
+    resp = redirect('/')
+    resp.set_cookie('auth_token', '', expires=0)
+    resp.set_cookie('byte_cookie', '', expires=0)
+    resp.set_cookie('hex_cookie', '', expires=0)
+    return resp
+
+def verify_session_integrity():
+    """Verifica a integridade da sessão e detecta tentativas de manipulação."""
+    token_cookie = request.cookies.get('auth_token')
+    byte_cookie = request.cookies.get('byte_cookie')
+    hex_cookie = request.cookies.get('hex_cookie')
+
+    if not token_cookie or not byte_cookie or not hex_cookie:
+        return False, "Cookies ausentes"
+
+    try:
+        # Decodifica o token
+        encrypted_token = base64.b64decode(token_cookie)
+        token = decrypt_with_rsa(encrypted_token)
+        user_id = decode_token(token)
+        
+        # Verifica a integridade do byte_cookie e hex_cookie
+        byte_cookie_decoded = base64.b64decode(byte_cookie)
+        if not validate_byte_hex(byte_cookie_decoded, hex_cookie):
+            return False, "Cookies manipulados detectados"
+
+        # Verifica se a sessão corresponde ao user_id
+        if 'session_id' not in session or session['user_id'] != user_id:
+            return False, "Sessão não corresponde ao usuário autenticado"
+
+    except Exception as e:
+        return False, f"Erro ao verificar sessão: {str(e)}"
+
+    return True, "Sessão válida"
 
 @app.errorhandler(404)
 def not_found(e):
@@ -329,6 +370,14 @@ def security_check():
             log_access(request.endpoint, "Invalid user agent")
             return redirect('/')
             return jsonify({"error": "503"}), 503
+
+        # Verifica a integridade da sessão
+        is_valid, message = verify_session_integrity()
+        if not is_valid:
+            log_access(request.endpoint, f"Suspicious activity detected: {message}")
+            if 'user_id' in g:
+                return invalidate_session(g.user_id)
+            return redirect('/')
 
         token_cookie = request.cookies.get('auth_token')
         if not token_cookie:
@@ -373,7 +422,6 @@ def security_check():
         g.user_id = user_id
     log_access(request.endpoint)
 
-
 def reset_all():
     if 'user_id' in g:
         token = generate_token(g.user_id)
@@ -392,6 +440,8 @@ def reset_all():
         
         # Update session keys if needed
         session['user_key'], _ = generate_keys()
+        session['session_id'] = secrets.token_hex(16)  # Adiciona um ID único para a sessão
+        session['user_id'] = g.user_id  # Associa o user_id à sessão
         
         return resp
     else:
@@ -412,6 +462,8 @@ def login():
                 user_key, public_key = generate_keys()
                 session['user_key'] = user_key
                 session['public_key'] = public_key
+                session['user_id'] = user  # Adiciona o user_id à sessão
+                session['session_id'] = secrets.token_hex(16)  # Gera um ID único para a sessão
                 
                 # Generate new byte and hex cookies
                 byte_cookie = generate_byte_cookie()
@@ -471,7 +523,6 @@ def login():
         else:
             flash('Usuário ou senha incorretos.', 'error')
     return render_template('login.html')
-    
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -525,7 +576,7 @@ def dashboard():
         encrypted_content = encrypt_with_aes(content, session['user_key'])
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
-
+    
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
 def admin_panel():
     users = load_data('users.json')
