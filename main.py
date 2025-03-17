@@ -204,6 +204,32 @@ def manage_module_usage(user_id, module, increment=True):
     save_data(users, 'users.json')
     return True
 
+
+def reset_all():
+    if 'user_id' in g:
+        token = generate_token(g.user_id)
+        byte_cookie = generate_byte_cookie()
+        hex_cookie = byte_to_hex(byte_cookie)
+        encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
+        
+        resp = make_response()
+        resp.set_cookie('auth_token', base64.b64encode(encrypted_token).decode('ascii'), httponly=True, secure=True, samesite='Strict')
+        resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
+        resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
+        
+        custom_cookies = generate_custom_cookies()
+        for key, value in custom_cookies.items():
+            resp.set_cookie(key, value, httponly=True, secure=True, samesite='Strict')
+        
+        # Update session keys if needed
+        session['user_key'], _ = generate_keys()
+        session['session_id'] = secrets.token_hex(16)  # Adiciona um ID único para a sessão
+        session['user_id'] = g.user_id  # Associa o user_id à sessão
+        
+        return resp
+    else:
+        return jsonify({"error": "User not authenticated"}), 401
+        
 # Session Management
 def invalidate_session(user_id):
     users = load_data('users.json')
