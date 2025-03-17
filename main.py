@@ -1433,6 +1433,118 @@ def nome2():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
+
+@app.route('/modulos/likeff', methods=['GET', 'POST'])
+def likeff():
+    # Verificar se o usuário está autenticado
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    # Carregar dados do usuário e notificações
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_data('notifications.json')
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+
+    if request.method == 'POST':
+        # Obter parâmetros
+        uid = request.form.get('uid', '').strip()
+        server_name = 'br'  # Fixado como "br" conforme solicitado
+        
+        if not uid:
+            flash('UID não fornecido.', 'error')
+        else:
+            try:
+                # Verificar token para não-admin
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('likeff.html', is_admin=is_admin, 
+                                            notifications=user_notifications, 
+                                            result=result, uid=uid)
+
+                # URLs das APIs
+                token_url = "http://teamxcutehack.serv00.net/like/token_ind.json"
+                ffinfo_url = f"https://lk-team-ffinfo-five.vercel.app/ffinfo?id={uid}"
+                like_api_url = f"https://likeapiff.thory.in/like?uid={uid}&server_name={server_name}&token_url={requests.utils.quote(token_url)}"
+
+                # Obter dados do ffinfo
+                ffinfo_response = requests.get(ffinfo_url, timeout=10)
+                ffinfo_response.raise_for_status()
+                ffinfo_data = decode_json_with_bom(ffinfo_response.text)
+
+                if not ffinfo_data:
+                    flash('Resposta vazia da API ffinfo.', 'error')
+                    return render_template('likeff.html', is_admin=is_admin, 
+                                        notifications=user_notifications, 
+                                        result=result, uid=uid)
+
+                # Verificar chave de likes
+                if "account_info" not in ffinfo_data or "├ Likes" not in ffinfo_data["account_info"]:
+                    flash('Chave de likes ausente na resposta da API ffinfo.', 'error')
+                    return render_template('likeff.html', is_admin=is_admin, 
+                                        notifications=user_notifications, 
+                                        result=result, uid=uid)
+
+                # Extrair likes antes
+                likes_before = int(str(ffinfo_data["account_info"]["├ Likes"]).replace(',', ''))
+
+                # Chamar API de likes
+                like_response = requests.get(like_api_url, timeout=10)
+                if like_response.status_code != 200:
+                    flash(f'Falha na API de likes com código {like_response.status_code}.', 'error')
+                    return render_template('likeff.html', is_admin=is_admin, 
+                                        notifications=user_notifications, 
+                                        result=result, uid=uid)
+
+                like_data = decode_json_with_bom(like_response.text)
+                if not like_data or "LikesafterCommand" not in like_data:
+                    flash('JSON inválido da API de likes.', 'error')
+                    return render_template('likeff.html', is_admin=is_admin, 
+                                        notifications=user_notifications, 
+                                        result=result, uid=uid)
+
+                # Calcular likes enviados
+                likes_after = int(like_data["LikesafterCommand"])
+                likes_sended = likes_after - likes_before
+
+                # Montar resposta final
+                result = {
+                    "LikesafterCommand": likes_after,
+                    "LikesbeforeCommand": likes_before,
+                    "likeSended": likes_sended,
+                    "PlayerNickname": like_data.get("PlayerNickname", "Unknown"),
+                    "UID": like_data.get("UID", uid),
+                    "credit": "@thoryxff",
+                    "status": 1,
+                    "thanks": "super thanks to thoryxff for providing this like source code!",
+                    "owner": "cutehack Chx 💀"
+                }
+
+                # Gerenciar uso do módulo
+                if manage_module_usage(g.user_id, 'likeff'):
+                    reset_all()  # Resetar cookies/sessão após uso bem-sucedido
+                else:
+                    flash('Limite de uso atingido para LIKEFF.', 'error')
+                    result = None
+
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida.', 'error')
+
+    return render_template('likeff.html', is_admin=is_admin, 
+                         notifications=user_notifications, 
+                         result=result, uid=uid if 'uid' in locals() else '', 
+                         token=session.get('token'))
+    
 # Fim :D
 if __name__ == '__main__':
     initialize_json('users.json')
