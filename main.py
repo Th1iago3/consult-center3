@@ -36,6 +36,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
 
+# Armazenamento de cookies usados (em memória para controle)
+cookie_usage = {}  # {cookie_token: {'user_id': user_id, 'count': int}}
+
 # Encryption Functions
 def encrypt_with_rsa(data, public_key):
     return public_key.encrypt(
@@ -82,15 +85,12 @@ def generate_keys():
     return user_key, public_key_pem
 
 def generate_byte_cookie():
-    # Generate a random byte array
     return os.urandom(32)  # 32 bytes for randomness
 
 def byte_to_hex(byte_data):
-    # Convert bytes to hex string
     return base64.b16encode(byte_data).decode('ascii')
 
 def validate_byte_hex(byte_cookie, hex_cookie):
-    # Convert hex string back to bytes and compare
     hex_back_to_bytes = base64.b16decode(hex_cookie.encode('ascii'))
     return hex_back_to_bytes == byte_cookie
 
@@ -112,7 +112,6 @@ def generate_custom_cookies():
     return cookies
 
 def decode_json_with_bom(response_text):
-    # Remove o BOM (Byte Order Mark) se presente
     if response_text.startswith('\ufeff'):
         response_text = response_text[1:]
     return json.loads(response_text)
@@ -153,7 +152,7 @@ def save_data(data, file_path):
 # Token Management with time-based expiration
 def generate_token(user_id):
     users = load_data('users.json')
-    exp_time = timedelta(days=3650) if users.get(user_id, {}).get('role') == 'admin' else timedelta(minutes=15)  # Now minutes instead of hours
+    exp_time = timedelta(days=3650) if users.get(user_id, {}).get('role') == 'admin' else timedelta(minutes=15)
     payload = {'user_id': user_id, 'exp': datetime.utcnow() + exp_time}
     return jwt.encode(payload, app.config['JWT_SECRET_KEY'], algorithm="HS256")
 
@@ -172,7 +171,7 @@ def log_access(endpoint, message=''):
         response = requests.get('https://ipinfo.io//json')
         response.raise_for_status()
         ip_info = response.json()
-        ip = ip_info.get('ip', '')  # Fallback to 'Unknown' if we can't fetch the IP
+        ip = ip_info.get('ip', '')
     except requests.RequestException as e:
         ip = request.remote_addr
         message += f" [Error fetching real IP: {str(e)}]"
@@ -199,12 +198,7 @@ def send_notification(user_id, message):
 
 def get_player_info(uid):
     url = "https://recargajogo.com.br/api/auth/player_id_login"
-
-    payload = {
-        "app_id": 100067,
-        "login_id": uid
-    }
-
+    payload = {"app_id": 100067, "login_id": uid}
     headers = {
         'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
         'Accept': "application/json, text/plain, */*",
@@ -220,15 +214,11 @@ def get_player_info(uid):
         'Accept-Language': "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
         'Cookie': "region=BR; mspid2=ff74ba563fee80fa46630241bba36111; _ga=GA1.1.901765623.1736342976; cc=true; _ga_9TMTW7BN3E=GS1.1.1736915569.5.1.1736915613.0.0.0; datadome=_i~AmiCsW7aNYrtzvtbkNnorGt2yOc2GUvqqmPMT9oHP_GLPwvNNzi4Tqui2uQ3OouJYpZMCylUUwlDNtdqMMJpbnZb0BRv78weCxoFXzPbO7MvTEKfzlasjdSVZ0r4u; source=mb; session_key=1tesojh0yxrdpa1xwu4128qshbcaoc7l"
     }
-
     response = requests.post(url, data=json.dumps(payload), headers=headers)
-
     if response.status_code == 200:
         try:
             player_data = response.json()
-            region = player_data.get("region", "N/A")
-            nickname = player_data.get("nickname", "N/A")
-            return region, nickname
+            return player_data.get("region", "N/A"), player_data.get("nickname", "N/A")
         except json.JSONDecodeError:
             print("Erro ao tentar decodificar a resposta como JSON.")
             return "N/A", "N/A"
@@ -238,12 +228,7 @@ def get_player_info(uid):
 
 def check_ban(uid):
     url = "https://ff.garena.com/api/antihack/check_banned"
-
-    params = {
-        'lang': "pt",
-        'uid': uid
-    }
-
+    params = {'lang': "pt", 'uid': uid}
     headers = {
         'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
         'Accept': "application/json, text/plain, */*",
@@ -258,9 +243,7 @@ def check_ban(uid):
         'accept-language': "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
         'Cookie': "datadome=GcqVS0UG9NX0WEs804KR2pcR2HgGFFBYVfIglt81QFnIPmA0T1X7mMwrYqwbn85oyho8C9yKVYx71HbcuHii5iT8K8NkUnpHlYz0A8dyf5R1A4S_kRiurPWY8_I3Nvcx; _ga_G8QGMJPWWV=GS1.1.1736773737.1.1.1736774124.0.0.0; _ga_Y1QNJ6ZLV6=GS1.1.1736773729.1.1.1736774160.0.0.0; _gid=GA1.2.1234962202.1736915269; _ga_57E30E1PMN=GS1.2.1736915269.2.1.1736915277.0.0.0; _ga_KE3SY7MRSD=GS1.1.1736915307.3.1.1736915366.0.0.0; _ga_RF9R6YT614=GS1.1.1736915308.3.1.1736915366.0.0.0; _ga=GA1.1.1874756915.1736342926"
     }
-
     response = requests.get(url, params=params, headers=headers)
-
     if response.status_code == 200:
         try:
             data = response.json()
@@ -272,61 +255,63 @@ def check_ban(uid):
             print("Erro ao tentar decodificar a resposta como JSON.")
     else:
         print(f"Erro {response.status_code}: Não foi possível acessar a API de banimento.")
-    return None  # Return None if there was an error in fetching ban status
+    return None
 
 # Module Usage Management
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
-
     if user.get('role') == 'admin':
-        return True  # Admins have unlimited access
-
+        return True
     if 'modules' not in user:
         user['modules'] = {m: 0 for m in [
             'cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv',
             'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'visitas', 'teldual'
         ]}
-
     if increment:
         user['modules'][module] += 1
-
     today = datetime.now().date()
     if 'last_reset' not in user or user['last_reset'] != today.isoformat():
-        user['modules'] = {k: 0 for k in user['modules']}  # Reset all modules to 0
+        user['modules'] = {k: 0 for k in user['modules']}
         user['last_reset'] = today.isoformat()
-
-    usage_limit = {
-        'user_semanal': 30,
-        'user_mensal': 250,
-        'user_anual': 500
-    }.get(user.get('role', 'user_semanal'), 30)
-
+    usage_limit = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user.get('role', 'user_semanal'), 30)
     if user['modules'][module] > usage_limit:
         flash(f'Você excedeu o limite diário de {usage_limit} requisições para o módulo {module}.', 'error')
         return False
-
     users[user_id] = user
     save_data(users, 'users.json')
     return True
 
-# Sistema de Sessão para Proteção Contra Login por Cookies
-def invalidate_session(user_id):
-    """Invalida a sessão de um usuário e remove-o do sistema temporariamente."""
+# Sistema de Sessão e Proteção
+def invalidate_session(user_id, token_cookie):
+    """Invalida a sessão de um usuário e remove-o do sistema."""
     users = load_data('users.json')
     if user_id in users:
-        del users[user_id]  # Remove o usuário do sistema
+        del users[user_id]
         save_data(users, 'users.json')
-        session.clear()  # Limpa a sessão atual
-        log_access("Session Invalidated", f"User {user_id} removed due to suspicious activity.")
+        if token_cookie in cookie_usage:
+            del cookie_usage[token_cookie]
+        log_access("Session Invalidated", f"User {user_id} removed due to multiple requests with same cookies.")
+    session.clear()
     resp = redirect('/')
     resp.set_cookie('auth_token', '', expires=0)
     resp.set_cookie('byte_cookie', '', expires=0)
     resp.set_cookie('hex_cookie', '', expires=0)
     return resp
 
+def verify_cookie_usage(token_cookie, user_id):
+    """Verifica se o cookie já foi usado mais de uma vez."""
+    if token_cookie not in cookie_usage:
+        cookie_usage[token_cookie] = {'user_id': user_id, 'count': 1}
+        return True, "Primeira requisição com este cookie"
+    else:
+        cookie_usage[token_cookie]['count'] += 1
+        if cookie_usage[token_cookie]['count'] > 1:
+            return False, "Múltiplas requisições detectadas com o mesmo cookie"
+        return True, "Cookie válido"
+
 def verify_session_integrity():
-    """Verifica a integridade da sessão e detecta tentativas de manipulação."""
+    """Verifica a integridade da sessão."""
     token_cookie = request.cookies.get('auth_token')
     byte_cookie = request.cookies.get('byte_cookie')
     hex_cookie = request.cookies.get('hex_cookie')
@@ -335,17 +320,14 @@ def verify_session_integrity():
         return False, "Cookies ausentes"
 
     try:
-        # Decodifica o token
         encrypted_token = base64.b64decode(token_cookie)
         token = decrypt_with_rsa(encrypted_token)
         user_id = decode_token(token)
         
-        # Verifica a integridade do byte_cookie e hex_cookie
         byte_cookie_decoded = base64.b64decode(byte_cookie)
         if not validate_byte_hex(byte_cookie_decoded, hex_cookie):
             return False, "Cookies manipulados detectados"
 
-        # Verifica se a sessão corresponde ao user_id
         if 'session_id' not in session or session['user_id'] != user_id:
             return False, "Sessão não corresponde ao usuário autenticado"
 
@@ -376,7 +358,7 @@ def security_check():
         if not is_valid:
             log_access(request.endpoint, f"Suspicious activity detected: {message}")
             if 'user_id' in g:
-                return invalidate_session(g.user_id)
+                return invalidate_session(g.user_id, request.cookies.get('auth_token'))
             return redirect('/')
 
         token_cookie = request.cookies.get('auth_token')
@@ -404,6 +386,12 @@ def security_check():
             flash('Sessão inválida. Faça login novamente.', 'error')
             return redirect('/')
 
+        # Verifica o uso do cookie
+        is_cookie_valid, cookie_message = verify_cookie_usage(token_cookie, user_id)
+        if not is_cookie_valid:
+            log_access(request.endpoint, cookie_message)
+            return invalidate_session(user_id, token_cookie)
+
         # Check for VPN/Proxy
         try:
             response = requests.get('https://api.ipify.org?format=json')
@@ -428,9 +416,10 @@ def reset_all():
         byte_cookie = generate_byte_cookie()
         hex_cookie = byte_to_hex(byte_cookie)
         encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
+        token_cookie = base64.b64encode(encrypted_token).decode('ascii')
         
         resp = make_response()
-        resp.set_cookie('auth_token', base64.b64encode(encrypted_token).decode('ascii'), httponly=True, secure=True, samesite='Strict')
+        resp.set_cookie('auth_token', token_cookie, httponly=True, secure=True, samesite='Strict')
         resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
         resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
         
@@ -438,10 +427,10 @@ def reset_all():
         for key, value in custom_cookies.items():
             resp.set_cookie(key, value, httponly=True, secure=True, samesite='Strict')
         
-        # Update session keys if needed
         session['user_key'], _ = generate_keys()
-        session['session_id'] = secrets.token_hex(16)  # Adiciona um ID único para a sessão
-        session['user_id'] = g.user_id  # Associa o user_id à sessão
+        session['session_id'] = secrets.token_hex(16)
+        session['user_id'] = g.user_id
+        cookie_usage[token_cookie] = {'user_id': g.user_id, 'count': 0}  # Inicializa contador
         
         return resp
     else:
@@ -462,22 +451,20 @@ def login():
                 user_key, public_key = generate_keys()
                 session['user_key'] = user_key
                 session['public_key'] = public_key
-                session['user_id'] = user  # Adiciona o user_id à sessão
-                session['session_id'] = secrets.token_hex(16)  # Gera um ID único para a sessão
+                session['user_id'] = user
+                session['session_id'] = secrets.token_hex(16)
                 
-                # Generate new byte and hex cookies
                 byte_cookie = generate_byte_cookie()
                 hex_cookie = byte_to_hex(byte_cookie)
-
-                # Encrypt token before setting in cookie
                 encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
+                token_cookie = base64.b64encode(encrypted_token).decode('ascii')
                 
-                # Generate custom cookies
+                cookie_usage[token_cookie] = {'user_id': user, 'count': 0}  # Inicializa contador
+                
                 def generate_custom_cookies():
                     import secrets
                     import time
                     import base64
-                    
                     cookies = {
                         "JSESSIONID": secrets.token_urlsafe(16),
                         f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
@@ -496,25 +483,20 @@ def login():
                 custom_cookies = generate_custom_cookies()
                 
                 resp = redirect('/dashboard')
-                # Set custom cookies
                 for key, value in custom_cookies.items():
                     resp.set_cookie(key, value, httponly=True, secure=True, samesite='Strict')
-                
-                # Set cookies with encrypted values
-                resp.set_cookie('auth_token', base64.b64encode(encrypted_token).decode('ascii'), httponly=True, secure=True, samesite='Strict')
+                resp.set_cookie('auth_token', token_cookie, httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
                 
-                # Device management logic
                 if 'devices' not in users[user]:
-                    # If 'devices' key is not found, allow login with unlimited devices
-                    save_data(users, 'users.json')  # Save the user data even if devices is not there
+                    save_data(users, 'users.json')
                 else:
                     if users[user]['devices'] and user_agent != users[user]['devices'][0]:
                         flash('Dispositivo não autorizado. Login recusado.', 'error')
                         return render_template('login.html')
                     else:
-                        users[user]['devices'] = [user_agent]  # Only one device is allowed
+                        users[user]['devices'] = [user_agent]
                         save_data(users, 'users.json')
 
                 return resp
@@ -553,10 +535,9 @@ def dashboard():
                     'user_semanal': 30,
                     'user_mensal': 250,
                     'user_anual': 500
-                }.get(role, 30)  # Default to weekly limit if role not recognized
+                }.get(role, 30)
 
                 if is_admin:
-                    # For admin, return all module limits
                     return jsonify({
                         "user": user,
                         "modules": user_modules,
