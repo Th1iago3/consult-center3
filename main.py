@@ -169,6 +169,41 @@ def log_access(endpoint, message=''):
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
 
+def manage_module_usage(user_id, module, increment=True):
+    users = load_data('users.json')
+    user = users.get(user_id, {})
+
+    if user.get('role') == 'admin':
+        return True  # Admins have unlimited access
+
+    if 'modules' not in user:
+        user['modules'] = {m: 0 for m in [
+            'cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv',
+            'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'likeff', 'teldual'
+        ]}
+
+    if increment:
+        user['modules'][module] += 1
+
+    today = datetime.now().date()
+    if 'last_reset' not in user or user['last_reset'] != today.isoformat():
+        user['modules'] = {k: 0 for k in user['modules']}  # Reset all modules to 0
+        user['last_reset'] = today.isoformat()
+
+    usage_limit = {
+        'user_semanal': 30,
+        'user_mensal': 250,
+        'user_anual': 500
+    }.get(user.get('role', 'user_semanal'), 30)
+
+    if user['modules'][module] > usage_limit:
+        flash(f'Você excedeu o limite diário de {usage_limit} requisições para o módulo {module}.', 'error')
+        return False
+
+    users[user_id] = user
+    save_data(users, 'users.json')
+    return True
+
 # Session Management
 def invalidate_session(user_id):
     users = load_data('users.json')
