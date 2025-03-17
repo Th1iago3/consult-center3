@@ -9,7 +9,6 @@ import time
 import colorama
 from colorama import Fore, Style
 import re
-import subprocess
 import base64
 from functools import wraps
 import hmac
@@ -18,10 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-import httpx
-import asyncio
-import logging 
-
+import logging
 
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -36,8 +32,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
 
-# Armazenamento de cookies usados (em memória para controle)
-cookie_usage = {}  # {cookie_token: {'user_id': user_id, 'count': int}}
+# Rate limiting storage (in-memory for simplicity)
+login_attempts = {}
 
 # Encryption Functions
 def encrypt_with_rsa(data, public_key):
@@ -94,7 +90,6 @@ def validate_byte_hex(byte_cookie, hex_cookie):
     hex_back_to_bytes = base64.b16decode(hex_cookie.encode('ascii'))
     return hex_back_to_bytes == byte_cookie
 
-# Generate custom cookies with the specified format
 def generate_custom_cookies():
     cookies = {
         "JSESSIONID": secrets.token_urlsafe(16),
@@ -118,16 +113,12 @@ def decode_json_with_bom(response_text):
 
 def check_referrer():
     referrer = request.headers.get('Referer', '')
-    if not referrer.startswith('https://consult-center3.onrender.com'):
-        return False
-    return True
+    return referrer.startswith('https://consult-center3.onrender.com')
 
 def check_user_agent():
     user_agent = request.headers.get('User-Agent', '')
     browser_pattern = re.compile(r'(Chrome|Firefox|Safari|Edge|Opera)', re.IGNORECASE)
-    if not browser_pattern.search(user_agent):
-        return False
-    return True
+    return bool(browser_pattern.search(user_agent))
 
 # JSON File Management
 def initialize_json(file_path):
@@ -149,7 +140,7 @@ def save_data(data, file_path):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
-# Token Management with time-based expiration
+# Token Management
 def generate_token(user_id):
     users = load_data('users.json')
     exp_time = timedelta(days=3650) if users.get(user_id, {}).get('role') == 'admin' else timedelta(minutes=15)
@@ -168,162 +159,43 @@ def decode_token(token):
 # Logging
 def log_access(endpoint, message=''):
     try:
-        response = requests.get('https://ipinfo.io//json')
+        response = requests.get('https://ipinfo.io/json')
         response.raise_for_status()
         ip_info = response.json()
         ip = ip_info.get('ip', '')
-    except requests.RequestException as e:
+    except requests.RequestException:
         ip = request.remote_addr
-        message += f" [Error fetching real IP: {str(e)}]"
-
+        message += f" [Error fetching real IP]"
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
 
-# Notifications
-def load_notifications():
-    return load_data('notifications.json')
-
-def save_notifications(notifications):
-    save_data(notifications, 'notifications.json')
-
-def send_notification(user_id, message):
-    notifications = load_notifications()
-    if user_id not in notifications:
-        notifications[user_id] = []
-    notifications[user_id].append({
-        'message': message,
-        'timestamp': datetime.now().isoformat()
-    })
-    save_notifications(notifications)
-
-def get_player_info(uid):
-    url = "https://recargajogo.com.br/api/auth/player_id_login"
-    payload = {"app_id": 100067, "login_id": uid}
-    headers = {
-        'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
-        'Accept': "application/json, text/plain, */*",
-        'Content-Type': "application/json",
-        'sec-ch-ua': "\"Not-A.Brand\";v=\"99\", \"Chromium\";v=\"124\"",
-        'sec-ch-ua-mobile': "?1",
-        'sec-ch-ua-platform': "\"Android\"",
-        'Origin': "https://recargajogo.com.br",
-        'Sec-Fetch-Site': "same-origin",
-        'Sec-Fetch-Mode': "cors",
-        'Sec-Fetch-Dest': "empty",
-        'Referer': "https://recargajogo.com.br/",
-        'Accept-Language': "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-        'Cookie': "region=BR; mspid2=ff74ba563fee80fa46630241bba36111; _ga=GA1.1.901765623.1736342976; cc=true; _ga_9TMTW7BN3E=GS1.1.1736915569.5.1.1736915613.0.0.0; datadome=_i~AmiCsW7aNYrtzvtbkNnorGt2yOc2GUvqqmPMT9oHP_GLPwvNNzi4Tqui2uQ3OouJYpZMCylUUwlDNtdqMMJpbnZb0BRv78weCxoFXzPbO7MvTEKfzlasjdSVZ0r4u; source=mb; session_key=1tesojh0yxrdpa1xwu4128qshbcaoc7l"
-    }
-    response = requests.post(url, data=json.dumps(payload), headers=headers)
-    if response.status_code == 200:
-        try:
-            player_data = response.json()
-            return player_data.get("region", "N/A"), player_data.get("nickname", "N/A")
-        except json.JSONDecodeError:
-            print("Erro ao tentar decodificar a resposta como JSON.")
-            return "N/A", "N/A"
-    else:
-        print(f"Erro {response.status_code}: Não foi possível acessar a API do jogador.")
-        return "N/A", "N/A"
-
-def check_ban(uid):
-    url = "https://ff.garena.com/api/antihack/check_banned"
-    params = {'lang': "pt", 'uid': uid}
-    headers = {
-        'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
-        'Accept': "application/json, text/plain, */*",
-        'sec-ch-ua': "\"Not-A.Brand\";v=\"99\", \"Chromium\";v=\"124\"",
-        'x-requested-with': "B6FksShzIgjfrYImLpTsadjS86sddhFH",
-        'sec-ch-ua-mobile': "?1",
-        'sec-ch-ua-platform': "\"Android\"",
-        'sec-fetch-site': "same-origin",
-        'sec-fetch-mode': "cors",
-        'sec-fetch-dest': "empty",
-        'referer': "https://ff.garena.com/pt/support/",
-        'accept-language': "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-        'Cookie': "datadome=GcqVS0UG9NX0WEs804KR2pcR2HgGFFBYVfIglt81QFnIPmA0T1X7mMwrYqwbn85oyho8C9yKVYx71HbcuHii5iT8K8NkUnpHlYz0A8dyf5R1A4S_kRiurPWY8_I3Nvcx; _ga_G8QGMJPWWV=GS1.1.1736773737.1.1.1736774124.0.0.0; _ga_Y1QNJ6ZLV6=GS1.1.1736773729.1.1.1736774160.0.0.0; _gid=GA1.2.1234962202.1736915269; _ga_57E30E1PMN=GS1.2.1736915269.2.1.1736915277.0.0.0; _ga_KE3SY7MRSD=GS1.1.1736915307.3.1.1736915366.0.0.0; _ga_RF9R6YT614=GS1.1.1736915308.3.1.1736915366.0.0.0; _ga=GA1.1.1874756915.1736342926"
-    }
-    response = requests.get(url, params=params, headers=headers)
-    if response.status_code == 200:
-        try:
-            data = response.json()
-            if data.get("status") == "success":
-                return data["data"]["is_banned"] == 1
-            else:
-                print("Erro: Não foi possível verificar o banimento.")
-        except json.JSONDecodeError:
-            print("Erro ao tentar decodificar a resposta como JSON.")
-    else:
-        print(f"Erro {response.status_code}: Não foi possível acessar a API de banimento.")
-    return None
-
-# Module Usage Management
-def manage_module_usage(user_id, module, increment=True):
-    users = load_data('users.json')
-    user = users.get(user_id, {})
-    if user.get('role') == 'admin':
-        return True
-    if 'modules' not in user:
-        user['modules'] = {m: 0 for m in [
-            'cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv',
-            'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'visitas', 'teldual'
-        ]}
-    if increment:
-        user['modules'][module] += 1
-    today = datetime.now().date()
-    if 'last_reset' not in user or user['last_reset'] != today.isoformat():
-        user['modules'] = {k: 0 for k in user['modules']}
-        user['last_reset'] = today.isoformat()
-    usage_limit = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user.get('role', 'user_semanal'), 30)
-    if user['modules'][module] > usage_limit:
-        flash(f'Você excedeu o limite diário de {usage_limit} requisições para o módulo {module}.', 'error')
-        return False
-    users[user_id] = user
-    save_data(users, 'users.json')
-    return True
-
-# Sistema de Sessão e Proteção
-def invalidate_session(user_id, token_cookie):
-    """Invalida a sessão de um usuário e remove-o do sistema."""
+# Session Management
+def invalidate_session(user_id):
     users = load_data('users.json')
     if user_id in users:
         del users[user_id]
         save_data(users, 'users.json')
-        if token_cookie in cookie_usage:
-            del cookie_usage[token_cookie]
-        log_access("Session Invalidated", f"User {user_id} removed due to multiple requests with same cookies.")
-    session.clear()
+        session.clear()
+        log_access("Session Invalidated", f"User {user_id} removed due to suspicious activity.")
     resp = redirect('/')
     resp.set_cookie('auth_token', '', expires=0)
     resp.set_cookie('byte_cookie', '', expires=0)
     resp.set_cookie('hex_cookie', '', expires=0)
     return resp
 
-def verify_cookie_usage(token_cookie, user_id):
-    """Verifica se o cookie já foi usado mais de uma vez."""
-    if token_cookie not in cookie_usage:
-        cookie_usage[token_cookie] = {'user_id': user_id, 'count': 1}
-        return True, "Primeira requisição com este cookie"
-    else:
-        cookie_usage[token_cookie]['count'] += 1
-        if cookie_usage[token_cookie]['count'] > 1:
-            return False, "Múltiplas requisições detectadas com o mesmo cookie"
-        return True, "Cookie válido"
-
 def verify_session_integrity():
-    """Verifica a integridade da sessão."""
     token_cookie = request.cookies.get('auth_token')
     byte_cookie = request.cookies.get('byte_cookie')
     hex_cookie = request.cookies.get('hex_cookie')
 
-    if not token_cookie or not byte_cookie or not hex_cookie:
+    if not all([token_cookie, byte_cookie, hex_cookie]):
         return False, "Cookies ausentes"
 
     try:
         encrypted_token = base64.b64decode(token_cookie)
         token = decrypt_with_rsa(encrypted_token)
         user_id = decode_token(token)
-        
+
         byte_cookie_decoded = base64.b64decode(byte_cookie)
         if not validate_byte_hex(byte_cookie_decoded, hex_cookie):
             return False, "Cookies manipulados detectados"
@@ -331,95 +203,76 @@ def verify_session_integrity():
         if 'session_id' not in session or session['user_id'] != user_id:
             return False, "Sessão não corresponde ao usuário autenticado"
 
+        return True, "Sessão válida"
     except Exception as e:
         return False, f"Erro ao verificar sessão: {str(e)}"
 
-    return True, "Sessão válida"
-
-@app.errorhandler(404)
-def not_found(e):
-    return render_template('404.html'), 404
+# Rate Limiting for Login Attempts
+def check_login_attempts(user_id):
+    now = time.time()
+    if user_id not in login_attempts:
+        login_attempts[user_id] = {'count': 0, 'last_attempt': now}
+    
+    attempts = login_attempts[user_id]
+    if now - attempts['last_attempt'] > 300:  # Reset after 5 minutes
+        attempts['count'] = 0
+        attempts['last_attempt'] = now
+    
+    attempts['count'] += 1
+    if attempts['count'] > 5:  # Max 5 attempts in 5 minutes
+        return False, "Muitas tentativas de login. Tente novamente em 5 minutos."
+    login_attempts[user_id] = attempts
+    return True, ""
 
 @app.before_request
 def security_check():
     if request.endpoint not in ['login']:
-        if not check_referrer():
-            log_access(request.endpoint, "Invalid referrer")
+        if not check_referrer() or not check_user_agent():
+            log_access(request.endpoint, "Invalid referrer or user agent")
             return redirect('/')
-            return jsonify({"error": "503"}), 503
 
-        if not check_user_agent():
-            log_access(request.endpoint, "Invalid user agent")
-            return redirect('/')
-            return jsonify({"error": "503"}), 503
-
-        # Verifica a integridade da sessão
         is_valid, message = verify_session_integrity()
         if not is_valid:
-            log_access(request.endpoint, f"Suspicious activity detected: {message}")
+            log_access(request.endpoint, f"Suspicious activity: {message}")
             if 'user_id' in g:
-                return invalidate_session(g.user_id, request.cookies.get('auth_token'))
+                return invalidate_session(g.user_id)
             return redirect('/')
 
         token_cookie = request.cookies.get('auth_token')
         if not token_cookie:
-            log_access(request.endpoint, "Unauthenticated user.")
+            log_access(request.endpoint, "Unauthenticated user")
             return redirect('/')
 
         try:
             encrypted_token = base64.b64decode(token_cookie)
             token = decrypt_with_rsa(encrypted_token)
             user_id = decode_token(token)
+            if user_id in [None, "expired"]:
+                flash('Sua sessão expirou. Faça login novamente.', 'error')
+                resp = redirect('/')
+                resp.set_cookie('auth_token', '', expires=0)
+                return resp
+
+            users = load_data('users.json')
+            if user_id not in users:
+                flash('Sessão inválida. Faça login novamente.', 'error')
+                return redirect('/')
+            
+            g.user_id = user_id
         except Exception as e:
             log_access(request.endpoint, f"Error decoding token: {str(e)}")
             flash('Dados de sessão inválidos. Faça login novamente.', 'error')
             return redirect('/')
 
-        if user_id in [None, "expired"]:
-            flash('Sua sessão expirou. Faça login novamente.', 'error')
-            resp = redirect('/')
-            resp.set_cookie('auth_token', '', expires=0)
-            return resp
-
-        users = load_data('users.json')
-        if user_id not in users:
-            flash('Sessão inválida. Faça login novamente.', 'error')
-            return redirect('/')
-
-        # Verifica o uso do cookie
-        is_cookie_valid, cookie_message = verify_cookie_usage(token_cookie, user_id)
-        if not is_cookie_valid:
-            log_access(request.endpoint, cookie_message)
-            return invalidate_session(user_id, token_cookie)
-
-        # Check for VPN/Proxy
-        try:
-            response = requests.get('https://api.ipify.org?format=json')
-            response.raise_for_status()
-            ip_data = response.json()
-            ip_address = ip_data['ip']
-            vpn_check = requests.get(f'https://ipinfo.io/{ip_address}/json?token=9db60cdc38ce1f')
-            vpn_check.raise_for_status()
-            vpn_data = vpn_check.json()
-            if 'bogon' in vpn_data and vpn_data['bogon']:
-                log_access(request.endpoint, "VPN/Proxy detected for IP: " + ip_address)
-                return make_response('Acesso não permitido através de VPN ou Proxy.', 403)
-        except requests.RequestException as e:
-            log_access(request.endpoint, f"Error checking VPN/Proxy: {str(e)}")
-
-        g.user_id = user_id
-    log_access(request.endpoint)
-
-def reset_all():
+def reset_session_cookies():
     if 'user_id' in g:
         token = generate_token(g.user_id)
         byte_cookie = generate_byte_cookie()
         hex_cookie = byte_to_hex(byte_cookie)
         encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
-        token_cookie = base64.b64encode(encrypted_token).decode('ascii')
         
         resp = make_response()
-        resp.set_cookie('auth_token', token_cookie, httponly=True, secure=True, samesite='Strict')
+        resp.set_cookie('auth_token', base64.b64encode(encrypted_token).decode('ascii'), httponly=True, secure=True, samesite='Strict')
         resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
         resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
         
@@ -430,11 +283,9 @@ def reset_all():
         session['user_key'], _ = generate_keys()
         session['session_id'] = secrets.token_hex(16)
         session['user_id'] = g.user_id
-        cookie_usage[token_cookie] = {'user_id': g.user_id, 'count': 0}  # Inicializa contador
         
         return resp
-    else:
-        return jsonify({"error": "User not authenticated"}), 401
+    return jsonify({"error": "User not authenticated"}), 401
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -443,6 +294,12 @@ def login():
         password = request.form.get('password')
         users = load_data('users.json')
         user_agent = request.headers.get('User-Agent')
+
+        # Check login attempts
+        can_login, message = check_login_attempts(user)
+        if not can_login:
+            flash(message, 'error')
+            return render_template('login.html')
 
         if user in users and users[user]['password'] == password:
             expiration_date = datetime.strptime(users[user]['expiration'], '%Y-%m-%d')
@@ -457,51 +314,34 @@ def login():
                 byte_cookie = generate_byte_cookie()
                 hex_cookie = byte_to_hex(byte_cookie)
                 encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
-                token_cookie = base64.b64encode(encrypted_token).decode('ascii')
-                
-                cookie_usage[token_cookie] = {'user_id': user, 'count': 0}  # Inicializa contador
-                
-                def generate_custom_cookies():
-                    import secrets
-                    import time
-                    import base64
-                    cookies = {
-                        "JSESSIONID": secrets.token_urlsafe(16),
-                        f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
-                        f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
-                        "_ga": f"GA1.4.{secrets.token_hex(8)}.{int(time.time())}",
-                        f"_ga_{secrets.token_hex(4)}": f"GS1.1.{int(time.time())}.4.1.{int(time.time() + 3600)}.0.0.0",
-                        f"_gat_gtag_UA_{secrets.token_hex(4)}_1": "1",
-                        "_gid": f"GA.{secrets.randbelow(10)}.{secrets.choice('abcdefghijklmnopqrstuvwxyz')}.{secrets.token_hex(4)}",
-                        f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
-                        "Mabel": secrets.token_hex(8),
-                        f"TS{secrets.token_hex(4)}": secrets.token_hex(128),
-                        "Omega": base64.b64encode(secrets.token_bytes(32)).decode()
-                    }
-                    return cookies
-
                 custom_cookies = generate_custom_cookies()
                 
                 resp = redirect('/dashboard')
                 for key, value in custom_cookies.items():
                     resp.set_cookie(key, value, httponly=True, secure=True, samesite='Strict')
-                resp.set_cookie('auth_token', token_cookie, httponly=True, secure=True, samesite='Strict')
+                
+                resp.set_cookie('auth_token', base64.b64encode(encrypted_token).decode('ascii'), httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('byte_cookie', base64.b64encode(byte_cookie).decode('ascii'), httponly=True, secure=True, samesite='Strict')
                 resp.set_cookie('hex_cookie', hex_cookie, httponly=True, secure=True, samesite='Strict')
                 
+                # Device management logic: if 'devices' key is absent, allow unlimited devices
                 if 'devices' not in users[user]:
+                    # User supports unlimited devices, no restriction applied
                     save_data(users, 'users.json')
                 else:
-                    if users[user]['devices'] and user_agent != users[user]['devices'][0]:
+                    # User has device restriction
+                    if users[user]['devices'] and user_agent not in users[user]['devices']:
                         flash('Dispositivo não autorizado. Login recusado.', 'error')
                         return render_template('login.html')
                     else:
                         users[user]['devices'] = [user_agent]
                         save_data(users, 'users.json')
 
+                # Reset login attempts on successful login
+                login_attempts[user] = {'count': 0, 'last_attempt': time.time()}
                 return resp
             else:
-                flash('Usuário expirado. Contate Seu Vendedor Para Renovar seu Plano!', 'error')
+                flash('Usuário expirado. Contate seu vendedor para renovar seu plano!', 'error')
         else:
             flash('Usuário ou senha incorretos.', 'error')
     return render_template('login.html')
@@ -509,67 +349,45 @@ def login():
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     users = load_data('users.json')
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
-
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
 
-    if g.user_id in users:
-        expiration_date = datetime.strptime(users[g.user_id]['expiration'], '%Y-%m-%d')
-        if datetime.now() > expiration_date:
-            flash('Sua sessão expirou. Por favor, faça login novamente.', 'error')
-            resp = redirect('/')
-            resp.set_cookie('auth_token', '', expires=0)
-            return resp
+    if datetime.now() > datetime.strptime(users[g.user_id]['expiration'], '%Y-%m-%d'):
+        flash('Sua sessão expirou. Faça login novamente.', 'error')
+        resp = redirect('/')
+        resp.set_cookie('auth_token', '', expires=0)
+        return resp
 
     if request.method == 'POST':
         action = request.form.get('action')
         user = request.form.get('user')
         module = request.form.get('module')
 
-        if action == 'view_modules':
-            if user in users:
-                user_modules = users[user].get('modules', {})
-                role = users[user].get('role', 'user_semanal')
-                max_requests = {
-                    'user_semanal': 30,
-                    'user_mensal': 250,
-                    'user_anual': 500
-                }.get(role, 30)
-
-                if is_admin:
-                    return jsonify({
-                        "user": user,
-                        "modules": user_modules,
-                        "maxRequests": "Admin has unlimited access to all modules."
-                    }), 200
-                else:
-                    return jsonify({
-                        "user": user,
-                        "modules": {module: user_modules.get(module, 0)},
-                        "maxRequests": max_requests
-                    }), 200
-            else:
-                return jsonify({"error": "Parâmetros inválidos ou usuário não encontrado."}), 400
+        if action == 'view_modules' and user in users:
+            user_modules = users[user].get('modules', {})
+            role = users[user].get('role', 'user_semanal')
+            max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(role, 30)
+            if is_admin:
+                return jsonify({"user": user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
+            return jsonify({"user": user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
 
     content = render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, token=session.get('token'))
     if 'user_key' in session:
-        encrypted_content = encrypt_with_aes(content, session['user_key'])
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
-    
+
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
 def admin_panel():
     users = load_data('users.json')
-    notifications = load_notifications()
+    notifications = load_data('notifications.json')
+    user_id = g.user_id
 
-    user_id = g.user_id  # already set by secure_route
     if users.get(user_id, {}).get('role') != 'admin':
         return jsonify({"error": "Access denied"}), 403
 
-    # User-Agent Check
-    user_agent = request.headers.get('User-Agent', '')
-    if 'bot' in user_agent.lower() or 'spider' in user_agent.lower():
+    user_agent = request.headers.get('User-Agent', '').lower()
+    if 'bot' in user_agent or 'spider' in user_agent:
         return jsonify({"error": "Access denied"}), 403
 
     if request.method == 'POST':
@@ -578,37 +396,33 @@ def admin_panel():
         password = request.form.get('password', '')
         expiration = request.form.get('expiration', '')
         message = request.form.get('message', '')
-        role = request.form.get('role', 'user_semanal')  # Default to 'user_semanal'
+        role = request.form.get('role', 'user_semanal')
 
         if action == "add_user" and user_input and password and expiration:
             if user_input not in users:
                 token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
-                new_user = {
+                users[user_input] = {
                     'password': password,
                     'token': token,
                     'expiration': expiration,
                     'role': role,
-                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'visitas', 'teldual']}
+                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'visitas', 'teldual']},
+                    'devices': []  # Default to limited devices for new users
                 }
-                new_user['devices'] = []
-
-                users[user_input] = new_user
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
-            else:
-                return jsonify({'message': 'Usuário já existe. Insira outro usuário!', 'category': 'error'})
+            return jsonify({'message': 'Usuário já existe!', 'category': 'error'})
 
         elif action == "delete_user" and user_input and password:
             if user_input in users and users[user_input]['password'] == password:
                 del users[user_input]
                 save_data(users, 'users.json')
-                if g.user_id == user_input:  # Log out if the deleted user is the one logged in
-                    resp = make_response(jsonify({'message': 'Usuário e senha excluídos com sucesso! Você foi deslogado.', 'category': 'success'}))
+                if g.user_id == user_input:
+                    resp = make_response(jsonify({'message': 'Usuário excluído. Você foi deslogado.', 'category': 'success'}))
                     resp.set_cookie('auth_token', '', expires=0)
                     return resp
-                return jsonify({'message': 'Usuário e senha excluídos com sucesso!', 'category': 'success'})
-            else:
-                return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
+                return jsonify({'message': 'Usuário excluído com sucesso!', 'category': 'success'})
+            return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
 
         elif action == "view_users":
             return jsonify({'users': users})
@@ -616,38 +430,30 @@ def admin_panel():
         elif action == "send_message" and user_input and message:
             if user_input == 'all':
                 for user in users:
-                    if user != user_id:  
-                        notifications.setdefault(user, []).append({
-                            'message': message,
-                            'timestamp': datetime.now().isoformat()
-                        })
+                    if user != user_id:
+                        notifications.setdefault(user, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
                 save_data(notifications, 'notifications.json')
                 return jsonify({'message': 'Mensagem enviada para todos os usuários', 'category': 'success'})
-            else:
-                if user_input in users:
-                    notifications.setdefault(user_input, []).append({
-                        'message': message,
-                        'timestamp': datetime.now().isoformat()
-                    })
-                    save_data(notifications, 'notifications.json')
-                    return jsonify({'message': f'Mensagem enviada para {user_input}', 'category': 'success'})
-                else:
-                    return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
+            if user_input in users:
+                notifications.setdefault(user_input, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
+                save_data(notifications, 'notifications.json')
+                return jsonify({'message': f'Mensagem enviada para {user_input}', 'category': 'success'})
+            return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
 
         elif action == "reset_device" and user_input and password:
             if user_input in users and users[user_input]['password'] == password:
                 if 'devices' in users[user_input]:
                     users[user_input]['devices'] = []
-                save_data(users, 'users.json')
-                return jsonify({'message': 'Dispositivos do usuário resetados com sucesso!', 'category': 'success'})
-            else:
-                return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
+                    save_data(users, 'users.json')
+                return jsonify({'message': 'Dispositivos resetados com sucesso!', 'category': 'success'})
+            return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
 
     content = render_template('admin.html', users=users, token=session.get('token'))
     if 'user_key' in session:
-        encrypted_content = encrypt_with_aes(content, session['user_key'])
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
+
+
 
 @app.route('/logout')
 def logout():
