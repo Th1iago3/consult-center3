@@ -406,7 +406,7 @@ def admin_panel():
                     'token': token,
                     'expiration': expiration,
                     'role': role,
-                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'visitas', 'teldual']},
+                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff']},
                     'devices': []  # Default to limited devices for new users
                 }
                 save_data(users, 'users.json')
