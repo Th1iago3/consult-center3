@@ -1722,7 +1722,7 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-car"></i>
-        <h3 class="module-title">Consulta Veiculat (ESTADUAL)</h3>
+        <h3 class="module-title">Consulta Veicular (ESTADUAL)</h3>
         <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
         <div class="maintenance-label" style="display: block;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
@@ -1916,7 +1916,7 @@ body {
          data-status="ON"
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-network-wired"></i>
+        <i class="module-icon fas fa-thumbs-up"></i>
         <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
         <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
