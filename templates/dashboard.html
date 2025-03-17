@@ -1182,8 +1182,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar - CPF (DATASUS)</h3>
-        <p class="module-description">Consulte Dados COMPLETOS de qualquer CPF. CPF & NOME & PARENTES & VIZINHOS & OUTROS.</p>
+        <h3 class="module-title">Localizar CPF (DATASUS)</h3>
+        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1220,8 +1220,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar - CPF (C&C Plus)</h3>
-        <p class="module-description">Consulte Dados COMPLETOS de qualquer CPF. CPF & NOME & PARENTES & VIZINHOS & OUTROS.</p>
+        <h3 class="module-title">Localizar CPF (C&C Plus)</h3>
+        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1258,8 +1258,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar - CPF (DATA)</h3>
-        <p class="module-description">Consulte Dados COMPLETOS de qualquer CPF. CPF & NOME & PARENTES & VIZINHOS & OUTROS.</p>
+        <h3 class="module-title">Localizar CPF (DATA)</h3>
+        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1296,8 +1296,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
         <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar - CPF (DATAPRIME)</h3>
-        <p class="module-description">Consulte Dados COMPLETOS de qualquer CPF. CPF & NOME & PARENTES & VIZINHOS & OUTROS.</p>
+        <h3 class="module-title">Localizar CPF (DATAPRIME)</h3>
+        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
             <div class="request-bar-wrapper">
@@ -1334,8 +1334,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
         <i class="module-icon fas fa-syringe"></i>
-        <h3 class="module-title">Localizar - VACINAS (SIPNI)</h3>
-        <p class="module-description">Consulta de DADOS de VACINAS através do CPF.</p>
+        <h3 class="module-title">Consulta Vacina (SIPNI)</h3>
+        <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
         <div class="maintenance-label" style="display: block;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
             <div class="request-bar-wrapper">
@@ -1372,8 +1372,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
         <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar - CPF (SISREGII)</h3>
-        <p class="module-description">Consulte Dados COMPLETOS de qualquer CPF. CPF & NOME & PARENTES & VIZINHOS & OUTROS.</p>
+        <h3 class="module-title">Localizar CPF (SISREGII)</h3>
+        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
         <div class="maintenance-label" style="display: block;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
             <div class="request-bar-wrapper">
@@ -1414,8 +1414,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-user"></i>
-        <h3 class="module-title">Localizar - NOME (C&C Plus)</h3>
-        <p class="module-description">Consulte Dados Cadastrais de qualquer NOME. CPF & TELEFONE & OUTROS.</p>
+        <h3 class="module-title">Localizar Nome (C&C Plus)</h3>
+        <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
         <div class="maintenance-label" style="display: block;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1452,8 +1452,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-user"></i>
-        <h3 class="module-title">Localizar - NOME (DATA)</h3>
-        <p class="module-description">Consulte Dados Cadastrais de qualquer NOME. CPF & TELEFONE & OUTROS.</p>
+        <h3 class="module-title">Localizar Nome (DATA)</h3>
+        <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1490,8 +1490,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
         <i class="module-icon fas fa-user"></i>
-        <h3 class="module-title">Localizar - NOME (DATAPRIME)</h3>
-        <p class="module-description">Consulte Dados Cadastrais de qualquer NOME. CPF & TELEFONE & OUTROS.</p>
+        <h3 class="module-title">Localizar Nome (DATAPRIME)</h3>
+        <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
             <div class="request-bar-wrapper">
@@ -1528,8 +1528,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tel', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-phone"></i>
-        <h3 class="module-title">Localizar - TELEFONE (DATA)</h3>
-        <p class="module-description">Consulte Dados Cadastrais de qualquer TELEFONE. CPF & NOME & LOGRADOURO & OUTROS.</p>
+        <h3 class="module-title">Consulta TELEFONE (DATA)</h3>
+        <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
         <div class="maintenance-label" style="display: block;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tel', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1566,8 +1566,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tellv', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-phone"></i>
-        <h3 class="module-title">Localizar - TELEFONE (C&C Plus)</h3>
-        <p class="module-description">Consulte Dados Cadastrais de qualquer TELEFONE. CPF & NOME & LOGRADOURO & OUTROS.</p>
+        <h3 class="module-title">Consulta TELEFONE (C&C Plus)</h3>
+        <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('telLv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1604,8 +1604,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('teldual', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-phone"></i>
-        <h3 class="module-title">Localizar - TELEFONE (NACIONAL)</h3>
-        <p class="module-description">Consulte Dados Cadastrais de qualquer TELEFONE. CPF & NOME & LOGRADOURO & OUTROS.</p>
+        <h3 class="module-title">Consulta TELEFONE (NACIONAL)</h3>
+        <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('teldual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1642,8 +1642,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-calendar-days"></i>
-        <h3 class="module-title">Localizar - DATA de NASCIMENTO (C&C Plus)</h3>
-        <p class="module-description">Consulte os Dados de algum nome em específico, Usando o NOME e a DATA de Nascimento.</p>
+        <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
+        <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1684,8 +1684,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placa', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-car"></i>
-        <h3 class="module-title">Localizar - PLACA (NACIONAL)</h3>
-        <p class="module-description">Consulte Dados Veiculares com a PLACA. CPF & NOME & OUTROS.</p>
+        <h3 class="module-title">Consulta Veicular (NACIONAL)</h3>
+        <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placa', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1722,8 +1722,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-car"></i>
-        <h3 class="module-title">Localizar - PLACA (ESTADUAL)</h3>
-        <p class="module-description">Consulte Dados Veiculares com a PLACA. CPF & NOME & OUTROS.</p>
+        <h3 class="module-title">Consulta Veiculat (ESTADUAL)</h3>
+        <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
         <div class="maintenance-label" style="display: block;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1760,8 +1760,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-camera"></i>
-        <h3 class="module-title">Localizar - Foto do Registro Geral (C&C Plus)</h3>
-        <p class="module-description">Consulte Dados Cadastrais e a FOTO do RG de qualquer pessoa, Através do CPF.</p>
+        <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
+        <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1798,7 +1798,7 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fab fa-pix"></i>
-        <h3 class="module-title">Localizar - PIX (NACIONAL)</h3>
+        <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
         <p class="module-description">Em Andamento...</p>
         <div class="maintenance-label" style="display: block;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
@@ -1836,8 +1836,8 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-car"></i>
-        <h3 class="module-title">Localizar - PLACA (C&C Plus)</h3>
-        <p class="module-description">Consulte Dados Veiculares com a PLACA. CPF & NOME & OUTROS.</p>
+        <h3 class="module-title">Consulta Veicular (C&C Plus)</h3>
+        <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placalv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
@@ -1878,8 +1878,46 @@ body {
          data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}"
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-network-wired"></i>
-        <h3 class="module-title">Localizar - IP (C&C Plus)</h3>
-        <p class="module-description">Descubra a localização de qualquer Endereço IP.</p>
+        <h3 class="module-title">Localizar IP (C&C Plus)</h3>
+        <p class="module-description">Consulte a localização geologica de qualquer Endereço IP.</p>
+        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+            <div class="request-bar-wrapper">
+                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+            </div>
+            <p class="request-count">{{ usage }}/{{ limit }}</p>
+            {% if usage >= limit %}
+                <div class="status-dot bolinha-vermelha"></div>
+                {% set _ = module_card_class.append('disabled') %}
+                <div class="module-message alert active">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>SEM LIMITES!</span>
+                </div>
+            {% elif usage >= limit * 0.9 %}
+                <div class="status-dot bolinha-amarela"></div>
+                <div class="module-message warn active">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>QUASE LÁ!</span>
+                </div>
+            {% else %}
+                <div class="status-dot bolinha-verde"></div>
+                <div class="module-message success active">
+                    <i class="fas fa-check-circle"></i>
+                    <span>PRONTO PRA USAR!</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+         onclick="checkModuleStatus('likeff', '/modulos/likeff')" 
+         data-module-id="likeff"
+         data-status="ON"
+         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}"
+         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+        <i class="module-icon fas fa-network-wired"></i>
+        <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
+        <p class="module-description">Aumente os likes no seu perfil no freefire.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
