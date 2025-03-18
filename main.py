@@ -287,7 +287,7 @@ def check_login_attempts(user_id):
 
 @app.before_request
 def security_check():
-    if request.endpoint not in ['login']:
+    if request.endpoint not in ['login', '@A30']:
         if not check_referrer() or not check_user_agent():
             log_access(request.endpoint, "Invalid referrer or user agent")
             return redirect('/')
@@ -514,7 +514,9 @@ def admin_panel():
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
 
-
+@app.route('/@A30')
+def creditos():
+    return "@enfurecido - {'0x106a90000'}"
 
 @app.route('/logout')
 def logout():
