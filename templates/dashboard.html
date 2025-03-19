@@ -1551,77 +1551,69 @@ body {
             </div>
         </div>
 
-        <div class="modules-grid" id="page4" style="display: none;">
-    {% set module_card_class = [] %}
-    <!-- Página 4: Consulta IP e Likes -->
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('ip', '/modulos/ip')" 
-         data-module-id="ip"
-         data-status="ON"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-globe"></i>
-        <h3 class="module-title">Localizar IP (C&C Plus)</h3>
-        <p class="module-description">Consulte a localização geológica de qualquer Endereço IP.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                <div class="modules-grid" id="page4" style="display: none;">
+            {% set module_card_class = [] %}
+            <!-- Página 4: Consulta IP e Likes -->
+            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+                 onclick="checkModuleStatus('ip', '/modulos/ip')" 
+                 data-module-id="ip"
+                 data-status="ON"
+                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}"
+                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+                <i class="module-icon fas fa-globe"></i>
+                <h3 class="module-title">Localizar IP (C&C Plus)</h3>
+                <p class="module-description">Consulte a localização geológica de qualquer Endereço IP.</p>
+                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                    <div class="request-bar-wrapper">
+                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                    </div>
+                    <p class="request-count">{{ usage }}/{{ limit }}</p>
+                    <div class="status-dot" id="status-dot-ip"></div>
+                    <div class="module-message" id="message-ip"></div>
+                {% endwith %}
             </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-ip"></div>
-            <div class="module-message" id="message-ip"></div>
-        {% endwith %}
-    </div>
 
-    {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('likeff', '/modulos/likeff')" 
-         data-module-id="likeff"
-         data-status="ON"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-thumbs-up"></i>
-        <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
-        <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+            {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
+            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+                 onclick="checkModuleStatus('likeff', '/modulos/likeff')" 
+                 data-module-id="likeff"
+                 data-status="ON"
+                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}"
+                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+                <i class="module-icon fas fa-thumbs-up"></i>
+                <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
+                <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
+                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                    <div class="request-bar-wrapper">
+                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                    </div>
+                    <p class="request-count">{{ usage }}/{{ limit }}</p>
+                    <div class="status-dot" id="status-dot-likeff"></div>
+                    <div class="module-message" id="message-likeff"></div>
+                {% endwith %}
             </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-likeff"></div>
-            <div class="module-message" id="message-likeff"></div>
-        {% endwith %}
-    </div>
-    {% endif %}
-</div>
+            {% endif %}
+        </div>
 
         <!-- Pagination -->
         <div class="pagination">
-            <button class="page-arrow left-arrow" onclick="previousPage()">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="page-dot active" onclick="changePage(1)"></div>
-            <div class="page-dot" onclick="changePage(2)"></div>
-            <div class="page-dot" onclick="changePage(3)"></div>
-            <div class="page-dot" onclick="changePage(4)"></div>
-            <button class="page-arrow right-arrow" onclick="nextPage()">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+            <button class="page-arrow" onclick="prevPage()" disabled><i class="fas fa-chevron-left"></i></button>
+            <div class="page-dot active" onclick="goToPage(1)"></div>
+            <div class="page-dot" onclick="goToPage(2)"></div>
+            <div class="page-dot" onclick="goToPage(3)"></div>
+            <div class="page-dot" onclick="goToPage(4)"></div>
+            <button class="page-arrow" onclick="nextPage()"><i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
 
     <script>
         // Loading Screen
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadingScreen = document.getElementById('loadingScreen');
+        window.addEventListener('load', () => {
             setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none'; // Remove completamente após a transição
-                }, 800); // Tempo igual à duração da transição de opacidade
-            }, 5000);
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 3500);
         });
 
         // Sidebar Toggle
@@ -1638,9 +1630,7 @@ body {
             const overlay = document.getElementById('overlay');
             profileCard.classList.toggle('active');
             overlay.classList.toggle('active');
-            if (profileCard.classList.contains('active')) {
-                document.getElementById('notificationPanel').classList.remove('active');
-            }
+            document.getElementById('notificationPanel').classList.remove('active');
         }
 
         // Notification Toggle
@@ -1649,12 +1639,10 @@ body {
             const overlay = document.getElementById('overlay');
             notificationPanel.classList.toggle('active');
             overlay.classList.toggle('active');
-            if (notificationPanel.classList.contains('active')) {
-                document.getElementById('profileCard').classList.remove('active');
-            }
+            document.getElementById('profileCard').classList.remove('active');
         }
 
-        // Close All Panels
+        // Close Panels
         function closeAllPanels() {
             document.getElementById('profileCard').classList.remove('active');
             document.getElementById('notificationPanel').classList.remove('active');
@@ -1678,11 +1666,12 @@ body {
             event.preventDefault();
             Swal.fire({
                 title: 'Deseja sair?',
-                text: 'Você será desconectado da sua sessão.',
+                text: 'Você será desconectado da sessão.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Sair',
-                cancelButtonText: 'Atrás',
+                confirmButtonText: 'Sim, sair',
+                cancelButtonText: 'Cancelar',
+                position: 'top-end',
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = '/logout';
@@ -1696,7 +1685,7 @@ body {
         }
 
         // Pagination
-        let currentPage = 1;
+        let currentPage = sessionStorage.getItem('currentPage') ? parseInt(sessionStorage.getItem('currentPage')) : 1;
         const totalPages = 4;
 
         function updatePagination() {
@@ -1705,11 +1694,15 @@ body {
             document.querySelectorAll('.page-dot').forEach((dot, index) => {
                 dot.classList.toggle('active', index + 1 === currentPage);
             });
-            document.querySelector('.left-arrow').disabled = currentPage === 1;
-            document.querySelector('.right-arrow').disabled = currentPage === totalPages;
+            document.querySelector('.page-arrow:first-child').disabled = currentPage === 1;
+            document.querySelector('.page-arrow:last-child').disabled = currentPage === totalPages;
+            sessionStorage.setItem('currentPage', currentPage);
+            if (!document.getElementById('search-input').value) {
+                searchModules(); // Reset search to show only current page modules when empty
+            }
         }
 
-        function changePage(page) {
+        function goToPage(page) {
             currentPage = page;
             updatePagination();
         }
@@ -1721,81 +1714,115 @@ body {
             }
         }
 
-        function previousPage() {
+        function prevPage() {
             if (currentPage > 1) {
                 currentPage--;
                 updatePagination();
             }
         }
 
-        // Search Modules
-        function searchModules() {
-            const input = document.getElementById('search-input').value.toLowerCase();
-            const moduleCards = document.querySelectorAll('.module-card');
+        // Module Status Check
+        function checkModuleStatus(moduleId, url) {
+            const module = document.querySelector(`[data-module-id="${moduleId}"]`);
+            const status = module.getAttribute('data-status');
+            const usage = parseInt(module.getAttribute('data-usage'));
+            const limit = parseInt(module.getAttribute('data-limit'));
+            const messageElement = document.getElementById(`message-${moduleId}`);
 
-            moduleCards.forEach(card => {
-                const title = card.querySelector('.module-title').textContent.toLowerCase();
-                const description = card.querySelector('.module-description').textContent.toLowerCase();
-                card.style.display = (title.includes(input) || description.includes(input)) ? '' : 'none';
+            if (module.classList.contains('maintenance')) {
+                Swal.fire({
+                    title: 'Em Manutenção',
+                    text: 'Este módulo está em manutenção no momento.',
+                    icon: 'warning',
+                    position: 'top-end',
+                });
+                return;
+            }
+
+            if (status === 'OFF') {
+                Swal.fire({
+                    title: 'Módulo Desativado',
+                    text: 'Este módulo está temporariamente desativado.',
+                    icon: 'error',
+                    position: 'top-end',
+                });
+                return;
+            }
+
+            if (usage >= limit) {
+                Swal.fire({
+                    title: 'Limite Atingido',
+                    text: 'Você atingiu o limite de uso deste módulo.',
+                    icon: 'warning',
+                    position: 'top-end',
+                });
+                return;
+            }
+
+            navigateTo(url);
+        }
+
+        // Update Module Status Dots
+        function updateModuleStatus() {
+            document.querySelectorAll('.module-card').forEach(module => {
+                const moduleId = module.getAttribute('data-module-id');
+                const status = module.getAttribute('data-status');
+                const usage = parseInt(module.getAttribute('data-usage'));
+                const limit = parseInt(module.getAttribute('data-limit'));
+                const dot = document.getElementById(`status-dot-${moduleId}`);
+                const messageElement = document.getElementById(`message-${moduleId}`);
+
+                if (status === 'ON') {
+                    dot.classList.remove('bolinha-vermelha', 'bolinha-amarela');
+                    dot.classList.add('bolinha-verde');
+                    messageElement.classList.remove('active', 'warn', 'alert', 'success');
+                    if (usage >= limit) {
+                        messageElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Limite Atingido';
+                        messageElement.classList.add('active', 'warn');
+                    }
+                } else {
+                    dot.classList.remove('bolinha-verde', 'bolinha-amarela');
+                    dot.classList.add('bolinha-vermelha');
+                    messageElement.innerHTML = '<i class="fas fa-times-circle"></i> Desativado';
+                    messageElement.classList.add('active', 'alert');
+                }
             });
         }
 
-        // Module Status Check
-        function checkModuleStatus(moduleId, url) {
-            const moduleCard = document.querySelector(`[data-module-id="${moduleId}"]`);
-            const status = moduleCard.dataset.status;
-            const usage = parseInt(moduleCard.dataset.usage);
-            const limit = parseInt(moduleCard.dataset.limit);
-            const statusDot = document.getElementById(`status-dot-${moduleId}`);
-            const message = document.getElementById(`message-${moduleId}`);
-            const maintenanceLabel = moduleCard.querySelector('.maintenance-label');
+        // Search Modules
+        function searchModules() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const allModules = document.querySelectorAll('.module-card');
 
-            // Update status dot
-            if (status === 'ON') {
-                statusDot.className = 'status-dot bolinha-verde';
-            } else if (status === 'OFF') {
-                statusDot.className = 'status-dot bolinha-vermelha';
-            } else {
-                statusDot.className = 'status-dot bolinha-amarela';
-            }
+            allModules.forEach(module => {
+                const title = module.querySelector('.module-title').textContent.toLowerCase();
+                const description = module.querySelector('.module-description').textContent.toLowerCase();
+                const modulePage = module.closest('.modules-grid').id;
+                const isCurrentPage = modulePage === `page${currentPage}`;
 
-            // Check conditions
-            if (moduleCard.classList.contains('disabled')) {
-                message.innerHTML = '<i class="fas fa-ban"></i> MÓDULO DESATIVADO';
-                message.className = 'module-message alert active';
-            } else if (maintenanceLabel.style.display === 'block') {
-                message.innerHTML = '<i class="fas fa-tools"></i> EM MANUTENÇÃO';
-                message.className = 'module-message warn active';
-            } else if (status === 'OFF') {
-                message.innerHTML = '<i class="fas fa-exclamation-triangle"></i> EM MANUTENÇÃO';
-                message.className = 'module-message alert active';
-            } else if (usage >= limit) {
-                message.innerHTML = '<i class="fas fa-exclamation-circle"></i> LIMITE ATINGIDO';
-                message.className = 'module-message warn active';
-            } else {
-                message.className = 'module-message';
-                window.location.href = url;
-            }
+                if (searchInput === '') {
+                    // Quando o campo de busca está vazio, mostrar apenas os módulos da página atual
+                    module.style.display = isCurrentPage ? 'flex' : 'none';
+                } else {
+                    // Quando há texto na busca, pesquisar em todas as páginas
+                    const matchesSearch = title.includes(searchInput) || description.includes(searchInput);
+                    module.style.display = matchesSearch ? 'flex' : 'none';
+                }
+            });
 
-            setTimeout(() => {
-                message.className = 'module-message';
-            }, 3000);
+            // Se houver texto na busca, ocultar a paginação; caso contrário, exibi-la
+            document.querySelector('.pagination').style.display = searchInput ? 'none' : 'flex';
         }
 
-        // Initialize Pagination
-        updatePagination();
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePagination();
+            updateModuleStatus();
 
-        // Initialize Module Status
-        document.querySelectorAll('.module-card').forEach(card => {
-            const moduleId = card.dataset.moduleId;
-            const status = card.dataset.status;
-            const statusDot = document.getElementById(`status-dot-${moduleId}`);
-            if (status === 'ON') {
-                statusDot.className = 'status-dot bolinha-verde';
-            } else if (status === 'OFF') {
-                statusDot.className = 'status-dot bolinha-vermelha';
-            } else {
-                statusDot.className = 'status-dot bolinha-amarela';
+            // Verifica se há notificações e ajusta a visibilidade do badge
+            const notificationCount = parseInt(document.getElementById('notificationCount').textContent);
+            if (notificationCount === 0) {
+                document.getElementById('notificationCount').style.display = 'none';
             }
         });
     </script>
