@@ -35,6 +35,28 @@ colorama.init()
 
 # Rate limiting storage (in-memory for simplicity)
 login_attempts = {}
+module_status = {
+    'cpfdata': 'ON',
+    'cpflv': 'ON',
+    'cpf': 'ON',
+    'cpf2': 'ON',
+    'vacinas': 'OFF',
+    'cpf3': 'OFF',
+    'nomelv': 'OFF',
+    'nome': 'ON',
+    'nome2': 'ON',
+    'tel': 'OFF',
+    'telLv': 'ON',
+    'teldual': 'ON',
+    'datanome': 'ON',
+    'placa': 'ON',
+    'placaestadual': 'OFF',
+    'fotor': 'ON',
+    'pix': 'OFF',
+    'placalv': 'ON',
+    'ip': 'ON',
+    'likeff': 'ON'
+}
 
 # Encryption Functions
 def encrypt_with_rsa(data, public_key):
@@ -481,7 +503,7 @@ def dashboard():
                 return jsonify({"user": user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
             return jsonify({"user": user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
 
-    content = render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, token=session.get('token'))
+    content = render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, module_status=module_status, token=session.get('token'))
     if 'user_key' in session:
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
@@ -544,10 +566,12 @@ def admin_panel():
                     if user != user_id:
                         notifications.setdefault(user, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
                 save_data(notifications, 'notifications.json')
+                socketio.emit('notification', {'user': 'all', 'message': message}, broadcast=True)
                 return jsonify({'message': 'Mensagem enviada para todos os usuários', 'category': 'success'})
             if user_input in users:
                 notifications.setdefault(user_input, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
                 save_data(notifications, 'notifications.json')
+                socketio.emit('notification', {'user': user_input, 'message': message}, broadcast=True)
                 return jsonify({'message': f'Mensagem enviada para {user_input}', 'category': 'success'})
             return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
 
@@ -560,15 +584,17 @@ def admin_panel():
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
 
         elif action == "toggle_module" and module and status:
-            success, message = update_module_status_in_html(module, status)
-            if success:
-                return jsonify({'success': True, 'message': message})
-            return jsonify({'success': False, 'message': message})
+            if module in modules_state:
+                modules_state[module] = status
+                socketio.emit('module_update', {'moduleId': module, 'status': status}, broadcast=True)
+                return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
+            return jsonify({'success': False, 'message': 'Módulo não encontrado'})
 
-    content = render_template('admin.html', users=users, token=session.get('token'))
+    content = render_template('admin.html', users=users, token=session.get('token'), modules_state=modules_state)
     if 'user_key' in session:
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
+    
     
 
 @app.route('/@A30')
