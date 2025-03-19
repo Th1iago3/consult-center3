@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response, session
+from flask_socketio import SocketIO, emit
 import json
 import os
 import secrets
@@ -348,6 +349,44 @@ def reset_session_cookies():
         return resp
     return jsonify({"error": "User not authenticated"}), 401
 
+def update_module_status_in_html(module_id, new_status):
+    dashboard_path = os.path.join(app.template_folder, 'dashboard.html')
+    
+    try:
+        with open(dashboard_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        module_found = False
+        status_line_idx = -1
+        for i, line in enumerate(lines):
+            if f'data-module="{module_id}"' in line:
+                module_found = True
+                for j in range(i, -1, -1):
+                    if 'data-status="' in lines[j]:
+                        status_line_idx = j
+                        break
+                if status_line_idx != -1:
+                    break
+
+        if not module_found or status_line_idx == -1:
+            return False, f"Módulo {module_id} ou data-status não encontrado no dashboard.html"
+
+        current_line = lines[status_line_idx]
+        new_line = re.sub(r'data-status="[^"]*"', f'data-status="{new_status}"', current_line)
+        lines[status_line_idx] = new_line
+
+        with open(dashboard_path, 'w', encoding='utf-8') as file:
+            file.writelines(lines)
+        
+        log_access("/i/settings/admin", f"Module {module_id} updated to {new_status} in dashboard.html")
+        # Enviar atualização via WebSocket para todos os clientes
+        socketio.emit('module_update', {'moduleId': module_id, 'status': new_status}, broadcast=True)
+        return True, f"Módulo {module_id} atualizado para {new_status}"
+
+    except Exception as e:
+        return False, f"Erro ao atualizar dashboard.html: {str(e)}"
+        
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -458,6 +497,8 @@ def admin_panel():
         expiration = request.form.get('expiration', '')
         message = request.form.get('message', '')
         role = request.form.get('role', 'user_semanal')
+        module = request.form.get('module', '')
+        status = request.form.get('status', '')
 
         if action == "add_user" and user_input and password and expiration:
             if user_input not in users:
@@ -468,7 +509,7 @@ def admin_panel():
                     'expiration': expiration,
                     'role': role,
                     'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff']},
-                    'devices': []  # Default to limited devices for new users
+                    'devices': []
                 }
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
@@ -509,10 +550,17 @@ def admin_panel():
                 return jsonify({'message': 'Dispositivos resetados com sucesso!', 'category': 'success'})
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
 
+        elif action == "toggle_module" and module and status:
+            success, message = update_module_status_in_html(module, status)
+            if success:
+                return jsonify({'success': True, 'message': message})
+            return jsonify({'success': False, 'message': message})
+
     content = render_template('admin.html', users=users, token=session.get('token'))
     if 'user_key' in session:
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
+    
 
 @app.route('/@A30')
 def creditos():
