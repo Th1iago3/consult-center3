@@ -7,3 +7,4 @@ waitress
 httpx
 asyncio
 Flask-WTF
+Flask-SocketIO
