@@ -356,35 +356,44 @@ def update_module_status_in_html(module_id, new_status):
         with open(dashboard_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
 
+        # Procurar o módulo correspondente
         module_found = False
         status_line_idx = -1
         for i, line in enumerate(lines):
-            if f'data-module="{module_id}"' in line:
+            if f'data-module-id="{module_id}"' in line:
                 module_found = True
-                for j in range(i, -1, -1):
-                    if 'data-status="' in lines[j]:
-                        status_line_idx = j
-                        break
-                if status_line_idx != -1:
-                    break
+                # O data-status está na próxima linha ou na mesma linha
+                if 'data-status="' in line:
+                    status_line_idx = i
+                else:
+                    # Procurar nas próximas linhas
+                    for j in range(i + 1, len(lines)):
+                        if 'data-status="' in lines[j]:
+                            status_line_idx = j
+                            break
+                break
 
-        if not module_found or status_line_idx == -1:
-            return False, f"Módulo {module_id} ou data-status não encontrado no dashboard.html"
+        if not module_found:
+            return False, f"Módulo {module_id} não encontrado em dashboard.html"
+        if status_line_idx == -1:
+            return False, f"Atributo data-status não encontrado para o módulo {module_id} em dashboard.html"
 
+        # Atualizar o data-status
         current_line = lines[status_line_idx]
         new_line = re.sub(r'data-status="[^"]*"', f'data-status="{new_status}"', current_line)
         lines[status_line_idx] = new_line
 
+        # Salvar o arquivo modificado
         with open(dashboard_path, 'w', encoding='utf-8') as file:
             file.writelines(lines)
         
+        # Assumindo que log_access é uma função definida em outro lugar
         log_access("/i/settings/admin", f"Module {module_id} updated to {new_status} in dashboard.html")
-        # Enviar atualização via WebSocket para todos os clientes
-        socketio.emit('module_update', {'moduleId': module_id, 'status': new_status}, broadcast=True)
         return True, f"Módulo {module_id} atualizado para {new_status}"
 
     except Exception as e:
         return False, f"Erro ao atualizar dashboard.html: {str(e)}"
+        
         
 
 @app.route('/', methods=['GET', 'POST'])
