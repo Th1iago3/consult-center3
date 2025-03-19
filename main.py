@@ -520,12 +520,10 @@ def admin_panel():
                     if user != user_id:
                         notifications.setdefault(user, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
                 save_data(notifications, 'notifications.json')
-                socketio.emit('notification', {'user': 'all', 'message': message}, broadcast=True)
                 return jsonify({'message': 'Mensagem enviada para todos os usuários', 'category': 'success'})
             if user_input in users:
                 notifications.setdefault(user_input, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
                 save_data(notifications, 'notifications.json')
-                socketio.emit('notification', {'user': user_input, 'message': message}, broadcast=True)
                 return jsonify({'message': f'Mensagem enviada para {user_input}', 'category': 'success'})
             return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
 
@@ -538,9 +536,8 @@ def admin_panel():
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
 
         elif action == "toggle_module" and module and status:
-            if module in modules_state:
-                modules_state[module] = status
-                socketio.emit('module_update', {'moduleId': module, 'status': status}, broadcast=True)
+            if module in module_status:
+                module_status[module] = status
                 return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
             return jsonify({'success': False, 'message': 'Módulo não encontrado'})
 
