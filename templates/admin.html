@@ -305,39 +305,20 @@
 
         /* Lista de Usuários */
         #usersList {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            max-width: 600px;
-            width: 90%;
-            max-height: 70vh;
+            max-height: 300px;
             overflow-y: auto;
-            margin-left: 40px;
-            margin-top: 20px;
+            margin-top: 16px;
             display: none;
             border: 1px solid var(--separator-color);
             border-radius: 8px;
-            padding: 15px;
-            background: var(--card-bg);
-            box-shadow: 0 8px 20px var(--shadow);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            transition: margin-left 0.6s var(--transition);
-        }
-
-        #sidebar.expanded ~ #usersList {
-            margin-left: 140px;
+            padding: 10px;
+            background: rgba(25, 30, 50, 0.95);
+            animation: fadeInUpList 0.5s ease-out forwards;
         }
 
         @keyframes fadeInUpList {
-            0% { opacity: 0; transform: translate(-50%, -50%) translateY(10px); }
-            100% { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
-        }
-
-        #usersList.active {
-            display: block;
-            animation: fadeInUpList 0.5s ease-out forwards;
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         .user-info {
@@ -502,15 +483,6 @@
             }
 
             #sidebar.expanded ~ .admin-container {
-                margin-left: 125px;
-            }
-
-            #usersList {
-                max-width: 90%;
-                margin-left: 35px;
-            }
-
-            #sidebar.expanded ~ #usersList {
                 margin-left: 125px;
             }
 
@@ -725,12 +697,10 @@
             </div>
             <button type="submit" class="button">Enviar</button>
         </form>
+        <div id="usersList"></div>
         <button class="button secondary" onclick="openMessageModal()">Enviar Mensagem</button>
         <a href="/dashboard" class="back-link">Voltar para o início</a>
     </div>
-
-    <!-- Lista de Usuários -->
-    <div id="usersList"></div>
 
     <!-- Modal de Enviar Mensagem -->
     <div id="messageModal" class="message-modal">
@@ -894,7 +864,7 @@
         function toggleUsersView() {
             const usersList = document.getElementById('usersList');
             if (usersVisible) {
-                usersList.classList.remove('active');
+                usersList.style.display = 'none';
                 usersVisible = false;
             } else {
                 fetch('/i/settings/admin', {
@@ -922,7 +892,7 @@
                             usersList.appendChild(userInfo);
                         }
                     });
-                    usersList.classList.add('active');
+                    usersList.style.display = 'block';
                     usersVisible = true;
                 })
                 .catch(error => {
