@@ -1611,11 +1611,22 @@ body {
     <script>
         // Loading Screen
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-            }, 3500);
-        });
+        const loadingScreen = document.getElementById('loadingScreen');
+        const isLoaded = sessionStorage.getItem('IsLoadedClientUA');
 
+        if (isLoaded !== 'true') {
+            // Mostrar a animação apenas se não estiver carregada na sessão
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                sessionStorage.setItem('IsLoadedClientUA', 'true'); // Marca como carregado
+            }, 5000); // Tempo da animação (3.5 segundos)
+        } else {
+            // Se já estiver carregado na sessão, ocultar imediatamente
+            loadingScreen.classList.add('hidden');
+        }
+    });
+
+    
         // Sidebar Toggle
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
