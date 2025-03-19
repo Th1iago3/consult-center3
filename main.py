@@ -55,8 +55,10 @@ module_status = {
     'pix': 'OFF',
     'placalv': 'ON',
     'ip': 'ON',
-    'likeff': 'ON'
+    'likeff': 'OFF'
 }
+
+chave = "csKktZWZdaCpLKEX8M367d6d418d35a2x"
 
 # Encryption Functions
 def encrypt_with_rsa(data, public_key):
@@ -587,7 +589,7 @@ def cpf():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=cpf&query={cpf}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=cpf&query={cpf}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -636,7 +638,7 @@ def cpf2():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=cpf1&query={cpf}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=cpf1&query={cpf}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -685,7 +687,7 @@ def cpfdata():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=cpfDatasus&query={cpf}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=cpfDatasus&query={cpf}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -762,7 +764,7 @@ def cpf3():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=cpfSipni&query={cpf}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=cpfSipni&query={cpf}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -812,7 +814,7 @@ def cpflv():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=cpfLv&query={cpf}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -866,7 +868,7 @@ def cpf5():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=vacinas&query={cpf}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=vacinas&query={cpf}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -910,7 +912,7 @@ def datanome():
             flash('Nome e data de nascimento são obrigatórios.', 'error')
         else:
             try:
-                url = f"https://api.bygrower.online/core/?token=lenda&base=nome&query={nome}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=nome&query={nome}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -970,7 +972,7 @@ def placalv():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=placaLv&query={placa}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=placaLv&query={placa}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1020,7 +1022,7 @@ def tellv():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=telefoneLv&query={telefone}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=telefoneLv&query={telefone}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1074,7 +1076,7 @@ def teldual():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=teldual&query={telefone}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=teldual&query={telefone}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1124,7 +1126,7 @@ def tel():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=telefone&query={tel}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=telefone&query={tel}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1174,7 +1176,7 @@ def placa():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=placa&query={placa}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=placa&query={placa}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1224,7 +1226,7 @@ def placaestadual():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=placaestadual&query={placa}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=placaestadual&query={placa}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1277,13 +1279,13 @@ def fotor():
                         return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
 
                 if selected_option == "fotoba":
-                    url = f"https://api.bygrower.online/core/?token=lenda&base=FotoBA&query={documento}"
+                    url = f"https://api.bygrower.online/core/?token={chave}&base=FotoBA&query={documento}"
                 elif selected_option == "fotorj":
-                    url = f"https://api.bygrower.online/core/?token=lenda&base=FotoRJ&query={documento}"
+                    url = f"https://api.bygrower.online/core/?token={chave}&base=FotoRJ&query={documento}"
                 elif selected_option == "fotomg":
                     url = f"http://82.29.58.211:2000/mg_cpf_foto/{documento}"
                 else:
-                    url = f"https://api.bygrower.online/core/?token=lenda&base=FotoSP&query={documento}"
+                    url = f"https://api.bygrower.online/core/?token={chave}&base=FotoSP&query={documento}"
 
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
@@ -1347,7 +1349,7 @@ def nomelv():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=nome&query={nome}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=nome&query={nome}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1397,7 +1399,7 @@ def nome():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
-                url = f"https://api.bygrower.online/core/?token=lenda&base=nome&query={nome}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=nome&query={nome}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1506,7 +1508,7 @@ def nome2():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
-                url = f"https://api.bygrower.online/core/?token=gustta&base=nomeData&query={nome}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=nomeData&query={nome}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
