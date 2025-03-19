@@ -370,54 +370,8 @@ def reset_session_cookies():
         
         return resp
     return jsonify({"error": "User not authenticated"}), 401
-
-def update_module_status_in_html(module_id, new_status):
-    dashboard_path = os.path.join(app.template_folder, 'dashboard.html')
-    
-    try:
-        with open(dashboard_path, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-
-        # Procurar o módulo correspondente
-        module_found = False
-        status_line_idx = -1
-        for i, line in enumerate(lines):
-            if f'data-module-id="{module_id}"' in line:
-                module_found = True
-                # O data-status está na próxima linha ou na mesma linha
-                if 'data-status="' in line:
-                    status_line_idx = i
-                else:
-                    # Procurar nas próximas linhas
-                    for j in range(i + 1, len(lines)):
-                        if 'data-status="' in lines[j]:
-                            status_line_idx = j
-                            break
-                break
-
-        if not module_found:
-            return False, f"Módulo {module_id} não encontrado em dashboard.html"
-        if status_line_idx == -1:
-            return False, f"Atributo data-status não encontrado para o módulo {module_id} em dashboard.html"
-
-        # Atualizar o data-status
-        current_line = lines[status_line_idx]
-        new_line = re.sub(r'data-status="[^"]*"', f'data-status="{new_status}"', current_line)
-        lines[status_line_idx] = new_line
-
-        # Salvar o arquivo modificado
-        with open(dashboard_path, 'w', encoding='utf-8') as file:
-            file.writelines(lines)
-        
-        # Assumindo que log_access é uma função definida em outro lugar
-        log_access("/i/settings/admin", f"Module {module_id} updated to {new_status} in dashboard.html")
-        return True, f"Módulo {module_id} atualizado para {new_status}"
-
-    except Exception as e:
-        return False, f"Erro ao atualizar dashboard.html: {str(e)}"
         
         
-
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -590,7 +544,7 @@ def admin_panel():
                 return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
             return jsonify({'success': False, 'message': 'Módulo não encontrado'})
 
-    content = render_template('admin.html', users=users, token=session.get('token'), modules_state=modules_state)
+    content = render_template('admin.html', users=users, token=session.get('token'), modules_state=module_status)
     if 'user_key' in session:
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
