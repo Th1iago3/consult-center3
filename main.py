@@ -595,7 +595,7 @@ def cpf():
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado', {}).get('status') in ['OK', 'success']:
+                if data.get('resultado', {}).get('status') in ['OK', 'success', 'core-operating.svc']:
                     if manage_module_usage(g.user_id, 'cpf'):
                         result = data['resultado']
                         reset_all()
