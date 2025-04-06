@@ -58,7 +58,7 @@ module_status = {
     'likeff': 'OFF'
 }
 
-chave = "csKktZWZdaCpLKEX8M367d6d418d35a2x"
+chave = "vmb1"
 
 # Encryption Functions
 def encrypt_with_rsa(data, public_key):
