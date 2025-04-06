@@ -478,23 +478,13 @@
         </div>
         <div class="profile-info">
             <p><strong>Nome:</strong> {{ result.nome }}</p>
-            <p><strong>CPF:</strong> {{ result.cpf }}</p>
+            <p><strong>CPF:</strong> {{ cpf }}</p>
             <p><strong>Sexo:</strong> {{ result.sexo }}</p>
-            <p><strong>Nascimento:</strong> {{ result.nascimento }}</p>
-            {% if result.filiacao %}
-            <p><strong>Filiação:</strong> Mãe: {{ result.filiacao.mae or 'Não informado' }}, Pai: {{ result.filiacao.pai or 'Não informado' }}</p>
-            {% endif %}
-            {% if result.poder_aquisitivo %}
-            <p><strong>Poder Aquisitivo:</strong> {{ result.poder_aquisitivo.poder_aquisitivo }} (Renda: {{ result.poder_aquisitivo.renda }})</p>
-            {% endif %}
-            {% if result.score %}
-            <p><strong>Score CSBA:</strong> {{ result.score.CSBA }} ({{ result.score.faixa_CSBA }})</p>
-            {% endif %}
-            {% if result.INTERESSES %}
-            <p><strong>Interesses:</strong> Celular Pré-pago: {{ result.INTERESSES.celular_pre_pago }}, Transporte Público: {{ result.INTERESSES.transporte_publico }}, Jogos Online: {{ result.INTERESSES.jogos_online }}</p>
-            {% endif %}
+            <p><strong>Nascimento:</strong> {{ result.data_nascimento }}</p>
+            <p><strong>Filiação:</strong> Mãe: {{ result.nome_mae or 'Não informado' }}</p>
+            <p><strong>Nacionalidade:</strong> {{ result.nacionalidade }}</p>
+            
         </div>
-        {% endif %}
     </div>
 
     <script>
