@@ -589,7 +589,7 @@ def cpf():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=cpf&query={cpf}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=cpfSimples&query={cpf}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
