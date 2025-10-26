@@ -40,7 +40,7 @@ module_status = {
     'cpflv': 'OFF',
     'cpf': 'ON',
     'cpf2': 'ON',
-    'vacinas': 'OFF',
+    'vacinas': 'ON',
     'cpf3': 'ON',
     'nomelv': 'ON',
     'nome': 'OFF',
@@ -50,7 +50,7 @@ module_status = {
     'teldual': 'OFF',
     'datanome': 'ON',
     'placa': 'ON',
-    'placaestadual': 'ON',
+    'placaestadual': 'OFF',
     'fotor': 'ON',
     'pix': 'ON',
     'placalv': 'OFF',
@@ -1125,46 +1125,51 @@ def tellv():
     telefone = ""
 
     if request.method == 'POST':
-        telefone = request.form.get('telefone', '').strip()
-        if not telefone:
-            flash('Telefone não fornecido.', 'error')
+        telefone = request.form.get('telefone', '').strip().replace(/\D/g, '')
+        if not telefone or len(telefone) < 10 or len(telefone) > 11:
+            flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
         else:
             try:
                 if not is_admin:
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=token)
+                        return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications,
+                                               result=result, telefone=telefone)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=telefoneLv&query={telefone}"
-                logger.info(f"Requisição para API: {url}")
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefone2"
+                logger.info(f"Requisição para API (tellv): {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if (data.get('resultado') and 
-                    data['resultado'].get('status') == "success" and 
-                    'data' in data['resultado'] and 
-                    isinstance(data['resultado']['data'], list) and 
-                    any('cpf' in item.get('identificacao', {}) for item in data['resultado']['data'])):
-                    if manage_module_usage(g.user_id, 'tellv'):
-                        result = data['resultado']['data'][0]
-                        reset_all()
+                # Verifica se há resposta válida
+                if isinstance(data, dict) and data.get('status') and 'response' in data:
+                    response_data = data['response']
+                    if response_data.get('CPF') and response_data['CPF'] != 'SEM RESULTADO':
+                        if manage_module_usage(g.user_id, 'tellv'):
+                            result = response_data
+                            reset_all()
+                        else:
+                            flash('Limite de uso atingido para TELLV.', 'error')
+                            result = None
                     else:
-                        flash('Limite de uso atingido para TELLV.', 'error')
+                        flash('Nenhum registro encontrado para este telefone.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o telefone fornecido.', 'error')
+                    flash('Nenhum resultado encontrado para o telefone fornecido.', 'error')
+
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
             except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                flash('Resposta da API inválida (JSON malformado).', 'error')
 
-    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, telefone=telefone, token=session.get('token'))
-
+    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications,
+                           result=result, telefone=telefone)
+    
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
 def teldual():
     if 'user_id' not in g:
@@ -1365,6 +1370,62 @@ def placaestadual():
 
     return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
+@app.route('/modulos/pix', methods=['GET', 'POST'])
+def pix():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_data('notifications.json')
+    user_notifications = len(notifications.get(g.user_id, []))
+
+    result = None
+    chave = ""
+
+    if request.method == 'POST':
+        chave = request.form.get('chave', '').strip().replace(/\D/g, '')
+        if not chave or len(chave) < 11:
+            flash('Por favor, insira uma chave válida (CPF, telefone ou e-mail).', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('pix.html', is_admin=is_admin, notifications=user_notifications,
+                                               result=result, chave=chave)
+
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
+                logger.info(f"Requisição para API (pix): {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                data = decode_json_with_bom(response.text)
+
+                # Verifica se a consulta foi bem-sucedida
+                if isinstance(data, dict) and data.get('Status') == 'Sucesso' and 'nome' in data:
+                    if manage_module_usage(g.user_id, 'pix'):
+                        result = data
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para PIX.', 'error')
+                        result = None
+                else:
+                    flash('Nenhum registro encontrado para esta chave Pix.', 'error')
+
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta da API inválida (JSON malformado).', 'error')
+
+    return render_template('pix.html', is_admin=is_admin, notifications=user_notifications,
+                           result=result, chave=chave)
+    
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 def fotor():
     if 'user_id' not in g:
