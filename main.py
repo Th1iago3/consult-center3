@@ -822,9 +822,10 @@ def cpf3():
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
-    cpf = request.form.get('cpf', '')
+    cpf = ""
 
     if request.method == 'POST':
+        cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
@@ -835,15 +836,15 @@ def cpf3():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=cpfSipni&query={cpf}"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado'):
+                if 'CPF' in data and data['CPF']:
                     if manage_module_usage(g.user_id, 'cpf3'):
-                        result = data['resultado']
+                        result = data
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPF3.', 'error')
@@ -855,8 +856,8 @@ def cpf3():
                 flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+            except json.JSONDecodeError as e:
+                flash(f'Resposta da API inválida: {response.text if "response" in locals() else str(e)}', 'error')
 
     return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
