@@ -589,15 +589,16 @@ def cpf():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=cpfSimples&query={cpf}"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado', {}).get('status') in ['OK', 'success', 'core-operating.svc']:
+                # Verifica se a resposta contém campos indicativos de sucesso (ex: 'CPF' presente e não nulo)
+                if 'CPF' in data and data['CPF'] and data.get('NOME'):
                     if manage_module_usage(g.user_id, 'cpf'):
-                        result = data['resultado']
+                        result = data
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPF.', 'error')
@@ -613,7 +614,7 @@ def cpf():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
+    
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
 def cpf2():
     if 'user_id' not in g:
