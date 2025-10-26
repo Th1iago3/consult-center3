@@ -1137,7 +1137,7 @@ def tellv():
     telefone = ""
 
     if request.method == 'POST':
-        telefone = request.form.get('telefone', '').strip().replace(/\D/g, '')
+        telefone = ''.join(c for c in request.form.get('telefone', '').strip() if c.isdigit())
         if not telefone or len(telefone) < 10 or len(telefone) > 11:
             flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
         else:
