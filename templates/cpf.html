@@ -477,14 +477,19 @@
             </button>
         </div>
         <div class="profile-info">
-            <p><strong>Nome:</strong> {{ result.nome }}</p>
+            <p><strong>Nome:</strong> {{ result.NOME or result.nome_completo or 'Não informado' }}</p>
             <p><strong>CPF:</strong> {{ cpf }}</p>
-            <p><strong>Sexo:</strong> {{ result.sexo }}</p>
-            <p><strong>Nascimento:</strong> {{ result.data_nascimento }}</p>
-            <p><strong>Filiação:</strong> Mãe: {{ result.nome_mae or 'Não informado' }}</p>
-            <p><strong>Nacionalidade:</strong> {{ result.nacionalidade }}</p>
+            <p><strong>Sexo:</strong> {{ result.SEXO or 'Não informado' }}</p>
+            <p><strong>Nascimento:</strong> {{ result.DT_NASCIMENTO or 'Não informado' }}</p>
+            <p><strong>Filiação:</strong> Mãe: {{ result.NOME_MAE or 'Não informado' }}</p>
+            <p><strong>Endereço:</strong> {{ result.LOGRADOURO or 'Não informado' }}, {{ result.BAIRRO or 'Não informado' }}, {{ result.CIDADE or 'Não informado' }} - {{ result.UF or 'Não informado' }}</p>
+            <p><strong>CEP:</strong> {{ result.CEP or 'Não informado' }}</p>
+            {% if result.telefones %}
+            <p><strong>Telefones:</strong> {{ result.telefones | join(', ') }}</p>
             {% endif %}
+            <p><strong>Status Receita Federal:</strong> {{ result.STATUS_RECEITA_FEDERAL or 'Não informado' }}</p>
         </div>
+        {% endif %}
     </div>
 
     <script>
