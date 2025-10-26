@@ -328,6 +328,7 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+            margin-top: 20px;
             margin-bottom: 10px;
         }
 
@@ -355,33 +356,6 @@
 
         .action-btn.copied {
             background: var(--success);
-        }
-
-        .download-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--primary-color);
-            font-weight: 500;
-            text-decoration: none;
-            margin-top: 20px;
-            transition: color 0.3s ease, transform 0.3s ease;
-            cursor: pointer;
-        }
-
-        .download-link:hover {
-            color: var(--secondary-color);
-            transform: translateX(5px);
-        }
-
-        .download-link i {
-            font-size: 16px;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-
-        .download-link:hover i {
-            transform: scale(1.2);
-            color: var(--accent-color);
         }
 
         .profile-info {
@@ -500,10 +474,10 @@
                 <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
             </div>
             {% if not is_admin %}
-                <div class="form-group">
-                    <i class="fas fa-key"></i>
-                    <input type="text" name="token" placeholder="Digite seu token..." required>
-                </div>
+            <div class="form-group">
+                <i class="fas fa-key"></i>
+                <input type="text" name="token" placeholder="Digite seu token..." required>
+            </div>
             {% endif %}
             <button type="submit" class="button">
                 <i class="fas fa-search"></i> Consultar
@@ -520,45 +494,87 @@
         </div>
         <div class="profile-info">
             <h3>Dados Básicos:</h3>
-            <p><strong>Nome:</strong> {{ result.nome | default('Não informado') }}</p>
-            <p><strong>CPF:</strong> {{ result.cpf | default('Não informado') }}</p>
-            <p><strong>Data de Nascimento:</strong> {{ result.dataNascimento.nascimento | default('Não informado') }}</p>
-            <p><strong>Idade:</strong> {{ result.dataNascimento.idade | default('Não informado') }} anos</p>
-            <p><strong>Signo:</strong> {{ result.dataNascimento.signo | default('Não informado') }}</p>
-            <p><strong>Sexo:</strong> {{ result.sexo | default('Não informado') }}</p>
-            <p><strong>Nome da Mãe:</strong> {{ result.nomeMae | default('Não informado') }}</p>
-            <p><strong>Nome do Pai:</strong> {{ result.nomePai | default('Não informado') }}</p>
-            <p><strong>Qualidade do Cadastro:</strong> {{ result.grauQualidade | default('Não informado') }}</p>
-            <p><strong>Ativo:</strong> {{ 'Sim' if result.ativo else 'Não' }}</p>
-            <p><strong>Óbito:</strong> {{ result.obito | default('Não informado') }}</p>
-            <p><strong>Parto Gemelar:</strong> {{ 'Sim' if result.partoGemelar else 'Não' }}</p>
-            <p><strong>VIP:</strong> {{ 'Sim' if result.vip else 'Não' }}</p>
-            <p><strong>Raça/Cor:</strong> {{ result.racaCor | default('Não informado') }}</p>
+            <p><strong>Nome:</strong> {{ result.NOME or 'Não informado' }}</p>
+            <p><strong>CPF:</strong> {{ cpf }}</p>
+            <p><strong>Sexo:</strong> {{ result.SEXO or 'Não informado' }}</p>
+            <p><strong>Nascimento:</strong> {{ result.NASCIMENTO or 'Não informado' }}</p>
+            <p><strong>Nome da Mãe:</strong> {{ result.NOME_MAE or 'Não informado' }}</p>
+            <p><strong>Nome do Pai:</strong> {{ result.NOME_PAI or 'Não informado' }}</p>
+            <p><strong>Estado Civil:</strong> {{ result.ESTADO_CIVIL or 'Não informado' }}</p>
+            <p><strong>RG:</strong> {{ result.RG or 'Não informado' }}</p>
+            <p><strong>Órgão Emissor:</strong> {{ result.ORGAO_EMISSOR or 'Não informado' }}</p>
+            <p><strong>UF Emissão:</strong> {{ result.UF_EMISSAO or 'Não informado' }}</p>
+            <p><strong>PIS:</strong> {{ result.PIS or 'Não informado' }}</p>
+            <p><strong>Título Eleitor:</strong> {{ result.TITULO_ELEITOR or 'Não informado' }}</p>
+            <p><strong>Zona:</strong> {{ result.ZONA or 'Não informado' }}</p>
+            <p><strong>Seção:</strong> {{ result.SECAO or 'Não informado' }}</p>
+            <p><strong>NSU:</strong> {{ result.NSU or 'Não informado' }}</p>
+            <p><strong>Peso:</strong> {{ result.PESO or 'Não informado' }}</p>
+
+            <h3>Dados Econômicos:</h3>
+            <p><strong>Renda:</strong> R$ {{ result.RENDA or 'Não informado' }}</p>
+            <p><strong>Poder Aquisitivo:</strong> {{ result.PODER_AQUISITIVO or 'Não informado' }}</p>
+            <p><strong>Faixa Poder Aquisitivo:</strong> {{ result.FX_PODER_AQUISITIVO or 'Não informado' }}</p>
+            <p><strong>CSB8:</strong> {{ result.CSB8 or 'Não informado' }} - {{ result.CSB8_FAIXA or '' }}</p>
+            <p><strong>CSBA:</strong> {{ result.CSBA or 'Não informado' }} - {{ result.CSBA_FAIXA or '' }}</p>
 
             <h3>Telefones:</h3>
-            {% for telefone in result.telefone %}
+            {% if result.TELEFONES %}
+            {% for tel in result.TELEFONES %}
+            {% if tel.NUMBER and tel.NUMBER != 'SEM INFORMAÇÃO' %}
             <div class="list-item">
-                <p><strong>Número:</strong> ({{ telefone.ddi }}) {{ telefone.ddd }}-{{ telefone.numero }}</p>
-                <p><strong>Tipo:</strong> {{ telefone.tipo | default('Não informado') }}</p>
+                <p><strong>Número:</strong> {{ tel.NUMBER or 'Não informado' }}</p>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% else %}
+            <p><strong>Telefones:</strong> Não informado</p>
+            {% endif %}
+
+            <h3>E-mails:</h3>
+            {% if result.EMAIL %}
+            {% for email in result.EMAIL %}
+            {% if email.EMAIL and email.EMAIL != 'SEM INFORMAÇÃO' %}
+            <div class="list-item">
+                <p><strong>E-mail:</strong> {{ email.EMAIL or 'Não informado' }}</p>
+                <p><strong>Tipo:</strong> {{ email.EMAIL_PESSOAL or 'Não informado' }} (Score: {{ email.EMAIL_SCORE or 'Não informado' }})</p>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% else %}
+            <p><strong>E-mails:</strong> Não informado</p>
+            {% endif %}
+
+            <h3>Endereços:</h3>
+            {% if result.ENDERECO %}
+            {% for end in result.ENDERECO %}
+            <div class="list-item">
+                <p><strong>Logradouro:</strong> {{ end.LOGRADOURO or 'Não informado' }} {{ end.LOGRADOURO_NUMERO or '' }}</p>
+                <p><strong>Complemento:</strong> {{ end.COMPLEMENTO or 'Não informado' }}</p>
+                <p><strong>Bairro:</strong> {{ end.BAIRRO or 'Não informado' }}</p>
+                <p><strong>Cidade:</strong> {{ end.CIDADE or 'Não informado' }}</p>
+                <p><strong>UF:</strong> {{ end.UF or 'Não informado' }}</p>
+                <p><strong>CEP:</strong> {{ end.CEP or 'Não informado' }}</p>
             </div>
             {% endfor %}
+            {% else %}
+            <p><strong>Endereços:</strong> Não informado</p>
+            {% endif %}
 
-            <h3>Nacionalidade:</h3>
-            <p><strong>Nacionalidade:</strong> {{ result.nacionalidade.nacionalidade | default('Não informado') }}</p>
-            <p><strong>Município de Nascimento:</strong> {{ result.nacionalidade.municipioNascimento | default('Não informado') }}</p>
-            <p><strong>País de Nascimento:</strong> {{ result.nacionalidade.paisNascimento | default('Não informado') }}</p>
-
-            <h3>Endereço:</h3>
+            <h3>Parentes:</h3>
+            {% if result.PARENTES %}
+            {% for par in result.PARENTES %}
+            {% if par.NOME_VINCULO and par.NOME_VINCULO != 'SEM INFORMAÇÃO' %}
             <div class="list-item">
-                <p><strong>Tipo de Endereço:</strong> {{ result.endereco.tipoEndereco | default('Não informado') }}</p>
-                <p><strong>Logradouro:</strong> {{ result.endereco.logradouro | default('Não informado') }}</p>
-                <p><strong>Número:</strong> {{ result.endereco.numero | default('Não informado') }}</p>
-                <p><strong>Bairro:</strong> {{ result.endereco.bairro | default('Não informado') }}</p>
-                <p><strong>Município:</strong> {{ result.endereco.municipio | default('Não informado') }}</p>
-                <p><strong>UF:</strong> {{ result.endereco.siglaUf | default('Não informado') }}</p>
-                <p><strong>País:</strong> {{ result.endereco.pais | default('Não informado') }}</p>
-                <p><strong>CEP:</strong> {{ result.endereco.cep | default('Não informado') }}</p>
+                <p><strong>Nome:</strong> {{ par.NOME_VINCULO or 'Não informado' }}</p>
+                <p><strong>Vínculo:</strong> {{ par.VINCULO or 'Não informado' }}</p>
+                <p><strong>CPF:</strong> {{ par.CPF_VINCULO or 'Não informado' }}</p>
             </div>
+            {% endif %}
+            {% endfor %}
+            {% else %}
+            <p><strong>Parentes:</strong> Não informado</p>
+            {% endif %}
         </div>
         {% endif %}
     </div>
