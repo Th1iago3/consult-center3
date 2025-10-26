@@ -1519,7 +1519,7 @@ body {
          data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
         <i class="module-icon fas fa-qrcode"></i>
         <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
-        <p class="module-description">Em Andamento...</p>
+        <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
         <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
             <div class="request-bar-wrapper">
