@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import logging
+import uuid  # Adicionado para UUIDs dinâmicos
 
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -398,6 +399,30 @@ def login():
                 session['user_id'] = user
                 session['session_id'] = secrets.token_hex(16)
                 
+                # Gerar UUIDs dinâmicos para módulos
+                session['module_uuids'] = {
+                    'cpf': str(uuid.uuid4()),
+                    'cpf2': str(uuid.uuid4()),
+                    'cpfdata': str(uuid.uuid4()),
+                    'cpflv': str(uuid.uuid4()),
+                    'cpf3': str(uuid.uuid4()),
+                    'vacinas': str(uuid.uuid4()),
+                    'nomelv': str(uuid.uuid4()),
+                    'nome': str(uuid.uuid4()),
+                    'nome2': str(uuid.uuid4()),
+                    'tel': str(uuid.uuid4()),
+                    'tellv': str(uuid.uuid4()),
+                    'teldual': str(uuid.uuid4()),
+                    'datanome': str(uuid.uuid4()),
+                    'placa': str(uuid.uuid4()),
+                    'placaestadual': str(uuid.uuid4()),
+                    'fotor': str(uuid.uuid4()),
+                    'pix': str(uuid.uuid4()),
+                    'placalv': str(uuid.uuid4()),
+                    'ip': str(uuid.uuid4()),
+                    'likeff': str(uuid.uuid4())
+                }
+                
                 byte_cookie = generate_byte_cookie()
                 hex_cookie = byte_to_hex(byte_cookie)
                 encrypted_token = encrypt_with_rsa(token, app.config['RSA_PUBLIC_KEY'])
@@ -459,7 +484,7 @@ def dashboard():
                 return jsonify({"user": user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
             return jsonify({"user": user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
 
-    content = render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, module_status=module_status, token=session.get('token'))
+    content = render_template('dashboard.html', admin=is_admin, notifications=notifications, users=users, module_status=module_status, token=session.get('token'), module_uuids=session.get('module_uuids', {}))
     if 'user_key' in session:
         return make_response(content)
     return jsonify({"error": "Session key missing"}), 403
@@ -563,9 +588,13 @@ def logout():
     resp.set_cookie('hex_cookie', '', expires=0)
     return resp
     
-# Module Routes (implement each with manage_module_usage)
-@app.route('/modulos/cpf', methods=['GET', 'POST'])
-def cpf():
+# Module Routes with dynamic UUID validation
+@app.route('/modulos/<module_uuid>/cpf', methods=['GET', 'POST'])
+def cpf(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('cpf') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -615,8 +644,12 @@ def cpf():
 
     return render_template('cpf.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
     
-@app.route('/modulos/cpf2', methods=['GET', 'POST'])
-def cpf2():
+@app.route('/modulos/<module_uuid>/cpf2', methods=['GET', 'POST'])
+def cpf2(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('cpf2') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -664,8 +697,12 @@ def cpf2():
 
     return render_template('cpf2.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-@app.route('/modulos/cpfdata', methods=['GET', 'POST'])
-def cpfdata():
+@app.route('/modulos/<module_uuid>/cpfdata', methods=['GET', 'POST'])
+def cpfdata(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('cpfdata') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -675,10 +712,9 @@ def cpfdata():
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
-    cpf = ""
+    cpf = request.form.get('cpf', '')
 
     if request.method == 'POST':
-        cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
@@ -687,115 +723,17 @@ def cpfdata():
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+                        return render_template('cpfdata.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=datav1"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data and data.get('nome'):
+                if data.get('DATA DE NASCIMENTO'):
                     if manage_module_usage(g.user_id, 'cpfdata'):
-                        raw_result = data
-                        processed_result = {
-                            'nome': raw_result.get('nome', 'SEM INFORMAÇÃO').rstrip('---'),
-                            'cpf': raw_result.get('documentos', {}).get('cpf', 'SEM INFORMAÇÃO').replace('.', '').replace('-', ''),
-                            'sexo': raw_result.get('sexo', 'SEM INFORMAÇÃO'),
-                            'dataNascimento': {
-                                'nascimento': 'SEM INFORMAÇÃO',
-                                'idade': 'SEM INFORMAÇÃO',
-                                'signo': 'SEM INFORMAÇÃO'
-                            },
-                            'nomeMae': raw_result.get('mae', 'SEM INFORMAÇÃO'),
-                            'nomePai': raw_result.get('pai', 'SEM INFORMAÇÃO'),
-                            'telefone': [],
-                            'nacionalidade': {
-                                'municipioNascimento': raw_result.get('endereco', {}).get('municipio_residencia', 'SEM INFORMAÇÃO'),
-                                'paisNascimento': raw_result.get('endereco', {}).get('pais', 'SEM INFORMAÇÃO')
-                            },
-                            'enderecos': [],
-                            'cnsDefinitivo': raw_result.get('cns', 'SEM INFORMAÇÃO'),
-                            'raca': raw_result.get('raca', 'SEM INFORMAÇÃO'),
-                            'tipo_sanguineo': raw_result.get('tipo_sanguineo', 'SEM INFORMAÇÃO'),
-                            'nome_social': raw_result.get('nome_social', None) or 'Não possui'
-                        }
-
-                        # Parse nascimento
-                        nasc = raw_result.get('nascimento', 'SEM INFORMAÇÃO')
-                        if ' (' in nasc and ' anos)' in nasc:
-                            date_str = nasc.split(' (')[0]
-                            age_str = nasc.split(' (')[1].rstrip(' anos)')
-                            processed_result['dataNascimento'] = {
-                                'nascimento': date_str,
-                                'idade': age_str,
-                                'signo': 'SEM INFORMAÇÃO'
-                            }
-                            # Calculate signo
-                            try:
-                                from datetime import datetime
-                                birth_date = datetime.strptime(date_str, '%d/%m/%Y')
-                                month = birth_date.month
-                                day = birth_date.day
-                                if (month == 1 and day >= 20) or (month == 2 and day <= 18):
-                                    signo = 'Aquário'
-                                elif (month == 2 and day >= 19) or (month == 3 and day <= 20):
-                                    signo = 'Peixes'
-                                elif (month == 3 and day >= 21) or (month == 4 and day <= 19):
-                                    signo = 'Áries'
-                                elif (month == 4 and day >= 20) or (month == 5 and day <= 20):
-                                    signo = 'Touro'
-                                elif (month == 5 and day >= 21) or (month == 6 and day <= 20):
-                                    signo = 'Gêmeos'
-                                elif (month == 6 and day >= 21) or (month == 7 and day <= 22):
-                                    signo = 'Câncer'
-                                elif (month == 7 and day >= 23) or (month == 8 and day <= 22):
-                                    signo = 'Leão'
-                                elif (month == 8 and day >= 23) or (month == 9 and day <= 22):
-                                    signo = 'Virgem'
-                                elif (month == 9 and day >= 23) or (month == 10 and day <= 22):
-                                    signo = 'Libra'
-                                elif (month == 10 and day >= 23) or (month == 11 and day <= 21):
-                                    signo = 'Escorpião'
-                                elif (month == 11 and day >= 22) or (month == 12 and day <= 21):
-                                    signo = 'Sagitário'
-                                else:
-                                    signo = 'Capricórnio'
-                                processed_result['dataNascimento']['signo'] = signo
-                            except:
-                                pass
-                        else:
-                            processed_result['dataNascimento'] = {
-                                'nascimento': nasc,
-                                'idade': 'SEM INFORMAÇÃO',
-                                'signo': 'SEM INFORMAÇÃO'
-                            }
-
-                        # Telefone
-                        telefones = raw_result.get('contatos', {}).get('telefones', [])
-                        processed_result['telefone'] = [
-                            {
-                                'ddi': '',
-                                'ddd': phone.get('ddd', '').strip('()'),
-                                'numero': phone.get('numero', '')
-                            }
-                            for phone in telefones
-                        ]
-                        if not processed_result['telefone']:
-                            processed_result['telefone'] = [{'ddi': '', 'ddd': '', 'numero': ''}]
-
-                        # Enderecos
-                        endereco = raw_result.get('endereco', {})
-                        if endereco:
-                            if 'municipio_residencia' in endereco:
-                                parts = endereco['municipio_residencia'].split(' - ')
-                                if len(parts) > 0:
-                                    endereco['cidade'] = parts[0]
-                                if len(parts) > 1:
-                                    endereco['uf'] = parts[1]
-                            processed_result['enderecos'] = [endereco]
-
-                        result = processed_result
+                        result = data
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPFDATA.', 'error')
@@ -810,10 +748,14 @@ def cpfdata():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
-    return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+    return render_template('cpfdata.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-@app.route('/modulos/cpf3', methods=['GET', 'POST'])
-def cpf3():
+@app.route('/modulos/<module_uuid>/cpflv', methods=['GET', 'POST'])
+def cpflv(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('cpflv') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -823,60 +765,9 @@ def cpf3():
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
-    cpf = ""
+    cpf = request.form.get('cpf', '')
 
     if request.method == 'POST':
-        cpf = request.form.get('cpf', '').strip()
-        if not cpf:
-            flash('CPF não fornecido.', 'error')
-        else:
-            try:
-                if not is_admin:
-                    token = request.form.get('token', '')
-                    if not token or token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
-                logger.info(f"Requisição para API: {url}")
-                response = requests.get(url, verify=False, timeout=10)
-                response.raise_for_status()
-                data = decode_json_with_bom(response.text)
-
-                if 'CPF' in data and data['CPF']:
-                    if manage_module_usage(g.user_id, 'cpf3'):
-                        result = data
-                        reset_all()
-                    else:
-                        flash('Limite de uso atingido para CPF3.', 'error')
-                else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError as e:
-                flash(f'Resposta da API inválida: {response.text if "response" in locals() else str(e)}', 'error')
-
-    return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
-
-@app.route('/modulos/cpflv', methods=['GET', 'POST'])
-def cpflv():
-    if 'user_id' not in g:
-        flash('Você precisa estar logado para acessar esta página.', 'error')
-        return redirect('/')
-
-    users = load_data('users.json')
-    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_data('notifications.json')
-    user_notifications = len(notifications.get(g.user_id, []))
-    result = None
-    cpf = ""
-
-    if request.method == 'POST':
-        cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
@@ -887,20 +778,15 @@ def cpflv():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv2"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if (data.get('resultado') and 
-                    data['resultado'].get('status') == 'success' and 
-                    'data' in data['resultado'] and 
-                    'pessoa' in data['resultado']['data'] and 
-                    'identificacao' in data['resultado']['data']['pessoa'] and 
-                    'cpf' in data['resultado']['data']['pessoa']['identificacao']):
+                if data.get('NOME') and data.get('CPF'):
                     if manage_module_usage(g.user_id, 'cpflv'):
-                        result = data['resultado']
+                        result = data
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPFLV.', 'error')
@@ -915,10 +801,14 @@ def cpflv():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
-    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
+    return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-@app.route('/modulos/vacinas', methods=['GET', 'POST'])
-def vacinas():
+@app.route('/modulos/<module_uuid>/cpf3', methods=['GET', 'POST'])
+def cpf3(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('cpf3') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -927,60 +817,104 @@ def vacinas():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
-    results = []
-    cpf = ""
+    result = None
+    cpf = request.form.get('cpf', '')
 
     if request.method == 'POST':
-        cpf = request.form.get('cpf', '').strip().replace('.', '').replace('-', '')
-        if not cpf or len(cpf) != 11 or not cpf.isdigit():
-            flash('Por favor, insira um CPF válido com 11 dígitos.', 'error')
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
         else:
             try:
                 if not is_admin:
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('vacinas.html', is_admin=is_admin, notifications=user_notifications,
-                                               results=results, cpf=cpf)
+                        return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
-                logger.info(f"Requisição para API (vacinas): {url}")
+                url = f"https://api.bygrower.online/core/?token={chave}&base=cpf2&query={cpf}"
+                logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                # Extrai lista de imunizações
-                imunizacoes = []
-                if isinstance(data, dict):
-                    if data.get('status') and 'response' in data and 'dados' in data['response']:
-                        imunizacoes = data['response']['dados']
-                    elif 'resultado' in data and isinstance(data['resultado'], list):
-                        imunizacoes = data['resultado']
+                if data.get('resultado'):
+                    if manage_module_usage(g.user_id, 'cpf3'):
+                        result = data['resultado']
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para CPF3.', 'error')
+                else:
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
-                if imunizacoes:
+    return render_template('cpf3.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+@app.route('/modulos/<module_uuid>/vacinas', methods=['GET', 'POST'])
+def vacinas(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('vacinas') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_data('notifications.json')
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    cpf = request.form.get('cpf', '')
+
+    if request.method == 'POST':
+        if not cpf:
+            flash('CPF não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('vacinas.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
+
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                data = decode_json_with_bom(response.text)
+
+                if data.get('resultado'):
                     if manage_module_usage(g.user_id, 'vacinas'):
-                        results = imunizacoes
+                        result = data['resultado']
                         reset_all()
                     else:
                         flash('Limite de uso atingido para VACINAS.', 'error')
-                        results = []
                 else:
-                    flash('Nenhum registro de vacinação encontrado para este CPF.', 'error')
-
+                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
-    return render_template('vacinas.html', is_admin=is_admin, notifications=user_notifications,
-                           results=results, cpf=cpf)
+    return render_template('vacinas.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-@app.route('/modulos/datanome', methods=['GET', 'POST'])
-def datanome():
+@app.route('/modulos/<module_uuid>/tel', methods=['GET', 'POST'])
+def tel(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('tel') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -989,202 +923,104 @@ def datanome():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
-    results = []
-    nome = ""
-    datanasc = ""
+    result = None
+    tel = request.form.get('tel', '')
 
     if request.method == 'POST':
-        nome = request.form.get('nome', '').strip()
-        datanasc = request.form.get('datanasc', '').strip()
-
-        if not nome or not datanasc:
-            flash('Nome e data de nascimento são obrigatórios.', 'error')
+        if not tel:
+            flash('Telefone não fornecido.', 'error')
         else:
             try:
                 if not is_admin:
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
-                                               results=results, nome=nome, datanasc=datanasc)
+                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, result=result, tel=tel)
 
-                # Usa a mesma API de nomelv (nomev2)
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
-                logger.info(f"Requisição para API (datanome): {url}")
+                url = f"https://api.bygrower.online/core/?token={chave}&base=telefone1&query={tel}"
+                logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                # Aceita lista direta ou dentro de 'resultado'
-                raw_results = []
-                if isinstance(data, list):
-                    raw_results = data
-                elif isinstance(data, dict) and 'resultado' in data and isinstance(data['resultado'], list):
-                    raw_results = data['resultado']
-
-                # Converte a data do usuário (YYYY-MM-DD) → datetime
-                try:
-                    user_date = datetime.strptime(datanasc, '%Y-%m-%d')
-                except ValueError:
-                    flash('Formato de data inválido. Use o seletor de data.', 'error')
-                    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
-                                           results=results, nome=nome, datanasc=datanasc)
-
-                # Filtra por data de nascimento
-                for item in raw_results:
-                    if 'NASCIMENTO' in item:
-                        try:
-                            api_date_str = item['NASCIMENTO'].strip()
-                            api_date = datetime.strptime(api_date_str, '%d/%m/%Y')
-                            if api_date.date() == user_date.date():
-                                results.append(item)
-                        except (ValueError, AttributeError):
-                            continue  # Ignora datas mal formatadas
-
-                if results:
-                    if manage_module_usage(g.user_id, 'datanome'):
+                if data.get('resultado'):
+                    if manage_module_usage(g.user_id, 'tel'):
+                        result = data['resultado']
                         reset_all()
                     else:
-                        flash('Limite de uso atingido para DATANOME.', 'error')
-                        results = []
+                        flash('Limite de uso atingido para TEL.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado com essa data de nascimento.', 'error')
-
+                    flash(f'Nenhum resultado encontrado para o telefone fornecido. Resposta: {data}', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
+                flash(f'Resposta da API inválida: {response.text}', 'error')
 
-    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
-                           results=results, nome=nome, datanasc=datanasc)
+    return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, result=result, tel=tel)
 
-@app.route('/modulos/placalv', methods=['GET', 'POST'])
-def placalv():
-    if 'user_id' not in g:
-        flash('Você precisa estar logado para acessar esta página.', 'error')
-        return redirect('/')
-
-    users = load_data('users.json')
-    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_data('notifications.json')
-    user_notifications = len(notifications.get(g.user_id, []))
-
-    result = None
-    placa = ""
-
-    if request.method == 'POST':
-        placa = request.form.get('placa', '').strip().upper().replace(' ', '')
-        if not placa or not (len(placa) == 7 and placa[:3].isalpha() and placa[3:].isdigit()):
-            flash('Por favor, insira uma placa válida no formato AAA0000.', 'error')
-        else:
-            try:
-                if not is_admin:
-                    token = request.form.get('token', '')
-                    if not token or token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications,
-                                               result=result, placa=placa)
-
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
-                logger.info(f"Requisição para API (placa): {url}")
-                response = requests.get(url, verify=False, timeout=10)
-                response.raise_for_status()
-                data = decode_json_with_bom(response.text)
-
-                # Verifica se há dados válidos
-                if isinstance(data, dict) and data.get('status') and 'response' in data and 'dados' in data['response']:
-                    veiculo = data['response']['dados'].get('veiculo', {})
-                    if veiculo and veiculo.get('placa'):
-                        if manage_module_usage(g.user_id, 'placalv'):
-                            result = data['response']['dados']
-                            reset_all()
-                        else:
-                            flash('Limite de uso atingido para PLACALV.', 'error')
-                            result = None
-                    else:
-                        flash('Nenhum veículo encontrado para esta placa.', 'error')
-                else:
-                    flash('Nenhum resultado encontrado para a placa informada.', 'error')
-
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
-
-    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications,
-                           result=result, placa=placa)
-
-
-
-@app.route('/modulos/telLv', methods=['GET', 'POST'])
-def tellv():
-    if 'user_id' not in g:
-        flash('Você precisa estar logado para acessar esta página.', 'error')
-        return redirect('/')
-
-    users = load_data('users.json')
-    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
-    notifications = load_data('notifications.json')
-    user_notifications = len(notifications.get(g.user_id, []))
-    result = None
-    telefone = ""
-
-    if request.method == 'POST':
-        telefone = ''.join(c for c in request.form.get('telefone', '').strip() if c.isdigit())
-        if not telefone or len(telefone) < 10 or len(telefone) > 11:
-            flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
-        else:
-            try:
-                if not is_admin:
-                    token = request.form.get('token', '')
-                    if not token or token != users.get(g.user_id, {}).get('token'):
-                        flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications,
-                                               result=result, telefone=telefone)
-
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefone2"
-                logger.info(f"Requisição para API (tellv): {url}")
-                response = requests.get(url, verify=False, timeout=10)
-                response.raise_for_status()
-                data = decode_json_with_bom(response.text)
-
-                # Verifica se há resposta válida
-                if isinstance(data, dict) and data.get('status') and 'response' in data:
-                    response_data = data['response']
-                    if response_data.get('CPF') and response_data['CPF'] != 'SEM RESULTADO':
-                        if manage_module_usage(g.user_id, 'tellv'):
-                            result = response_data
-                            reset_all()
-                        else:
-                            flash('Limite de uso atingido para TELLV.', 'error')
-                            result = None
-                    else:
-                        flash('Nenhum registro encontrado para este telefone.', 'error')
-                else:
-                    flash('Nenhum resultado encontrado para o telefone fornecido.', 'error')
-
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
-
-    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications,
-                           result=result, telefone=telefone)
+@app.route('/modulos/<module_uuid>/tellv', methods=['GET', 'POST'])
+def tellv(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('tellv') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
     
-@app.route('/modulos/teldual', methods=['GET', 'POST'])
-def teldual():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_data('notifications.json')
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    tel = request.form.get('tel', '')
+
+    if request.method == 'POST':
+        if not tel:
+            flash('Telefone não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, tel=tel)
+
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={tel}&tipo=telv2"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                data = decode_json_with_bom(response.text)
+
+                if data.get('NOME'):
+                    if manage_module_usage(g.user_id, 'tellv'):
+                        result = data
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para TELV.', 'error')
+                else:
+                    flash(f'Nenhum resultado encontrado para o telefone fornecido.', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
+
+    return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications, result=result, tel=tel)
+
+@app.route('/modulos/<module_uuid>/teldual', methods=['GET', 'POST'])
+def teldual(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('teldual') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1194,11 +1030,10 @@ def teldual():
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
-    telefone = ""
+    tel = request.form.get('tel', '')
 
     if request.method == 'POST':
-        telefone = request.form.get('telefone', '').strip()
-        if not telefone:
+        if not tel:
             flash('Telefone não fornecido.', 'error')
         else:
             try:
@@ -1206,15 +1041,15 @@ def teldual():
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=token)
+                        return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=teldual&query={telefone}"
+                url = f"https://api.bygrower.online/core/?token={chave}&base=telefone2&query={tel}"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if 'resultado' in data and data['resultado'] and any('cpf' in item for item in data['resultado']):
+                if data.get('resultado'):
                     if manage_module_usage(g.user_id, 'teldual'):
                         results = data['resultado']
                         reset_all()
@@ -1231,10 +1066,14 @@ def teldual():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
-    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, telefone=telefone, token=session.get('token'))
+    return render_template('teldual.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel)
 
-@app.route('/modulos/tel', methods=['GET', 'POST'])
-def tel():
+@app.route('/modulos/<module_uuid>/datanome', methods=['GET', 'POST'])
+def datanome(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('datanome') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1244,34 +1083,33 @@ def tel():
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     results = None
-    tel = ""
+    nome = request.form.get('nome', '')
 
     if request.method == 'POST':
-        tel = request.form.get('tel', '').strip()
-        if not tel:
-            flash('Telefone não fornecido.', 'error')
+        if not nome:
+            flash('Nome não fornecido.', 'error')
         else:
             try:
                 if not is_admin:
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=token)
+                        return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=telefone&query={tel}"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=datav2"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if 'resultado' in data and 'cpf' in data['resultado']:
-                    if manage_module_usage(g.user_id, 'tel'):
-                        results = data['resultado']['msg']
+                if isinstance(data, list) and len(data) > 0:
+                    if manage_module_usage(g.user_id, 'datanome'):
+                        results = data
                         reset_all()
                     else:
-                        flash('Limite de uso atingido para TEL.', 'error')
+                        flash('Limite de uso atingido para DATANOME.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o telefone fornecido.', 'error')
+                    flash(f'Nenhum resultado encontrado para o nome fornecido.', 'error')
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1281,10 +1119,14 @@ def tel():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
-    return render_template('tel.html', is_admin=is_admin, notifications=user_notifications, results=results, tel=tel, token=session.get('token'))
+    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
 
-@app.route('/modulos/placa', methods=['GET', 'POST'])
-def placa():
+@app.route('/modulos/<module_uuid>/placa', methods=['GET', 'POST'])
+def placa(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('placa') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1339,8 +1181,12 @@ def placa():
     return render_template('placa.html', is_admin=is_admin, notifications=user_notifications,
                            result=result, placa=placa)
 
-@app.route('/modulos/placaestadual', methods=['GET', 'POST'])
-def placaestadual():
+@app.route('/modulos/<module_uuid>/placaestadual', methods=['GET', 'POST'])
+def placaestadual(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('placaestadual') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1389,8 +1235,12 @@ def placaestadual():
 
     return render_template('placaestadual.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
 
-@app.route('/modulos/pix', methods=['GET', 'POST'])
-def pix():
+@app.route('/modulos/<module_uuid>/pix', methods=['GET', 'POST'])
+def pix(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('pix') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1445,8 +1295,12 @@ def pix():
     return render_template('pix.html', is_admin=is_admin, notifications=user_notifications,
                            result=result, chave=chave)
     
-@app.route('/modulos/fotor', methods=['GET', 'POST'])
-def fotor():
+@app.route('/modulos/<module_uuid>/fotor', methods=['GET', 'POST'])
+def fotor(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('fotor') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1518,8 +1372,12 @@ def fotor():
 
     return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
 
-@app.route('/modulos/nomelv', methods=['GET', 'POST'])
-def nomelv():
+@app.route('/modulos/<module_uuid>/nomelv', methods=['GET', 'POST'])
+def nomelv(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('nomelv') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1578,8 +1436,12 @@ def nomelv():
 
     return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
 
-@app.route('/modulos/nome', methods=['GET', 'POST'])
-def nome():
+@app.route('/modulos/<module_uuid>/nome', methods=['GET', 'POST'])
+def nome(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('nome') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1628,8 +1490,12 @@ def nome():
 
     return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
-@app.route('/modulos/ip', methods=['GET', 'POST'])
-def ip():
+@app.route('/modulos/<module_uuid>/ip', methods=['GET', 'POST'])
+def ip(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('ip') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1687,8 +1553,12 @@ def ip():
 
     return render_template('ip.html', is_admin=is_admin, notifications=user_notifications, results=results, ip_address=ip_address, token=session.get('token'))
 
-@app.route('/modulos/nome2', methods=['GET', 'POST'])
-def nome2():
+@app.route('/modulos/<module_uuid>/nome2', methods=['GET', 'POST'])
+def nome2(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('nome2') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -1737,8 +1607,12 @@ def nome2():
 
     return render_template('nome2.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
 
-@app.route('/modulos/likeff', methods=['GET', 'POST'])
-def likeff():
+@app.route('/modulos/<module_uuid>/likeff', methods=['GET', 'POST'])
+def likeff(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('likeff') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
     # Verificar se o usuário está autenticado
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -1848,6 +1722,59 @@ def likeff():
                          result=result, uid=uid if 'uid' in locals() else '', 
                          token=session.get('token'))
     
+@app.route('/modulos/<module_uuid>/placalv', methods=['GET', 'POST'])
+def placalv(module_uuid):
+    if 'module_uuids' not in session or session['module_uuids'].get('placalv') != module_uuid:
+        flash('Acesso inválido ao módulo.', 'error')
+        return redirect('/dashboard')
+    
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_data('notifications.json')
+    user_notifications = len(notifications.get(g.user_id, []))
+    result = None
+    placa = request.form.get('placa', '')
+
+    if request.method == 'POST':
+        if not placa:
+            flash('Placa não fornecida.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placav2"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                data = decode_json_with_bom(response.text)
+
+                if data.get('PLACA') and data.get('MARCA'):
+                    if manage_module_usage(g.user_id, 'placalv'):
+                        result = data
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para PLACALV.', 'error')
+                else:
+                    flash(f'Nenhum resultado encontrado para a placa fornecida.', 'error')
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
+
+    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+
 # Fim :D
 if __name__ == '__main__':
     initialize_json('users.json')
