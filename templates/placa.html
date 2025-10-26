@@ -3,432 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ConsultCenter - Sistema Integrado de Consultas (Consulta - Placa)</title>
+    <title>ConsultCenter - Consulta de Placa</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6E44FF; /* Roxo principal */
-            --secondary-color: #A06CFF; /* Roxo secundário */
-            --accent-color: #FF6BD6; /* Rosa neon (usado apenas em ícones) */
-            --background: #0F1123; /* Fundo escuro */
-            --card-bg: rgba(20, 22, 40, 0.95); /* Fundo dos cards */
-            --text-dark: #F4F4F9; /* Texto principal */
-            --text-light: rgba(176, 179, 193, 0.8); /* Texto secundário */
-            --white: #FFFFFF;
-            --success: #00E676; /* Verde */
-            --error: #FF3366; /* Vermelho */
+            --primary-color: #6E44FF;
+            --secondary-color: #A06CFF;
+            --accent-color: #FF6BD6;
+            --background: #0F1123;
+            --card-bg: rgba(20, 22, 40, 0.95);
+            --text-dark: #F4F4F9;
+            --text-light: rgba(176, 179, 193, 0.8);
+            --success: #00E676;
+            --error: #FF3366;
             --shadow: rgba(0, 0, 0, 0.5);
             --glow: rgba(110, 68, 255, 0.7);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body {
             background: linear-gradient(145deg, var(--background), #1C2526);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-dark);
-            overflow-x: hidden;
-            position: relative;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+            color: var(--text-dark); overflow-x: hidden; position: relative;
         }
-
         body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 30% 20%, rgba(110, 68, 255, 0.15), transparent 60%);
-            z-index: -1;
-            opacity: 0.3;
-            animation: subtlePulse 12s infinite ease-in-out;
+            z-index: -1; opacity: 0.3; animation: subtlePulse 12s infinite ease-in-out;
         }
-
-        @keyframes subtlePulse {
-            0% { opacity: 0.2; }
-            50% { opacity: 0.4; }
-            100% { opacity: 0.2; }
-        }
+        @keyframes subtlePulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.4; } }
 
         .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+            position: fixed; top: 0; left: 0; width: 100%;
             background: linear-gradient(180deg, var(--card-bg), rgba(30, 32, 54, 0.9));
-            padding: 20px;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid rgba(110, 68, 255, 0.6);
-            box-shadow: 0 5px 20px var(--shadow);
-            transition: all 0.3s ease;
+            padding: 20px; z-index: 1000; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid rgba(110, 68, 255, 0.6); box-shadow: 0 5px 20px var(--shadow);
         }
-
         .navbar-toggle {
-            background: var(--primary-color);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            color: var(--white);
-            font-size: 18px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease;
-            box-shadow: 0 0 12px var(--glow);
+            background: var(--primary-color); border: none; width: 40px; height: 40px; border-radius: 50%;
+            color: white; font-size: 18px; cursor: pointer; box-shadow: 0 0 12px var(--glow);
+            transition: 0.3s;
         }
-
-        .navbar-toggle:hover {
-            background: var(--secondary-color);
-            transform: scale(1.1);
-        }
-
-        .navbar-toggle i {
-            transition: transform 0.3s ease;
-        }
-
-        .navbar-toggle.active i {
-            transform: rotate(180deg);
-        }
+        .navbar-toggle:hover { background: var(--secondary-color); transform: scale(1.1); }
+        .navbar-toggle.active i { transform: rotate(180deg); }
 
         .nav-links {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 250px;
+            display: none; position: absolute; top: 100%; left: 0; width: 250px;
             background: linear-gradient(180deg, var(--card-bg), rgba(30, 32, 54, 0.9));
-            padding: 15px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 8px 25px var(--shadow);
-            transition: all 0.4s ease-in-out;
+            padding: 15px; border-radius: 0 0 12px 12px; box-shadow: 0 8px 25px var(--shadow);
         }
-
-        .nav-links.active {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
+        .nav-links.active { display: flex; flex-direction: column; gap: 10px; }
         .nav-links a {
-            padding: 12px 15px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            color: var(--text-light);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
+            padding: 12px 15px; border-radius: 10px; display: flex; align-items: center; gap: 12px;
+            color: var(--text-light); text-decoration: none; font-size: 14px; font-weight: 500;
+            transition: 0.3s;
         }
-
         .nav-links a:hover {
-            background: rgba(110, 68, 255, 0.2);
-            color: var(--text-dark);
-            transform: translateX(5px);
+            background: rgba(110, 68, 255, 0.2); color: var(--text-dark); transform: translateX(5px);
             box-shadow: 0 0 12px var(--glow);
         }
 
-        .nav-links a i {
-            font-size: 18px;
-            transition: transform 0.3s ease;
-        }
-
-        .nav-links a:hover i {
-            transform: scale(1.15);
-            color: var(--accent-color);
-        }
-
-        .sub-navbar {
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-            padding: 10px;
-            background: rgba(110, 68, 255, 0.1);
-            border-radius: 8px;
-            margin-top: 5px;
-        }
-
-        .sub-navbar.active {
-            display: flex;
-        }
-
-        .sub-navbar a {
-            font-size: 12px;
-            padding: 8px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-icon {
-            font-size: 30px;
-            color: var(--primary-color);
-            cursor: pointer;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-
-        .user-icon:hover {
-            transform: scale(1.1);
-            color: var(--accent-color);
-        }
-
+        .user-profile { display: flex; align-items: center; gap: 15px; }
+        .user-icon { font-size: 30px; color: var(--primary-color); cursor: pointer; }
         .logout-btn {
-            background: var(--primary-color);
-            border: none;
-            padding: 10px 25px;
-            border-radius: 20px;
-            color: var(--white);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 0 12px var(--glow);
+            background: var(--primary-color); border: none; padding: 10px 25px; border-radius: 20px;
+            color: white; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 0 12px var(--glow); transition: 0.3s;
         }
-
-        .logout-btn:hover {
-            background: var(--secondary-color);
-            transform: scale(1.05);
-        }
+        .logout-btn:hover { background: var(--secondary-color); transform: scale(1.05); }
 
         .container {
             background: linear-gradient(135deg, var(--card-bg), rgba(30, 32, 54, 0.9));
-            border-radius: 12px;
-            box-shadow: 0 8px 25px var(--shadow);
-            padding: 25px;
-            width: 90%;
-            max-width: 450px;
-            margin: 80px auto 20px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid rgba(110, 68, 255, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 12px; box-shadow: 0 8px 25px var(--shadow); padding: 25px;
+            width: 90%; max-width: 500px; margin: 80px auto 20px; border: 2px solid rgba(110, 68, 255, 0.3);
+            transition: 0.3s;
         }
+        .container:hover { transform: translateY(-5px); box-shadow: 0 12px 35px var(--shadow), 0 0 15px var(--glow); }
 
-        .container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 35px var(--shadow), 0 0 15px var(--glow);
-        }
-
-        h2 {
-            font-size: 26px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 20px;
-            text-align: center;
-        }
+        h2 { font-size: 26px; font-weight: 600; color: var(--text-dark); margin-bottom: 20px; text-align: center; }
 
         .form-group {
-            margin: 20px 0;
-            position: relative;
+            margin: 20px 0; position: relative;
         }
-
         .form-group input {
-            width: 100%;
-            padding: 12px 15px 12px 40px;
-            border-radius: 20px;
-            border: 1px solid rgba(110, 68, 255, 0.3);
-            background: var(--card-bg);
-            color: var(--text-dark);
-            font-size: 14px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            width: 100%; padding: 12px 15px 12px 40px; border-radius: 20px;
+            border: 1px solid rgba(110, 68, 255, 0.3); background: var(--card-bg); color: var(--text-dark);
+            font-size: 14px; transition: 0.3s;
         }
-
         .form-group input:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 10px var(--glow);
+            border-color: var(--primary-color); outline: none; box-shadow: 0 0 10px var(--glow);
         }
-
-        .form-group input::placeholder {
-            color: var(--text-light);
-        }
-
         .form-group i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-            font-size: 16px;
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            color: var(--text-light); font-size: 16px;
         }
 
         .button {
-            background: var(--primary-color);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 20px;
-            color: var(--white);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 0 12px var(--glow);
-            width: 100%;
-            justify-content: center;
+            background: var(--primary-color); border: none; padding: 12px 25px; border-radius: 20px;
+            color: white; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%;
+            justify-content: center; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 0 12px var(--glow); transition: 0.3s;
         }
-
-        .button:hover {
-            background: var(--secondary-color);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--glow);
-        }
+        .button:hover { background: var(--secondary-color); transform: scale(1.05); }
 
         .alert {
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            padding: 12px; margin-bottom: 15px; border-radius: 10px; font-size: 14px; font-weight: 500;
         }
-
         .alert-error {
-            background: rgba(255, 51, 102, 0.15);
-            color: var(--error);
-            border-left: 4px solid var(--error);
+            background: rgba(255, 51, 102, 0.15); color: var(--error); border-left: 4px solid var(--error);
         }
 
         .profile-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-            margin-bottom: 10px;
+            display: flex; justify-content: flex-end; gap: 10px; margin: 20px 0 10px;
         }
-
         .action-btn {
-            background: var(--primary-color);
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            color: var(--white);
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 12px var(--glow);
+            background: var(--primary-color); border: none; width: 35px; height: 35px; border-radius: 8px;
+            color: white; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 12px var(--glow); transition: 0.3s;
         }
-
-        .action-btn:hover {
-            background: var(--secondary-color);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--glow);
-        }
-
-        .action-btn.copied {
-            background: var(--success);
-        }
+        .action-btn:hover { background: var(--secondary-color); transform: scale(1.05); }
+        .action-btn.copied { background: var(--success); }
 
         .profile-info {
             background: linear-gradient(135deg, rgba(30, 32, 54, 0.9), rgba(20, 22, 40, 0.95));
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 6px 20px var(--shadow);
+            border-radius: 12px; padding: 18px; box-shadow: 0 6px 20px var(--shadow);
             border: 2px solid rgba(110, 68, 255, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-top: 20px;
         }
-
-        .profile-info:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 35px var(--shadow), 0 0 15px var(--glow);
-        }
-
         .profile-info p {
-            color: var(--text-light);
-            font-size: 12px;
-            margin: 8px 0;
+            color: var(--text-light); font-size: 13px; margin: 6px 0;
         }
-
         .profile-info p strong {
-            color: var(--text-dark);
-            font-weight: 600;
-            display: inline-block;
-            width: 150px;
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 15px;
-            }
-
-            .container {
-                width: 90%;
-                padding: 20px;
-            }
-
-            .nav-links {
-                width: 100%;
-            }
-
-            h2 {
-                font-size: 22px;
-            }
+            color: var(--text-dark); font-weight: 600; display: inline-block; width: 160px;
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
-
-            h2 {
-                font-size: 20px;
-            }
-
-            .form-group input {
-                font-size: 13px;
-                padding: 10px 15px 10px 35px;
-            }
-
-            .button {
-                font-size: 13px;
-                padding: 10px 20px;
-            }
-
-            .profile-info p strong {
-                width: 120px;
-            }
-
-            .action-btn {
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
-            }
+            .container { padding: 15px; }
+            h2 { font-size: 20px; }
+            .profile-info p strong { width: 100px; }
         }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
+        <button class="navbar-toggle" onclick="toggleNavbar()">
             <i class="fas fa-chevron-right"></i>
         </button>
         <div class="nav-links" id="navLinks">
-            <a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Página Principal</span></a>
+            <a href="/dashboard"><i class="fas fa-home"></i> <span>Página Principal</span></a>
             <a href="#" onclick="toggleDropdown(event)"><i class="fas fa-caret-down"></i> <span>Informações Adicionais</span></a>
             <div class="sub-navbar" id="subNavbar">
                 <a href="#">Base: SENATRAN</a>
@@ -443,7 +165,7 @@
     </div>
 
     <div class="container">
-        <h2>Consulta - Placa</h2>
+        <h2>Consulta de Placa</h2>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -451,170 +173,122 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
         <form method="POST" id="searchForm">
             <div class="form-group">
                 <i class="fas fa-car"></i>
-                <input type="text" name="placa" placeholder="Digite a placa..." value="{{ placa }}" required>
+                <input type="text" name="placa" placeholder="Placa (ex: ABC1234)" value="{{ placa }}" maxlength="7" required>
             </div>
             {% if not is_admin %}
-                <div class="form-group">
-                    <i class="fas fa-key"></i>
-                    <input type="text" name="token" placeholder="Digite seu token..." required>
-                </div>
+            <div class="form-group">
+                <i class="fas fa-key"></i>
+                <input type="text" name="token" placeholder="Seu token..." required>
+            </div>
             {% endif %}
             <button type="submit" class="button">
                 <i class="fas fa-search"></i> Consultar
             </button>
         </form>
-        {% if results %}
-            <div class="profile-actions">
-                <button class="action-btn" onclick="copyResult(this)" title="Copiar">
-                    <i class="fas fa-copy"></i>
-                </button>
-                <button class="action-btn" onclick="downloadResult()" title="Baixar">
-                    <i class="fas fa-download"></i>
-                </button>
-            </div>
-            {% for result in results %}
-                <div class="profile-info">
-                    <p><strong>ID:</strong> {{ result.id | default('Não encontrado') }}</p>
-                    <p><strong>Placa:</strong> {{ result.placa | default('Não encontrado') }}</p>
-                    <p><strong>Roubo:</strong> {{ result.roubo | default('Não encontrado') }}</p>
-                    <p><strong>Clone:</strong> {{ result.clone | default('Não encontrado') }}</p>
-                    <p><strong>Marca:</strong> {{ result.marca | default('Não encontrado') }}</p>
-                    <p><strong>Renavam:</strong> {{ result.renavam | default('Não encontrado') }}</p>
-                    <p><strong>Chassi:</strong> {{ result.chassi | default('Não encontrado') }}</p>
-                    <p><strong>Cor:</strong> {{ result.cor | default('Não encontrado') }}</p>
-                    <p><strong>Ano Modelo:</strong> {{ result.anoModelo | default('Não encontrado') }}</p>
-                    <p><strong>Ano Fabricação:</strong> {{ result.anoFabricacao | default('Não encontrado') }}</p>
-                    <p><strong>Categoria:</strong> {{ result.categoria | default('Não encontrado') }}</p>
-                    <p><strong>Combustível:</strong> {{ result.combustivel | default('Não encontrado') }}</p>
-                    <p><strong>Espécie:</strong> {{ result.especie | default('Não encontrado') }}</p>
-                    <p><strong>Tipo:</strong> {{ result.tipo | default('Não encontrado') }}</p>
-                    <p><strong>Nome do Proprietário:</strong> {{ result.nomeProprietario | default('Não encontrado') }}</p>
-                    <p><strong>Tipo de Documento:</strong> {{ result.tipoDocumento | default('Não encontrado') }}</p>
-                    <p><strong>Número do Documento:</strong> {{ result.numeroDocumento | default('Não encontrado') }}</p>
-                    <p><strong>Endereço:</strong> {{ result.endereco | default('Não encontrado') }}</p>
-                    <p><strong>Nome do Possuidor:</strong> {{ result.nomePossuidor | default('Não encontrado') }}</p>
-                    <p><strong>Tipo de Documento do Possuidor:</strong> {{ result.tipoDocumentoPossuidor | default('Não encontrado') }}</p>
-                    <p><strong>Número de Documento do Possuidor:</strong> {{ result.numeroDocumentoPossuidor | default('Não encontrado') }}</p>
-                    <p><strong>Endereço do Possuidor:</strong> {{ result.enderecoPossuidor | default('Não encontrado') }}</p>
-                    <p><strong>Restrição 1:</strong> {{ result.restricao1 | default('Não encontrado') }}</p>
-                    <p><strong>Restrições:</strong> {{ result.restricao | join(', ') | default('Não encontrado') }}</p>
-                    <p><strong>Ano IPVA:</strong> {{ result.anoIpva | default('Não encontrado') }}</p>
-                    <p><strong>Ano Licença:</strong> {{ result.anoLicenca | default('Não encontrado') }}</p>
-                    <p><strong>Último IPVA:</strong> {{ result.ultimoIpva | default('Não encontrado') }}</p>
-                    <p><strong>Cota Única:</strong> {{ result.cotaUnica | default('Não encontrado') }}</p>
-                    <p><strong>Isento IPVA:</strong> {{ result.isentoIpva | default('Não encontrado') }}</p>
-                    <p><strong>Restrição Administrativa:</strong> {{ result.restricaoAdministrativa | default('Não encontrado') }}</p>
-                    <p><strong>Restrição Financeira:</strong> {{ result.restricaoFinanceira | default('Não encontrado') }}</p>
-                    <p><strong>Restrição Jurídica:</strong> {{ result.restricaoJuridica | default('Não encontrado') }}</p>
-                    <p><strong>Total IPVA:</strong> {{ result.totalIpva | default('Não encontrado') }}</p>
-                    <p><strong>DPVAT Anterior:</strong> {{ result.dpvatAnterior | default('Não encontrado') }}</p>
-                    <p><strong>DPVAT Atual:</strong> {{ result.dpvatAtual | default('Não encontrado') }}</p>
-                    <p><strong>IPVA Anterior:</strong> {{ result.ipvaAnterior | default('Não encontrado') }}</p>
-                    <p><strong>Licença Anterior:</strong> {{ result.licencaAnterior | default('Não encontrado') }}</p>
-                    <p><strong>Licença Atual:</strong> {{ result.licencaAtual | default('Não encontrado') }}</p>
-                    <p><strong>Valor Multa:</strong> {{ result.valorMulta | default('Não encontrado') }}</p>
-                    <p><strong>Multa em Tramitação:</strong> {{ result.multaTramitacao | default('Não encontrado') }}</p>
-                    <p><strong>Base:</strong> {{ result.base | default('Não encontrado') }}</p>
-                    <p><strong>Motor:</strong> {{ result.motor | default('Não encontrado') }}</p>
-                    <p><strong>Município:</strong> {{ result.municipio | default('Não encontrado') }}</p>
-                    <p><strong>Cidade:</strong> {{ result.cidade | default('Não encontrado') }}</p>
-                    <p><strong>UF Veículo:</strong> {{ result.ufVeiculo | default('Não encontrado') }}</p>
-                    <p><strong>UF:</strong> {{ result.uf | default('Não encontrado') }}</p>
-                    <p><strong>Situação:</strong> {{ result.situacao | default('Não encontrado') }}</p>
-                    <p><strong>Temporário:</strong> {{ result.temporario | default('Não encontrado') }}</p>
-                </div>
-            {% endfor %}
+
+        {% if result %}
+        <div class="profile-actions">
+            <button class="action-btn" onclick="copyResult()" title="Copiar">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button class="action-btn" onclick="downloadResult()" title="Baixar">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+
+        <div class="profile-info">
+            <p><strong>Placa:</strong> {{ result.PLACA | upper }}</p>
+            <p><strong>Chassi:</strong> {{ result.CHASSI | default('N/I') }}</p>
+            <p><strong>Marca:</strong> {{ result.MARCA | default('N/I') }}</p>
+            <p><strong>Ano Fabricação:</strong> {{ result.ANO_FABRICACAO | default('N/I') }}</p>
+            <p><strong>Ano Modelo:</strong> {{ result.ANO_MODELO | default('N/I') }}</p>
+            <p><strong>Combustível:</strong> {{ result.COMBUSTIVEL | default('N/I') }}</p>
+            <p><strong>Cor:</strong> {{ result.COR | default('N/I') }}</p>
+            <p><strong>Potência:</strong> {{ result.POTENCIA | default('N/I') }} CV</p>
+            <p><strong>Cilindradas:</strong> {{ result.CILINDRADAS | default('N/I') }}</p>
+            <p><strong>Caixa de Câmbio:</strong> {{ result.CAIXA_DE_CAMBIO | default('N/I') }}</p>
+            <p><strong>Cap. Tração:</strong> {{ result.CAP_MAX_TRAÇÃO | default('N/I') }} kg</p>
+            <p><strong>Eixos:</strong> {{ result.EIXOS | default('N/I') }}</p>
+            <p><strong>Passageiros:</strong> {{ result.PASSAGEIROS | default('N/I') }}</p>
+            <p><strong>Peso Bruto:</strong> {{ result.PESO_BRUTO | default('N/I') }} kg</p>
+            <p><strong>Carroceria:</strong> {{ result.TIPO_CARROCERIA | default('N/I') }}</p>
+            <p><strong>Origem:</strong> {{ result.ORIGEM | default('N/I') }}</p>
+            <p><strong>Situação:</strong> {{ result.SITUACAO | default('N/I') }}</p>
+            <p><strong>RENAVAM:</strong> {{ result.RENAVAM | default('N/I') }}</p>
+            <p><strong>Motor:</strong> {{ result.MOTOR | default('N/I') }}</p>
+            <p><strong>UF Placa:</strong> {{ result.UF_PLACA | default('N/I') }}</p>
+            <p><strong>UF Faturado:</strong> {{ result.UF_FATURADO | default('N/I') }}</p>
+            <p><strong>Doc. Faturado:</strong> {{ result.DOC_FATURADO | default('N/I') }}</p>
+            <p><strong>Nome Faturado:</strong> {{ result.NOME_FATURADO | default('N/I') }}</p>
+            <p><strong>Proprietário:</strong> {{ result.PROPRIETARIO.NOME | default('N/I') }}</p>
+            <p><strong>CPF/CNPJ Prop.:</strong> {{ result.PROPRIETARIO.CPF_CNPJ | default('N/I') }}</p>
+            <p><strong>Endereço:</strong> {{ result.ENDERECO | default('N/I') }}</p>
+            <p><strong>Município:</strong> {{ result.MUNICIPIO | default('N/I') }}</p>
+            <p><strong>CEP:</strong> {{ result.CEP | default('N/I') }}</p>
+            <p><strong>Restrições:</strong> {{ result.RESTRICOES | join(', ') | default('Nenhuma') }}</p>
+            <p><strong>Data Consulta:</strong> {{ result.DATA | default('N/I') }}</p>
+        </div>
         {% endif %}
     </div>
 
     <script>
         function toggleNavbar() {
-            const navLinks = document.getElementById('navLinks');
-            const toggleBtn = document.querySelector('.navbar-toggle');
-            navLinks.classList.toggle('active');
-            toggleBtn.classList.toggle('active');
+            const nav = document.getElementById('navLinks');
+            const btn = document.querySelector('.navbar-toggle');
+            nav.classList.toggle('active');
+            btn.classList.toggle('active');
         }
 
-        function toggleDropdown(event) {
-            event.preventDefault();
-            const subNavbar = document.getElementById('subNavbar');
-            subNavbar.classList.toggle('active');
+        function toggleDropdown(e) {
+            e.preventDefault();
+            document.getElementById('subNavbar').classList.toggle('active');
         }
 
-        document.getElementById('searchForm').addEventListener('submit', function(event) {
-            const placa = this.placa.value.trim();
-            if (placa.length < 7) {
-                event.preventDefault();
-                const alert = document.createElement('div');
-                alert.className = 'alert alert-error';
-                alert.textContent = 'Por favor, insira uma placa com pelo menos 7 caracteres.';
-                this.insertBefore(alert, this.firstChild);
-                setTimeout(() => alert.remove(), 3000);
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            const placa = this.placa.value.trim().toUpperCase().replace(/\s/g, '');
+            if (!/^[A-Z]{3}\d{4}$/.test(placa)) {
+                e.preventDefault();
+                alert('Placa inválida. Use o formato: ABC1234');
             }
         });
 
-        function copyResult(button) {
-            const profileInfo = button.closest('.container').querySelector('.profile-info');
-            const text = Array.from(profileInfo.querySelectorAll('p'))
-                .map(p => p.textContent)
-                .join('\n');
+        function copyResult() {
+            const info = document.querySelector('.profile-info');
+            const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
             navigator.clipboard.writeText(text).then(() => {
-                button.classList.add('copied');
-                button.innerHTML = '<i class="fas fa-check"></i>';
+                const btn = document.querySelector('[onclick="copyResult()"]');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.classList.add('copied');
                 setTimeout(() => {
-                    button.classList.remove('copied');
-                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                    btn.innerHTML = '<i class="fas fa-copy"></i>';
+                    btn.classList.remove('copied');
                 }, 2000);
-            }).catch(err => {
-                console.error('Erro ao copiar: ', err);
-                alert('Falha ao copiar o texto.');
             });
         }
 
         function downloadResult() {
-            const profileInfos = document.querySelectorAll('.profile-info');
-            if (!profileInfos.length) {
-                const alert = document.createElement('div');
-                alert.className = 'alert alert-error';
-                alert.textContent = 'Nenhum resultado disponível para download.';
-                document.querySelector('.container').insertBefore(alert, document.querySelector('.profile-actions'));
-                setTimeout(() => alert.remove(), 3000);
-                return;
-            }
-
-            const resultText = Array.from(profileInfos).reduce((acc, info) => {
-                const infoText = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
-                return acc + '\n\n' + infoText;
-            }, '');
-
-            const currentDate = new Date().toLocaleString().replace(/[^\d]/g, '-').replace(/-+/g, '-');
-            const fileName = `${currentDate}-PLACA-CONSULT-CENTER.txt`;
-
-            const blob = new Blob([resultText], { type: 'text/plain' });
+            const info = document.querySelector('.profile-info');
+            const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
+            const date = new Date().toISOString().slice(0,19).replace(/:/g, '-');
+            const blob = new Blob([text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-
-            setTimeout(() => {
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }, 100);
+            const a = document.createElement('a');
+            a.href = url; a.download = `${date}-PLACA.txt`; a.click();
+            URL.revokeObjectURL(url);
         }
 
-        document.addEventListener('click', (e) => {
-            const subNavbar = document.getElementById('subNavbar');
-            const navLinks = document.getElementById('navLinks');
-            if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
-                subNavbar.classList.remove('active');
-            }
-            if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
+        document.addEventListener('click', e => {
+            const nav = document.getElementById('navLinks');
+            const sub = document.getElementById('subNavbar');
+            if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && nav.classList.contains('active')) {
                 toggleNavbar();
+            }
+            if (!e.target.closest('.nav-links') && sub.classList.contains('active')) {
+                sub.classList.remove('active');
             }
         });
     </script>
