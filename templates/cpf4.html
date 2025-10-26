@@ -530,9 +530,12 @@
             <p><strong>Nome da Mãe:</strong> {{ result.nomeMae | default('Não informado') }}</p>
             <p><strong>Nome do Pai:</strong> {{ result.nomePai | default('Não informado') }}</p>
             <p><strong>CNS Definitivo:</strong> {{ result.cnsDefinitivo | default('Não informado') }}</p>
+            <p><strong>Raça:</strong> {{ result.raca | default('Não informado') }}</p>
+            <p><strong>Tipo Sanguíneo:</strong> {{ result.tipo_sanguineo | default('Não informado') }}</p>
+            <p><strong>Nome Social:</strong> {{ result.nome_social | default('Não informado') }}</p>
 
             <h3>Telefone:</h3>
-            {% if result.telefone and result.telefone[0] %}
+            {% if result.telefone and result.telefone[0].numero %}
             <div class="list-item">
                 <p><strong>Número:</strong> {{ result.telefone[0].ddi }}{{ result.telefone[0].ddd }}{{ result.telefone[0].numero }}</p>
             </div>
@@ -547,10 +550,13 @@
             <h3>Endereço:</h3>
             {% if result.enderecos and result.enderecos[0] %}
             <div class="list-item">
+                <p><strong>Tipo Logradouro:</strong> {{ result.enderecos[0].tipo_logradouro | default('Não informado') }}</p>
                 <p><strong>Logradouro:</strong> {{ result.enderecos[0].logradouro | default('Não informado') }}</p>
                 <p><strong>Número:</strong> {{ result.enderecos[0].numero | default('Não informado') }}</p>
+                <p><strong>Complemento:</strong> {{ result.enderecos[0].complemento | default('Não informado') }}</p>
                 <p><strong>Bairro:</strong> {{ result.enderecos[0].bairro | default('Não informado') }}</p>
                 <p><strong>Cidade:</strong> {{ result.enderecos[0].cidade | default('Não informado') }}</p>
+                <p><strong>CEP:</strong> {{ result.enderecos[0].cep | default('Não informado') }}</p>
             </div>
             {% else %}
             <p><strong>Endereço:</strong> Não informado</p>
