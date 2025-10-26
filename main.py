@@ -37,11 +37,11 @@ colorama.init()
 login_attempts = {}
 module_status = {
     'cpfdata': 'ON',
-    'cpflv': 'ON',
+    'cpflv': 'OFF',
     'cpf': 'ON',
     'cpf2': 'ON',
     'vacinas': 'OFF',
-    'cpf3': 'OFF',
+    'cpf3': 'ON',
     'nomelv': 'OFF',
     'nome': 'ON',
     'nome2': 'ON',
@@ -1421,7 +1421,7 @@ def nomelv():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=nome&query={nome}"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}S&tipo=nomev1"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -1471,7 +1471,7 @@ def nome():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('nome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=nome&query={nome}"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}S&tipo=nomev1"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
