@@ -980,623 +980,571 @@ body {
 
 .page-dot.active {
     background: var(--primary-color);
-    transform: scale(1.3);
+    transform: scale(1.2);
     box-shadow: 0 0 8px var(--glow);
 }
 
-.page-dot:hover {
-    background: var(--secondary-color);
-    transform: scale(1.15);
-}
-
 .page-arrow {
-    background: none;
-    border: none;
-    color: var(--text-light);
-    font-size: 18px;
-    cursor: pointer;
-    transition: var(--transition);
-    padding: 5px;
-}
-
-.page-arrow:hover:not(:disabled) {
+    background: var(--primary-color);
     color: var(--white);
-    transform: scale(1.1);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    cursor: pointer;
+    border: none;
 }
 
 .page-arrow:disabled {
-    color: rgba(150, 155, 180, 0.3);
+    background: var(--text-light);
     cursor: not-allowed;
 }
 
-/* SweetAlert Customização */
-.swal2-popup {
-    width: 300px !important;
-    padding: 20px !important;
-    border-radius: var(--border-radius) !important;
-    background: linear-gradient(135deg, rgba(25, 30, 50, 0.95), rgba(15, 20, 40, 0.98)) !important;
-    box-shadow: 0 8px 20px var(--shadow) !important;
-    border: 1px solid rgba(94, 62, 255, 0.3) !important;
-    font-family: 'Roboto', sans-serif !important;
+.page-arrow:hover:not(:disabled) {
+    background: var(--secondary-color);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--glow);
 }
-
-.swal2-title {
-    color: var(--text-dark) !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-}
-
-.swal2-content {
-    color: var(--text-light) !important;
-    font-size: 14px !important;
-}
-
-.swal2-confirm, .swal2-cancel {
-    padding: 10px 20px !important;
-    border-radius: 6px !important;
-    font-size: 14px !important;
-    transition: var(--transition) !important;
-}
-
-.swal2-confirm {
-    background-color: var(--primary-color) !important;
-}
-
-.swal2-confirm:hover {
-    background-color: var(--secondary-color) !important;
-}
-
-.swal2-cancel {
-    background-color: var(--error) !important;
-}
-
-.swal2-cancel:hover {
-    background-color: var(--accent-color) !important;
-}
-
-.swal2-container {
-    justify-content: flex-end !important;
-    align-items: flex-start !important;
-    padding: 20px !important;
-}
-    </style>
+</style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loading-container">
-            <div class="loading-top">
-                <div class="loading-icon">
-                    <i class="fas fa-search"></i>
-                </div>
-                <div class="loading-line"></div>
-                <div class="loading-text">C&<span class="purple-c">C</span></div>
-            </div>
-            <div class="loading-box">
-                <div class="loading-dots">
-                    <div class="loading-dot"></div>
-                    <div class="loading-dot"></div>
-                    <div class="loading-dot"></div>
-                </div>
+
+<div id="loadingScreen" class="loading-screen">
+    <div class="loading-container">
+        <div class="loading-top">
+            <i class="loading-icon fas fa-search"></i>
+            <div class="loading-line"></div>
+            <span class="loading-text">Consult<span class="purple-c">C</span>enter</span>
+        </div>
+        <div class="loading-box">
+            <div class="loading-dots">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
             </div>
         </div>
-    </div>
-
-    <!-- Overlay -->
-    <div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
-
-    <!-- Sidebar -->
-    <div id="sidebar">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
-            <i class="fas fa-angle-right"></i>
-        </button>
-        <div class="profile-icon" onclick="toggleProfile()">
-            <i class="fas fa-user"></i>
-            <span>Perfil</span>
-        </div>
-        <div class="notification-bell" onclick="toggleNotifications()">
-            <i class="fas fa-bell"></i>
-            <span>Notificações</span>
-            <div class="notification-badge" id="notificationCount">{{ notifications.get(g.user_id, []).__len__() }}</div>
-        </div>
-        <a href="#" class="sidebar-item active" data-section="dashboard">
-            <i class="fas fa-home"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="#" class="sidebar-item" data-section="suporte" onclick="navigateTo('https://t.me/enfurecido')">
-            <i class="fas fa-headset"></i>
-            <span>Suporte</span>
-        </a>
-        {% if admin %}
-            <a href="#" class="sidebar-item" data-section="admin" onclick="navigateTo('/i/settings/admin')">
-                <i class="fas fa-shield-alt"></i>
-                <span>Administração</span>
-            </a>
-        {% endif %}
-        <a href="/logout" class="logout-btn" onclick="confirmLogout(event)">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Sair</span>
-        </a>
-    </div>
-
-    <!-- Profile Card -->
-    <div class="profile-card" id="profileCard">
-        <button class="close-btn" onclick="toggleProfile()"><i class="fas fa-times"></i></button>
-        <div class="profile-header">
-            <div class="profile-avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="profile-info">
-                <h4>{{ g.user_id }}</h4>
-                <p>
-                    {% if users[g.user_id]['role'] == 'user_semanal' %}Semanal
-                    {% elif users[g.user_id]['role'] == 'user_mensal' %}Mensal
-                    {% elif users[g.user_id]['role'] == 'user_anual' %}Anual
-                    {% elif users[g.user_id]['role'] == 'admin' %}Administrador
-                    {% else %}N/A{% endif %}
-                </p>
-            </div>
-        </div>
-        <div class="profile-detail">
-            <span class="label">Token</span>
-            <span class="value">{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}</span>
-            <button class="copy-btn" onclick="copyToken(this, '{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}')"><i class="fas fa-copy"></i></button>
-        </div>
-        <div class="profile-detail">
-            <span class="label">Validade</span>
-            <span class="value">{{ users[g.user_id]['expiration'] }}</span>
-        </div>
-    </div>
-
-    <!-- Notification Panel -->
-    <div class="notification-panel" id="notificationPanel">
-        <button class="close-btn" onclick="toggleNotifications()"><i class="fas fa-times"></i></button>
-        <h5><i class="fas fa-bell"></i> Notificações ({{ notifications.get(g.user_id, []).__len__() }})</h5>
-        <div class="notification-list">
-            {% for notification in notifications.get(g.user_id, []) %}
-                <div class="notification-item">
-                    <i class="fas fa-info-circle"></i>
-                    <div>
-                        <p>{{ notification.message }}</p>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div id="main-content">
-        <!-- Welcome Card -->
-        <div class="welcome-card">
-            <div class="greeting">Bem-vindo(a), {{ g.user_id }}.</div>
-            <div class="validity">Validade: {{ users[g.user_id]['expiration'] }}</div>
-            <div class="search-container">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input id="search-input" type="text" placeholder="Pesquisar módulos..." oninput="searchModules()">
-                </div>
-            </div>
-        </div>
-
-        <!-- Modules Grid -->
-        <!-- Modules Grid -->
-<div class="modules-grid" id="page1">
-    {% set module_card_class = [] %}
-    <!-- Página 1: CPF e Vacinas -->
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('cpfdata', '/modulos/cpfdata')" 
-         data-module-id="cpfdata"
-         data-status="{{ module_status.get('cpfdata', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar CPF (DATASUS)</h3>
-        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-cpfdata"></div>
-            <div class="module-message" id="message-cpfdata"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" 
-         data-module-id="cpflv"
-         data-status="{{ module_status.get('cpflv', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar CPF (C&C Plus)</h3>
-        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-cpflv"></div>
-            <div class="module-message" id="message-cpflv"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('cpf', '/modulos/cpf')" 
-         data-module-id="cpf"
-         data-status="{{ module_status.get('cpf', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar CPF (DATA)</h3>
-        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-cpf"></div>
-            <div class="module-message" id="message-cpf"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" 
-         data-module-id="cpf2"
-         data-status="{{ module_status.get('cpf2', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
-        <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar CPF (DATAPRIME)</h3>
-        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-cpf2"></div>
-            <div class="module-message" id="message-cpf2"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" 
-         data-module-id="vacinas"
-         data-status="{{ module_status.get('vacinas', 'OFF') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
-        <i class="module-icon fas fa-syringe"></i>
-        <h3 class="module-title">Consulta Vacina (SIPNI)</h3>
-        <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-vacinas"></div>
-            <div class="module-message" id="message-vacinas"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" 
-         data-module-id="cpf3"
-         data-status="{{ module_status.get('cpf3', 'OFF') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
-        <i class="module-icon fas fa-id-card"></i>
-        <h3 class="module-title">Localizar CPF (SISREGII)</h3>
-        <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-cpf3"></div>
-            <div class="module-message" id="message-cpf3"></div>
-        {% endwith %}
     </div>
 </div>
 
-<div class="modules-grid" id="page2" style="display: none;">
-    {% set module_card_class = [] %}
-    <!-- Página 2: Nome e Telefone -->
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" 
-         data-module-id="nomelv"
-         data-status="{{ module_status.get('nomelv', 'OFF') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-user"></i>
-        <h3 class="module-title">Localizar Nome (C&C Plus)</h3>
-        <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-nomelv"></div>
-            <div class="module-message" id="message-nomelv"></div>
-        {% endwith %}
-    </div>
+<div id="overlay" class="overlay" onclick="closeAllPanels()"></div>
 
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('nome', '/modulos/nome')" 
-         data-module-id="nome"
-         data-status="{{ module_status.get('nome', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-user"></i>
-        <h3 class="module-title">Localizar Nome (DATA)</h3>
-        <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-nome"></div>
-            <div class="module-message" id="message-nome"></div>
-        {% endwith %}
-    </div>
+<!-- Sidebar -->
+<nav id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
 
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('nome2', '/modulos/nome2')" 
-         data-module-id="nome2"
-         data-status="{{ module_status.get('nome2', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
-        <i class="module-icon fas fa-user"></i>
-        <h3 class="module-title">Localizar Nome (DATAPRIME)</h3>
-        <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-nome2"></div>
-            <div class="module-message" id="message-nome2"></div>
-        {% endwith %}
-    </div>
+    <a href="#" class="profile-icon" onclick="toggleProfile()">
+        <i class="fas fa-user-circle"></i>
+        <span>Perfil</span>
+    </a>
 
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('tel', '/modulos/tel')" 
-         data-module-id="tel"
-         data-status="{{ module_status.get('tel', 'OFF') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tel', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-phone"></i>
-        <h3 class="module-title">Consulta TELEFONE (DATA)</h3>
-        <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tel', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-tel"></div>
-            <div class="module-message" id="message-tel"></div>
-        {% endwith %}
-    </div>
+    <a href="#" class="notification-bell" onclick="toggleNotifications()">
+        <i class="fas fa-bell"></i>
+        <span>Notificações</span>
+        <span class="notification-badge" id="notificationCount">{{ notifications | length }}</span>
+    </a>
 
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('telLv', '/modulos/telLv')" 
-         data-module-id="telLv"
-         data-status="{{ module_status.get('telLv', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tellv', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-phone"></i>
-        <h3 class="module-title">Consulta TELEFONE (C&C Plus)</h3>
-        <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('telLv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-telLv"></div>
-            <div class="module-message" id="message-telLv"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('teldual', '/modulos/teldual')" 
-         data-module-id="teldual"
-         data-status="{{ module_status.get('teldual', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('teldual', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-phone"></i>
-        <h3 class="module-title">Consulta TELEFONE (NACIONAL)</h3>
-        <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('teldual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-teldual"></div>
-            <div class="module-message" id="message-teldual"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('datanome', '/modulos/datanome')" 
-         data-module-id="datanome"
-         data-status="{{ module_status.get('datanome', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-calendar"></i>
-        <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
-        <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-datanome"></div>
-            <div class="module-message" id="message-datanome"></div>
-        {% endwith %}
-    </div>
-</div>
-
-<div class="modules-grid" id="page3" style="display: none;">
-    {% set module_card_class = [] %}
-    <!-- Página 3: Placa e FotoRG -->
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('placa', '/modulos/placa')" 
-         data-module-id="placa"
-         data-status="{{ module_status.get('placa', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placa', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-car"></i>
-        <h3 class="module-title">Consulta Veicular (NACIONAL)</h3>
-        <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placa', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-placa"></div>
-            <div class="module-message" id="message-placa"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" 
-         data-module-id="placaestadual"
-         data-status="{{ module_status.get('placaestadual', 'OFF') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-car"></i>
-        <h3 class="module-title">Consulta Veicular (ESTADUAL)</h3>
-        <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-placaestadual"></div>
-            <div class="module-message" id="message-placaestadual"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('fotor', '/modulos/fotor')" 
-         data-module-id="fotor"
-         data-status="{{ module_status.get('fotor', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-camera"></i>
-        <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
-        <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-fotor"></div>
-            <div class="module-message" id="message-fotor"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('pix', '/modulos/pix')" 
-         data-module-id="pix"
-         data-status="{{ module_status.get('pix', 'OFF') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-qrcode"></i>
-        <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
-        <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-pix"></div>
-            <div class="module-message" id="message-pix"></div>
-        {% endwith %}
-    </div>
-
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('placalv', '/modulos/placalv')" 
-         data-module-id="placalv"
-         data-status="{{ module_status.get('placalv', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-car"></i>
-        <h3 class="module-title">Consulta Veicular (C&C Plus)</h3>
-        <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placalv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-placalv"></div>
-            <div class="module-message" id="message-placalv"></div>
-        {% endwith %}
-    </div>
-</div>
-
-<div class="modules-grid" id="page4" style="display: none;">
-    {% set module_card_class = [] %}
-    <!-- Página 4: Consulta IP e Likes -->
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('ip', '/modulos/ip')" 
-         data-module-id="ip"
-         data-status="{{ module_status.get('ip', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-globe"></i>
-        <h3 class="module-title">Localizar IP (C&C Plus)</h3>
-        <p class="module-description">Consulte a localização geológica de qualquer Endereço IP.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-ip"></div>
-            <div class="module-message" id="message-ip"></div>
-        {% endwith %}
-    </div>
-
-    {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
-    <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-         onclick="checkModuleStatus('likeff', '/modulos/likeff')" 
-         data-module-id="likeff"
-         data-status="{{ module_status.get('likeff', 'ON') }}"
-         data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}"
-         data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-        <i class="module-icon fas fa-thumbs-up"></i>
-        <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
-        <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
-        <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-            <div class="request-bar-wrapper">
-                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-            </div>
-            <p class="request-count">{{ usage }}/{{ limit }}</p>
-            <div class="status-dot" id="status-dot-likeff"></div>
-            <div class="module-message" id="message-likeff"></div>
-        {% endwith %}
-    </div>
+    {% if admin %}
+    <a href="/i/settings/admin" class="sidebar-item">
+        <i class="fas fa-cog"></i>
+        <span>Painel Admin</span>
+    </a>
     {% endif %}
+
+    <a href="/logout" class="logout-btn" onclick="confirmLogout(event)">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Sair</span>
+    </a>
+</nav>
+
+<!-- Profile Card -->
+<div id="profileCard" class="profile-card">
+    <button class="close-btn" onclick="closeAllPanels()"><i class="fas fa-times"></i></button>
+    <div class="profile-header">
+        <div class="profile-avatar">U</div>
+        <div class="profile-info">
+            <h4>{{ g.user_id }}</h4>
+            <p>Plano: {{ users[g.user_id]['role'] | capitalize }}</p>
+        </div>
+    </div>
+    <div class="profile-detail">
+        <span class="label">Expiração</span>
+        <span class="value">{{ users[g.user_id]['expiration'] }}</span>
+    </div>
+    <div class="profile-detail">
+        <span class="label">Token</span>
+        <span class="value">{{ users[g.user_id]['token'] }}</span>
+        <button class="copy-btn" onclick="copyToken(this, '{{ users[g.user_id]['token'] }}')"><i class="fas fa-copy"></i></button>
+    </div>
 </div>
+
+<!-- Notification Panel -->
+<div id="notificationPanel" class="notification-panel">
+    <h5>Notificações</h5>
+    <div class="notification-list">
+        {% for notification in notifications[g.user_id] %}
+            <div class="notification-item">
+                <i class="fas fa-info-circle"></i>
+                <p>{{ notification['message'] }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Main Content -->
+<div id="main-content">
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+        <h2 class="greeting">Olá, {{ g.user_id }}!</h2>
+        <p class="validity">Seu plano expira em {{ users[g.user_id]['expiration'] }}</p>
+        <div class="search-container">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Pesquisar módulos..." oninput="searchModules()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modules Grid Pages -->
+    <div class="modules-grid" id="page1">
+        {% set module_card_class = [] %}
+        <!-- Página 1: CPF, CPF2 e CPF DATA -->
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('cpf')" 
+             data-module-id="cpf"
+             data-uuid="{{ module_uuids['cpf'] }}"
+             data-status="{{ module_status.get('cpf', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-id-card"></i>
+            <h3 class="module-title">Consulta CPF (NACIONAL)</h3>
+            <p class="module-description">Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-cpf"></div>
+                <div class="module-message" id="message-cpf"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('cpf2')" 
+             data-module-id="cpf2"
+             data-uuid="{{ module_uuids['cpf2'] }}"
+             data-status="{{ module_status.get('cpf2', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-id-card"></i>
+            <h3 class="module-title">Consulta CPF (ESTADUAL)</h3>
+            <p class="module-description">Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-cpf2"></div>
+                <div class="module-message" id="message-cpf2"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('cpfdata')" 
+             data-module-id="cpfdata"
+             data-uuid="{{ module_uuids['cpfdata'] }}"
+             data-status="{{ module_status.get('cpfdata', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-id-card"></i>
+            <h3 class="module-title">Consulta CPF (C&C Plus)</h3>
+            <p class="module-description">Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-cpfdata"></div>
+                <div class="module-message" id="message-cpfdata"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('cpflv')" 
+             data-module-id="cpflv"
+             data-uuid="{{ module_uuids['cpflv'] }}"
+             data-status="{{ module_status.get('cpflv', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-id-card"></i>
+            <h3 class="module-title">Consulta CPF (C&C Plus)</h3>
+            <p class="module-description">Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-cpflv"></div>
+                <div class="module-message" id="message-cpflv"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('cpf3')" 
+             data-module-id="cpf3"
+             data-uuid="{{ module_uuids['cpf3'] }}"
+             data-status="{{ module_status.get('cpf3', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-id-card"></i>
+            <h3 class="module-title">Consulta CPF (NACIONAL)</h3>
+            <p class="module-description">Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-cpf3"></div>
+                <div class="module-message" id="message-cpf3"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('vacinas')" 
+             data-module-id="vacinas"
+             data-uuid="{{ module_uuids['vacinas'] }}"
+             data-status="{{ module_status.get('vacinas', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-syringe"></i>
+            <h3 class="module-title">Consulta Vacinas (C&C Plus)</h3>
+            <p class="module-description">Verifique o histórico de vacinas associado a um CPF.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-vacinas"></div>
+                <div class="module-message" id="message-vacinas"></div>
+            {% endwith %}
+        </div>
+    </div>
+
+    <div class="modules-grid" id="page2" style="display: none;">
+        {% set module_card_class = [] %}
+        <!-- Página 2: Nome, Tel, TelLv, TelDual, DataNome -->
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('nomelv')" 
+             data-module-id="nomelv"
+             data-uuid="{{ module_uuids['nomelv'] }}"
+             data-status="{{ module_status.get('nomelv', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-user"></i>
+            <h3 class="module-title">Localizar NOME (C&C Plus)</h3>
+            <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-nomelv"></div>
+                <div class="module-message" id="message-nomelv"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('nome')" 
+             data-module-id="nome"
+             data-uuid="{{ module_uuids['nome'] }}"
+             data-status="{{ module_status.get('nome', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-user"></i>
+            <h3 class="module-title">Localizar NOME (C&C Plus)</h3>
+            <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-nome"></div>
+                <div class="module-message" id="message-nome"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('nome2')" 
+             data-module-id="nome2"
+             data-uuid="{{ module_uuids['nome2'] }}"
+             data-status="{{ module_status.get('nome2', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-user"></i>
+            <h3 class="module-title">Localizar NOME (C&C Plus)</h3>
+            <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-nome2"></div>
+                <div class="module-message" id="message-nome2"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('tel')" 
+             data-module-id="tel"
+             data-uuid="{{ module_uuids['tel'] }}"
+             data-status="{{ module_status.get('tel', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tel', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-phone"></i>
+            <h3 class="module-title">Localizar TELEFONE (C&C Plus)</h3>
+            <p class="module-description">Encontre dados associados a um número de telefone, incluindo proprietário e endereço.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tel', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-tel"></div>
+                <div class="module-message" id="message-tel"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('tellv')" 
+             data-module-id="tellv"
+             data-uuid="{{ module_uuids['tellv'] }}"
+             data-status="{{ module_status.get('tellv', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tellv', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-phone"></i>
+            <h3 class="module-title">Localizar TELEFONE (C&C Plus)</h3>
+            <p class="module-description">Encontre dados associados a um número de telefone, incluindo proprietário e endereço.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tellv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-tellv"></div>
+                <div class="module-message" id="message-tellv"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('teldual')" 
+             data-module-id="teldual"
+             data-uuid="{{ module_uuids['teldual'] }}"
+             data-status="{{ module_status.get('teldual', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('teldual', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-phone"></i>
+            <h3 class="module-title">Localizar TELEFONE (C&C Plus)</h3>
+            <p class="module-description">Encontre dados associados a um número de telefone, incluindo proprietário e endereço.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('teldual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-teldual"></div>
+                <div class="module-message" id="message-teldual"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('datanome')" 
+             data-module-id="datanome"
+             data-uuid="{{ module_uuids['datanome'] }}"
+             data-status="{{ module_status.get('datanome', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-calendar"></i>
+            <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
+            <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-datanome"></div>
+                <div class="module-message" id="message-datanome"></div>
+            {% endwith %}
+        </div>
+    </div>
+
+    <div class="modules-grid" id="page3" style="display: none;">
+        {% set module_card_class = [] %}
+        <!-- Página 3: Placa e FotoRG -->
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('placa')" 
+             data-module-id="placa"
+             data-uuid="{{ module_uuids['placa'] }}"
+             data-status="{{ module_status.get('placa', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placa', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-car"></i>
+            <h3 class="module-title">Consulta Veicular (NACIONAL)</h3>
+            <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placa', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-placa"></div>
+                <div class="module-message" id="message-placa"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('placaestadual')" 
+             data-module-id="placaestadual"
+             data-uuid="{{ module_uuids['placaestadual'] }}"
+             data-status="{{ module_status.get('placaestadual', 'OFF') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-car"></i>
+            <h3 class="module-title">Consulta Veicular (ESTADUAL)</h3>
+            <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-placaestadual"></div>
+                <div class="module-message" id="message-placaestadual"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('fotor')" 
+             data-module-id="fotor"
+             data-uuid="{{ module_uuids['fotor'] }}"
+             data-status="{{ module_status.get('fotor', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-camera"></i>
+            <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
+            <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-fotor"></div>
+                <div class="module-message" id="message-fotor"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('pix')" 
+             data-module-id="pix"
+             data-uuid="{{ module_uuids['pix'] }}"
+             data-status="{{ module_status.get('pix', 'OFF') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-qrcode"></i>
+            <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
+            <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-pix"></div>
+                <div class="module-message" id="message-pix"></div>
+            {% endwith %}
+        </div>
+
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('placalv')" 
+             data-module-id="placalv"
+             data-uuid="{{ module_uuids['placalv'] }}"
+             data-status="{{ module_status.get('placalv', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-car"></i>
+            <h3 class="module-title">Consulta Veicular (C&C Plus)</h3>
+            <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placalv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-placalv"></div>
+                <div class="module-message" id="message-placalv"></div>
+            {% endwith %}
+        </div>
+    </div>
+
+    <div class="modules-grid" id="page4" style="display: none;">
+        {% set module_card_class = [] %}
+        <!-- Página 4: Consulta IP e Likes -->
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('ip')" 
+             data-module-id="ip"
+             data-uuid="{{ module_uuids['ip'] }}"
+             data-status="{{ module_status.get('ip', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-globe"></i>
+            <h3 class="module-title">Localizar IP (C&C Plus)</h3>
+            <p class="module-description">Consulte a localização geológica de qualquer Endereço IP.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-ip"></div>
+                <div class="module-message" id="message-ip"></div>
+            {% endwith %}
+        </div>
+
+        {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
+        <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
+             onclick="checkModuleStatus('likeff')" 
+             data-module-id="likeff"
+             data-uuid="{{ module_uuids['likeff'] }}"
+             data-status="{{ module_status.get('likeff', 'ON') }}"
+             data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}"
+             data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
+            <i class="module-icon fas fa-thumbs-up"></i>
+            <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
+            <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
+            <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+            {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
+                <div class="request-bar-wrapper">
+                    <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                </div>
+                <p class="request-count">{{ usage }}/{{ limit }}</p>
+                <div class="status-dot" id="status-dot-likeff"></div>
+                <div class="module-message" id="message-likeff"></div>
+            {% endwith %}
+        </div>
+        {% endif %}
+    </div>
 
         <!-- Pagination -->
         <div class="pagination">
@@ -1734,8 +1682,10 @@ body {
         }
 
         // Module Status Check
-        function checkModuleStatus(moduleId, url) {
+        function checkModuleStatus(moduleId) {
             const module = document.querySelector(`[data-module-id="${moduleId}"]`);
+            const uuid = module.getAttribute('data-uuid');
+            const url = `/modulos/${uuid}/${moduleId}`;
             const status = module.getAttribute('data-status');
             const usage = parseInt(module.getAttribute('data-usage'));
             const limit = parseInt(module.getAttribute('data-limit'));
