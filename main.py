@@ -674,9 +674,10 @@ def cpfdata():
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
     result = None
-    cpf = request.form.get('cpf', '')
+    cpf = ""
 
     if request.method == 'POST':
+        cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
@@ -687,15 +688,113 @@ def cpfdata():
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=cpfDatasus&query={cpf}"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado'):
+                if data and data.get('nome'):
                     if manage_module_usage(g.user_id, 'cpfdata'):
-                        result = data['resultado']
+                        raw_result = data
+                        processed_result = {
+                            'nome': raw_result.get('nome', 'SEM INFORMAÇÃO').rstrip('---'),
+                            'cpf': raw_result.get('documentos', {}).get('cpf', 'SEM INFORMAÇÃO').replace('.', '').replace('-', ''),
+                            'sexo': raw_result.get('sexo', 'SEM INFORMAÇÃO'),
+                            'dataNascimento': {
+                                'nascimento': 'SEM INFORMAÇÃO',
+                                'idade': 'SEM INFORMAÇÃO',
+                                'signo': 'SEM INFORMAÇÃO'
+                            },
+                            'nomeMae': raw_result.get('mae', 'SEM INFORMAÇÃO'),
+                            'nomePai': raw_result.get('pai', 'SEM INFORMAÇÃO'),
+                            'telefone': [],
+                            'nacionalidade': {
+                                'municipioNascimento': raw_result.get('endereco', {}).get('municipio_residencia', 'SEM INFORMAÇÃO'),
+                                'paisNascimento': raw_result.get('endereco', {}).get('pais', 'SEM INFORMAÇÃO')
+                            },
+                            'enderecos': [],
+                            'cnsDefinitivo': raw_result.get('cns', 'SEM INFORMAÇÃO'),
+                            'raca': raw_result.get('raca', 'SEM INFORMAÇÃO'),
+                            'tipo_sanguineo': raw_result.get('tipo_sanguineo', 'SEM INFORMAÇÃO'),
+                            'nome_social': raw_result.get('nome_social', None) or 'Não possui'
+                        }
+
+                        # Parse nascimento
+                        nasc = raw_result.get('nascimento', 'SEM INFORMAÇÃO')
+                        if ' (' in nasc and ' anos)' in nasc:
+                            date_str = nasc.split(' (')[0]
+                            age_str = nasc.split(' (')[1].rstrip(' anos)')
+                            processed_result['dataNascimento'] = {
+                                'nascimento': date_str,
+                                'idade': age_str,
+                                'signo': 'SEM INFORMAÇÃO'
+                            }
+                            # Calculate signo
+                            try:
+                                from datetime import datetime
+                                birth_date = datetime.strptime(date_str, '%d/%m/%Y')
+                                month = birth_date.month
+                                day = birth_date.day
+                                if (month == 1 and day >= 20) or (month == 2 and day <= 18):
+                                    signo = 'Aquário'
+                                elif (month == 2 and day >= 19) or (month == 3 and day <= 20):
+                                    signo = 'Peixes'
+                                elif (month == 3 and day >= 21) or (month == 4 and day <= 19):
+                                    signo = 'Áries'
+                                elif (month == 4 and day >= 20) or (month == 5 and day <= 20):
+                                    signo = 'Touro'
+                                elif (month == 5 and day >= 21) or (month == 6 and day <= 20):
+                                    signo = 'Gêmeos'
+                                elif (month == 6 and day >= 21) or (month == 7 and day <= 22):
+                                    signo = 'Câncer'
+                                elif (month == 7 and day >= 23) or (month == 8 and day <= 22):
+                                    signo = 'Leão'
+                                elif (month == 8 and day >= 23) or (month == 9 and day <= 22):
+                                    signo = 'Virgem'
+                                elif (month == 9 and day >= 23) or (month == 10 and day <= 22):
+                                    signo = 'Libra'
+                                elif (month == 10 and day >= 23) or (month == 11 and day <= 21):
+                                    signo = 'Escorpião'
+                                elif (month == 11 and day >= 22) or (month == 12 and day <= 21):
+                                    signo = 'Sagitário'
+                                else:
+                                    signo = 'Capricórnio'
+                                processed_result['dataNascimento']['signo'] = signo
+                            except:
+                                pass
+                        else:
+                            processed_result['dataNascimento'] = {
+                                'nascimento': nasc,
+                                'idade': 'SEM INFORMAÇÃO',
+                                'signo': 'SEM INFORMAÇÃO'
+                            }
+
+                        # Telefone
+                        telefones = raw_result.get('contatos', {}).get('telefones', [])
+                        processed_result['telefone'] = [
+                            {
+                                'ddi': '',
+                                'ddd': phone.get('ddd', '').strip('()'),
+                                'numero': phone.get('numero', '')
+                            }
+                            for phone in telefones
+                        ]
+                        if not processed_result['telefone']:
+                            processed_result['telefone'] = [{'ddi': '', 'ddd': '', 'numero': ''}]
+
+                        # Enderecos
+                        endereco = raw_result.get('endereco', {})
+                        if endereco:
+                            if 'municipio_residencia' in endereco:
+                                parts = endereco['municipio_residencia'].split(' - ')
+                                if len(parts) > 0:
+                                    endereco['cidade'] = parts[0]
+                                if len(parts) > 1:
+                                    endereco['uf'] = parts[1]
+                            processed_result['enderecos'] = [endereco]
+
+                        result = processed_result
                         reset_all()
                     else:
                         flash('Limite de uso atingido para CPFDATA.', 'error')
@@ -709,34 +808,6 @@ def cpfdata():
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
-
-        if result:
-            result = {
-                'nome': result.get('nome', 'SEM INFORMAÇÃO'),
-                'cpf': result.get('cpf', 'SEM INFORMAÇÃO'),
-                'sexo': result.get('sexo', 'SEM INFORMAÇÃO'),
-                'dataNascimento': {
-                    'nascimento': result.get('dataNascimento', {}).get('nascimento', 'SEM INFORMAÇÃO'),
-                    'idade': result.get('dataNascimento', {}).get('idade', 'SEM INFORMAÇÃO'),
-                    'signo': result.get('dataNascimento', {}).get('signo', 'SEM INFORMAÇÃO')
-                },
-                'nomeMae': result.get('nomeMae', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
-                'nomePai': result.get('nomePai', 'SEM INFORMAÇÃO').strip() or 'SEM INFORMAÇÃO',
-                'telefone': [
-                    {
-                        'ddi': phone.get('ddi', 'SEM INFORMAÇÃO'),
-                        'ddd': phone.get('ddd', 'SEM INFORMAÇÃO'),
-                        'numero': phone.get('numero', 'SEM INFORMAÇÃO')
-                    }
-                    for phone in result.get('telefone', [])
-                ] if result.get('telefone') else [{'ddi': 'SEM INFORMAÇÃO', 'ddd': 'SEM INFORMAÇÃO', 'numero': 'SEM INFORMAÇÃO'}],
-                'nacionalidade': {
-                    'municipioNascimento': result.get('nacionalidade', {}).get('municipioNascimento', 'SEM INFORMAÇÃO'),
-                    'paisNascimento': result.get('nacionalidade', {}).get('paisNascimento', 'SEM INFORMAÇÃO')
-                },
-                'enderecos': result.get('enderecos', []),
-                'cnsDefinitivo': result.get('cnsDefinitivo', 'SEM INFORMAÇÃO')
-            }
 
     return render_template('cpf4.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
