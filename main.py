@@ -917,7 +917,7 @@ def cpflv():
     return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf, token=session.get('token'))
 
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
-def cpf5():
+def vacinas():
     if 'user_id' not in g:
         flash('Você precisa estar logado para acessar esta página.', 'error')
         return redirect('/')
@@ -926,44 +926,57 @@ def cpf5():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
-    results = None
-    cpf = request.form.get('cpf', '')
+    results = []
+    cpf = ""
 
     if request.method == 'POST':
-        if not cpf:
-            flash('CPF não fornecido.', 'error')
+        cpf = request.form.get('cpf', '').strip().replace('.', '').replace('-', '')
+        if not cpf or len(cpf) != 11 or not cpf.isdigit():
+            flash('Por favor, insira um CPF válido com 11 dígitos.', 'error')
         else:
             try:
                 if not is_admin:
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf)
+                        return render_template('vacinas.html', is_admin=is_admin, notifications=user_notifications,
+                                               results=results, cpf=cpf)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=vacinas&query={cpf}"
-                logger.info(f"Requisição para API: {url}")
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
+                logger.info(f"Requisição para API (vacinas): {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado'):
-                    if manage_module_usage(g.user_id, 'cpf5'):
-                        results = data['resultado']
+                # Extrai lista de imunizações
+                imunizacoes = []
+                if isinstance(data, dict):
+                    if data.get('status') and 'response' in data and 'dados' in data['response']:
+                        imunizacoes = data['response']['dados']
+                    elif 'resultado' in data and isinstance(data['resultado'], list):
+                        imunizacoes = data['resultado']
+
+                if imunizacoes:
+                    if manage_module_usage(g.user_id, 'vacinas'):
+                        results = imunizacoes
                         reset_all()
                     else:
-                        flash('Limite de uso atingido para CPF5.', 'error')
+                        flash('Limite de uso atingido para VACINAS.', 'error')
+                        results = []
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
+                    flash('Nenhum registro de vacinação encontrado para este CPF.', 'error')
+
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
             except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                flash('Resposta da API inválida (JSON malformado).', 'error')
 
-    return render_template('cpf5.html', is_admin=is_admin, notifications=user_notifications, results=results, cpf=cpf, token=session.get('token'))
+    return render_template('vacinas.html', is_admin=is_admin, notifications=user_notifications,
+                           results=results, cpf=cpf)
 
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 def datanome():
@@ -975,49 +988,78 @@ def datanome():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
-    nome = request.form.get('nome', '')
-    datanasc = request.form.get('datanasc', '')
-    result = []
+    results = []
+    nome = ""
+    datanasc = ""
 
     if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        datanasc = request.form.get('datanasc', '').strip()
+
         if not nome or not datanasc:
             flash('Nome e data de nascimento são obrigatórios.', 'error')
         else:
             try:
-                url = f"https://api.bygrower.online/core/?token={chave}&base=nome&query={nome}"
-                logger.info(f"Requisição para API: {url}")
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
+                                               results=results, nome=nome, datanasc=datanasc)
+
+                # Usa a mesma API de nomelv (nomev2)
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
+                logger.info(f"Requisição para API (datanome): {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado') and len(data['resultado']) > 0:
-                    for item in data['resultado']:
-                        if 'nascimento' in item:
-                            api_date = datetime.strptime(item['nascimento'].strip(), '%d/%m/%Y')
-                            user_date = datetime.strptime(datanasc, '%Y-%m-%d')
-                            if api_date == user_date:
-                                result.append(item)
-                    
-                    if result and manage_module_usage(g.user_id, 'datanome'):
+                # Aceita lista direta ou dentro de 'resultado'
+                raw_results = []
+                if isinstance(data, list):
+                    raw_results = data
+                elif isinstance(data, dict) and 'resultado' in data and isinstance(data['resultado'], list):
+                    raw_results = data['resultado']
+
+                # Converte a data do usuário (YYYY-MM-DD) → datetime
+                try:
+                    user_date = datetime.strptime(datanasc, '%Y-%m-%d')
+                except ValueError:
+                    flash('Formato de data inválido. Use o seletor de data.', 'error')
+                    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
+                                           results=results, nome=nome, datanasc=datanasc)
+
+                # Filtra por data de nascimento
+                for item in raw_results:
+                    if 'NASCIMENTO' in item:
+                        try:
+                            api_date_str = item['NASCIMENTO'].strip()
+                            api_date = datetime.strptime(api_date_str, '%d/%m/%Y')
+                            if api_date.date() == user_date.date():
+                                results.append(item)
+                        except (ValueError, AttributeError):
+                            continue  # Ignora datas mal formatadas
+
+                if results:
+                    if manage_module_usage(g.user_id, 'datanome'):
                         reset_all()
-                    elif not result:
-                        flash(f'Nenhum resultado encontrado para o nome e data fornecidos. Resposta: {data}', 'error')
                     else:
                         flash('Limite de uso atingido para DATANOME.', 'error')
+                        results = []
                 else:
-                    flash(f'Nenhum resultado encontrado para o nome fornecido.', 'error')
+                    flash('Nenhum resultado encontrado com essa data de nascimento.', 'error')
+
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
             except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
-            except ValueError:
-                flash('Formato de data inválido.', 'error')
+                flash('Resposta da API inválida (JSON malformado).', 'error')
 
-    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome, datanasc=datanasc, token=session.get('token'))
+    return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
+                           results=results, nome=nome, datanasc=datanasc)
 
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
 def placalv():
