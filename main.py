@@ -1403,7 +1403,7 @@ def pix():
     chave = ""
 
     if request.method == 'POST':
-        chave = request.form.get('chave', '').strip().replace(/\D/g, '')
+        chave = request.form.get('chave', '').strip()
         if not chave or len(chave) < 11:
             flash('Por favor, insira uma chave válida (CPF, telefone ou e-mail).', 'error')
         else:
