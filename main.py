@@ -42,18 +42,18 @@ module_status = {
     'cpf2': 'ON',
     'vacinas': 'OFF',
     'cpf3': 'ON',
-    'nomelv': 'OFF',
-    'nome': 'ON',
+    'nomelv': 'ON',
+    'nome': 'OFF',
     'nome2': 'ON',
     'tel': 'OFF',
     'telLv': 'ON',
-    'teldual': 'ON',
+    'teldual': 'OFF',
     'datanome': 'ON',
     'placa': 'ON',
-    'placaestadual': 'OFF',
+    'placaestadual': 'ON',
     'fotor': 'ON',
-    'pix': 'OFF',
-    'placalv': 'ON',
+    'pix': 'ON',
+    'placalv': 'OFF',
     'ip': 'ON',
     'likeff': 'OFF'
 }
@@ -1419,22 +1419,32 @@ def nomelv():
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=token)
+                        return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
 
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}S&tipo=nomev1"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado') and len(data['resultado']) > 0:
+                # Agora aceita lista direta ou dentro de 'resultado'
+                if isinstance(data, list) and len(data) > 0:
+                    results_list = data
+                elif isinstance(data, dict) and 'resultado' in data and isinstance(data['resultado'], list):
+                    results_list = data['resultado']
+                else:
+                    flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
+                    results_list = []
+
+                if results_list:
                     if manage_module_usage(g.user_id, 'nomelv'):
-                        results = data['resultado']
+                        results = results_list
                         reset_all()
                     else:
                         flash('Limite de uso atingido para NOMELV.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o nome fornecido. Resposta: {data}', 'error')
+                    flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
+
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
@@ -1444,7 +1454,7 @@ def nomelv():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
 
-    return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome, token=session.get('token'))
+    return render_template('nomelv.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
 
 @app.route('/modulos/nome', methods=['GET', 'POST'])
 def nome():
