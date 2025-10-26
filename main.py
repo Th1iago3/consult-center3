@@ -53,7 +53,7 @@ module_status = {
     'placaestadual': 'OFF',
     'fotor': 'ON',
     'pix': 'ON',
-    'placalv': 'OFF',
+    'placalv': 'ON',
     'ip': 'ON',
     'likeff': 'OFF'
 }
@@ -1071,45 +1071,57 @@ def placalv():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
+
     result = None
     placa = ""
 
     if request.method == 'POST':
-        placa = request.form.get('placa', '').strip()
-        if not placa:
-            flash('Placa não fornecida.', 'error')
+        placa = request.form.get('placa', '').strip().upper().replace(' ', '')
+        if not placa or not (len(placa) == 7 and placa[:3].isalpha() and placa[3:].isdigit()):
+            flash('Por favor, insira uma placa válida no formato AAA0000.', 'error')
         else:
             try:
                 if not is_admin:
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+                        return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications,
+                                               result=result, placa=placa)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=placaLv&query={placa}"
-                logger.info(f"Requisição para API: {url}")
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
+                logger.info(f"Requisição para API (placa): {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado'):
-                    if manage_module_usage(g.user_id, 'placalv'):
-                        result = data['resultado']
-                        reset_all()
+                # Verifica se há dados válidos
+                if isinstance(data, dict) and data.get('status') and 'response' in data and 'dados' in data['response']:
+                    veiculo = data['response']['dados'].get('veiculo', {})
+                    if veiculo and veiculo.get('placa'):
+                        if manage_module_usage(g.user_id, 'placalv'):
+                            result = data['response']['dados']
+                            reset_all()
+                        else:
+                            flash('Limite de uso atingido para PLACALV.', 'error')
+                            result = None
                     else:
-                        flash('Limite de uso atingido para PLACALV.', 'error')
+                        flash('Nenhum veículo encontrado para esta placa.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para a placa fornecida. Resposta: {data}', 'error')
+                    flash('Nenhum resultado encontrado para a placa informada.', 'error')
+
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
             except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                flash('Resposta da API inválida (JSON malformado).', 'error')
 
-    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications, result=result, placa=placa)
+    return render_template('placalv.html', is_admin=is_admin, notifications=user_notifications,
+                           result=result, placa=placa)
+
+
 
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
 def tellv():
@@ -1280,45 +1292,51 @@ def placa():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
-    results = None
+
+    result = None
     placa = ""
 
     if request.method == 'POST':
-        placa = request.form.get('placa', '').strip().upper()
-        if not placa:
-            flash('Placa não fornecida.', 'error')
+        placa = request.form.get('placa', '').strip().upper().replace(' ', '')
+        if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
+            flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
         else:
             try:
                 if not is_admin:
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+                        return render_template('placa.html', is_admin=is_admin, notifications=user_notifications,
+                                               result=result, placa=placa)
 
-                url = f"https://api.bygrower.online/core/?token={chave}&base=placa&query={placa}"
-                logger.info(f"Requisição para API: {url}")
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
+                logger.info(f"Requisição para API (placa normal): {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0 and data['resultado'][0].get('retorno') == 'ok':
+                # Verifica se há dados válidos
+                if isinstance(data, dict) and data.get('PLACA') == placa:
                     if manage_module_usage(g.user_id, 'placa'):
-                        results = data['resultado']
+                        result = data
                         reset_all()
                     else:
                         flash('Limite de uso atingido para PLACA.', 'error')
+                        result = None
                 else:
-                    flash(f'Nenhum resultado encontrado para a placa fornecida.', 'error')
+                    flash('Nenhum veículo encontrado para esta placa.', 'error')
+
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
             except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                flash('Resposta da API inválida (JSON malformado).', 'error')
 
-    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications, results=results, placa=placa)
+    return render_template('placa.html', is_admin=is_admin, notifications=user_notifications,
+                           result=result, placa=placa)
 
 @app.route('/modulos/placaestadual', methods=['GET', 'POST'])
 def placaestadual():
