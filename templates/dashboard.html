@@ -786,12 +786,10 @@
         <div class="loading-container">
             <div class="loading-top">
                 <div class="loading-icon">
-                    <i data-lucide="search"></i>
+                    <svg data-lucide="search"></svg>
                 </div>
                 <div class="loading-line"></div>
-            </div>
-            <div class="loading-text">
-                <span>Consult</span><span class="purple-c">Center</span>
+                <div class="loading-text">Consult <span class="purple-c">C</span>enter</div>
             </div>
             <div class="loading-box">
                 <div class="loading-dots">
@@ -803,97 +801,55 @@
         </div>
     </div>
 
-    <!-- Fallback Loader (if needed) -->
-    <div class="loader" id="loader" style="display: none;">
-        <div class="loader-background"></div>
-        <div class="loader-spinner"></div>
-        <div class="loader-text">Carregando Dashboard...</div>
-    </div>
-
-    <!-- Overlay for Panels -->
+    <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
 
     <!-- SIDEBAR -->
     <aside id="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <span class="consult">Consult</span><span class="center">Center</span>
-            </div>
-            <div class="sidebar-toggle" id="sidebar-toggle">
-                <i data-lucide="chevrons-left"></i>
-            </div>
+            <div class="logo"><span class="consult">Consult</span><span class="center">Center</span></div>
+            <div class="sidebar-toggle" id="sidebar-toggle"><svg data-lucide="chevron-right"></svg></div>
         </div>
         <nav class="sidebar-nav">
-            <a href="#" class="sidebar-item active" data-page="1">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="#" class="sidebar-item" data-page="2">
-                <i data-lucide="users"></i>
-                <span>Consultas Pessoais</span>
-            </a>
-            <a href="#" class="sidebar-item" data-page="3">
-                <i data-lucide="car"></i>
-                <span>Consultas Veiculares</span>
-            </a>
-            <a href="#" class="sidebar-item" data-page="4">
-                <i data-lucide="globe"></i>
-                <span>Outras Consultas</span>
-            </a>
+            <a href="#" class="sidebar-item active" data-page="1"><svg data-lucide="home"></svg><span>Home</span></a>
+            <a href="#" class="sidebar-item" data-page="2"><svg data-lucide="search"></svg><span>Consultas Básicas</span></a>
+            <a href="#" class="sidebar-item" data-page="3"><svg data-lucide="car"></svg><span>Consultas Avançadas</span></a>
+            <a href="#" class="sidebar-item" data-page="4"><svg data-lucide="globe"></svg><span>Outras Ferramentas</span></a>
+            {% if users[g.user_id]['role'] == 'admin' %}
+            <a href="/admin" class="sidebar-item"><svg data-lucide="shield"></svg><span>Admin</span></a>
+            {% endif %}
         </nav>
-        <div class="sidebar-footer" style="margin-top: auto; padding: 0 15px;">
-            <a href="/logout" class="sidebar-item">
-                <i data-lucide="log-out"></i>
-                <span>Sair</span>
-            </a>
-        </div>
     </aside>
 
     <!-- MAIN HEADER -->
     <header id="main-header">
         <div class="welcome-message">
-            <h1>Bem-vindo, {{ g.user_id }}!</h1>
+            <h1>Bem-vindo, {{ users[g.user_id]['name'] }}!</h1>
             <p>Validade: {{ users[g.user_id]['expiration'] }}</p>
         </div>
         <div class="header-actions">
             <div class="header-icon-btn" id="notification-btn">
-                <i data-lucide="bell"></i>
-                {% if notifications.get(g.user_id, []).__len__() > 0 %}
-                    <span class="notification-badge" id="notification-badge"></span>
+                <svg data-lucide="bell"></svg>
+                {% if notifications.get(g.user_id, [])|length > 0 %}
+                <div class="notification-badge" id="notification-badge"></div>
                 {% endif %}
             </div>
             <div class="header-icon-btn" id="profile-btn">
-                <i data-lucide="user"></i>
+                <svg data-lucide="user"></svg>
             </div>
         </div>
     </header>
 
     <!-- MAIN CONTENT -->
     <main id="main-content">
-        <!-- MÓDULOS -->
-        <section id="module-section">
+        <section class="dashboard-grid-container">
             <!-- Página 1 -->
             <div class="dashboard-grid" id="page1">
-                <!-- CPF DATA -->
-                <div class="module-card" onclick="checkModuleStatus('cpfdata', '/modulos/cpfdata')" data-module-id="cpfdata">
-                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
-                    <h3 class="module-title">Localizar CPF (DATASUS)</h3>
-                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-                    <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
-                        {% endwith %}
-                    </div>
-                    <div class="status-dot bolinha-verde"></div>
-                </div>
                 <!-- CPF C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv">
-                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
-                    <h3 class="module-title">Localizar CPF (C&C Plus)</h3>
-                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv" data-status="{{ module_status.get('cpflv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="file-text"></svg></div>
+                    <h3 class="module-title">Consulta CPF (C&C Plus)</h3>
+                    <p class="module-description">Acesse dados completos associados a um CPF, incluindo endereço e contatos.</p>
                     <div class="module-footer">
                         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0), limit=500 %}
                             <div class="request-bar-wrapper">
@@ -902,13 +858,13 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-cpflv"></div>
                 </div>
-                <!-- CPF DATA -->
-                <div class="module-card" onclick="checkModuleStatus('cpf', '/modulos/cpf')" data-module-id="cpf">
-                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
-                    <h3 class="module-title">Localizar CPF (DATA)</h3>
-                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                <!-- CPF NACIONAL -->
+                <div class="module-card" onclick="checkModuleStatus('cpf', '/modulos/cpf')" data-module-id="cpf" data-status="{{ module_status.get('cpf', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="file-text"></svg></div>
+                    <h3 class="module-title">Consulta CPF (NACIONAL)</h3>
+                    <p class="module-description">Acesse dados completos associados a um CPF, incluindo endereço e contatos.</p>
                     <div class="module-footer">
                         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), limit=500 %}
                             <div class="request-bar-wrapper">
@@ -917,13 +873,13 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-cpf"></div>
                 </div>
-                <!-- CPF DATAPRIME -->
-                <div class="module-card" onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" data-module-id="cpf2">
-                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
-                    <h3 class="module-title">Localizar CPF (DATAPRIME)</h3>
-                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                <!-- CPF DATA -->
+                <div class="module-card" onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" data-module-id="cpf2" data-status="{{ module_status.get('cpf2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="file-text"></svg></div>
+                    <h3 class="module-title">Consulta CPF (DATA)</h3>
+                    <p class="module-description">Acesse dados completos associados a um CPF, incluindo endereço e contatos.</p>
                     <div class="module-footer">
                         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), limit=500 %}
                             <div class="request-bar-wrapper">
@@ -932,29 +888,13 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-cpf2"></div>
                 </div>
-                <!-- VACINAS -->
-                <div class="module-card maintenance" onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" data-module-id="vacinas">
-                    <div class="module-icon-wrapper"><i data-lucide="syringe"></i></div>
-                    <h3 class="module-title">Consulta Vacina (SIPNI)</h3>
-                    <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
-                    <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
-                        {% endwith %}
-                    </div>
-                    <div class="status-dot bolinha-vermelha"></div>
-                    <div class="maintenance-label">MANUTENÇÃO</div>
-                </div>
-                <!-- CPF SISREGII -->
-                <div class="module-card maintenance" onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" data-module-id="cpf3">
-                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
-                    <h3 class="module-title">Localizar CPF (SISREGII)</h3>
-                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                <!-- CPF DATAPRIME -->
+                <div class="module-card" onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" data-module-id="cpf3" data-status="{{ module_status.get('cpf3', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="file-text"></svg></div>
+                    <h3 class="module-title">Consulta CPF (DATAPRIME)</h3>
+                    <p class="module-description">Acesse dados completos associados a um CPF, incluindo endereço e contatos.</p>
                     <div class="module-footer">
                         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), limit=500 %}
                             <div class="request-bar-wrapper">
@@ -963,15 +903,46 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="status-dot" id="status-dot-cpf3"></div>
+                </div>
+                <!-- CPF DATAPLUS -->
+                <div class="module-card maintenance" onclick="checkModuleStatus('cpf4', '/modulos/cpf4')" data-module-id="cpf4" data-status="{{ module_status.get('cpf4', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf4', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="file-text"></svg></div>
+                    <h3 class="module-title">Consulta CPF (DATAPLUS)</h3>
+                    <p class="module-description">Acesse dados completos associados a um CPF, incluindo endereço e contatos.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf4', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-cpf4"></div>
+                    <div class="maintenance-label">MANUTENÇÃO</div>
+                </div>
+                <!-- CPF ESTADUAL -->
+                <div class="module-card maintenance" onclick="checkModuleStatus('cpfestadual', '/modulos/cpfestadual')" data-module-id="cpfestadual" data-status="{{ module_status.get('cpfestadual', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpfestadual', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="file-text"></svg></div>
+                    <h3 class="module-title">Consulta CPF (ESTADUAL)</h3>
+                    <p class="module-description">Acesse dados completos associados a um CPF, incluindo endereço e contatos.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfestadual', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-cpfestadual"></div>
                     <div class="maintenance-label">MANUTENÇÃO</div>
                 </div>
             </div>
             <!-- Página 2 -->
             <div class="dashboard-grid" id="page2" style="display: none;">
                 <!-- NOME C&C Plus -->
-                <div class="module-card maintenance" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv">
-                    <div class="module-icon-wrapper"><i data-lucide="user"></i></div>
+                <div class="module-card maintenance" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv" data-status="{{ module_status.get('nomelv', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="user"></svg></div>
                     <h3 class="module-title">Localizar Nome (C&C Plus)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
@@ -982,12 +953,12 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="status-dot" id="status-dot-nomelv"></div>
                     <div class="maintenance-label">MANUTENÇÃO</div>
                 </div>
                 <!-- NOME DATA -->
-                <div class="module-card" onclick="checkModuleStatus('nome', '/modulos/nome')" data-module-id="nome">
-                    <div class="module-icon-wrapper"><i data-lucide="user"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('nome', '/modulos/nome')" data-module-id="nome" data-status="{{ module_status.get('nome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="user"></svg></div>
                     <h3 class="module-title">Localizar Nome (DATA)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
@@ -998,11 +969,11 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-nome"></div>
                 </div>
                 <!-- NOME DATAPRIME -->
-                <div class="module-card" onclick="checkModuleStatus('nome2', '/modulos/nome2')" data-module-id="nome2">
-                    <div class="module-icon-wrapper"><i data-lucide="user"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('nome2', '/modulos/nome2')" data-module-id="nome2" data-status="{{ module_status.get('nome2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="user"></svg></div>
                     <h3 class="module-title">Localizar Nome (DATAPRIME)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
@@ -1013,11 +984,11 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-nome2"></div>
                 </div>
                 <!-- TELEFONE DATA -->
-                <div class="module-card maintenance" onclick="checkModuleStatus('tel', '/modulos/tel')" data-module-id="tel">
-                    <div class="module-icon-wrapper"><i data-lucide="phone"></i></div>
+                <div class="module-card maintenance" onclick="checkModuleStatus('tel', '/modulos/tel')" data-module-id="tel" data-status="{{ module_status.get('tel', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tel', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="phone"></svg></div>
                     <h3 class="module-title">Consulta TELEFONE (DATA)</h3>
                     <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
                     <div class="module-footer">
@@ -1028,12 +999,12 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="status-dot" id="status-dot-tel"></div>
                     <div class="maintenance-label">MANUTENÇÃO</div>
                 </div>
                 <!-- TELEFONE C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('telLv', '/modulos/telLv')" data-module-id="telLv">
-                    <div class="module-icon-wrapper"><i data-lucide="phone"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('telLv', '/modulos/telLv')" data-module-id="telLv" data-status="{{ module_status.get('telLv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('telLv', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="phone"></svg></div>
                     <h3 class="module-title">Consulta TELEFONE (C&C Plus)</h3>
                     <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
                     <div class="module-footer">
@@ -1044,11 +1015,11 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-telLv"></div>
                 </div>
                 <!-- TELEFONE NACIONAL -->
-                <div class="module-card" onclick="checkModuleStatus('teldual', '/modulos/teldual')" data-module-id="teldual">
-                    <div class="module-icon-wrapper"><i data-lucide="phone"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('teldual', '/modulos/teldual')" data-module-id="teldual" data-status="{{ module_status.get('teldual', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('teldual', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="phone"></svg></div>
                     <h3 class="module-title">Consulta TELEFONE (NACIONAL)</h3>
                     <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
                     <div class="module-footer">
@@ -1059,11 +1030,11 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-teldual"></div>
                 </div>
                 <!-- DATA NASCIMENTO -->
-                <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome">
-                    <div class="module-icon-wrapper"><i data-lucide="calendar"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome" data-status="{{ module_status.get('datanome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="calendar"></svg></div>
                     <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
@@ -1074,14 +1045,14 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-datanome"></div>
                 </div>
             </div>
             <!-- Página 3 -->
             <div class="dashboard-grid" id="page3" style="display: none;">
                 <!-- PLACA NACIONAL -->
-                <div class="module-card" onclick="checkModuleStatus('placa', '/modulos/placa')" data-module-id="placa">
-                    <div class="module-icon-wrapper"><i data-lucide="car"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('placa', '/modulos/placa')" data-module-id="placa" data-status="{{ module_status.get('placa', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placa', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="car"></svg></div>
                     <h3 class="module-title">Consulta Veicular (NACIONAL)</h3>
                     <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
                     <div class="module-footer">
@@ -1092,11 +1063,11 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-placa"></div>
                 </div>
                 <!-- PLACA ESTADUAL -->
-                <div class="module-card maintenance" onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" data-module-id="placaestadual">
-                    <div class="module-icon-wrapper"><i data-lucide="car"></i></div>
+                <div class="module-card maintenance" onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" data-module-id="placaestadual" data-status="{{ module_status.get('placaestadual', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="car"></svg></div>
                     <h3 class="module-title">Consulta Veicular (ESTADUAL)</h3>
                     <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
                     <div class="module-footer">
@@ -1107,12 +1078,12 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="status-dot" id="status-dot-placaestadual"></div>
                     <div class="maintenance-label">MANUTENÇÃO</div>
                 </div>
                 <!-- FOTO C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor">
-                    <div class="module-icon-wrapper"><i data-lucide="camera"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor" data-status="{{ module_status.get('fotor', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="camera"></svg></div>
                     <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
                     <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
                     <div class="module-footer">
@@ -1123,11 +1094,11 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-fotor"></div>
                 </div>
                 <!-- PIX NACIONAL -->
-                <div class="module-card maintenance" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix">
-                    <div class="module-icon-wrapper"><i data-lucide="qrcode"></i></div>
+                <div class="module-card maintenance" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix" data-status="{{ module_status.get('pix', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="qrcode"></svg></div>
                     <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
                     <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
                     <div class="module-footer">
@@ -1138,12 +1109,12 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="status-dot" id="status-dot-pix"></div>
                     <div class="maintenance-label">MANUTENÇÃO</div>
                 </div>
                 <!-- PLACA C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('placalv', '/modulos/placalv')" data-module-id="placalv">
-                    <div class="module-icon-wrapper"><i data-lucide="car"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('placalv', '/modulos/placalv')" data-module-id="placalv" data-status="{{ module_status.get('placalv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="car"></svg></div>
                     <h3 class="module-title">Consulta Veicular (C&C Plus)</h3>
                     <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
                     <div class="module-footer">
@@ -1154,14 +1125,14 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-placalv"></div>
                 </div>
             </div>
             <!-- Página 4 -->
             <div class="dashboard-grid" id="page4" style="display: none;">
                 <!-- IP C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('ip', '/modulos/ip')" data-module-id="ip">
-                    <div class="module-icon-wrapper"><i data-lucide="globe"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('ip', '/modulos/ip')" data-module-id="ip" data-status="{{ module_status.get('ip', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="globe"></svg></div>
                     <h3 class="module-title">Localizar IP (C&C Plus)</h3>
                     <p class="module-description">Consulte a localização geológica de qualquer Endereço IP.</p>
                     <div class="module-footer">
@@ -1172,12 +1143,12 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-ip"></div>
                 </div>
                 {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
                 <!-- LIKE FF -->
-                <div class="module-card" onclick="checkModuleStatus('likeff', '/modulos/likeff')" data-module-id="likeff">
-                    <div class="module-icon-wrapper"><i data-lucide="thumbs-up"></i></div>
+                <div class="module-card" onclick="checkModuleStatus('likeff', '/modulos/likeff')" data-module-id="likeff" data-status="{{ module_status.get('likeff', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="thumbs-up"></svg></div>
                     <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
                     <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
                     <div class="module-footer">
@@ -1188,7 +1159,7 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot bolinha-verde"></div>
+                    <div class="status-dot" id="status-dot-likeff"></div>
                 </div>
                 {% endif %}
             </div>
@@ -1204,13 +1175,13 @@
         <!-- Notification Panel -->
         <div class="notification-panel" id="notificationPanel">
             <h5>
-                <i data-lucide="bell"></i>
+                <svg data-lucide="bell"></svg>
                 Notificações
             </h5>
             <div class="notification-list">
                 {% for notif in notifications.get(g.user_id, []) %}
                 <div class="notification-item {% if notif.read %}read{% endif %}" data-timestamp="{{ notif.timestamp }}">
-                    <i data-lucide="bell"></i>
+                    <svg data-lucide="bell"></svg>
                     <div>
                         <p>{{ notif.message }}</p>
                         <time data-timestamp="{{ notif.timestamp }}"></time>
@@ -1223,7 +1194,7 @@
         <!-- MODAL PERFIL -->
         <div class="modal" id="profile-modal">
             <div class="modal-content">
-                <button class="modal-close" id="close-profile-modal"><i data-lucide="x"></i></button>
+                <button class="modal-close" id="close-profile-modal"><svg data-lucide="x"></svg></button>
                 <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 10px;">Perfil do Usuário</h2>
                 <p style="color: var(--text-light); margin-bottom: 25px;">Gerencie suas informações e chaves de acesso.</p>
                 <div class="profile-info-group">
@@ -1243,7 +1214,7 @@
                 <div class="token-container">
                     <input type="text" id="api-token" value="{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}" readonly>
                     <button id="copy-token-btn" class="btn-custom btn-primary">
-                        <i data-lucide="copy"></i> Copiar Token
+                        <svg data-lucide="copy"></svg> Copiar Token
                     </button>
                 </div>
             </div>
@@ -1320,7 +1291,7 @@
                 tokenInput.select();
                 navigator.clipboard.writeText(tokenInput.value).then(() => {
                     const original = copyBtn.innerHTML;
-                    copyBtn.innerHTML = '<i data-lucide="check"></i> Copiado!';
+                    copyBtn.innerHTML = '<svg data-lucide="check"></svg> Copiado!';
                     lucide.createIcons();
                     setTimeout(() => {
                         copyBtn.innerHTML = original;
@@ -1401,12 +1372,44 @@
             // Função de Status
             window.checkModuleStatus = function(id, url) {
                 const card = document.querySelector(`[data-module-id="${id}"]`);
-                if (card.classList.contains('maintenance')) {
+                const status = card.getAttribute('data-status');
+                const usage = parseInt(card.getAttribute('data-usage'));
+                const limit = parseInt(card.getAttribute('data-limit'));
+                if (card.classList.contains('maintenance') || status === 'OFF') {
                     Swal.fire({ icon: 'warning', title: 'Em Manutenção', text: 'Este módulo está temporariamente indisponível.', confirmButtonColor: '#6E44FF' });
-                } else {
-                    window.location.href = url;
+                    return;
                 }
+                if (usage >= limit) {
+                    Swal.fire({ icon: 'warning', title: 'Limite Atingido', text: 'Você atingiu o limite de uso deste módulo.', confirmButtonColor: '#6E44FF' });
+                    return;
+                }
+                window.location.href = url;
             };
+
+            // Update Module Status Dots
+            function updateModuleStatus() {
+                document.querySelectorAll('.module-card').forEach(module => {
+                    const moduleId = module.getAttribute('data-module-id');
+                    const status = module.getAttribute('data-status');
+                    const usage = parseInt(module.getAttribute('data-usage'));
+                    const limit = parseInt(module.getAttribute('data-limit'));
+                    const dot = document.getElementById(`status-dot-${moduleId}`);
+
+                    if (status === 'ON') {
+                        dot.classList.remove('bolinha-vermelha', 'bolinha-amarela');
+                        dot.classList.add('bolinha-verde');
+                        if (usage >= limit) {
+                            dot.classList.remove('bolinha-verde');
+                            dot.classList.add('bolinha-amarela');
+                        }
+                    } else {
+                        dot.classList.remove('bolinha-verde', 'bolinha-amarela');
+                        dot.classList.add('bolinha-vermelha');
+                    }
+                });
+            }
+
+            updateModuleStatus();
         });
     </script>
 </body>
