@@ -1176,11 +1176,10 @@
         <div class="modules-grid" id="page1">
             {% set module_card_class = [] %}
             {% for module in [
-                {'id': 'cpf', 'title': 'Consulta CPF (NACIONAL)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
-                {'id': 'cpf2', 'title': 'Consulta CPF (ESTADUAL)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
-                {'id': 'cpfdata', 'title': 'Consulta CPF (C&C Plus)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
-                {'id': 'cpflv', 'title': 'Consulta CPF (C&C Plus)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
-                {'id': 'cpf3', 'title': 'Consulta CPF (NACIONAL)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
+                {'id': 'cpf', 'title': 'Consulta CPF (DATASUS)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
+                {'id': 'cpf2', 'title': 'Consulta CPF (C&C Plus)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
+                {'id': 'cpflv', 'title': 'Consulta CPF (DATA)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
+                {'id': 'cpf3', 'title': 'Consulta CPF (SISREGII)', 'icon': 'fa-id-card', 'desc': 'Obtenha dados completos associados a um CPF, incluindo nome, endereço e mais.'},
                 {'id': 'vacinas', 'title': 'Consulta Vacinas (C&C Plus)', 'icon': 'fa-syringe', 'desc': 'Verifique o histórico de vacinas associado a um CPF.'}
             ] %}
             <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
