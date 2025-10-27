@@ -6,38 +6,50 @@
     <title>ConsultCenter - Sistema Integrado de Consultas</title>
     <!-- Font Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
+    <!-- Lucide Icons (Substituindo Font Awesome) -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <!-- SweetAlert2 -->
+    <!-- SweetAlert2 para alertas modernos -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
-    <!-- CSS EMBUTIDO -->
+    <!-- AOS para animações -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- CSS Aprimorado EMBUTIDO -->
     <style>
+        /*
+            ConsultCenter - Sistema Integrado de Consultas
+            CSS Aprimorado
+        */
         :root {
-            --primary-purple: #6E44FF;
-            --secondary-purple: #A06CFF;
-            --accent-pink: #FF6BD6;
-            --background-dark: #121212;
-            --background-light: #1A1A1A;
-            --card-bg: rgba(25, 25, 25, 0.9);
-            --text-white: #E0E0E0;
-            --text-light: #A0A0A0;
-            --border-color: #333333;
-            --glowximity: rgba(110, 68, 255, 0.5);
+            /* Cores Primárias */
+            --primary-purple: #6E44FF; /* Roxo principal */
+            --secondary-purple: #A06CFF; /* Roxo secundário */
+            --accent-pink: #FF6BD6; /* Destaque (opcional) */
+           
+            /* Cores de Fundo e Texto */
+            --background-dark: #121212; /* Fundo principal muito escuro */
+            --background-light: #1A1A1A; /* Fundo secundário/card */
+            --card-bg: rgba(25, 25, 25, 0.9); /* Fundo do card com transparência */
+            --text-white: #E0E0E0; /* Texto principal claro */
+            --text-light: #A0A0A0; /* Texto secundário/sutil */
+            --border-color: #333333; /* Cor da borda sutil */
+            /* Efeitos de Sombra e Brilho */
+            --glowximity: rgba(110, 68, 255, 0.5); /* Brilho do roxo */
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
             --shadow-glow: 0 0 15px var(--glowximity);
+           
+            /* Tipografia */
             --font-family: 'Poppins', sans-serif;
         }
-
+        /* Base e Reset */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: var(--font-family);
         }
-
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             background: var(--background-dark);
             color: var(--text-white);
@@ -46,21 +58,21 @@
             flex-direction: column;
             overflow-x: hidden;
         }
-
+        /* Container de Conteúdo Principal */
         .content-wrapper {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            padding-top: 80px;
+            padding-top: 80px; /* Espaço para o header fixo */
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
-
-        /* LOADER */
+        /* --------------------------------------------------
+        1. LOADER
+        -------------------------------------------------- */
         .loader {
             position: fixed;
             inset: 0;
@@ -73,7 +85,10 @@
             opacity: 1;
             transition: opacity 0.5s ease;
         }
-        .loader.hidden { opacity: 0; pointer-events: none; }
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
         .loader-background {
             position: absolute;
             inset: 0;
@@ -86,14 +101,18 @@
             100% { transform: scale(1.2); opacity: 0.1; }
         }
         .loader-spinner {
-            width: 60px; height: 60px;
+            width: 60px;
+            height: 60px;
             border: 6px solid var(--border-color);
             border-top: 6px solid var(--primary-purple);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             box-shadow: var(--shadow-glow);
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         .loader-text {
             margin-top: 20px;
             font-size: 18px;
@@ -101,14 +120,18 @@
             animation: pulseText 1.5s infinite ease-in-out;
         }
         @keyframes pulseText {
-            0%, 100% { opacity: 0.7; }
+            0% { opacity: 0.7; }
             50% { opacity: 1; }
+            100% { opacity: 0.7; }
         }
-
-        /* HEADER */
+        /* --------------------------------------------------
+        2. HEADER E NAVEGAÇÃO
+        -------------------------------------------------- */
         .header {
             position: fixed;
-            top: 0; left: 0; width: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
             padding: 15px 20px;
             background: rgba(18, 18, 18, 0.9);
             backdrop-filter: blur(10px);
@@ -117,14 +140,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.3s ease;
         }
         .logo {
             font-size: 28px;
             font-weight: 700;
         }
         .logo .consult { color: var(--text-white); }
-        .logo .center { color: var(--primary-purple); text-shadow: 0 0 5px var(--glowximity); font-weight: 800; }
-        .nav-menu { display: flex; gap: 30px; }
+        .logo .center {
+            color: var(--primary-purple);
+            text-shadow: 0 0 5px var(--glowximity);
+            font-weight: 800;
+        }
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+        }
         .nav-item {
             color: var(--text-light);
             text-decoration: none;
@@ -134,248 +165,699 @@
             transition: color 0.3s ease;
         }
         .nav-item::after {
-            content: ''; position: absolute; bottom: -5px; left: 50%;
-            width: 0; height: 3px; background: var(--primary-purple);
-            border-radius: 2px; transition: all 0.3s ease; transform: translateX(-50%);
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background-color: var(--primary-purple);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
         }
-        .nav-item:hover, .nav-item.active { color: var(--text-white); }
-        .nav-item:hover::after, .nav-item.active::after { width: 100%; }
-        .header-actions { display: flex; align-items: center; gap: 20px; }
-        .menu-toggle { font-size: 24px; color: var(--text-white); cursor: pointer; display: none; }
-
-        /* SUBMENU */
+        .nav-item:hover, .nav-item.active {
+            color: var(--text-white);
+        }
+        .nav-item:hover::after, .nav-item.active::after {
+            width: 100%;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .menu-toggle {
+            font-size: 24px;
+            color: var(--text-white);
+            cursor: pointer;
+            display: none; /* Esconder por padrão no desktop */
+        }
+        /* Submenu Mobile/Tablet */
         .submenu {
-            position: fixed; top: 80px; left: 0; right: 0;
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
             background: var(--background-light);
             border-bottom: 1px solid var(--border-color);
             box-shadow: var(--shadow-card);
-            z-index: 99; padding: 20px;
-            display: flex; flex-direction: column; gap: 15px;
-            transform: translateY(-100%); transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 99;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transform: translateY(-100%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
-        .submenu.active { transform: translateY(0); }
+        .submenu.active {
+            transform: translateY(0);
+        }
         .submenu-item {
-            color: var(--text-white); text-decoration: none; font-weight: 500;
-            padding: 10px 0; border-bottom: 1px solid var(--border-color);
-            display: flex; align-items: center; gap: 10px;
+            color: var(--text-white);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .submenu-item:hover { color: var(--primary-purple); }
-
-        /* BOTÕES */
+        .submenu-item:hover {
+            color: var(--primary-purple);
+        }
+        .submenu-item svg {
+            width: 20px;
+            height: 20px;
+        }
+        /* --------------------------------------------------
+        3. BOTÕES (CTAs)
+        -------------------------------------------------- */
         .btn-custom {
-            padding: 12px 25px; font-size: 16px; font-weight: 600;
-            border-radius: 8px; text-decoration: none; display: inline-flex;
-            align-items: center; justify-content: center; gap: 8px;
-            border: none; cursor: pointer; transition: all 0.3s ease;
-            position: relative; overflow: hidden;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-custom svg {
+            width: 20px;
+            height: 20px;
         }
         .btn-primary {
-            background: var(--primary-purple); color: var(--text-white);
+            background-color: var(--primary-purple);
+            color: var(--text-white);
             box-shadow: 0 5px 15px rgba(110, 68, 255, 0.4);
         }
         .btn-primary:hover {
-            background: var(--secondary-purple); transform: translateY(-2px);
+            background-color: var(--secondary-purple);
+            transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(110, 68, 255, 0.6);
         }
         .btn-secondary {
-            background: var(--background-light); color: var(--primary-purple);
+            background-color: var(--background-light);
+            color: var(--primary-purple);
             border: 1px solid var(--primary-purple);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         .btn-secondary:hover {
-            background: var(--primary-purple); color: var(--text-white);
+            background-color: var(--primary-purple);
+            color: var(--text-white);
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(110, 68, 255, 0.4);
         }
         .btn-outline {
-            background: transparent; color: var(--primary-purple);
+            background: transparent;
+            color: var(--primary-purple);
             border: 2px solid var(--primary-purple);
         }
         .btn-outline:hover {
-            background: var(--primary-purple); color: var(--text-white);
+            background: var(--primary-purple);
+            color: var(--text-white);
             transform: translateY(-2px);
         }
-        .full-width { width: 100%; }
-        .login-submit.clicked svg { animation: moveRight 0.5s forwards; }
+        .full-width {
+            width: 100%;
+        }
+        /* Animação do botão de login (seta) */
+        .login-submit.clicked svg {
+            animation: moveRight 0.5s forwards;
+        }
         @keyframes moveRight {
             0% { transform: translateX(0); }
             50% { transform: translateX(5px); }
             100% { transform: translateX(0); }
         }
-
-        /* SEÇÕES */
-        section { padding: 80px 0; position: relative; }
-        .section-title { font-size: clamp(30px, 4vw, 48px); font-weight: 800; text-align: center; margin-bottom: 10px; }
-        .section-subtitle { font-size: 18px; color: var(--text-light); text-align: center; margin-bottom: mene; }
-        .highlight { color: var(--primary-purple); text-shadow: 0 0 5px var(--glowximity); }
-
+        /* --------------------------------------------------
+        4. SEÇÕES
+        -------------------------------------------------- */
+        section {
+            padding: 80px 0;
+            position: relative;
+        }
+        .section-title {
+            font-size: clamp(30px, 4vw, 48px);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .highlight {
+            color: var(--primary-purple);
+            text-shadow: 0 0 5px var(--glowximity);
+        }
+        /* Hero Section */
         .hero-section {
-            padding: 120px 20px 80px; text-align: center;
+            padding: 120px 20px 80px;
+            text-align: center;
             background: linear-gradient(135deg, var(--background-dark) 0%, var(--background-light) 100%);
+            position: relative;
             overflow: hidden;
         }
-        .hero-title { font-size: clamp(40px, 6vw, 64px); font-weight: 800; margin-bottom: 20px; }
-        .hero-text { font-size: clamp(16px, 2vw, 20px); color: var(--text-light); max-width: 800px; margin: 0 auto 40px; }
-        .cta-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-
-        /* FEATURE GRID */
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(110, 68, 255, 0.1) 0%, transparent 70%);
+            animation: radialPulse 15s infinite alternate;
+            z-index: 0;
+        }
+        .hero-title {
+            font-size: clamp(40px, 6vw, 64px);
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            z-index: 1;
+            position: relative;
+        }
+        .hero-text {
+            font-size: clamp(16px, 2vw, 20px);
+            color: var(--text-light);
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            z-index: 1;
+            position: relative;
+        }
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            z-index: 1;
+            position: relative;
+        }
+        /* --------------------------------------------------
+        5. FEATURE GRID
+        -------------------------------------------------- */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
         .feature-card {
-            background: var(--card-bg); padding: 30px; border-radius: 15px;
-            border: 1px solid var(--border-color); box-shadow: var(--shadow-card);
-            transition: all 0.4s ease; position: relative; overflow: hidden;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .feature-card:hover { transform: translateY(-10px); border-color: var(--primary-purple); box-shadow: var(--shadow-glow); }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(110, 68, 255, 0.05) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .feature-card:hover::before {
+            opacity: 1;
+        }
         .icon-wrapper {
-            width: 60px; height: 60px; background: var(--primary-purple);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin-bottom: 20px; box-shadow: 0 0 10px rgba(110, 68, 255, 0.8);
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(110, 68, 255, 0.8);
         }
-        .icon-wrapper svg { width: 30px; height: 30px; color: var(--text-white); }
-        .card-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
-        .card-text { color: var(--text-light); font-size: 16px; }
-
-        .hidden-module { display: none; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
-        .hidden-module.visible { display: block; opacity: 1; transform: translateY(0); }
-
-        /* PRICING */
-        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .icon-wrapper svg {
+            width: 30px;
+            height: 30px;
+            color: var(--text-white);
+        }
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-white);
+        }
+        .card-text {
+            color: var(--text-light);
+            font-size: 16px;
+        }
+        /* Módulos Escondidos (Animação de entrada) */
+        .hidden-module {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .hidden-module.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* --------------------------------------------------
+        6. PRICING GRID
+        -------------------------------------------------- */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            align-items: center;
+        }
         .pricing-card {
-            background: var(--card-bg); padding: 40px 30px; border-radius: 15px;
-            border: 2px solid var(--border-color); box-shadow: var(--shadow-card);
-            text-align: center; transition: all 0.4s ease;
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 15px;
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            transition: all 0.4s ease;
+            text-align: center;
         }
         .pricing-card.recommended {
-            border-color: var(--primary-purple); transform: scale(1.05);
+            border-color: var(--primary-purple);
+            transform: scale(1.05);
             box-shadow: 0 15px 40px rgba(110, 68, 255, 0.4);
             background: linear-gradient(145deg, rgba(110, 68, 255, 0.1), var(--card-bg));
         }
-        .pricing-card:hover:not(.recommended) { transform: translateY(-5px); }
-        .pricing-card.recommended:hover { transform: scale(1.07); }
-        .plan-icon { width: 40px; height: 40px; color: var(--primary-purple); margin-bottom: 10px; }
-        .plan-title { font-size: 28px; font-weight: 700; margin-bottom: 5px; }
-        .plan-subtitle { color: var(--text-light); }
-        .card-price { margin: 30px 0; padding: 15px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
-        .currency { font-size: 24px; vertical-align: top; margin-right: 5px; color: var(--text-light); }
-        .price-value { font-size: 60px; font-weight: 800; line-height: 1; }
-        .period { font-size: 18px; color: var(--text-light); display: block; margin-top: 5px; }
-        .plan-features { list-style: none; padding: 0; margin-bottom: 30px; text-align: left; }
-        .plan-features li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--border-color); color: var(--text-white); }
-        .plan-features li:last-child { border-bottom: none; }
-        .feature-icon { width: 20px; height: 20px; }
-        .plan-features li.disabled { color: var(--text-light); opacity: 0.6; text-decoration: line-through; }
-        .plan-features li.disabled .feature-icon { color: #F44336; }
-
-        /* CONTATO */
-        .contact-grid { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .pricing-card:hover:not(.recommended) {
+            transform: translateY(-5px);
+            border-color: var(--secondary-purple);
+        }
+        .pricing-card.recommended:hover {
+            transform: scale(1.07);
+        }
+        .card-header {
+            margin-bottom: 25px;
+        }
+        .plan-icon {
+            width: 40px;
+            height: 40px;
+            color: var(--primary-purple);
+            margin-bottom: 10px;
+        }
+        .plan-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .plan-subtitle {
+            color: var(--text-light);
+        }
+        .card-price {
+            margin-bottom: 30px;
+            padding: 15px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .currency {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-light);
+            vertical-align: top;
+            margin-right: 5px;
+        }
+        .price-value {
+            font-size: 60px;
+            font-weight: 800;
+            color: var(--text-white);
+            line-height: 1;
+        }
+        .period {
+            font-size: 18px;
+            color: var(--text-light);
+            display: block;
+            margin-top: 5px;
+        }
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .plan-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border-color);
+            font-size: 16px;
+            color: var(--text-white);
+        }
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            color: #4CAF50; /* Verde para check */
+        }
+        .plan-features li.disabled {
+            color: var(--text-light);
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        .plan-features li.disabled .feature-icon {
+            color: #F44336; /* Vermelho para X */
+        }
+        /* --------------------------------------------------
+        7. CONTACT SECTION
+        -------------------------------------------------- */
+        .contact-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
         .contact-card {
-            background: var(--card-bg); padding: 30px; border-radius: 15px;
-            border: 1px solid var(--border-color); box-shadow: var(--shadow-card);
-            text-align: center; max-width: 350px; transition: all 0.3s ease;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            text-align: center;
+            max-width: 350px;
+            transition: all 0.3s ease;
         }
-        .contact-card:hover { border-color: var(--primary-purple); transform: translateY(-5px); }
-        .contact-icon { width: 40px; height: 40px; color: var(--primary-purple); margin-bottom: 15px; }
+        .contact-card:hover {
+            border-color: var(--primary-purple);
+            transform: translateY(-5px);
+        }
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            color: var(--primary-purple);
+            margin-bottom: 15px;
+        }
         .contact-link {
-            display: inline-flex; align-items: center; gap: 5px;
-            color: var(--primary-purple); text-decoration: none; font-weight: 600;
-            margin-top: 15px; transition: color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--primary-purple);
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: color 0.3s ease;
         }
-        .contact-link:hover { color: var(--secondary-purple); gap: 10px; }
-
-        /* FOOTER */
+        .contact-link:hover {
+            color: var(--secondary-purple);
+            gap: 10px;
+        }
+        .contact-link svg {
+            width: 18px;
+            height: 18px;
+            transition: margin-left 0.3s ease;
+        }
+        /* --------------------------------------------------
+        8. FOOTER
+        -------------------------------------------------- */
         .footer {
-            background: var(--background-light); padding: 30px 0;
-            border-top: 1px solid var(--border-color); margin-top: auto;
+            background: var(--background-light);
+            padding: 30px 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
         }
-        .footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .footer p { margin: 0; color: var(--text-light); font-size: 14px; }
-
-        /* MODAL LOGIN */
+        .footer .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .footer p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        /* --------------------------------------------------
+        9. MODAL DE LOGIN
+        -------------------------------------------------- */
         .login-modal-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px); z-index: 1000;
-            display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.3s ease;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        .login-modal-overlay.active { display: flex; opacity: 1; }
+        .login-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
         .login-modal {
-            background: var(--background-light); padding: 40px; border-radius: 15px;
-            max-width: 450px; width: 90%; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
-            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            background: var(--background-light);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
-        .login-modal-overlay.active .login-modal { transform: scale(1); }
+        .login-modal-overlay.active .login-modal {
+            transform: scale(1);
+        }
         .close-btn {
-            position: absolute; top: 15px; right: 15px;
-            background: none; border: none; color: var(--text-light);
-            cursor: pointer; transition: color 0.3s ease;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: color 0.3s ease;
         }
-        .close-btn:hover { color: var(--primary-purple); }
-        .modal-icon { width: 40px; height: 40px; color: var(--primary-purple); margin-bottom: 10px; }
-        .modal-title { font-size: 28px; font-weight: 700; margin-bottom: 5px; }
-        .modal-subtitle { color: var(--text-light); font-size: 16px; }
-        .form-group { margin-bottom: 20px; }
+        .close-btn:hover {
+            color: var(--primary-purple);
+        }
+        .close-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .modal-icon {
+            width: 40px;
+            height: 40px;
+            color: var(--primary-purple);
+            margin-bottom: 10px;
+        }
+        .modal-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .modal-subtitle {
+            color: var(--text-light);
+            font-size: 16px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
         .form-group label {
-            display: flex; align-items: center; gap: 8px;
-            font-weight: 600; color: var(--text-white); margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text-white);
+            margin-bottom: 8px;
+        }
+        .form-group label svg {
+            width: 18px;
+            height: 18px;
+            color: var(--primary-purple);
         }
         .form-group input {
-            width: 100%; padding: 12px; background: var(--card-bg);
-            border: 1px solid var(--border-color); border-radius: 8px;
-            color: var(--text-white); font-size: 16px;
+            width: 100%;
+            padding: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-white);
+            font-size: 16px;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         .form-group input:focus {
-            outline: none; border-color: var(--primary-purple);
+            outline: none;
+            border-color: var(--primary-purple);
             box-shadow: 0 0 5px rgba(110, 68, 255, 0.5);
         }
-        .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .checkbox-group { display: flex; align-items: center; gap: 8px; }
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         .checkbox-group input[type="checkbox"] {
-            appearance: none; width: 18px; height: 18px;
-            border: 2px solid var(--primary-purple); border-radius: 4px;
-            cursor: pointer; position: relative;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--primary-purple);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.3s ease;
         }
         .checkbox-group input[type="checkbox"]:checked {
-            background: var(--primary-purple); border-color: var(--primary-purple);
+            background-color: var(--primary-purple);
+            border-color: var(--primary-purple);
         }
         .checkbox-group input[type="checkbox"]:checked::after {
-            content: ''; position: absolute; top: 2px; left: 5px;
-            width: 4px; height: 8px; border: solid white;
-            border-width: 0 2px 2px 0; transform: rotate(45deg);
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
         }
-
-        /* RESPONSIVIDADE */
+        .checkbox-group label {
+            font-weight: 400;
+            color: var(--text-light);
+            margin-bottom: 0;
+        }
+        .forgot-password {
+            color: var(--primary-purple);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        .forgot-password:hover {
+            color: var(--secondary-purple);
+        }
+        /* --------------------------------------------------
+        10. RESPONSIVIDADE
+        -------------------------------------------------- */
+        /* Tablet e Mobile */
         @media (max-width: 992px) {
-            .nav-menu { display: none; }
-            .menu-toggle { display: block; }
-            .header-actions .btn-custom { display: none; }
-            .cta-buttons { flex-direction: column; gap: 15px; }
-            .footer .container { flex-direction: column; text-align: center; gap: 15px; }
-            .pricing-card.recommended { transform: scale(1); }
+            .nav-menu {
+                display: none; /* Ocultar menu de navegação principal */
+            }
+            .header-actions {
+                gap: 10px;
+            }
+            .header-actions .btn-custom {
+                display: none; /* Ocultar botão de Entrar no header para mobile */
+            }
+            .menu-toggle {
+                display: block; /* Mostrar ícone de menu */
+            }
+            .hero-section {
+                padding-top: 100px;
+            }
+            .cta-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .footer .container {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            .pricing-card.recommended {
+                transform: scale(1.0); /* Remover o scale extra no recomendado para mobile */
+            }
         }
+        /* Mobile */
         @media (max-width: 576px) {
-            .header { padding: 10px 15px; }
-            .logo { font-size: 24px; }
-            .hero-section { padding: 80px 15px 50px; }
-            .section-title { font-size: 28px; }
-            .section-subtitle { font-size: 16px; }
-            .pricing-card, .feature-card, .contact-card { padding: 25px; }
+            .header {
+                padding: 10px 15px;
+            }
+            .logo {
+                font-size: 24px;
+            }
+            .hero-section {
+                padding: 80px 15px 50px;
+            }
+            .section-title {
+                font-size: 28px;
+            }
+            .section-subtitle {
+                font-size: 16px;
+            }
+           
+            .pricing-card, .feature-card, .contact-card {
+                padding: 25px;
+            }
         }
-
-        /* SWEETALERT2 */
-        .swal2-popup { background: var(--background-light) !important; color: var(--text-white) !important; }
-        .swal2-title, .swal2-content { color: var(--text-white) !important; }
-        .swal2-confirm { background: var(--primary-purple) !important; color: white !important; }
+        /* Animações AOS (Apenas para garantir que o AOS funcione com o novo CSS) */
+        [data-aos] {
+            transition-property: opacity, transform;
+        }
+        /* Estilos para SweetAlert2 (Adaptação ao tema escuro) */
+        .swal2-popup {
+            background-color: var(--background-light) !important;
+            color: var(--text-white) !important;
+            border: 1px solid var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        .swal2-title {
+            color: var(--text-white) !important;
+        }
+        .swal2-content {
+            color: var(--text-light) !important;
+        }
+        .swal2-confirm {
+            background-color: var(--primary-purple) !important;
+            color: var(--text-white) !important;
+            border: none !important;
+            box-shadow: 0 0 10px rgba(110, 68, 255, 0.4) !important;
+        }
+        .swal2-confirm:focus {
+            box-shadow: 0 0 0 3px rgba(110, 68, 255, 0.5) !important;
+        }
+        /* Garantir que ícones Lucide sejam roxos */
+        [data-lucide] {
+            color: var(--primary-purple) !important;
+        }
     </style>
 </head>
 <body>
-    <!-- Loader -->
+    <!-- Loader Aprimorado -->
     <div class="loader" id="loader">
         <div class="loader-background"></div>
         <div class="loader-spinner"></div>
         <div class="loader-text">Carregando ConsultCenter...</div>
     </div>
-
     <div class="content-wrapper">
-        <!-- Header -->
+        <!-- Header Fixo e Moderno -->
         <header class="header" id="header">
             <div class="logo">
                 <span class="consult">Consult</span><span class="center">Center</span>
@@ -395,8 +877,7 @@
                 </div>
             </div>
         </header>
-
-        <!-- Submenu Mobile -->
+        <!-- Submenu Mobile/Tablet -->
         <div class="submenu" id="submenu">
             <a href="#home" class="submenu-item" data-target="home-section"><i data-lucide="home"></i> Início</a>
             <a href="#features" class="submenu-item" data-target="features-section"><i data-lucide="layout-grid"></i> Recursos</a>
@@ -406,13 +887,14 @@
                 <i data-lucide="log-in"></i> Entrar
             </button>
         </div>
-
-        <!-- Main -->
-        <main class="main-container" id="main-container" style="opacity: 0; transition: opacity 0.5s ease;">
-            <!-- Hero -->
-            <section class="hero-section" id="home-section">
+        <!-- Main Content (Container principal) -->
+        <main class="main-container" id="main-container">
+            <!-- Seção Home/Hero -->
+            <section class="hero-section" id="home-section" data-aos="fade-up">
                 <div class="container">
-                    <h1 class="hero-title">A <span class="highlight">Plataforma Definitiva</span> para Gestão de Consultas.</h1>
+                    <h1 class="hero-title">
+                        A <span class="highlight">Plataforma Definitiva</span> para Gestão de Consultas.
+                    </h1>
                     <p class="hero-text">
                         O ConsultCenter integra agendamento, prontuários e finanças em um único lugar, otimizando seu tempo e elevando a qualidade do seu atendimento.
                     </p>
@@ -426,42 +908,71 @@
                     </div>
                 </div>
             </section>
-
-            <!-- Recursos -->
-            <section class="features-section" id="features-section">
+            <!-- Seção Recursos (Features) - Conteúdo Original Adaptado -->
+            <section class="features-section" id="features-section" data-aos="fade-up">
                 <div class="container">
                     <h2 class="section-title">Recursos que <span class="highlight">Transformam</span></h2>
                     <p class="section-subtitle">Tudo que você precisa para gerir sua clínica com excelência.</p>
                     <div class="feature-grid">
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="user"></i></div>
+                        <!-- Feature 1: Módulos de CPF (Original) -->
+                        <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="icon-wrapper">
+                                <i data-lucide="user"></i>
+                            </div>
                             <h3 class="card-title">Módulos de CPF</h3>
-                            <p class="card-text">Consultas otimizadas de dados de CPF com tempo de resposta excepcional.</p>
+                            <p class="card-text">
+                                Consultas otimizadas de dados de CPF com tempo de resposta excepcional.
+                            </p>
                         </div>
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="phone"></i></div>
+                        <!-- Feature 2: Módulos de TELEFONE (Original) -->
+                        <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="icon-wrapper">
+                                <i data-lucide="phone"></i>
+                            </div>
                             <h3 class="card-title">Módulos de TELEFONE</h3>
-                            <p class="card-text">Acesso rápido e seguro a informações de telefones.</p>
+                            <p class="card-text">
+                                Acesso rápido e seguro a informações de telefones.
+                            </p>
                         </div>
-                        <div class="feature-card">
-                            <div class="icon-wrapper"><i data-lucide="car"></i></div>
+                        <!-- Feature 3: Módulos de PLACA (Original) -->
+                        <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                            <div class="icon-wrapper">
+                                <i data-lucide="car"></i>
+                            </div>
                             <h3 class="card-title">Módulos de PLACA</h3>
-                            <p class="card-text">Consultas de veículos com dados atualizados e precisos.</p>
+                            <p class="card-text">
+                                Consultas de veículos com dados atualizados e precisos.
+                            </p>
                         </div>
-                        <div class="feature-card hidden-module">
-                            <div class="icon-wrapper"><i data-lucide="zap"></i></div>
+                        <!-- Feature 4: Alta Performance (Original - Hidden) -->
+                        <div class="feature-card hidden-module" data-aos="fade-up" data-aos-delay="400">
+                            <div class="icon-wrapper">
+                                <i data-lucide="zap"></i>
+                            </div>
                             <h3 class="card-title">Alta Performance</h3>
-                            <p class="card-text">Consultas otimizadas com tempo de resposta excepcional.</p>
+                            <p class="card-text">
+                                Consultas otimizadas com tempo de resposta excepcional para suas aplicações.
+                            </p>
                         </div>
-                        <div class="feature-card hidden-module">
-                            <div class="icon-wrapper"><i data-lucide="database"></i></div>
+                        <!-- Feature 5: Dados Atualizados (Original - Hidden) -->
+                        <div class="feature-card hidden-module" data-aos="fade-up" data-aos-delay="500">
+                            <div class="icon-wrapper">
+                                <i data-lucide="database"></i>
+                            </div>
                             <h3 class="card-title">Dados Atualizados</h3>
-                            <p class="card-text">Base de dados em constante atualização.</p>
+                            <p class="card-text">
+                                Base de dados em constante atualização garantindo precisão nas informações.
+                            </p>
                         </div>
-                        <div class="feature-card hidden-module">
-                            <div class="icon-wrapper"><i data-lucide="shield-check"></i></div>
+                        <!-- Feature 6: Segurança Total (Original - Hidden) -->
+                        <div class="feature-card hidden-module" data-aos="fade-up" data-aos-delay="600">
+                            <div class="icon-wrapper">
+                                <i data-lucide="shield-check"></i>
+                            </div>
                             <h3 class="card-title">Segurança Total</h3>
-                            <p class="card-text">Proteção avançada com conexões criptografadas e SSL.</p>
+                            <p class="card-text">
+                                Proteção avançada com conexões criptografadas e certificados SSL.
+                            </p>
                         </div>
                     </div>
                     <div class="text-center mt-5">
@@ -471,14 +982,14 @@
                     </div>
                 </div>
             </section>
-
-            <!-- Planos -->
-            <section class="plans-section" id="plans-section">
+            <!-- Seção Planos (Pricing) - Conteúdo Original Adaptado -->
+            <section class="plans-section" id="plans-section" data-aos="fade-up">
                 <div class="container">
                     <h2 class="section-title">Escolha o seu <span class="highlight">Plano</span></h2>
                     <p class="section-subtitle">Simples, transparente e escalável para o seu negócio.</p>
                     <div class="pricing-grid">
-                        <div class="pricing-card">
+                        <!-- Plano Semanal (Original) -->
+                        <div class="pricing-card" data-aos="zoom-in" data-aos-delay="100">
                             <div class="card-header">
                                 <i data-lucide="package" class="plan-icon"></i>
                                 <h3 class="plan-title">Plano Semanal</h3>
@@ -500,7 +1011,8 @@
                                 Adquirir
                             </a>
                         </div>
-                        <div class="pricing-card recommended">
+                        <!-- Plano Mensal (Original - Mais Popular) -->
+                        <div class="pricing-card recommended" data-aos="zoom-in" data-aos-delay="200">
                             <div class="card-header">
                                 <i data-lucide="zap" class="plan-icon"></i>
                                 <h3 class="plan-title">Plano Mensal</h3>
@@ -522,7 +1034,8 @@
                                 Adquirir
                             </a>
                         </div>
-                        <div class="pricing-card">
+                        <!-- Plano Anual (Original) -->
+                        <div class="pricing-card" data-aos="zoom-in" data-aos-delay="300">
                             <div class="card-header">
                                 <i data-lucide="calendar" class="plan-icon"></i>
                                 <h3 class="plan-title">Plano Anual</h3>
@@ -547,20 +1060,19 @@
                     </div>
                 </div>
             </section>
-
-            <!-- Contato -->
-            <section class="contact-section" id="contact-section">
+            <!-- Seção Contato/Login (Modal) -->
+            <section class="contact-section" id="contact-section" data-aos="fade-up">
                 <div class="container">
                     <h2 class="section-title">Pronto para <span class="highlight">Começar?</span></h2>
                     <p class="section-subtitle">Entre em contato ou acesse sua conta agora mesmo.</p>
                     <div class="contact-grid">
-                        <div class="contact-card">
+                        <div class="contact-card" data-aos="fade-right">
                             <i data-lucide="mail" class="contact-icon"></i>
                             <h3 class="card-title">Suporte por WhatsApp</h3>
                             <p class="card-text">Nossa equipe de suporte responderá em até 24 horas.</p>
                             <a href="https://wa.me/5582993708218" class="contact-link">Clique Aqui<i data-lucide="arrow-right"></i></a>
                         </div>
-                        <div class="contact-card">
+                        <div class="contact-card" data-aos="fade-left">
                             <i data-lucide="phone" class="contact-icon"></i>
                             <h3 class="card-title">Atendimento Telefônico</h3>
                             <p class="card-text">Ligue para falar com um de nossos administradores.</p>
@@ -569,12 +1081,19 @@
                     </div>
                 </div>
             </section>
-
-            <!-- Modal Login -->
+           
+            <!-- Modal de Login -->
             <div class="login-modal-overlay" id="login-modal-overlay" onclick="hideLogin()">
-                <div classimagens="login-modal" onclick="event.stopPropagation()">
+                <div class="login-modal" id="login-modal" onclick="event.stopPropagation()">
                     <button class="close-btn" onclick="hideLogin()"><i data-lucide="x"></i></button>
                     <div class="modal-header">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}" style="display: none;">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
                         <i data-lucide="lock" class="modal-icon"></i>
                         <h3 class="modal-title">Acesso ao ConsultCenter</h3>
                         <p class="modal-subtitle">Entre com suas credenciais para acessar a plataforma.</p>
@@ -590,11 +1109,11 @@
                         </div>
                         <div class="form-options">
                             <div class="checkbox-group">
-                                <input type="checkbox" id="showPassword">
+                                <input type="checkbox" id="showPassword" name="showPassword">
                                 <label for="showPassword">Mostrar Senha</label>
                             </div>
                             <div class="checkbox-group">
-                                <input type="checkbox" id="rememberMe">
+                                <input type="checkbox" id="rememberMe" name="rememberMe">
                                 <label for="rememberMe">Lembrar de mim</label>
                             </div>
                         </div>
@@ -605,7 +1124,6 @@
                 </div>
             </div>
         </main>
-
         <!-- Footer -->
         <footer class="footer">
             <div class="container">
@@ -613,159 +1131,269 @@
             </div>
         </footer>
     </div>
-
     <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Funções globais
+        AOS.init();
+        // JavaScript EMBUTIDO - Funcionalidades Aprimoradas
+      
+        // Funções Globais para o Modal de Login
         function showLogin() {
-            const overlay = document.getElementById('login-modal-overlay');
-            overlay.style.display = 'flex';
-            setTimeout(() => overlay.classList.add('active'), 10);
+            const modalOverlay = document.getElementById('login-modal-overlay');
+            modalOverlay.style.display = 'flex';
+            setTimeout(() => {
+                modalOverlay.classList.add('active');
+            }, 10);
         }
-
         function hideLogin() {
-            const overlay = document.getElementById('login-modal-overlay');
-            overlay.classList.remove('active');
-            setTimeout(() => overlay.style.display = 'none', 300);
+            const modalOverlay = document.getElementById('login-modal-overlay');
+            modalOverlay.classList.remove('active');
+            setTimeout(() => {
+                modalOverlay.style.display = 'none';
+            }, 300);
         }
-
+        // Função auxiliar para rolagem (usada nos botões CTA)
         function scrollToSection(id) {
             const section = document.getElementById(id);
             if (section) {
-                window.scrollTo({ top: section.offsetTop - 80, behavior: 'smooth' });
+                window.scrollTo({
+                    top: section.offsetTop - 80, // Ajuste para o header fixo
+                    behavior: 'smooth'
+                });
             }
         }
-
+      
         document.addEventListener('DOMContentLoaded', () => {
             const loader = document.getElementById('loader');
-            const mainContainer = document.getElementById('main-container');
             const menuToggle = document.getElementById('menu-toggle');
             const submenu = document.getElementById('submenu');
+            const mainContainer = document.getElementById('main-container');
             const discoverMoreBtn = document.getElementById('discover-more');
             const hiddenModules = document.querySelectorAll('.hidden-module');
-            const navItems = document.querySelectorAll('.nav-item, .submenu-item');
-            const loginForm = document.getElementById('loginForm');
-            const passwordInput = document.getElementById('password');
-            const showPassword = document.getElementById('showPassword');
-
-            // 1. Loader
+            const navItems = document.querySelectorAll('.nav-item');
+            const submenuItems = document.querySelectorAll('.submenu-item');
+            const loginModalOverlay = document.getElementById('login-modal-overlay');
+            // 1. Ocultar Loader ao carregar a página
             window.addEventListener('load', () => {
                 setTimeout(() => {
                     loader.classList.add('hidden');
+                    // Atraso para garantir que o loader sumiu antes de mostrar o conteúdo
                     setTimeout(() => {
                         loader.style.display = 'none';
-                        mainContainer.style.opacity = '1';
-                        lucide.createIcons();
+                        mainContainer.style.opacity = '1'; // Mostrar o conteúdo principal
+                        lucide.createIcons(); // Recriar ícones Lucide após o carregamento
                     }, 500);
-                }, 1000);
+                }, 1000); // 1 segundo de exibição mínima do loader
             });
-
-            // 2. Controle de sessão
+            // Lógica de autenticação inicial: Verificar se deve mostrar a página principal ou abrir o modal de login
             const urlParams = new URLSearchParams(window.location.search);
             const backinUP = urlParams.get('backinUP');
-            if (backinUP === 'true') {
+            // Reset backinUP on reload to avoid persistent state
+            if (backinUP === 'true' && !sessionStorage.getItem('initialLoad')) {
                 sessionStorage.setItem('initialLoad', 'true');
-                history.replaceState({}, '', window.location.pathname);
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
-
-            if (!sessionStorage.getItem('hasSeenWelcome') && !backinUP) {
+            const shouldShowWelcome = !sessionStorage.getItem('hasSeenWelcome') && !backinUP;
+            if (shouldShowWelcome) {
+                mainContainer.style.display = 'block';
                 sessionStorage.setItem('hasSeenWelcome', 'true');
             } else {
-                mainContainer.style.opacity = '0';
-                setTimeout(showLogin, 1000);
+                // Removido mainContainer.style.display = 'none'; para que o conteúdo principal não desapareça
+                // Auto-abrir o modal de login
+                setTimeout(() => {
+                    showLogin();
+                }, 1000); // Atraso para após o loader
+                if (backinUP === 'true') {
+                    showLogin();
+                }
             }
-
-            // 3. Menu Mobile
+            // 2. Toggle do Menu Mobile
             menuToggle.addEventListener('click', () => {
-                submenu.classList.toggle('active');
                 const icon = menuToggle.querySelector('svg');
-                icon.setAttribute('data-lucide', submenu.classList.contains('active') ? 'x' : 'menu');
-                lucide.createIcons();
+                if (submenu.classList.contains('active')) {
+                    submenu.classList.remove('active');
+                    icon.setAttribute('data-lucide', 'menu');
+                } else {
+                    submenu.classList.add('active');
+                    icon.setAttribute('data-lucide', 'x');
+                }
+                lucide.createIcons(); // Atualizar o ícone
             });
-
-            // 4. Navegação
-            navItems.forEach(item => {
+            // 3. Navegação Suave e Destaque do Menu
+            const allNavItems = [...navItems, ...submenuItems];
+            allNavItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    if (submenu.classList.contains('active')) menuToggle.click();
-                    const target = document.getElementById(this.dataset.target);
-                    if (target) {
+                  
+                    // Fechar submenu se estiver aberto
+                    if (submenu.classList.contains('active')) {
+                        menuToggle.click();
+                    }
+                    const targetId = this.getAttribute('data-target');
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        // Animação de saída antes de rolar
                         mainContainer.style.opacity = '0';
+                      
                         setTimeout(() => {
-                            window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
-                            history.pushState({}, '', '#' + this.dataset.target.replace('-section', ''));
-                            setTimeout(() => mainContainer.style.opacity = '1', 500);
-                        }, 300);
+                            window.scrollTo({
+                                top: targetSection.offsetTop - 80, // Ajuste para o header fixo
+                                behavior: 'smooth'
+                            });
+                          
+                            // Atualizar o hash da URL
+                            window.location.hash = targetId.replace('-section', '');
+                            // Animação de entrada após rolar
+                            setTimeout(() => {
+                                mainContainer.style.opacity = '1';
+                            }, 500); // Tempo de rolagem
+                        }, 300); // Tempo da animação de saída
                     }
                 });
             });
-
-            // 5. Destaque ativo
-            const observer = new IntersectionObserver((entries) => {
+          
+            // 4. Observador para destacar o item de menu ativo
+            const sections = document.querySelectorAll('section');
+            const options = {
+                root: null,
+                rootMargin: '-100px 0px -50% 0px',
+                threshold: 0.3
+            };
+            const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        navItems.forEach(item => item.classList.remove('active'));
-                        navItems.forEach(item => {
-                            if (item.dataset.target === entry.target.id) item.classList.add('active');
+                        const currentId = entry.target.id;
+                      
+                        // Remover 'active' de todos
+                        allNavItems.forEach(item => item.classList.remove('active'));
+                        // Adicionar 'active' ao item correspondente
+                        allNavItems.forEach(item => {
+                            if (item.getAttribute('data-target') === currentId) {
+                                item.classList.add('active');
+                            }
                         });
                     }
                 });
-            }, { rootMargin: '-100px 0px -50% 0px', threshold: 0.3 });
-            document.querySelectorAll('section').forEach(sec => observer.observe(sec));
-
-            // 6. Descubra Mais
-            discoverMoreBtn.addEventListener('click', () => {
-                const expanded = discoverMoreBtn.classList.toggle('expanded');
-                hiddenModules.forEach((mod, i) => {
-                    mod.style.display = expanded ? 'block' : 'none';
-                    if (expanded) setTimeout(() => mod.classList.add('visible'), i * 100);
-                    else mod.classList.remove('visible');
-                });
-                discoverMoreBtn.innerHTML = expanded
-                    ? 'Ocultar <i data-lucide="chevron-up" class="icon-right"></i>'
-                    : 'Descubra Mais <i data-lucide="chevron-down" class="icon-right"></i>';
-                lucide.createIcons();
+            }, options);
+            sections.forEach(section => {
+                observer.observe(section);
             });
-
-            // 7. Mostrar senha
-            if (showPassword) {
-                showPassword.addEventListener('change', () => {
-                    passwordInput.type = showPassword.checked ? 'text' : 'password';
+            // 5. Botão "Descubra Mais" (Features)
+            discoverMoreBtn.addEventListener('click', () => {
+                const isExpanded = discoverMoreBtn.classList.contains('expanded');
+                const icon = discoverMoreBtn.querySelector('.icon-right');
+                if (isExpanded) {
+                    // Ocultar
+                    hiddenModules.forEach(module => {
+                        module.classList.remove('visible');
+                        setTimeout(() => {
+                            module.style.display = 'none';
+                        }, 500); // Tempo da transição CSS
+                    });
+                    discoverMoreBtn.classList.remove('expanded');
+                    discoverMoreBtn.innerHTML = 'Descubra Mais <i data-lucide="chevron-down" class="icon-right"></i>';
+                } else {
+                    // Mostrar
+                    hiddenModules.forEach(module => {
+                        module.style.display = 'grid'; // Mudança para grid para feature-grid
+                        setTimeout(() => {
+                            module.classList.add('visible');
+                        }, 10);
+                    });
+                    discoverMoreBtn.classList.add('expanded');
+                    discoverMoreBtn.innerHTML = 'Ocultar <i data-lucide="chevron-up" class="icon-right"></i>';
+                }
+                lucide.createIcons(); // Atualizar o ícone
+            });
+            // 6. Lógica de Login com "Lembrar de Mim" (Adaptado do original)
+    // OBS: A submissão do formulário agora é real (method="POST" action="/")
+    // O JavaScript abaixo apenas trata do "Lembrar de Mim" e da animação do botão.
+    // O backend (Jinja2) deve lidar com a autenticação.
+            const loginForm = document.getElementById('loginForm');
+            const passwordInput = document.getElementById('password');
+            const showPasswordCheckbox = document.getElementById('showPassword');
+            // 6.1 Funcionalidade Mostrar Senha
+            if (showPasswordCheckbox) {
+                showPasswordCheckbox.addEventListener('change', function() {
+                    passwordInput.type = this.checked ? 'text' : 'password';
                 });
             }
-
-            // 8. Lembrar de mim
+            // 6.2 Lógica de Login com "Lembrar de Mim"
             if (loginForm) {
                 loginForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const remember = document.getElementById('rememberMe').checked;
                     const user = document.getElementById('user').value;
-                    const pass = passwordInput.value;
-
-                    document.querySelector('.login-submit').classList.add('clicked');
-                    setTimeout(() => this.submit(), 500);
-
-                    if (remember) {
+                    const password = passwordInput.value;
+                    const rememberMe = document.getElementById('rememberMe').checked;
+                    // Animação da seta no botão Entrar
+                    const loginSubmit = document.querySelector('.login-submit');
+                    loginSubmit.classList.add('clicked');
+                    setTimeout(() => {
+                        loginSubmit.classList.remove('clicked');
+                    }, 500);
+                    // Adicionar campo token oculto (exemplo)
+                    const tokenField = document.createElement('input');
+                    tokenField.type = 'hidden';
+                    tokenField.name = 'token';
+                    tokenField.value = 'dummyToken';
+                    this.appendChild(tokenField);
+                    // Salvar ou remover credenciais no localStorage
+                    if (rememberMe) {
                         localStorage.setItem('rememberedUser', user);
-                        localStorage.setItem('rememberedPassword', pass);
+                        localStorage.setItem('rememberedPassword', password);
                     } else {
                         localStorage.removeItem('rememberedUser');
                         localStorage.removeItem('rememberedPassword');
                     }
+                    // Submeter o formulário
+                    this.submit();
                 });
             }
-
-            // 9. Preencher login lembrado
-            const savedUser = localStorage.getItem('rememberedUser');
-            const savedPass = localStorage.getItem('rememberedPassword');
-            if (savedUser && savedPass) {
-                document.getElementById('user').value = savedUser;
-                document.getElementById('password').value = savedPass;
+            // 7. Processar Flash Messages (Jinja2) e exibir com SweetAlert2
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const type = alert.classList.contains('alert-success') ? 'success' : 'error';
+                const title = type === 'success' ? 'Sucesso!' : 'Erro!';
+                Swal.fire({
+                    icon: type,
+                    title: title,
+                    text: alert.textContent.trim(),
+                    background: 'var(--background-light)',
+                    color: 'var(--text-white)',
+                    confirmButtonColor: 'var(--primary-purple)',
+                    customClass: {
+                        popup: 'swal2-popup',
+                        title: 'swal2-title',
+                        content: 'swal2-content',
+                        confirmButton: 'swal2-confirm'
+                    }
+                }).then(() => {
+                    // Se for sucesso, pode-se querer redirecionar, como no original
+                    if (type === 'success') {
+                        // window.location.href = '/dashboard'; // Exemplo de redirecionamento
+                    }
+                });
+              
+                // Mostrar o modal de login se houver um erro
+                if (type === 'error') {
+                    showLogin();
+                }
+            });
+            // 8. Preencher campos de login se "Lembrar de Mim" estiver ativo
+            const rememberedUser = localStorage.getItem('rememberedUser');
+            const rememberedPassword = localStorage.getItem('rememberedPassword');
+            if (rememberedUser && rememberedPassword) {
+                document.getElementById('user').value = rememberedUser;
+                document.getElementById('password').value = rememberedPassword;
                 document.getElementById('rememberMe').checked = true;
             }
-
-            // 10. Inicializar ícones
+          
+            // 9. Inicialmente esconder módulos extras
+            hiddenModules.forEach(module => {
+                module.style.display = 'none';
+            });
+            AOS.init();
             lucide.createIcons();
         });
     </script>
