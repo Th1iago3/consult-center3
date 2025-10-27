@@ -725,7 +725,7 @@ def cpfdata(module_uuid):
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpfdata.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=datav1"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv2"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -778,7 +778,7 @@ def cpflv(module_uuid):
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('cpflv.html', is_admin=is_admin, notifications=user_notifications, result=result, cpf=cpf)
 
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv2"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
@@ -890,9 +890,9 @@ def vacinas(module_uuid):
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('resultado'):
+                if data.get('response'):
                     if manage_module_usage(g.user_id, 'vacinas'):
-                        result = data['resultado']
+                        result = data['response']
                         reset_all()
                     else:
                         flash('Limite de uso atingido para VACINAS.', 'error')
