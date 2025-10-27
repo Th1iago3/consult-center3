@@ -18,7 +18,7 @@
             --accent-color: #FF5ACF;
             --background-start: #0A0F1F;
             --background-end: #1A2040;
-            --card-bg: rgba(20, 25, 45, 0.95);
+            --card-bg: rgba(20, 25, 45, 0.98);
             --text-dark: #E8ECEF;
             --text-light: rgba(150, 155, 180, 0.8);
             --white: #FFFFFF;
@@ -27,7 +27,7 @@
             --warning: #FFB800;
             --shadow: rgba(0, 0, 0, 0.6);
             --glow: rgba(94, 62, 255, 0.5);
-            --border-radius: 12px;
+            --border-radius: 16px;
             --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             --separator-color: rgba(94, 62, 255, 0.3);
         }
@@ -47,7 +47,7 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar */
+        /* Enhanced Sidebar */
         #sidebar {
             position: fixed;
             left: 0;
@@ -101,12 +101,30 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 15px;
+            padding: 12px 16px;
             background: rgba(94, 62, 255, 0.1);
-            border-radius: 8px;
+            border-radius: 12px;
             margin: 8px 0;
             transition: var(--transition);
             width: 90%;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toggle-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .toggle-item:hover::before {
+            left: 100%;
         }
 
         .toggle-item:hover {
@@ -115,7 +133,7 @@
         }
 
         .toggle-item span {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-dark);
             display: none;
             white-space: nowrap;
@@ -163,6 +181,7 @@
             background: var(--white);
             transition: var(--transition);
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         input:checked + .slider {
@@ -173,48 +192,133 @@
             transform: translateX(26px);
         }
 
-        /* Container Principal */
-        .admin-container {
+        /* Main Content with Tabs */
+        .main-content {
+            margin-left: 80px;
+            flex: 1;
+            padding: 20px;
+            transition: margin-left 0.6s var(--transition);
+            overflow-y: auto;
+        }
+
+        #sidebar.expanded ~ .main-content {
+            margin-left: 280px;
+        }
+
+        .tabs {
+            display: flex;
             background: var(--card-bg);
             border-radius: var(--border-radius);
-            box-shadow: 0 8px 20px var(--shadow);
-            padding: 25px;
-            width: 100%;
-            max-width: 450px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            margin-left: 40px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px var(--shadow);
+            overflow: hidden;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(94, 62, 255, 0.1);
+            color: var(--text-dark);
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 8px 25px var(--shadow);
             border: 1px solid var(--separator-color);
-            backdrop-filter: blur(8px);
-            transition: margin-left 0.6s var(--transition);
+            backdrop-filter: blur(10px);
+            animation: fadeInTab 0.5s ease-out;
         }
 
-        #sidebar.expanded ~ .admin-container {
-            margin-left: 140px;
+        @keyframes fadeInTab {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
-        .admin-container:hover {
-            transform: translate(-50%, -50%) translateY(-5px);
-            box-shadow: 0 12px 25px var(--shadow);
-            border-color: var(--primary-color);
+        .tab-content.active {
+            display: block;
         }
 
-        h2 {
-            font-size: 24px;
+        /* Dashboard Tab */
+        .dashboard-welcome {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .dashboard-welcome h2 {
+            font-size: 28px;
             font-weight: 700;
             color: var(--white);
             margin-bottom: 20px;
-            text-align: center;
             background: linear-gradient(90deg, var(--white), var(--secondary-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* Formulário */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: rgba(94, 62, 255, 0.15);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid rgba(94, 62, 255, 0.2);
+        }
+
+        .stat-card:hover {
+            background: rgba(94, 62, 255, 0.25);
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-card h3 {
+            font-size: 18px;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        /* Users Tab */
+        .users-section {
+            position: relative;
+        }
+
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
@@ -222,15 +326,15 @@
             font-size: 14px;
             font-weight: 500;
             color: var(--text-light);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .form-group input,
         .form-group select {
             width: 100%;
-            padding: 12px 14px;
+            padding: 14px 16px;
             border: 1px solid var(--separator-color);
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 14px;
             color: var(--text-dark);
             background: rgba(25, 30, 50, 0.95);
@@ -240,32 +344,41 @@
         .form-group input:focus,
         .form-group select:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 10px var(--glow);
+            box-shadow: 0 0 12px var(--glow);
             outline: none;
         }
 
         .form-group select {
             appearance: none;
-            background: rgba(25, 30, 50, 0.95) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%238B6CFF' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 14px center;
+            background: rgba(25, 30, 50, 0.95) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238B6CFF' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 16px center;
+            padding-right: 40px;
         }
 
-        /* Botões */
+        .auto-expire-note {
+            font-size: 12px;
+            color: var(--success);
+            margin-top: 5px;
+            display: none;
+        }
+
         .button {
             background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
             border: none;
             color: var(--white);
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 14px 24px;
+            border-radius: 12px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
             transition: var(--transition);
+            margin-bottom: 10px;
         }
 
         .button:hover {
             background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
-            box-shadow: 0 4px 15px var(--glow);
+            box-shadow: 0 6px 20px var(--glow);
+            transform: translateY(-2px);
         }
 
         .button.secondary {
@@ -278,15 +391,195 @@
             box-shadow: 0 4px 15px var(--shadow);
         }
 
-        /* Link Voltar */
+        #usersList {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 1px solid var(--separator-color);
+            border-radius: 12px;
+            padding: 15px;
+            background: rgba(25, 30, 50, 0.95);
+            animation: fadeInUpList 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUpList {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-info {
+            background: rgba(94, 62, 255, 0.15);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            border: 1px solid rgba(94, 62, 255, 0.1);
+        }
+
+        .user-info:hover {
+            background: rgba(94, 62, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: var(--text-light);
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .user-info p strong {
+            color: var(--text-dark);
+            min-width: 120px;
+        }
+
+        .copy-user-btn {
+            background: var(--success);
+            border: none;
+            color: var(--white);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-left: 10px;
+        }
+
+        .copy-user-btn:hover {
+            background: #00B77E;
+            transform: scale(1.05);
+        }
+
+        /* Modules Tab */
+        .modules-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .module-card {
+            background: rgba(25, 30, 50, 0.95);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--separator-color);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .module-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 6px 20px var(--glow);
+            transform: translateY(-5px);
+        }
+
+        .module-card h3 {
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .module-card .toggle-switch {
+            justify-content: flex-end;
+        }
+
+        /* Messages Tab */
+        .messages-section {
+            text-align: center;
+        }
+
+        .message-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .message-modal.active {
+            display: flex;
+        }
+
+        .message-modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 15px 40px var(--shadow);
+            border: 1px solid var(--separator-color);
+            animation: popInModal 0.4s ease-out forwards;
+            transform: translateY(50px);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .message-modal.active .message-modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @keyframes popInModal {
+            0% { transform: scale(0.9) translateY(50px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .message-modal-content h3 {
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .message-modal-content textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--separator-color);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            background: rgba(25, 30, 50, 0.95);
+            color: var(--text-dark);
+            resize: vertical;
+            min-height: 100px;
+            transition: var(--transition);
+        }
+
+        .message-modal-content textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 12px var(--glow);
+            outline: none;
+        }
+
+        .message-modal-content .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-modal-content .buttons .button {
+            flex: 1;
+            width: auto;
+        }
+
+        /* Back Link */
         .back-link {
             display: inline-flex;
             align-items: center;
             color: var(--secondary-color);
             text-decoration: none;
             font-size: 14px;
-            margin-top: 15px;
+            margin-top: 20px;
             transition: var(--transition);
+            justify-content: center;
         }
 
         .back-link:hover {
@@ -303,136 +596,29 @@
             transform: translateX(-3px);
         }
 
-        /* Lista de Usuários */
-        #usersList {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 16px;
-            display: none;
-            border: 1px solid var(--separator-color);
-            border-radius: 8px;
-            padding: 10px;
-            background: rgba(25, 30, 50, 0.95);
-            animation: fadeInUpList 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeInUpList {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-info {
-            background: rgba(94, 62, 255, 0.15);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            transition: var(--transition);
-        }
-
-        .user-info:hover {
-            background: rgba(94, 62, 255, 0.25);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px var(--shadow);
-        }
-
-        .user-info p {
-            font-size: 13px;
-            color: var(--text-light);
-            margin: 5px 0;
-        }
-
-        .user-info p strong {
-            color: var(--text-dark);
-            min-width: 100px;
-            display: inline-block;
-        }
-
-        /* Modal de Enviar Mensagem */
-        .message-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            max-width: 400px;
-            margin-left: 40px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(6px);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            z-index: 1000;
-            transition: margin-left 0.6s var(--transition);
-        }
-
-        #sidebar.expanded ~ .message-modal {
-            margin-left: 140px;
-        }
-
-        .message-modal.active {
-            display: block;
-        }
-
-        .message-modal-content {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 10px 30px var(--shadow);
-            border: 1px solid var(--separator-color);
-            animation: popInModal 0.4s ease-out forwards;
-        }
-
-        @keyframes popInModal {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .message-modal-content h3 {
-            color: var(--text-dark);
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .message-modal-content input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--separator-color);
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            background: rgba(25, 30, 50, 0.95);
-            color: var(--text-dark);
-            transition: var(--transition);
-        }
-
-        .message-modal-content input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 10px var(--glow);
-            outline: none;
-        }
-
-        /* SweetAlert2 Customização */
+        /* SweetAlert2 Enhanced */
         .swal2-container {
             z-index: 1200;
         }
 
         .swal2-popup {
-            width: 320px !important;
-            padding: 20px !important;
+            width: 400px !important;
+            padding: 25px !important;
             border-radius: var(--border-radius) !important;
-            background: linear-gradient(135deg, rgba(25, 30, 50, 0.95), rgba(15, 20, 40, 0.98)) !important;
-            box-shadow: 0 8px 20px var(--shadow) !important;
+            background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.99)) !important;
+            box-shadow: 0 10px 30px var(--shadow) !important;
             border: 1px solid var(--separator-color) !important;
             font-family: 'Roboto', sans-serif !important;
+            backdrop-filter: blur(10px) !important;
         }
 
         .swal2-title {
             color: var(--text-dark) !important;
-            font-size: 18px !important;
-            font-weight: 600 !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            background: linear-gradient(90deg, var(--white), var(--secondary-color)) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
         }
 
         .swal2-content {
@@ -441,33 +627,39 @@
         }
 
         .swal2-confirm, .swal2-cancel {
-            padding: 10px 20px !important;
-            border-radius: 6px !important;
+            padding: 12px 24px !important;
+            border-radius: 8px !important;
             font-size: 14px !important;
+            font-weight: 600 !important;
             transition: var(--transition) !important;
+            box-shadow: 0 4px 15px var(--shadow) !important;
         }
 
         .swal2-confirm {
-            background-color: var(--primary-color) !important;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            border: none !important;
         }
 
         .swal2-confirm:hover {
-            background-color: var(--secondary-color) !important;
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color)) !important;
+            transform: scale(1.05) !important;
         }
 
         .swal2-cancel {
-            background-color: var(--error) !important;
+            background: linear-gradient(135deg, var(--error), var(--accent-color)) !important;
+            border: none !important;
         }
 
         .swal2-cancel:hover {
-            background-color: var(--accent-color) !important;
+            background: linear-gradient(135deg, var(--accent-color), var(--error)) !important;
+            transform: scale(1.05) !important;
         }
 
         .swal2-actions {
-            gap: 10px !important;
+            gap: 12px !important;
         }
 
-        /* Responsividade */
+        /* Responsivity */
         @media (max-width: 768px) {
             #sidebar {
                 width: 70px;
@@ -477,185 +669,179 @@
                 width: 250px;
             }
 
-            .admin-container {
-                max-width: 90%;
-                margin-left: 35px;
+            .main-content {
+                margin-left: 70px;
+                padding: 15px;
             }
 
-            #sidebar.expanded ~ .admin-container {
-                margin-left: 125px;
+            #sidebar.expanded ~ .main-content {
+                margin-left: 250px;
             }
 
-            .message-modal {
-                max-width: 90%;
-                margin-left: 35px;
+            .tabs {
+                flex-direction: column;
             }
 
-            #sidebar.expanded ~ .message-modal {
-                margin-left: 125px;
+            .tab-content {
+                padding: 20px;
             }
         }
 
         @media (max-width: 480px) {
-            .admin-container {
-                padding: 20px;
-                margin-left: 35px;
-            }
-
-            #sidebar.expanded ~ .admin-container {
-                margin-left: 125px;
+            .main-content {
+                padding: 10px;
             }
 
             h2 {
-                font-size: 20px;
+                font-size: 22px;
             }
 
             .button {
-                padding: 10px 16px;
+                padding: 12px 18px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- Enhanced Sidebar for Quick Module Access -->
     <div id="sidebar">
         <button class="sidebar-toggle" onclick="toggleSidebar()">
             <i class="fas fa-angle-right"></i>
         </button>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="cpfdata">
             <span>Localizar CPF (DATASUS)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpfdata" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="cpflv">
             <span>Localizar CPF (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpflv" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="cpf">
             <span>Localizar CPF (DATA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="cpf2">
             <span>Localizar CPF (DATAPRIME)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf2" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="cpf3">
             <span>Localizar CPF (SISREGII)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf3" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="vacinas">
             <span>Consulta Vacina (SIPNI)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="vacinas" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="nomelv">
             <span>Localizar Nome (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nomelv" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="nome">
             <span>Localizar Nome (DATA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nome" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="nome2">
             <span>Localizar Nome (DATAPRIME)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nome2" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="tel">
             <span>Consulta TELEFONE (DATA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="tel" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="telLv">
             <span>Consulta TELEFONE (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="telLv" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="teldual">
             <span>Consulta TELEFONE (NACIONAL)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="teldual" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="datanome">
             <span>Localizar DATA de NASCIMENTO</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="datanome" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="placa">
             <span>Consulta Veicular (NACIONAL)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="placa" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="placaestadual">
             <span>Consulta Veicular (ESTADUAL)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="placaestadual" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="placalv">
             <span>Consulta Veicular (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="placalv" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="fotor">
             <span>Consulta Foto (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="fotor" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="pix">
             <span>Consulta PIX (NACIONAL)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="pix" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="ip">
             <span>Localizar IP (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="ip" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="toggle-item">
+        <div class="toggle-item" data-module="likeff">
             <span>Adicionar Likes (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="likeff" onchange="toggleModule(this)">
@@ -664,66 +850,329 @@
         </div>
     </div>
 
-    <!-- Container Principal -->
-    <div class="admin-container">
-        <h2>Bem-vindo(a) Admin</h2>
-        <button class="button secondary view-users" onclick="toggleUsersView()">Ver Usuários</button>
-        <form id="adminForm" method="POST">
-            <div class="form-group">
-                <label for="action">Ação</label>
-                <select name="action" id="action" onchange="toggleFields()">
-                    <option value="add_user">Adicionar Usuário</option>
-                    <option value="delete_user">Excluir Usuário</option>
-                    <option value="reset_device">Reiniciar Dispositivo</option>
-                </select>
-            </div>
-            <div id="userFields" class="form-group">
-                <label for="user">Usuário</label>
-                <input type="text" name="user" placeholder="Usuário" required>
-                <div id="passwordField">
-                    <label for="password">Senha</label>
-                    <input type="password" name="password" placeholder="Senha" required>
+    <!-- Main Content with Tabs -->
+    <div class="main-content">
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'dashboard')"><i class="fas fa-home"></i> Dashboard</button>
+            <button class="tab-button" onclick="openTab(event, 'users')"><i class="fas fa-users"></i> Gerenciar Usuários</button>
+            <button class="tab-button" onclick="openTab(event, 'modules')"><i class="fas fa-cogs"></i> Módulos</button>
+            <button class="tab-button" onclick="openTab(event, 'messages')"><i class="fas fa-envelope"></i> Mensagens</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-welcome">
+                <h2>Bem-vindo(a), Admin!</h2>
+                <p style="color: var(--text-light); font-size: 16px; margin-bottom: 30px;">Gerencie o sistema de forma eficiente e completa.</p>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Total de Usuários</h3>
+                        <p id="totalUsers">{{ users | length if users else 0 }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-toggle-on"></i>
+                        <h3>Módulos Ativos</h3>
+                        <p id="activeModules">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Usuários Ativos</h3>
+                        <p id="activeUsers">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-bell"></i>
+                        <h3>Notificações Pendentes</h3>
+                        <p>0</p>
+                    </div>
                 </div>
-                <label for="role">Tipo</label>
-                <select name="role" id="role">
-                    <option value=""></option>
-                    <option value="user_semanal">Tipo: Semanal</option>
-                    <option value="user_mensal">Tipo: Mensal</option>
-                    <option value="user_anual">Tipo: Anual</option>
-                    <option value="admin">Tipo: Administrador</option>
-                </select>
-                <label for="expiration">Expiração</label>
-                <input type="date" name="expiration" id="expirationField" required>
+                <a href="/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para o Início</a>
             </div>
-            <button type="submit" class="button">Enviar</button>
-        </form>
-        <div id="usersList"></div>
-        <button class="button secondary" onclick="openMessageModal()">Enviar Mensagem</button>
-        <a href="/dashboard" class="back-link">Voltar para o início</a>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users" class="tab-content">
+            <div class="users-section">
+                <h2 style="margin-bottom: 20px; text-align: center;">Gerenciar Usuários</h2>
+                <button class="button secondary" onclick="toggleUsersView()" style="width: auto; margin-bottom: 20px;"><i class="fas fa-eye"></i> Ver Usuários</button>
+                <form id="adminForm" method="POST">
+                    <div class="form-group">
+                        <label for="action">Ação</label>
+                        <select name="action" id="action" onchange="toggleFields()">
+                            <option value="add_user">Adicionar Usuário</option>
+                            <option value="delete_user">Excluir Usuário</option>
+                            <option value="reset_device">Reiniciar Dispositivo</option>
+                        </select>
+                    </div>
+                    <div id="userFields">
+                        <div class="form-group">
+                            <label for="user">Usuário</label>
+                            <input type="text" name="user" placeholder="Nome de usuário" required>
+                        </div>
+                        <div id="passwordField" class="form-group">
+                            <label for="password">Senha</label>
+                            <input type="password" name="password" placeholder="Senha" required>
+                        </div>
+                        <div id="roleField" class="form-group">
+                            <label for="role">Tipo de Plano</label>
+                            <select name="role" id="role" onchange="calculateExpiration()">
+                                <option value="">Selecione um plano</option>
+                                <option value="user_semanal">Semanal (7 dias)</option>
+                                <option value="user_mensal">Mensal (30 dias)</option>
+                                <option value="user_anual">Anual (365 dias)</option>
+                                <option value="admin">Administrador (Ilimitado)</option>
+                            </select>
+                            <div class="auto-expire-note" id="autoExpireNote">Expiração calculada automaticamente. Você pode editar manualmente.</div>
+                        </div>
+                        <div id="expirationFieldDiv" class="form-group">
+                            <label for="expiration">Data de Expiração</label>
+                            <input type="date" name="expiration" id="expirationField" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="button"><i class="fas fa-save"></i> Executar Ação</button>
+                </form>
+                <div id="usersList"></div>
+            </div>
+        </div>
+
+        <!-- Modules Tab -->
+        <div id="modules" class="tab-content">
+            <h2 style="margin-bottom: 20px; text-align: center;">Gerenciar Módulos</h2>
+            <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Ative ou desative módulos para todos os usuários.</p>
+            <div class="modules-section">
+                <div class="module-card" data-module="cpfdata">
+                    <h3><i class="fas fa-id-card"></i> Localizar CPF (DATASUS)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="cpfdata" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="cpflv">
+                    <h3><i class="fas fa-id-card"></i> Localizar CPF (C&C Plus)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="cpflv" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="cpf">
+                    <h3><i class="fas fa-id-card"></i> Localizar CPF (DATA)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="cpf" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="cpf2">
+                    <h3><i class="fas fa-id-card"></i> Localizar CPF (DATAPRIME)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="cpf2" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="cpf3">
+                    <h3><i class="fas fa-id-card"></i> Localizar CPF (SISREGII)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="cpf3" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="vacinas">
+                    <h3><i class="fas fa-syringe"></i> Consulta Vacina (SIPNI)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="vacinas" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="nomelv">
+                    <h3><i class="fas fa-user"></i> Localizar Nome (C&C Plus)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="nomelv" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="nome">
+                    <h3><i class="fas fa-user"></i> Localizar Nome (DATA)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="nome" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="nome2">
+                    <h3><i class="fas fa-user"></i> Localizar Nome (DATAPRIME)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="nome2" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="tel">
+                    <h3><i class="fas fa-phone"></i> Consulta TELEFONE (DATA)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="tel" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="telLv">
+                    <h3><i class="fas fa-phone"></i> Consulta TELEFONE (C&C Plus)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="telLv" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="teldual">
+                    <h3><i class="fas fa-phone"></i> Consulta TELEFONE (NACIONAL)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="teldual" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="datanome">
+                    <h3><i class="fas fa-calendar"></i> Localizar DATA de NASCIMENTO</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="datanome" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="placa">
+                    <h3><i class="fas fa-car"></i> Consulta Veicular (NACIONAL)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="placa" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="placaestadual">
+                    <h3><i class="fas fa-car"></i> Consulta Veicular (ESTADUAL)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="placaestadual" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="placalv">
+                    <h3><i class="fas fa-car"></i> Consulta Veicular (C&C Plus)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="placalv" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="fotor">
+                    <h3><i class="fas fa-camera"></i> Consulta Foto (C&C Plus)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="fotor" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="pix">
+                    <h3><i class="fas fa-qrcode"></i> Consulta PIX (NACIONAL)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="pix" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="ip">
+                    <h3><i class="fas fa-globe"></i> Localizar IP (C&C Plus)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="ip" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="module-card" data-module="likeff">
+                    <h3><i class="fas fa-thumbs-up"></i> Adicionar Likes (C&C Plus)</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="likeff" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Tab -->
+        <div id="messages" class="tab-content">
+            <div class="messages-section">
+                <h2 style="margin-bottom: 20px; text-align: center;">Broadcast Mensagens</h2>
+                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie notificações para todos os usuários.</p>
+                <button class="button" onclick="openMessageModal()" style="width: auto; margin-bottom: 20px;"><i class="fas fa-paper-plane"></i> Nova Mensagem</button>
+                <div id="recentMessages" style="background: rgba(25, 30, 50, 0.95); padding: 20px; border-radius: 12px; border: 1px solid var(--separator-color);">
+                    <h3 style="color: var(--text-dark); margin-bottom: 15px;">Mensagens Recentes</h3>
+                    <p style="color: var(--text-light);">Nenhuma mensagem recente.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Modal de Enviar Mensagem -->
+    <!-- Enhanced Message Modal -->
     <div id="messageModal" class="message-modal">
         <div class="message-modal-content">
-            <h3>Enviar Mensagem</h3>
-            <input type="text" id="messageInput" placeholder="Digite a mensagem">
-            <button class="button" onclick="sendMessage()">Enviar</button>
-            <button class="button secondary" onclick="closeMessageModal()">Fechar</button>
+            <h3><i class="fas fa-envelope"></i> Enviar Mensagem para Todos</h3>
+            <textarea id="messageInput" placeholder="Digite sua mensagem aqui... (Suporte a Markdown simples)"></textarea>
+            <div class="buttons">
+                <button class="button secondary" onclick="closeMessageModal()"><i class="fas fa-times"></i> Cancelar</button>
+                <button class="button" onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Enviar</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Inicializar toggles com base no estado do servidor
+        // Initialize toggles and stats
         document.addEventListener('DOMContentLoaded', () => {
             const moduleStatus = {{ modules_state | tojson }};
             document.querySelectorAll('.toggle-switch input').forEach(toggle => {
                 const moduleId = toggle.getAttribute('data-module');
                 toggle.checked = moduleStatus[moduleId] === 'ON';
             });
+            updateStats();
             toggleFields();
+            calculateExpiration(); // Initial calculation
         });
 
-        // Função para alternar módulo
+        // Tab System
+        function openTab(evt, tabName) {
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Update Dashboard Stats
+        function updateStats() {
+            const activeModules = document.querySelectorAll('.toggle-switch input:checked').length;
+            document.getElementById('activeModules').textContent = activeModules;
+
+            // Active users (simplified, fetch if needed)
+            fetch('/i/settings/admin', {
+                method: 'POST',
+                body: new URLSearchParams({ action: 'get_stats' }),
+            }).then(response => response.json()).then(data => {
+                document.getElementById('activeUsers').textContent = data.active_users || 0;
+            }).catch(() => {
+                document.getElementById('activeUsers').textContent = 'N/A';
+            });
+        }
+
+        // Automatic Expiration Calculation
+        function calculateExpiration() {
+            const role = document.getElementById('role').value;
+            const expirationField = document.getElementById('expirationField');
+            const note = document.getElementById('autoExpireNote');
+            if (!role || role === 'admin') {
+                expirationField.value = '';
+                note.style.display = 'none';
+                return;
+            }
+            const today = new Date();
+            let days = 0;
+            if (role === 'user_semanal') days = 7;
+            else if (role === 'user_mensal') days = 30;
+            else if (role === 'user_anual') days = 365;
+            const expireDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
+            expirationField.value = expireDate.toISOString().split('T')[0];
+            note.style.display = 'block';
+            note.textContent = `Expiração calculada automaticamente para ${days} dias. Edite se necessário.`;
+        }
+
+        // Toggle Module
         function toggleModule(checkbox) {
             const moduleId = checkbox.getAttribute('data-module');
             const isEnabled = checkbox.checked;
@@ -745,6 +1194,7 @@
                         timer: 2000,
                         timerProgressBar: true,
                     });
+                    updateStats();
                 } else {
                     Swal.fire({
                         title: 'Erro!',
@@ -774,25 +1224,25 @@
         function toggleFields() {
             const action = document.getElementById('action').value;
             const passwordField = document.getElementById('passwordField');
-            const roleField = document.getElementById('role');
-            const expirationField = document.getElementById('expirationField');
+            const roleField = document.getElementById('roleField');
+            const expirationFieldDiv = document.getElementById('expirationFieldDiv');
 
             if (action === 'delete_user' || action === 'reset_device') {
                 passwordField.style.display = 'block';
                 roleField.style.display = 'none';
-                expirationField.style.display = 'none';
-                roleField.removeAttribute('required');
-                expirationField.removeAttribute('required');
-            } else {
+                expirationFieldDiv.style.display = 'none';
+                document.getElementById('role').removeAttribute('required');
+                document.getElementById('expirationField').removeAttribute('required');
+            } else if (action === 'add_user') {
                 passwordField.style.display = 'block';
                 roleField.style.display = 'block';
-                expirationField.style.display = 'block';
-                roleField.setAttribute('required', 'required');
-                expirationField.setAttribute('required', 'required');
+                expirationFieldDiv.style.display = 'block';
+                document.getElementById('role').setAttribute('required', 'required');
+                document.getElementById('expirationField').setAttribute('required', 'required');
             }
         }
 
-        // Form Submission
+        // Enhanced Form Submission
         document.getElementById('adminForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
@@ -811,11 +1261,12 @@
                         timerProgressBar: true,
                     });
                     if (data.category === 'success' && formData.get('action') === 'add_user') {
-                        showSuccessModal(data);
+                        showEnhancedSuccessModal(data);
                     }
+                    event.target.reset();
+                    toggleFields();
+                    calculateExpiration();
                 }
-                event.target.reset();
-                toggleFields();
             })
             .catch(error => {
                 Swal.fire({
@@ -826,40 +1277,48 @@
             });
         });
 
-        // Success Modal with Copy Button
-        function showSuccessModal(data) {
-            const userDetails = `
-                <strong>Usuário:</strong> ${data.user}<br>
-                <strong>Senha:</strong> ${data.password}<br>
-                <strong>Token:</strong> ${data.token}<br>
-                <strong>Expiração:</strong> ${data.expiration}<br>
-                <strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' :
-                                        data.role === 'user_mensal' ? 'Mensal' :
-                                        data.role === 'user_anual' ? 'Anual' :
-                                        data.role === 'admin' ? 'Administrador' : data.role}
-            `;
+        // Enhanced Success Modal with Better Copy
+        function showEnhancedSuccessModal(data) {
+            const userDetails = `Usuário: ${data.user}\nSenha: ${data.password}\nToken: ${data.token}\nExpiração: ${data.expiration}\nTipo: ${data.role === 'user_semanal' ? 'Semanal' : data.role === 'user_mensal' ? 'Mensal' : data.role === 'user_anual' ? 'Anual' : data.role === 'admin' ? 'Administrador' : data.role}`;
             Swal.fire({
-                title: 'Usuário Adicionado!',
-                html: `${userDetails}<br><button id="copyBtn" class="swal2-confirm swal2-styled" onclick="copyToClipboard()">Copiar</button>`,
+                title: 'Usuário Adicionado com Sucesso!',
+                html: `
+                    <div style="text-align: left; font-size: 14px; color: var(--text-light);">
+                        <p><strong>Usuário:</strong> ${data.user}</p>
+                        <p><strong>Senha:</strong> ${data.password}</p>
+                        <p><strong>Token:</strong> ${data.token}</p>
+                        <p><strong>Expiração:</strong> ${data.expiration}</p>
+                        <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : data.role === 'user_mensal' ? 'Mensal' : data.role === 'user_anual' ? 'Anual' : data.role === 'admin' ? 'Administrador' : data.role}</p>
+                    </div>
+                    <button id="copyBtn" class="swal2-confirm swal2-styled" style="background: var(--success); margin-top: 15px;">Copiar Detalhes</button>
+                `,
                 icon: 'success',
                 showConfirmButton: false,
                 showCancelButton: true,
                 cancelButtonText: 'Fechar',
+                allowOutsideClick: true,
+                allowEscapeKey: true,
             });
-            document.getElementById('copyBtn').addEventListener('click', () => {
-                navigator.clipboard.writeText(userDetails.replace(/<br>/g, '\n').replace(/<strong>|<\/strong>/g, '')).then(() => {
+            document.getElementById('copyBtn').onclick = () => {
+                navigator.clipboard.writeText(userDetails).then(() => {
                     Swal.fire({
                         title: 'Copiado!',
                         text: 'Detalhes do usuário copiados para a área de transferência.',
                         icon: 'success',
-                        timer: 1500,
+                        timer: 2000,
                         timerProgressBar: true,
                     });
+                }).catch(() => {
+                    Swal.fire({
+                        title: 'Erro!',
+                        text: 'Falha ao copiar. Tente novamente.',
+                        icon: 'error',
+                    });
                 });
-            });
+            };
         }
 
-        // Toggle Users View
+        // Toggle Users View with Copy Buttons
         let usersVisible = false;
         function toggleUsersView() {
             const usersList = document.getElementById('usersList');
@@ -878,16 +1337,14 @@
                         if (user !== 'admin7k') {
                             const userInfo = document.createElement('div');
                             userInfo.className = 'user-info';
+                            const userDetails = `Usuário: ${user}\nSenha: ${info.password}\nToken: ${info.token}\nExpiração: ${info.expiration}\nTipo: ${info.role === 'user_semanal' ? 'Semanal' : info.role === 'user_mensal' ? 'Mensal' : info.role === 'user_anual' ? 'Anual' : info.role === 'admin' ? 'Administrador' : info.role}\nDispositivos: ${info.devices ? info.devices.join(', ') : "Ilimitado"}`;
                             userInfo.innerHTML = `
                                 <p><strong>Usuário:</strong> ${user}</p>
                                 <p><strong>Senha:</strong> ${info.password}</p>
-                                <p><strong>Token:</strong> ${info.token}</p>
+                                <p><strong>Token:</strong> ${info.token} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${info.token}').then(() => { this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar';, 2000); })">Copiar Token</button></p>
                                 <p><strong>Expiração:</strong> ${info.expiration}</p>
-                                <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' :
-                                                          info.role === 'user_mensal' ? 'Mensal' :
-                                                          info.role === 'user_anual' ? 'Anual' :
-                                                          info.role === 'admin' ? 'Administrador' : info.role}</p>
-                                <p><strong>Dispositivos:</strong> ${info.devices ? info.devices.join(', ') : "Ilimitado"}</p>
+                                <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' : info.role === 'user_mensal' ? 'Mensal' : info.role === 'user_anual' ? 'Anual' : info.role === 'admin' ? 'Administrador' : info.role}</p>
+                                <p><strong>Dispositivos:</strong> ${info.devices ? info.devices.join(', ') : "Ilimitado"} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${userDetails}').then(() => { this.textContent = 'Copiado Tudo!'; setTimeout(() => this.textContent = 'Copiar Tudo';, 2000); })">Copiar Tudo</button></p>
                             `;
                             usersList.appendChild(userInfo);
                         }
@@ -905,17 +1362,19 @@
             }
         }
 
-        // Message Modal
+        // Enhanced Message Modal
         function openMessageModal() {
             document.getElementById('messageModal').classList.add('active');
+            document.getElementById('messageInput').focus();
         }
 
         function closeMessageModal() {
             document.getElementById('messageModal').classList.remove('active');
+            document.getElementById('messageInput').value = '';
         }
 
         function sendMessage() {
-            const message = document.getElementById('messageInput').value;
+            const message = document.getElementById('messageInput').value.trim();
             if (!message) {
                 Swal.fire({
                     title: 'Erro!',
@@ -945,6 +1404,7 @@
                     if (data.category === 'success') {
                         document.getElementById('messageInput').value = '';
                         closeMessageModal();
+                        // Update recent messages if needed
                     }
                 }
             })
@@ -956,6 +1416,11 @@
                 });
             });
         }
+
+        // Close modal on outside click
+        document.getElementById('messageModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeMessageModal();
+        });
     </script>
 </body>
 </html>
