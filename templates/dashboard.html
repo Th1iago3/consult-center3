@@ -820,7 +820,7 @@
     <!-- MAIN HEADER -->
     <header id="main-header">
         <div class="welcome-message">
-            <h1>Bem-vindo, {{ g.user_id }}</h1>
+            <h1>Bem-vindo(a), {{ g.user_id }}</h1>
             <p>Validade: {{ users[g.user_id]['expiration'] }}</p>
         </div>
         <div class="header-actions">
@@ -923,6 +923,57 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-cpfdual"></div>
                 </div>
+
+                <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome" data-status="{{ module_status.get('datanome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="calendar"></svg></div>
+                    <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
+                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-datanome"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-datanome"></div>
+                </div>
+                <!-- FOTO C&C Plus -->
+                <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor" data-status="{{ module_status.get('fotor', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="camera"></svg></div>
+                    <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
+                    <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-fotor"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-fotor"></div>
+                </div>
+                <!-- PIX NACIONAL -->
+                <div class="module-card" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix" data-status="{{ module_status.get('pix', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="qrcode"></svg></div>
+                    <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
+                    <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-pix"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-pix"></div>
+                </div>
             </div>
             <!-- Página 2 -->
             <div class="dashboard-grid" id="page2" style="display: none;">
@@ -977,23 +1028,6 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-teldual"></div>
                 </div>
-                <!-- DATA NASCIMENTO -->
-                <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome" data-status="{{ module_status.get('datanome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}" data-limit="500">
-                    <div class="module-icon-wrapper"><svg data-lucide="calendar"></svg></div>
-                    <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
-                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-                    <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
-                        {% endwith %}
-                    </div>
-                    <div class="status-dot" id="status-dot-datanome"></div>
-                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-datanome"></div>
-                </div>
             </div>
             <!-- Página 3 -->
             <div class="dashboard-grid" id="page3" style="display: none;">
@@ -1030,40 +1064,6 @@
                     <div class="status-dot" id="status-dot-placaestadual"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-placaestadual"></div>
-                </div>
-                <!-- FOTO C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor" data-status="{{ module_status.get('fotor', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}" data-limit="500">
-                    <div class="module-icon-wrapper"><svg data-lucide="camera"></svg></div>
-                    <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
-                    <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
-                    <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
-                        {% endwith %}
-                    </div>
-                    <div class="status-dot" id="status-dot-fotor"></div>
-                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-fotor"></div>
-                </div>
-                <!-- PIX NACIONAL -->
-                <div class="module-card" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix" data-status="{{ module_status.get('pix', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}" data-limit="500">
-                    <div class="module-icon-wrapper"><svg data-lucide="qrcode"></svg></div>
-                    <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
-                    <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
-                    <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
-                        {% endwith %}
-                    </div>
-                    <div class="status-dot" id="status-dot-pix"></div>
-                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-pix"></div>
                 </div>
                 <!-- PLACA C&C Plus -->
                 <div class="module-card" onclick="checkModuleStatus('placalv', '/modulos/placalv')" data-module-id="placalv" data-status="{{ module_status.get('placalv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) }}" data-limit="500">
