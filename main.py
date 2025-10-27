@@ -1096,7 +1096,7 @@ def datanome(module_uuid):
                         flash('Token inválido ou não fornecido.', 'error')
                         return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications, results=results, nome=nome)
 
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=datav2"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
                 logger.info(f"Requisição para API: {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
