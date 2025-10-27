@@ -7,7 +7,7 @@
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts (Roboto) -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -30,6 +30,8 @@
             --border-radius: 12px;
             --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             --separator-color: rgba(94, 62, 255, 0.3);
+            --notification-bg: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.98));
+            --notification-glow: rgba(255, 90, 207, 0.4);
         }
 
         * {
@@ -243,6 +245,7 @@
         }
 
         h2 {
+            font-family: 'Orbitron', sans-serif;
             font-size: 26px;
             font-weight: 700;
             color: var(--white);
@@ -563,6 +566,23 @@
             gap: 12px !important;
         }
 
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--card-bg);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+            box-shadow: 0 0 5px var(--glow);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
         /* Responsividade */
         @media (max-width: 768px) {
             #sidebar {
@@ -621,91 +641,84 @@
             <i class="fas fa-angle-right"></i>
         </button>
         <div class="toggle-item">
-            <span>Localizar CPF (DATASUS)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="cpfdata" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item">
-            <span>Localizar CPF (C&C Plus)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="cpflv" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item">
-            <span>Localizar CPF (DATA)</span>
+            <span>Consulta CPF (DATASUS)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Localizar CPF (DATAPRIME)</span>
+            <span>Consulta CPF (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf2" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Localizar CPF (SISREGII)</span>
+            <span>Consulta CPF (DATA)</span>
+            <label class="toggle-switch">
+                <input type="checkbox" data-module="cpflv" onchange="toggleModule(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="toggle-item">
+            <span>Consulta CPF (SISREGII)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf3" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Consulta Vacina (SIPNI)</span>
+            <span>Consulta Vacinas (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="vacinas" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Localizar Nome (C&C Plus)</span>
+            <span>Localizar NOME (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nomelv" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Localizar Nome (DATA)</span>
+            <span>Localizar NOME (DATA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nome" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Localizar Nome (DATAPRIME)</span>
+            <span>Localizar NOME (DATAPRIME)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nome2" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Consulta TELEFONE (DATA)</span>
+            <span>Localizar TELEFONE (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="tel" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Consulta TELEFONE (C&C Plus)</span>
+            <span>Localizar TELEFONE (DATA)</span>
             <label class="toggle-switch">
-                <input type="checkbox" data-module="telLv" onchange="toggleModule(this)">
+                <input type="checkbox" data-module="tellv" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Consulta TELEFONE (NACIONAL)</span>
+            <span>Localizar TELEFONE (OPERADORA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="teldual" onchange="toggleModule(this)">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="toggle-item">
-            <span>Localizar DATA de NASCIMENTO</span>
+            <span>Localizar DATA de NASCIMENTO (DATA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="datanome" onchange="toggleModule(this)">
                 <span class="slider"></span>
@@ -760,6 +773,10 @@
                 <span class="slider"></span>
             </label>
         </div>
+        <a href="/dashboard" class="back-link" style="margin-top: auto; margin-bottom: 20px; width: 90%; justify-content: center;">
+            <i class="fas fa-home"></i>
+            <span style="margin-left: 8px;">Dashboard</span>
+        </a>
     </div>
 
     <!-- Container Principal -->
@@ -842,12 +859,14 @@
                         icon: 'success',
                         timer: 2000,
                         timerProgressBar: true,
+                        position: 'top-end'
                     });
                 } else {
                     Swal.fire({
                         title: 'Erro!',
                         text: data.message || 'Erro ao atualizar o módulo.',
                         icon: 'error',
+                        position: 'top-end'
                     });
                     checkbox.checked = !isEnabled;
                 }
@@ -857,6 +876,7 @@
                     title: 'Erro!',
                     text: 'Erro ao atualizar o módulo: ' + error.message,
                     icon: 'error',
+                    position: 'top-end'
                 });
                 checkbox.checked = !isEnabled;
             });
@@ -907,16 +927,12 @@
             let expDate;
 
             if (role === 'user_semanal') {
-                // Weekly: +7 days
                 expDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
             } else if (role === 'user_mensal') {
-                // Monthly: +1 month
                 expDate = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
             } else if (role === 'user_anual') {
-                // Annual: +1 year
                 expDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
             } else if (role === 'admin') {
-                // Admin: Far future date
                 expDate = new Date(2099, 11, 31);
             }
 
@@ -946,6 +962,7 @@
                         icon: data.category === 'success' ? 'success' : 'error',
                         timer: 3000,
                         timerProgressBar: true,
+                        position: 'top-end'
                     });
                     if (data.category === 'success' && formData.get('action') === 'add_user') {
                         showSuccessModal(data);
@@ -959,6 +976,7 @@
                     title: 'Erro!',
                     text: 'Erro ao processar o pedido: ' + error.message,
                     icon: 'error',
+                    position: 'top-end'
                 });
             });
         });
@@ -982,6 +1000,7 @@
                 showConfirmButton: false,
                 showCancelButton: true,
                 cancelButtonText: 'Fechar',
+                position: 'top-end'
             });
             document.getElementById('copyBtn').addEventListener('click', () => {
                 navigator.clipboard.writeText(userDetails.replace(/<br>/g, '\n').replace(/<strong>|<\/strong>/g, '')).then(() => {
@@ -991,6 +1010,7 @@
                         icon: 'success',
                         timer: 1500,
                         timerProgressBar: true,
+                        position: 'top-end'
                     });
                 });
             });
@@ -1038,6 +1058,7 @@
                         title: 'Erro!',
                         text: 'Erro ao carregar usuários: ' + error.message,
                         icon: 'error',
+                        position: 'top-end'
                     });
                 });
             }
@@ -1059,6 +1080,7 @@
                     title: 'Erro!',
                     text: 'Por favor, insira uma mensagem.',
                     icon: 'error',
+                    position: 'top-end'
                 });
                 return;
             }
@@ -1079,6 +1101,7 @@
                         icon: data.category === 'success' ? 'success' : 'error',
                         timer: 3000,
                         timerProgressBar: true,
+                        position: 'top-end'
                     });
                     if (data.category === 'success') {
                         document.getElementById('messageInput').value = '';
@@ -1091,6 +1114,7 @@
                     title: 'Erro!',
                     text: 'Erro ao enviar mensagem: ' + error.message,
                     icon: 'error',
+                    position: 'top-end'
                 });
             });
         }
