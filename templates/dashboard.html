@@ -3,1263 +3,795 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConsultCenter - Sistema Integrado de Consultas. (Inicio)</title>
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts (Roboto e Orbitron) -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-    <!-- SweetAlert2 CDN -->
+    <title>ConsultCenter - Dashboard Remasterizado</title>
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
-:root {
-    --primary-color: #5E3EFF;
-    --secondary-color: #8B6CFF;
-    --accent-color: #FF5ACF;
-    --background-start: #0A0F1F;
-    --background-end: #1A2040;
-    --card-bg: rgba(20, 25, 45, 0.98);
-    --text-dark: #E8ECEF;
-    --text-light: rgba(150, 155, 180, 0.8);
-    --white: #FFFFFF;
-    --success: #00D68F;
-    --error: #FF3D71;
-    --warning: #FFB800;
-    --shadow: rgba(0, 0, 0, 0.6);
-    --glow: rgba(94, 62, 255, 0.5);
-    --border-radius: 16px;
-    --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    --separator-color: rgba(94, 62, 255, 0.3);
-    --module-icon-bg: rgba(94, 62, 255, 0.25);
-    --module-icon-border: #8B6CFF;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(135deg, var(--background-start), var(--background-end));
-    color: var(--text-dark);
-    min-height: 100vh;
-    overflow-x: hidden;
-    line-height: 1.6;
-}
-
-/* Enhanced Loading Screen */
-.loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, var(--background-start), var(--background-end));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    opacity: 1;
-    transition: opacity 1s ease-in-out;
-}
-
-.loading-screen.hidden {
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden;
-}
-
-.loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-    text-align: center;
-}
-
-.loading-top {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    position: relative;
-}
-
-.loading-icon {
-    font-size: 72px;
-    color: var(--white);
-    animation: fadeInRotate 2s cubic-bezier(0.4, 0, 0.2, 1) forwards, pulseGlow 2s infinite ease-in-out 2s;
-}
-
-@keyframes fadeInRotate {
-    0% { opacity: 0; transform: scale(0.5) rotate(-180deg) translateX(50px); }
-    100% { opacity: 1; transform: scale(1) rotate(0deg) translateX(0); }
-}
-
-@keyframes pulseGlow {
-    0%, 100% { text-shadow: 0 0 5px var(--glow); transform: scale(1); }
-    50% { text-shadow: 0 0 20px var(--glow); transform: scale(1.05); }
-}
-
-.loading-line {
-    width: 3px;
-    height: 0;
-    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
-    opacity: 0;
-    animation: growLine 1.5s cubic-bezier(0.4, 0, 0.2, 1) 1s forwards;
-}
-
-@keyframes growLine {
-    0% { height: 0; opacity: 0; transform: translateX(15px); }
-    50% { height: 70px; opacity: 0.7; }
-    100% { height: 60px; opacity: 1; transform: translateX(0); }
-}
-
-.loading-text {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 56px;
-    font-weight: 700;
-    color: var(--white);
-    display: flex;
-    align-items: center;
-    opacity: 0;
-    animation: slideInTextGlow 2s cubic-bezier(0.4, 0, 0.2, 1) 1.5s forwards;
-}
-
-.loading-text .purple-c {
-    color: var(--primary-color);
-    text-shadow: 0 0 15px var(--glow), 0 0 25px var(--glow);
-    animation: flickerGlow 3s infinite ease-in-out 2.5s;
-}
-
-@keyframes slideInTextGlow {
-    0% { opacity: 0; transform: translateX(30px) scale(0.9); }
-    100% { opacity: 1; transform: translateX(0) scale(1); }
-}
-
-@keyframes flickerGlow {
-    0%, 100% { opacity: 1; text-shadow: 0 0 15px var(--glow); }
-    50% { opacity: 0.9; text-shadow: 0 0 25px var(--glow); }
-}
-
-.loading-box {
-    background: rgba(20, 25, 45, 0.95);
-    border: 1px solid rgba(94, 62, 255, 0.5);
-    border-radius: var(--border-radius);
-    padding: 20px 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    box-shadow: 0 6px 20px var(--shadow);
-    backdrop-filter: blur(6px);
-    opacity: 0;
-    animation: fadeInBoxSlide 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3s forwards;
-    width: 140px;
-    height: 70px;
-}
-
-@keyframes fadeInBoxSlide {
-    0% { opacity: 0; transform: translateY(30px) scale(0.95); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.loading-dots {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.loading-dot {
-    width: 12px;
-    height: 12px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: 50%;
-    animation: bounceGlow 1.4s infinite ease-in-out;
-}
-
-.loading-dot:nth-child(2) { animation-delay: 0.25s; }
-.loading-dot:nth-child(3) { animation-delay: 0.5s; }
-
-@keyframes bounceGlow {
-    0%, 100% { transform: translateY(0); box-shadow: 0 0 5px var(--glow); }
-    50% { transform: translateY(-20px); box-shadow: 0 0 15px var(--glow); }
-}
-
-/* Overlay */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: var(--transition);
-}
-
-.overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.module-card.maintenance {
-    opacity: 0.7;
-    cursor: not-allowed;
-    position: relative;
-}
-
-.maintenance-label {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(90deg, rgba(255, 61, 113, 0.95), rgba(255, 61, 113, 0.8));
-    color: var(--white);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    text-transform: uppercase;
-    box-shadow: 0 6px 20px var(--shadow);
-    z-index: 2;
-    animation: pulseMaintenance 2s infinite;
-}
-
-@keyframes pulseMaintenance {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.08); }
-    100% { transform: translate(-50%, -50%) scale(1); }
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 10px;
-}
-::-webkit-scrollbar-track {
-    background: var(--card-bg);
-    border-radius: 5px;
-}
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(var(--primary-color), var(--secondary-color));
-    border-radius: 5px;
-    box-shadow: 0 0 8px var(--glow);
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-color);
-}
-
-/* Sidebar styles remain unchanged as per request */
-#sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 70px;
-    height: 100vh;
-    background: linear-gradient(180deg, var(--card-bg), rgba(15, 20, 40, 0.98));
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 0;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1100;
-    box-shadow: 3px 0 15px var(--shadow);
-    border-right: 1px solid rgba(94, 62, 255, 0.25);
-}
-
-#sidebar.expanded {
-    width: 240px;
-}
-
-.sidebar-toggle {
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 15px 0;
-    border-radius: var(--border-radius);
-    color: var(--text-light);
-    font-size: 20px;
-    cursor: pointer;
-    transition: var(--transition);
-    background: rgba(94, 62, 255, 0.2);
-    border: 1px solid rgba(94, 62, 255, 0.4);
-}
-
-#sidebar.expanded .sidebar-toggle i {
-    transform: rotate(180deg);
-}
-
-.sidebar-toggle:hover {
-    background: var(--primary-color);
-    color: var(--white);
-    transform: scale(1.1);
-    box-shadow: 0 0 10px var(--glow);
-}
-
-.sidebar-item, .profile-icon, .notification-bell {
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 15px 0;
-    border-radius: var(--border-radius);
-    color: var(--text-light);
-    transition: var(--transition);
-    cursor: pointer;
-    text-decoration: none;
-    position: relative;
-    background: rgba(20, 25, 45, 0.8);
-}
-
-.sidebar-item:hover, .sidebar-item.active, .profile-icon:hover, .notification-bell:hover {
-    background: var(--primary-color);
-    color: var(--white);
-    transform: scale(1.05);
-    box-shadow: 0 0 10px var(--glow);
-}
-
-.sidebar-item i, .profile-icon i, .notification-bell i {
-    font-size: 20px;
-}
-
-.sidebar-item span, .profile-icon span, .notification-bell span {
-    display: none;
-    margin-left: 15px;
-    font-size: 15px;
-    font-weight: 500;
-    transition: opacity 0.3s ease-in-out;
-}
-
-#sidebar.expanded .sidebar-item, #sidebar.expanded .profile-icon, #sidebar.expanded .notification-bell {
-    width: 90%;
-    justify-content: flex-start;
-    padding-left: 20px;
-}
-
-#sidebar.expanded .sidebar-item span, #sidebar.expanded .profile-icon span, #sidebar.expanded .notification-bell span {
-    display: block;
-    opacity: 1;
-}
-
-.notification-bell .notification-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: var(--error);
-    color: var(--white);
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 700;
-    box-shadow: 0 0 8px var(--error);
-    animation: badgePulse 2s infinite ease-in-out;
-}
-
-@keyframes badgePulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-}
-
-/* Botão de Logout na Sidebar */
-.logout-btn {
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 15px 0;
-    border-radius: var(--border-radius);
-    background: var(--primary-color);
-    color: var(--white);
-    font-size: 16px;
-    font-weight: 500;
-    text-transform: uppercase;
-    transition: var(--transition);
-    cursor: pointer;
-    position: absolute;
-    bottom: 20px;
-    text-decoration: none;
-}
-
-#sidebar.expanded .logout-btn {
-    width: 90%;
-    justify-content: flex-start;
-    padding-left: 20px;
-}
-
-.logout-btn:hover {
-    background: var(--secondary-color);
-    transform: scale(1.05);
-    box-shadow: 0 0 10px var(--glow);
-}
-
-.logout-btn i {
-    margin-right: 0;
-    transition: margin-right 0.3s ease-in-out;
-}
-
-#sidebar.expanded .logout-btn i {
-    margin-right: 15px;
-}
-
-.logout-btn span {
-    display: none;
-    font-size: 15px;
-}
-
-#sidebar.expanded .logout-btn span {
-    display: block;
-}
-
-/* Enhanced Profile Card */
-.profile-card {
-    position: fixed;
-    top: 20px;
-    left: 90px;
-    width: 320px;
-    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.95));
-    border-radius: var(--border-radius);
-    padding: 30px;
-    box-shadow: 0 15px 35px var(--shadow);
-    z-index: 1200;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(20px) scale(0.95);
-    transition: var(--transition);
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    border: 1px solid rgba(94, 62, 255, 0.5);
-    backdrop-filter: blur(10px);
-}
-
-.profile-card.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-}
-
-.profile-header {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--separator-color);
-    position: relative;
-}
-
-.profile-header::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    transition: width 0.6s ease;
-}
-
-.profile-card.active .profile-header::after {
-    width: 100%;
-}
-
-.profile-avatar {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: var(--white);
-    transition: var(--transition);
-    box-shadow: 0 0 15px var(--glow);
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    position: relative;
-    overflow: hidden;
-}
-
-.profile-avatar::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(from 0deg, transparent, var(--accent-color), transparent);
-    opacity: 0.3;
-    animation: rotateSubtle 4s linear infinite;
-}
-
-@keyframes rotateSubtle {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.profile-avatar:hover {
-    transform: scale(1.08) rotate(5deg);
-    box-shadow: 0 0 25px var(--glow);
-}
-
-.profile-info h4 {
-    color: var(--text-dark);
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0;
-    background: linear-gradient(90deg, var(--white), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.profile-info p {
-    color: var(--text-light);
-    font-size: 14px;
-    margin: 0;
-    font-weight: 500;
-}
-
-.profile-detail {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    background: rgba(94, 62, 255, 0.2);
-    border-radius: var(--border-radius);
-    transition: var(--transition);
-    border: 1px solid rgba(94, 62, 255, 0.1);
-}
-
-.profile-detail:hover {
-    background: rgba(94, 62, 255, 0.3);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 6px 20px var(--shadow);
-}
-
-.profile-detail .label {
-    color: var(--text-light);
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.profile-detail .value {
-    color: var(--text-dark);
-    font-size: 14px;
-    font-weight: 600;
-    word-break: break-all;
-}
-
-.copy-btn {
-    background: var(--primary-color);
-    border: none;
-    padding: 8px 14px;
-    border-radius: 8px;
-    color: var(--white);
-    font-size: 13px;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.copy-btn:hover {
-    background: var(--secondary-color);
-    transform: scale(1.08);
-    box-shadow: 0 0 12px var(--glow);
-}
-
-.copy-btn.copied {
-    background: var(--success);
-}
-
-.close-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: var(--error);
-    border: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    color: var(--white);
-    font-size: 14px;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.close-btn:hover {
-    background: var(--accent-color);
-    transform: scale(1.15) rotate(90deg);
-    box-shadow: 0 0 12px var(--error);
-}
-
-/* Enhanced Notification Panel */
-.notification-panel {
-    position: fixed;
-    top: 20px;
-    right: -320px;
-    width: 300px;
-    background: linear-gradient(135deg, var(--card-bg), rgba(20, 25, 45, 0.98));
-    border-radius: var(--border-radius);
-    padding: 25px;
-    box-shadow: 0 15px 35px var(--shadow);
-    z-index: 1200;
-    transition: right 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    max-height: 80vh;
-    overflow: hidden;
-    border: 1px solid rgba(94, 62, 255, 0.5);
-    backdrop-filter: blur(10px);
-}
-
-.notification-panel.active {
-    right: 20px;
-}
-
-.notification-panel h5 {
-    color: var(--text-dark);
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    padding: 10px 15px;
-    border-radius: 8px;
-    background: rgba(94, 62, 255, 0.2);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid rgba(94, 62, 255, 0.1);
-}
-
-.notification-list {
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 8px;
-    scrollbar-width: thin;
-}
-
-.notification-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.notification-list::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 2px;
-}
-
-.notification-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 15px;
-    border-radius: var(--border-radius);
-    background: rgba(94, 62, 255, 0.15);
-    margin-bottom: 10px;
-    transition: var(--transition);
-    position: relative;
-    animation: slideInNotification 0.6s ease-out forwards;
-    border: 1px solid rgba(94, 62, 255, 0.1);
-    cursor: pointer;
-}
-
-@keyframes slideInNotification {
-    0% { opacity: 0; transform: translateX(30px) scale(0.95); }
-    100% { opacity: 1; transform: translateX(0) scale(1); }
-}
-
-.notification-item:hover {
-    background: rgba(94, 62, 255, 0.3);
-    transform: translateX(8px) scale(1.02);
-    box-shadow: 0 6px 20px var(--shadow);
-}
-
-.notification-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 5px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
-    opacity: 0;
-    transition: var(--transition);
-}
-
-.notification-item:hover::before {
-    opacity: 1;
-}
-
-.notification-item.read {
-    background: rgba(0, 214, 143, 0.1);
-    border-color: rgba(0, 214, 143, 0.3);
-}
-
-.notification-item.read:hover {
-    background: rgba(0, 214, 143, 0.2);
-}
-
-.notification-item i {
-    color: var(--primary-color);
-    font-size: 18px;
-    margin-top: 3px;
-    flex-shrink: 0;
-}
-
-.notification-item p {
-    color: var(--text-light);
-    font-size: 13px;
-    margin: 0;
-    flex: 1;
-    line-height: 1.5;
-}
-
-.notification-item time {
-    display: block;
-    font-size: 11px;
-    color: var(--text-light);
-    margin-top: 5px;
-    opacity: 0.7;
-}
-
-/* Main Content */
-#main-content {
-    margin-left: 70px;
-    padding: 30px;
-    transition: margin-left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: fadeInContent 1s ease-out 0.5s both;
-}
-
-@keyframes fadeInContent {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-}
-
-/* Enhanced Welcome Section */
-.welcome-card {
-    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.99));
-    backdrop-filter: blur(12px);
-    border-radius: var(--border-radius);
-    padding: 30px;
-    box-shadow: 0 10px 25px var(--shadow);
-    margin-bottom: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    border: 1px solid rgba(94, 62, 255, 0.4);
-    position: relative;
-    overflow: hidden;
-    transition: var(--transition);
-}
-
-.welcome-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(94, 62, 255, 0.15), transparent);
-    opacity: 0.6;
-    z-index: 0;
-    pointer-events: none;
-    animation: rotateGlow 12s infinite linear;
-}
-
-@keyframes rotateGlow {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.welcome-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 15px 30px var(--shadow);
-    border-color: var(--primary-color);
-}
-
-.greeting {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--white);
-    background: linear-gradient(90deg, var(--white), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin: 0;
-    z-index: 1;
-    position: relative;
-}
-
-.welcome-card:hover .greeting {
-    background: linear-gradient(90deg, var(--white), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.validity {
-    font-size: 15px;
-    color: var(--text-light);
-    font-weight: 500;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.welcome-card:hover .validity {
-    color: var(--white);
-}
-
-.validity i {
-    color: var(--success);
-    font-size: 16px;
-}
-
-/* Enhanced Search Bar */
-.search-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    max-width: 450px;
-    position: relative;
-}
-
-.search-bar {
-    position: relative;
-    flex: 1;
-}
-
-.search-bar input {
-    width: 100%;
-    padding: 14px 18px 14px 45px;
-    border-radius: 30px;
-    border: 1px solid rgba(94, 62, 255, 0.4);
-    background: rgba(20, 25, 45, 0.98);
-    color: var(--text-dark);
-    font-size: 15px;
-    transition: var(--transition);
-    box-shadow: 0 5px 15px var(--shadow);
-}
-
-.search-bar input:focus {
-    background: rgba(25, 30, 50, 0.98);
-    box-shadow: 0 0 20px var(--glow);
-    border-color: var(--primary-color);
-    outline: none;
-    transform: scale(1.02);
-}
-
-.search-bar input::placeholder {
-    color: var(--text-light);
-}
-
-.search-bar i {
-    position: absolute;
-    left: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-light);
-    font-size: 18px;
-    transition: var(--transition);
-    z-index: 1;
-}
-
-.welcome-card:hover .search-bar i {
-    transform: translateY(-50%) scale(1.15);
-    color: var(--primary-color);
-}
-
-/* Enhanced Modules Grid */
-.modules-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 25px;
-    margin-top: 30px;
-}
-
-/* Enhanced Module Card */
-.module-card {
-    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.99));
-    backdrop-filter: blur(10px);
-    border-radius: var(--border-radius);
-    padding: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    box-shadow: 0 8px 20px var(--shadow);
-    transition: var(--transition);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(94, 62, 255, 0.25);
-    min-height: 260px;
-    animation: cardSlideIn 0.8s ease-out forwards;
-    opacity: 0;
-    transform: translateY(30px);
-}
-
-@keyframes cardSlideIn {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.module-card:nth-child(1) { animation-delay: 0.1s; }
-.module-card:nth-child(2) { animation-delay: 0.2s; }
-.module-card:nth-child(3) { animation-delay: 0.3s; }
-.module-card:nth-child(4) { animation-delay: 0.4s; }
-.module-card:nth-child(5) { animation-delay: 0.5s; }
-.module-card:nth-child(6) { animation-delay: 0.6s; }
-
-.module-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(94, 62, 255, 0.12), transparent);
-    opacity: 0.5;
-    z-index: 0;
-    pointer-events: none;
-    animation: rotateGlow 15s infinite linear;
-}
-
-.module-card:hover:not(.disabled):not(.maintenance) {
-    transform: translateY(-8px) scale(1.03);
-    box-shadow: 0 12px 25px var(--shadow);
-    border-color: var(--primary-color);
-}
-
-.module-card.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    filter: grayscale(80%);
-}
-
-.module-icon {
-    font-size: 28px;
-    color: var(--primary-color);
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--module-icon-bg);
-    border: 1px solid var(--module-icon-border);
-    border-radius: 14px;
-    transition: var(--transition);
-    z-index: 1;
-    position: relative;
-}
-
-.module-card:hover .module-icon {
-    color: var(--accent-color);
-    transform: scale(1.15) rotate(360deg);
-    box-shadow: 0 0 15px var(--glow);
-}
-
-.module-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin: 0;
-    z-index: 1;
-    background: linear-gradient(90deg, var(--text-dark), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.module-card:hover .module-title {
-    background: linear-gradient(90deg, var(--white), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.module-description {
-    font-size: 14px;
-    color: var(--text-light);
-    margin: 0;
-    flex-grow: 1;
-    z-index: 1;
-    line-height: 1.5;
-}
-
-.module-card:hover .module-description {
-    color: var(--text-dark);
-}
-
-.request-bar-wrapper {
-    height: 8px;
-    background: rgba(94, 62, 255, 0.25);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 12px 0 0 0;
-}
-
-.request-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
-    transition: width 1s ease-in-out;
-    box-shadow: 0 0 10px var(--glow);
-}
-
-.request-count {
-    font-size: 13px;
-    color: var(--text-light);
-    text-align: right;
-    margin: 6px 0 0 0;
-    z-index: 1;
-    font-weight: 500;
-}
-
-.module-card:hover .request-count {
-    color: var(--white);
-}
-
-.status-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 1;
-    transition: var(--transition);
-    box-shadow: 0 0 8px var(--shadow);
-    animation: statusPulse 2s infinite;
-}
-
-@keyframes statusPulse {
-    0%, 100% { box-shadow: 0 0 8px var(--shadow); }
-    50% { box-shadow: 0 0 15px var(--glow); }
-}
-
-.bolinha-verde { background: var(--success); animation: statusPulse 2s infinite; }
-.bolinha-amarela { background: var(--warning); animation: statusPulse 2s infinite; }
-.bolinha-vermelha { background: var(--error); animation: statusPulse 2s infinite; }
-
-/* Enhanced Module Message */
-.module-message {
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--white);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    opacity: 0;
-    transition: opacity 0.4s ease-in-out;
-    z-index: 1;
-    box-shadow: 0 5px 15px var(--shadow);
-    backdrop-filter: blur(6px);
-    margin-top: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.module-message.active {
-    opacity: 1;
-    animation: messageSlide 0.5s ease-out;
-}
-
-@keyframes messageSlide {
-    0% { transform: translateX(-20px); opacity: 0; }
-    100% { transform: translateX(0); opacity: 1; }
-}
-
-.module-message.warn {
-    background: linear-gradient(90deg, rgba(255, 184, 0, 0.95), rgba(255, 184, 0, 0.8));
-    border: 1px solid rgba(255, 184, 0, 0.6);
-    text-transform: uppercase;
-}
-
-.module-message.alert {
-    background: linear-gradient(90deg, rgba(255, 61, 113, 0.95), rgba(255, 61, 113, 0.8));
-    border: 1px solid rgba(255, 61, 113, 0.6);
-    text-transform: uppercase;
-}
-
-.module-message.success {
-    background: linear-gradient(90deg, rgba(0, 214, 143, 0.95), rgba(0, 214, 143, 0.8));
-    border: 1px solid rgba(0, 214, 143, 0.6);
-    text-transform: uppercase;
-}
-
-.module-message i {
-    font-size: 15px;
-}
-
-/* Enhanced Pagination */
-.pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 40px;
-    gap: 20px;
-    padding: 20px;
-    background: rgba(20, 25, 45, 0.5);
-    border-radius: var(--border-radius);
-    border: 1px solid rgba(94, 62, 255, 0.2);
-}
-
-.page-dot {
-    width: 14px;
-    height: 14px;
-    background: var(--text-light);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: var(--transition);
-    position: relative;
-}
-
-.page-dot::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: var(--primary-color);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.3s ease, height 0.3s ease;
-}
-
-.page-dot.active {
-    background: var(--primary-color);
-    transform: scale(1.4);
-    box-shadow: 0 0 10px var(--glow);
-}
-
-.page-dot.active::before {
-    width: 20px;
-    height: 20px;
-}
-
-.page-dot:hover {
-    background: var(--secondary-color);
-    transform: scale(1.2);
-}
-
-.page-arrow {
-    background: none;
-    border: none;
-    color: var(--text-light);
-    font-size: 20px;
-    cursor: pointer;
-    transition: var(--transition);
-    padding: 8px;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(94, 62, 255, 0.2);
-    border: 1px solid rgba(94, 62, 255, 0.3);
-}
-
-.page-arrow:hover:not(:disabled) {
-    color: var(--white);
-    transform: scale(1.15);
-    background: var(--primary-color);
-    box-shadow: 0 0 10px var(--glow);
-}
-
-.page-arrow:disabled {
-    color: rgba(150, 155, 180, 0.3);
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-/* SweetAlert Customização Enhanced */
-.swal2-popup {
-    width: 350px !important;
-    padding: 25px !important;
-    border-radius: var(--border-radius) !important;
-    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.99)) !important;
-    box-shadow: 0 10px 25px var(--shadow) !important;
-    border: 1px solid rgba(94, 62, 255, 0.4) !important;
-    font-family: 'Roboto', sans-serif !important;
-    backdrop-filter: blur(10px) !important;
-}
-
-.swal2-title {
-    color: var(--text-dark) !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    background: linear-gradient(90deg, var(--white), var(--secondary-color)) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
-
-.swal2-content {
-    color: var(--text-light) !important;
-    font-size: 15px !important;
-}
-
-.swal2-confirm, .swal2-cancel {
-    padding: 12px 25px !important;
-    border-radius: 8px !important;
-    font-size: 15px !important;
-    font-weight: 600 !important;
-    transition: var(--transition) !important;
-    box-shadow: 0 4px 15px var(--shadow) !important;
-}
-
-.swal2-confirm {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
-    border: none !important;
-}
-
-.swal2-confirm:hover {
-    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color)) !important;
-    transform: scale(1.05) !important;
-}
-
-.swal2-cancel {
-    background: linear-gradient(135deg, var(--error), var(--accent-color)) !important;
-    border: none !important;
-}
-
-.swal2-cancel:hover {
-    background: linear-gradient(135deg, var(--accent-color), var(--error)) !important;
-    transform: scale(1.05) !important;
-}
-
-.swal2-container {
-    justify-content: flex-end !important;
-    align-items: flex-start !important;
-    padding: 25px !important;
-}
+        :root {
+            --primary-purple: #6E44FF;
+            --secondary-purple: #A06CFF;
+            --accent-pink: #FF6BD6;
+            --background-dark: #121212;
+            --background-light: #1A1A1A;
+            --card-bg: rgba(25, 25, 25, 0.9);
+            --text-white: #E0E0E0;
+            --text-light: #A0A0A0;
+            --border-color: #333333;
+            --glowximity: rgba(110, 68, 255, 0.5);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 10px 30px var(--shadow-dark);
+            --shadow-glow: 0 0 15px var(--glowximity);
+            --font-family: 'Poppins', sans-serif;
+            --success: #00D68F;
+            --error: #FF3D71;
+            --warning: #FFB800;
+            --sidebar-width-collapsed: 80px;
+            --sidebar-width-expanded: 260px;
+            --header-height: 70px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+        }
+        body {
+            background: var(--background-dark);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* Enhanced Loading Screen (Adapted from old dashboard) */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--background-dark), var(--background-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+        }
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            text-align: center;
+        }
+        .loading-top {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+        .loading-icon {
+            font-size: 72px;
+            color: var(--text-white);
+            animation: fadeInRotate 2s cubic-bezier(0.4, 0, 0.2, 1) forwards, pulseGlow 2s infinite ease-in-out 2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading-icon svg {
+            width: 72px;
+            height: 72px;
+        }
+        @keyframes fadeInRotate {
+            0% { opacity: 0; transform: scale(0.5) rotate(-180deg) translateX(50px); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg) translateX(0); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 5px var(--glowximity)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 20px var(--glowximity)); transform: scale(1.05); }
+        }
+        .loading-line {
+            width: 3px;
+            height: 0;
+            background: linear-gradient(to bottom, var(--primary-purple), var(--secondary-purple));
+            opacity: 0;
+            animation: growLine 1.5s cubic-bezier(0.4, 0, 0.2, 1) 1s forwards;
+        }
+        @keyframes growLine {
+            0% { height: 0; opacity: 0; transform: translateX(15px); }
+            50% { height: 70px; opacity: 0.7; }
+            100% { height: 60px; opacity: 1; transform: translateX(0); }
+        }
+        .loading-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--text-white);
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            animation: slideInTextGlow 2s cubic-bezier(0.4, 0, 0.2, 1) 1.5s forwards;
+        }
+        .loading-text .purple-c {
+            color: var(--primary-purple);
+            filter: drop-shadow(0 0 15px var(--glowximity));
+            animation: flickerGlow 3s infinite ease-in-out 2.5s;
+        }
+        @keyframes slideInTextGlow {
+            0% { opacity: 0; transform: translateX(30px) scale(0.9); }
+            100% { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes flickerGlow {
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 15px var(--glowximity)); }
+            50% { opacity: 0.9; filter: drop-shadow(0 0 25px var(--glowximity)); }
+        }
+        .loading-box {
+            background: rgba(25, 25, 25, 0.95);
+            border: 1px solid rgba(110, 68, 255, 0.5);
+            border-radius: 12px;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            box-shadow: 0 6px 20px var(--shadow-dark);
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            animation: fadeInBoxSlide 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3s forwards;
+            width: 140px;
+            height: 70px;
+        }
+        @keyframes fadeInBoxSlide {
+            0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .loading-dots {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .loading-dot {
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+            border-radius: 50%;
+            animation: bounceGlow 1.4s infinite ease-in-out;
+        }
+        .loading-dot:nth-child(2) { animation-delay: 0.25s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.5s; }
+        @keyframes bounceGlow {
+            0%, 100% { transform: translateY(0); box-shadow: 0 0 5px var(--glowximity); }
+            50% { transform: translateY(-20px); box-shadow: 0 0 15px var(--glowximity); }
+        }
+        /* LOADER (Fallback) */
+        .loader {
+            position: fixed;
+            inset: 0;
+            background: var(--background-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+        .loader.hidden { opacity: 0; pointer-events: none; }
+        .loader-background {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(110, 68, 255, 0.1) 0%, transparent 70%);
+            animation: radialPulse 8s infinite alternate;
+            z-index: -1;
+        }
+        @keyframes radialPulse {
+            0% { transform: scale(0.8); opacity: 0.2; }
+            100% { transform: scale(1.2); opacity: 0.1; }
+        }
+        .loader-spinner {
+            width: 80px; height: 80px;
+            border: 8px solid var(--border-color);
+            border-top: 8px solid var(--primary-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite, glowPulse 2s infinite alternate;
+            box-shadow: var(--shadow-glow);
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 15px var(--glowximity); }
+            100% { box-shadow: 0 0 30px var(--glowximity); }
+        }
+        .loader-text {
+            margin-top: 30px;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-white);
+            animation: pulseText 1.5s infinite ease-in-out;
+        }
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        /* SIDEBAR */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width-collapsed);
+            height: 100vh;
+            background: var(--background-light);
+            border-right: 1px solid var(--border-color);
+            padding: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 5px 0 15px var(--shadow-dark);
+        }
+        #sidebar.expanded {
+            width: var(--sidebar-width-expanded);
+            align-items: flex-start;
+            padding: 15px;
+        }
+        .sidebar-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
+        #sidebar.expanded .sidebar-header {
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            opacity: 0;
+            display: none;
+        }
+        #sidebar.expanded .logo {
+            opacity: 1;
+            display: block;
+        }
+        .logo .consult { color: var(--text-white); }
+        .logo .center { color: var(--primary-purple); text-shadow: 0 0 5px var(--glowximity); font-weight: 800; }
+        .sidebar-toggle {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            color: var(--text-white);
+            cursor: pointer;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        #sidebar.expanded .sidebar-toggle {
+            transform: rotate(180deg);
+        }
+        .sidebar-toggle:hover {
+            background: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        .sidebar-nav {
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 15px;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+            border-radius: 10px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            background: var(--background-dark);
+            border: 1px solid transparent;
+        }
+        #sidebar.expanded .sidebar-item {
+            justify-content: flex-start;
+            padding: 0 15px;
+        }
+        .sidebar-item:hover, .sidebar-item.active {
+            color: var(--text-white);
+            background: var(--card-bg);
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 10px rgba(110, 68, 255, 0.2);
+        }
+        .sidebar-item.active {
+            background: var(--primary-purple);
+            color: var(--text-white);
+            box-shadow: var(--shadow-glow);
+        }
+        .sidebar-item svg {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+        }
+        .sidebar-item span {
+            margin-left: 15px;
+            white-space: nowrap;
+            opacity: 0;
+            display: none;
+        }
+        #sidebar.expanded .sidebar-item span {
+            opacity: 1;
+            display: block;
+        }
+        /* MAIN HEADER */
+        #main-header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: var(--header-height);
+            width: calc(100% - var(--sidebar-width-collapsed));
+            background: rgba(18, 18, 18, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            transition: width 0.3s ease;
+        }
+        #sidebar.expanded ~ #main-header {
+            width: calc(100% - var(--sidebar-width-expanded));
+        }
+        .welcome-message h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .welcome-message p {
+            font-size: 14px;
+            color: var(--text-light);
+            margin: 5px 0 0;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-icon-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--text-white);
+            cursor: pointer;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+        .header-icon-btn:hover {
+            background: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            background: var(--error);
+            border-radius: 50%;
+            border: 2px solid var(--background-dark);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 61, 113, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 61, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 61, 113, 0); }
+        }
+        /* MAIN CONTENT */
+        #main-content {
+            margin-left: var(--sidebar-width-collapsed);
+            padding: 20px;
+            padding-top: calc(var(--header-height) + 20px);
+            transition: margin-left 0.3s ease;
+        }
+        #sidebar.expanded ~ #main-content {
+            margin-left: var(--sidebar-width-expanded);
+        }
+        /* MODULE GRID */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        .module-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+        }
+        .module-card:hover {
+            border-color: var(--primary-purple);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8), var(--shadow-glow);
+        }
+        .module-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            background: rgba(110, 68, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            border: 2px solid var(--primary-purple);
+        }
+        .module-icon-wrapper svg {
+            width: 30px;
+            height: 30px;
+            color: var(--primary-purple);
+        }
+        .module-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 8px;
+        }
+        .module-description {
+            font-size: 14px;
+            color: var(--text-light);
+            flex-grow: 1;
+            line-height: 1.5;
+        }
+        .module-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .request-bar-wrapper {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        .request-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-pink), var(--primary-purple));
+            transition: width 0.5s ease;
+            box-shadow: 0 0 5px var(--glowximity);
+        }
+        .request-count {
+            font-size: 12px;
+            color: var(--text-light);
+            text-align: right;
+            font-weight: 500;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        .bolinha-verde { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .bolinha-amarela { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
+        .bolinha-vermelha { background: var(--error); box-shadow: 0 0 8px var(--error); }
+        .module-card.maintenance {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .maintenance-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--error);
+            color: var(--text-white);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            z-index: 2;
+            white-space: nowrap;
+        }
+        /* PAGINAÇÃO */
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .pagination-btn {
+            background: var(--card-bg);
+            color: var(--text-white);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .pagination-btn.active, .pagination-btn:hover {
+            background: var(--primary-purple);
+            border-color: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        /* Enhanced Notification Panel (Adapted from old dashboard) */
+        .notification-panel {
+            position: fixed;
+            top: 20px;
+            right: -320px;
+            width: 300px;
+            background: linear-gradient(135deg, var(--card-bg), var(--background-light));
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: var(--shadow-card);
+            z-index: 1200;
+            transition: right 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 80vh;
+            overflow: hidden;
+            border: 1px solid rgba(110, 68, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        .notification-panel.active {
+            right: 20px;
+        }
+        .notification-panel h5 {
+            color: var(--text-white);
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: rgba(110, 68, 255, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(110, 68, 255, 0.1);
+        }
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 8px;
+            scrollbar-width: thin;
+        }
+        .notification-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .notification-list::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 2px;
+        }
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(110, 68, 255, 0.15);
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            animation: slideInNotification 0.6s ease-out forwards;
+            border: 1px solid rgba(110, 68, 255, 0.1);
+            cursor: pointer;
+        }
+        @keyframes slideInNotification {
+            0% { opacity: 0; transform: translateX(30px) scale(0.95); }
+            100% { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .notification-item:hover {
+            background: rgba(110, 68, 255, 0.3);
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 0 6px 20px var(--shadow-dark);
+        }
+        .notification-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-purple), var(--secondary-purple));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .notification-item:hover::before {
+            opacity: 1;
+        }
+        .notification-item.read {
+            background: rgba(0, 214, 143, 0.1);
+            border-color: rgba(0, 214, 143, 0.3);
+        }
+        .notification-item.read:hover {
+            background: rgba(0, 214, 143, 0.2);
+        }
+        .notification-item i {
+            color: var(--primary-purple);
+            font-size: 18px;
+            margin-top: 3px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .notification-item p {
+            color: var(--text-light);
+            font-size: 13px;
+            margin: 0;
+            flex: 1;
+            line-height: 1.5;
+        }
+        .notification-item time {
+            display: block;
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+        /* Overlay for panels */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        /* MODAL PERFIL */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--background-light);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid var(--primary-purple);
+            box-shadow: var(--shadow-card), var(--shadow-glow);
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .modal.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-close:hover {
+            color: var(--error);
+        }
+        .profile-info-group p {
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        .highlight-text {
+            color: var(--accent-pink);
+            font-weight: 600;
+        }
+        .token-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .token-container input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--background-dark);
+            color: var(--text-white);
+            font-family: monospace;
+            font-size: 14px;
+            cursor: text;
+        }
+        .btn-custom {
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary {
+            background: var(--primary-purple);
+            color: var(--text-white);
+            box-shadow: 0 5px 15px rgba(110, 68, 255, 0.4);
+        }
+        .btn-primary:hover {
+            background: var(--secondary-purple);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(110, 68, 255, 0.6);
+        }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--background-dark); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-purple); }
     </style>
 </head>
 <body>
-    <!-- Enhanced Loading Screen -->
+    <!-- Enhanced Loading Screen (Primary) -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-container">
             <div class="loading-top">
                 <div class="loading-icon">
-                    <i class="fas fa-search"></i>
+                    <i data-lucide="activity"></i>
                 </div>
                 <div class="loading-line"></div>
-                <div class="loading-text">C&<span class="purple-c">C</span></div>
+            </div>
+            <div class="loading-text">
+                <span>Consult</span><span class="purple-c">Center</span>
             </div>
             <div class="loading-box">
                 <div class="loading-dots">
@@ -1271,541 +803,464 @@ body {
         </div>
     </div>
 
-    <!-- Overlay -->
-    <div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
+    <!-- Fallback Loader (if needed) -->
+    <div class="loader" id="loader" style="display: none;">
+        <div class="loader-background"></div>
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Carregando Dashboard...</div>
+    </div>
 
-    <!-- Sidebar (Unchanged) -->
-    <div id="sidebar">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
-            <i class="fas fa-angle-right"></i>
-        </button>
-        <div class="profile-icon" onclick="toggleProfile()">
-            <i class="fas fa-user"></i>
-            <span>Perfil</span>
+    <!-- Overlay for Panels -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="consult">Consult</span><span class="center">Center</span>
+            </div>
+            <div class="sidebar-toggle" id="sidebar-toggle">
+                <i data-lucide="chevrons-left"></i>
+            </div>
         </div>
-        <div class="notification-bell" onclick="toggleNotifications()">
-            <i class="fas fa-bell"></i>
-            <span>Notificações</span>
-            <div class="notification-badge" id="notificationCount">{{ notifications.get(g.user_id, []).__len__() }}</div>
-        </div>
-        <a href="#" class="sidebar-item active" data-section="dashboard">
-            <i class="fas fa-home"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="#" class="sidebar-item" data-section="suporte" onclick="navigateTo('https://t.me/enfurecido')">
-            <i class="fas fa-headset"></i>
-            <span>Suporte</span>
-        </a>
-        {% if admin %}
-            <a href="#" class="sidebar-item" data-section="admin" onclick="navigateTo('/i/settings/admin')">
-                <i class="fas fa-shield-alt"></i>
-                <span>Administração</span>
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-item active" data-page="1">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
             </a>
-        {% endif %}
-        <a href="/logout" class="logout-btn" onclick="confirmLogout(event)">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Sair</span>
-        </a>
-    </div>
+            <a href="#" class="sidebar-item" data-page="2">
+                <i data-lucide="users"></i>
+                <span>Consultas Pessoais</span>
+            </a>
+            <a href="#" class="sidebar-item" data-page="3">
+                <i data-lucide="car"></i>
+                <span>Consultas Veiculares</span>
+            </a>
+            <a href="#" class="sidebar-item" data-page="4">
+                <i data-lucide="globe"></i>
+                <span>Outras Consultas</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer" style="margin-top: auto; padding: 0 15px;">
+            <a href="/logout" class="sidebar-item">
+                <i data-lucide="log-out"></i>
+                <span>Sair</span>
+            </a>
+        </div>
+    </aside>
 
-    <!-- Profile Card (Enhanced) -->
-    <div class="profile-card" id="profileCard">
-        <button class="close-btn" onclick="toggleProfile()"><i class="fas fa-times"></i></button>
-        <div class="profile-header">
-            <div class="profile-avatar">
-                <i class="fas fa-user"></i>
+    <!-- MAIN HEADER -->
+    <header id="main-header">
+        <div class="welcome-message">
+            <h1>Bem-vindo, {{ g.user_id }}!</h1>
+            <p>Validade: {{ users[g.user_id]['expiration'] }}</p>
+        </div>
+        <div class="header-actions">
+            <div class="header-icon-btn" id="notification-btn">
+                <i data-lucide="bell"></i>
+                {% if notifications.get(g.user_id, []).__len__() > 0 %}
+                    <span class="notification-badge" id="notification-badge"></span>
+                {% endif %}
             </div>
-            <div class="profile-info">
-                <h4>{{ g.user_id }}</h4>
-                <p>
-                    {% if users[g.user_id]['role'] == 'user_semanal' %}Semanal
-                    {% elif users[g.user_id]['role'] == 'user_mensal' %}Mensal
-                    {% elif users[g.user_id]['role'] == 'user_anual' %}Anual
-                    {% elif users[g.user_id]['role'] == 'admin' %}Administrador
-                    {% else %}N/A{% endif %}
-                </p>
+            <div class="header-icon-btn" id="profile-btn">
+                <i data-lucide="user"></i>
             </div>
         </div>
-        <div class="profile-detail">
-            <span class="label">Token</span>
-            <span class="value">{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}</span>
-            <button class="copy-btn" onclick="copyToken(this, '{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}')"><i class="fas fa-copy"></i> Copiar</button>
-        </div>
-        <div class="profile-detail">
-            <span class="label">Validade</span>
-            <span class="value">{{ users[g.user_id]['expiration'] }}</span>
-        </div>
-    </div>
+    </header>
 
-    <!-- Notification Panel (Enhanced with Read Functionality) -->
-    <div class="notification-panel" id="notificationPanel">
-        <button class="close-btn" onclick="toggleNotifications()"><i class="fas fa-times"></i></button>
-        <h5><i class="fas fa-bell"></i> Notificações ({{ notifications.get(g.user_id, []).__len__() }})</h5>
-        <div class="notification-list">
-            {% for notification in notifications.get(g.user_id, []) %}
-                <div class="notification-item" data-notification-id="{{ loop.index0 }}">
-                    <i class="fas fa-info-circle"></i>
+    <!-- MAIN CONTENT -->
+    <main id="main-content">
+        <!-- MÓDULOS -->
+        <section id="module-section">
+            <!-- Página 1 -->
+            <div class="dashboard-grid" id="page1">
+                <!-- CPF DATA -->
+                <div class="module-card" onclick="checkModuleStatus('cpfdata', '/modulos/cpfdata')" data-module-id="cpfdata">
+                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
+                    <h3 class="module-title">Localizar CPF (DATASUS)</h3>
+                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- CPF C&C Plus -->
+                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv">
+                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
+                    <h3 class="module-title">Localizar CPF (C&C Plus)</h3>
+                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- CPF DATA -->
+                <div class="module-card" onclick="checkModuleStatus('cpf', '/modulos/cpf')" data-module-id="cpf">
+                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
+                    <h3 class="module-title">Localizar CPF (DATA)</h3>
+                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- CPF DATAPRIME -->
+                <div class="module-card" onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" data-module-id="cpf2">
+                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
+                    <h3 class="module-title">Localizar CPF (DATAPRIME)</h3>
+                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- VACINAS -->
+                <div class="module-card maintenance" onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" data-module-id="vacinas">
+                    <div class="module-icon-wrapper"><i data-lucide="syringe"></i></div>
+                    <h3 class="module-title">Consulta Vacina (SIPNI)</h3>
+                    <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="maintenance-label">MANUTENÇÃO</div>
+                </div>
+                <!-- CPF SISREGII -->
+                <div class="module-card maintenance" onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" data-module-id="cpf3">
+                    <div class="module-icon-wrapper"><i data-lucide="credit-card"></i></div>
+                    <h3 class="module-title">Localizar CPF (SISREGII)</h3>
+                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="maintenance-label">MANUTENÇÃO</div>
+                </div>
+            </div>
+            <!-- Página 2 -->
+            <div class="dashboard-grid" id="page2" style="display: none;">
+                <!-- NOME C&C Plus -->
+                <div class="module-card maintenance" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv">
+                    <div class="module-icon-wrapper"><i data-lucide="user"></i></div>
+                    <h3 class="module-title">Localizar Nome (C&C Plus)</h3>
+                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="maintenance-label">MANUTENÇÃO</div>
+                </div>
+                <!-- NOME DATA -->
+                <div class="module-card" onclick="checkModuleStatus('nome', '/modulos/nome')" data-module-id="nome">
+                    <div class="module-icon-wrapper"><i data-lucide="user"></i></div>
+                    <h3 class="module-title">Localizar Nome (DATA)</h3>
+                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- NOME DATAPRIME -->
+                <div class="module-card" onclick="checkModuleStatus('nome2', '/modulos/nome2')" data-module-id="nome2">
+                    <div class="module-icon-wrapper"><i data-lucide="user"></i></div>
+                    <h3 class="module-title">Localizar Nome (DATAPRIME)</h3>
+                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- TELEFONE DATA -->
+                <div class="module-card maintenance" onclick="checkModuleStatus('tel', '/modulos/tel')" data-module-id="tel">
+                    <div class="module-icon-wrapper"><i data-lucide="phone"></i></div>
+                    <h3 class="module-title">Consulta TELEFONE (DATA)</h3>
+                    <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tel', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="maintenance-label">MANUTENÇÃO</div>
+                </div>
+                <!-- TELEFONE C&C Plus -->
+                <div class="module-card" onclick="checkModuleStatus('telLv', '/modulos/telLv')" data-module-id="telLv">
+                    <div class="module-icon-wrapper"><i data-lucide="phone"></i></div>
+                    <h3 class="module-title">Consulta TELEFONE (C&C Plus)</h3>
+                    <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('telLv', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- TELEFONE NACIONAL -->
+                <div class="module-card" onclick="checkModuleStatus('teldual', '/modulos/teldual')" data-module-id="teldual">
+                    <div class="module-icon-wrapper"><i data-lucide="phone"></i></div>
+                    <h3 class="module-title">Consulta TELEFONE (NACIONAL)</h3>
+                    <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('teldual', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- DATA NASCIMENTO -->
+                <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome">
+                    <div class="module-icon-wrapper"><i data-lucide="calendar"></i></div>
+                    <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
+                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+            </div>
+            <!-- Página 3 -->
+            <div class="dashboard-grid" id="page3" style="display: none;">
+                <!-- PLACA NACIONAL -->
+                <div class="module-card" onclick="checkModuleStatus('placa', '/modulos/placa')" data-module-id="placa">
+                    <div class="module-icon-wrapper"><i data-lucide="car"></i></div>
+                    <h3 class="module-title">Consulta Veicular (NACIONAL)</h3>
+                    <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placa', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- PLACA ESTADUAL -->
+                <div class="module-card maintenance" onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" data-module-id="placaestadual">
+                    <div class="module-icon-wrapper"><i data-lucide="car"></i></div>
+                    <h3 class="module-title">Consulta Veicular (ESTADUAL)</h3>
+                    <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="maintenance-label">MANUTENÇÃO</div>
+                </div>
+                <!-- FOTO C&C Plus -->
+                <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor">
+                    <div class="module-icon-wrapper"><i data-lucide="camera"></i></div>
+                    <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
+                    <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <!-- PIX NACIONAL -->
+                <div class="module-card maintenance" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix">
+                    <div class="module-icon-wrapper"><i data-lucide="qrcode"></i></div>
+                    <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
+                    <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-vermelha"></div>
+                    <div class="maintenance-label">MANUTENÇÃO</div>
+                </div>
+                <!-- PLACA C&C Plus -->
+                <div class="module-card" onclick="checkModuleStatus('placalv', '/modulos/placalv')" data-module-id="placalv">
+                    <div class="module-icon-wrapper"><i data-lucide="car"></i></div>
+                    <h3 class="module-title">Consulta Veicular (C&C Plus)</h3>
+                    <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placalv', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+            </div>
+            <!-- Página 4 -->
+            <div class="dashboard-grid" id="page4" style="display: none;">
+                <!-- IP C&C Plus -->
+                <div class="module-card" onclick="checkModuleStatus('ip', '/modulos/ip')" data-module-id="ip">
+                    <div class="module-icon-wrapper"><i data-lucide="globe"></i></div>
+                    <h3 class="module-title">Localizar IP (C&C Plus)</h3>
+                    <p class="module-description">Consulte a localização geológica de qualquer Endereço IP.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
+                <!-- LIKE FF -->
+                <div class="module-card" onclick="checkModuleStatus('likeff', '/modulos/likeff')" data-module-id="likeff">
+                    <div class="module-icon-wrapper"><i data-lucide="thumbs-up"></i></div>
+                    <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
+                    <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                {% endif %}
+            </div>
+            <!-- PAGINAÇÃO -->
+            <div class="pagination-controls">
+                <button class="pagination-btn active" data-page="1">1</button>
+                <button class="pagination-btn" data-page="2">2</button>
+                <button class="pagination-btn" data-page="3">3</button>
+                <button class="pagination-btn" data-page="4">4</button>
+            </div>
+        </section>
+
+        <!-- Notification Panel -->
+        <div class="notification-panel" id="notificationPanel">
+            <h5>
+                <i data-lucide="bell"></i>
+                Notificações
+            </h5>
+            <div class="notification-list">
+                {% for notif in notifications.get(g.user_id, []) %}
+                <div class="notification-item {% if notif.read %}read{% endif %}" data-timestamp="{{ notif.timestamp }}">
+                    <i data-lucide="bell"></i>
                     <div>
-                        <p>{{ notification.message }}</p>
-                        <time datetime="{{ notification.timestamp if notification.timestamp else '2025-10-27T00:00:00' }}">Há {{ 'poucos minutos' if not notification.timestamp else 'data placeholder' }}</time>
+                        <p>{{ notif.message }}</p>
+                        <time data-timestamp="{{ notif.timestamp }}"></time>
                     </div>
                 </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
-    </div>
 
-    <!-- Main Content -->
-    <div id="main-content">
-        <!-- Welcome Card (Enhanced) -->
-        <div class="welcome-card">
-            <div class="greeting">Bem-vindo(a), {{ g.user_id }}.</div>
-            <div class="validity"><i class="fas fa-calendar-check"></i>Validade: {{ users[g.user_id]['expiration'] }}</div>
-            <div class="search-container">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input id="search-input" type="text" placeholder="Pesquisar módulos..." oninput="searchModules()">
+        <!-- MODAL PERFIL -->
+        <div class="modal" id="profile-modal">
+            <div class="modal-content">
+                <button class="modal-close" id="close-profile-modal"><i data-lucide="x"></i></button>
+                <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 10px;">Perfil do Usuário</h2>
+                <p style="color: var(--text-light); margin-bottom: 25px;">Gerencie suas informações e chaves de acesso.</p>
+                <div class="profile-info-group">
+                    <p><strong>ID:</strong> {{ g.user_id }}</p>
+                    <p><strong>Plano:</strong> <span class="highlight-text">
+                        {% if users[g.user_id]['role'] == 'user_semanal' %}Semanal
+                        {% elif users[g.user_id]['role'] == 'user_mensal' %}Mensal
+                        {% elif users[g.user_id]['role'] == 'user_anual' %}Anual
+                        {% elif users[g.user_id]['role'] == 'admin' %}Administrador
+                        {% else %}N/A{% endif %}
+                    </span></p>
+                    <p><strong>Validade:</strong> <span class="highlight-text">{{ users[g.user_id]['expiration'] }}</span></p>
+                </div>
+                <hr style="margin: 25px 0; border-color: var(--border-color);">
+                <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">Token de Acesso (API)</h3>
+                <p style="color: var(--text-light); margin-bottom: 15px;">Use este token para integrar com sistemas externos.</p>
+                <div class="token-container">
+                    <input type="text" id="api-token" value="{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}" readonly>
+                    <button id="copy-token-btn" class="btn-custom btn-primary">
+                        <i data-lucide="copy"></i> Copiar Token
+                    </button>
                 </div>
             </div>
         </div>
-
-        <!-- Modules Grid (Page 1) -->
-        <div class="modules-grid" id="page1">
-            {% set module_card_class = [] %}
-            <!-- Página 1: CPF e Vacinas -->
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('cpfdata', '/modulos/cpfdata')" 
-                 data-module-id="cpfdata"
-                 data-status="{{ module_status.get('cpfdata', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-id-card"></i>
-                <h3 class="module-title">Localizar CPF (DATASUS)</h3>
-                <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-cpfdata"></div>
-                    <div class="module-message" id="message-cpfdata"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" 
-                 data-module-id="cpflv"
-                 data-status="{{ module_status.get('cpflv', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-id-card"></i>
-                <h3 class="module-title">Localizar CPF (C&C Plus)</h3>
-                <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-cpflv"></div>
-                    <div class="module-message" id="message-cpflv"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('cpf', '/modulos/cpf')" 
-                 data-module-id="cpf"
-                 data-status="{{ module_status.get('cpf', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-id-card"></i>
-                <h3 class="module-title">Localizar CPF (DATA)</h3>
-                <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-cpf"></div>
-                    <div class="module-message" id="message-cpf"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" 
-                 data-module-id="cpf2"
-                 data-status="{{ module_status.get('cpf2', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
-                <i class="module-icon fas fa-id-card"></i>
-                <h3 class="module-title">Localizar CPF (DATAPRIME)</h3>
-                <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-cpf2"></div>
-                    <div class="module-message" id="message-cpf2"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" 
-                 data-module-id="vacinas"
-                 data-status="{{ module_status.get('vacinas', 'OFF') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
-                <i class="module-icon fas fa-syringe"></i>
-                <h3 class="module-title">Consulta Vacina (SIPNI)</h3>
-                <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-vacinas"></div>
-                    <div class="module-message" id="message-vacinas"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" 
-                 data-module-id="cpf3"
-                 data-status="{{ module_status.get('cpf3', 'OFF') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
-                <i class="module-icon fas fa-id-card"></i>
-                <h3 class="module-title">Localizar CPF (SISREGII)</h3>
-                <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-cpf3"></div>
-                    <div class="module-message" id="message-cpf3"></div>
-                {% endwith %}
-            </div>
-        </div>
-
-        <div class="modules-grid" id="page2" style="display: none;">
-            {% set module_card_class = [] %}
-            <!-- Página 2: Nome e Telefone -->
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" 
-                 data-module-id="nomelv"
-                 data-status="{{ module_status.get('nomelv', 'OFF') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-user"></i>
-                <h3 class="module-title">Localizar Nome (C&C Plus)</h3>
-                <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-nomelv"></div>
-                    <div class="module-message" id="message-nomelv"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('nome', '/modulos/nome')" 
-                 data-module-id="nome"
-                 data-status="{{ module_status.get('nome', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-user"></i>
-                <h3 class="module-title">Localizar Nome (DATA)</h3>
-                <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-nome"></div>
-                    <div class="module-message" id="message-nome"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('nome2', '/modulos/nome2')" 
-                 data-module-id="nome2"
-                 data-status="{{ module_status.get('nome2', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
-                <i class="module-icon fas fa-user"></i>
-                <h3 class="module-title">Localizar Nome (DATAPRIME)</h3>
-                <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-nome2"></div>
-                    <div class="module-message" id="message-nome2"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('tel', '/modulos/tel')" 
-                 data-module-id="tel"
-                 data-status="{{ module_status.get('tel', 'OFF') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tel', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-phone"></i>
-                <h3 class="module-title">Consulta TELEFONE (DATA)</h3>
-                <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tel', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-tel"></div>
-                    <div class="module-message" id="message-tel"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('telLv', '/modulos/telLv')" 
-                 data-module-id="telLv"
-                 data-status="{{ module_status.get('telLv', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tellv', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-phone"></i>
-                <h3 class="module-title">Consulta TELEFONE (C&C Plus)</h3>
-                <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('telLv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-telLv"></div>
-                    <div class="module-message" id="message-telLv"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('teldual', '/modulos/teldual')" 
-                 data-module-id="teldual"
-                 data-status="{{ module_status.get('teldual', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('teldual', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-phone"></i>
-                <h3 class="module-title">Consulta TELEFONE (NACIONAL)</h3>
-                <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('teldual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-teldual"></div>
-                    <div class="module-message" id="message-teldual"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('datanome', '/modulos/datanome')" 
-                 data-module-id="datanome"
-                 data-status="{{ module_status.get('datanome', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-calendar"></i>
-                <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
-                <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-datanome"></div>
-                    <div class="module-message" id="message-datanome"></div>
-                {% endwith %}
-            </div>
-        </div>
-
-        <div class="modules-grid" id="page3" style="display: none;">
-            {% set module_card_class = [] %}
-            <!-- Página 3: Placa e FotoRG -->
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('placa', '/modulos/placa')" 
-                 data-module-id="placa"
-                 data-status="{{ module_status.get('placa', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placa', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-car"></i>
-                <h3 class="module-title">Consulta Veicular (NACIONAL)</h3>
-                <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placa', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-placa"></div>
-                    <div class="module-message" id="message-placa"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" 
-                 data-module-id="placaestadual"
-                 data-status="{{ module_status.get('placaestadual', 'OFF') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-car"></i>
-                <h3 class="module-title">Consulta Veicular (ESTADUAL)</h3>
-                <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-placaestadual"></div>
-                    <div class="module-message" id="message-placaestadual"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('fotor', '/modulos/fotor')" 
-                 data-module-id="fotor"
-                 data-status="{{ module_status.get('fotor', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-camera"></i>
-                <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
-                <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-fotor"></div>
-                    <div class="module-message" id="message-fotor"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('pix', '/modulos/pix')" 
-                 data-module-id="pix"
-                 data-status="{{ module_status.get('pix', 'OFF') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-qrcode"></i>
-                <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
-                <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-pix"></div>
-                    <div class="module-message" id="message-pix"></div>
-                {% endwith %}
-            </div>
-
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('placalv', '/modulos/placalv')" 
-                 data-module-id="placalv"
-                 data-status="{{ module_status.get('placalv', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-car"></i>
-                <h3 class="module-title">Consulta Veicular (C&C Plus)</h3>
-                <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placalv', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-placalv"></div>
-                    <div class="module-message" id="message-placalv"></div>
-                {% endwith %}
-            </div>
-        </div>
-
-        <div class="modules-grid" id="page4" style="display: none;">
-            {% set module_card_class = [] %}
-            <!-- Página 4: Consulta IP e Likes -->
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('ip', '/modulos/ip')" 
-                 data-module-id="ip"
-                 data-status="{{ module_status.get('ip', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-globe"></i>
-                <h3 class="module-title">Localizar IP (C&C Plus)</h3>
-                <p class="module-description">Consulte a localização geológica de qualquer Endereço IP.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-ip"></div>
-                    <div class="module-message" id="message-ip"></div>
-                {% endwith %}
-            </div>
-
-            {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
-            <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
-                 onclick="checkModuleStatus('likeff', '/modulos/likeff')" 
-                 data-module-id="likeff"
-                 data-status="{{ module_status.get('likeff', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}"
-                 data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
-                <i class="module-icon fas fa-thumbs-up"></i>
-                <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
-                <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
-                <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) %}
-                    <div class="request-bar-wrapper">
-                        <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                    </div>
-                    <p class="request-count">{{ usage }}/{{ limit }}</p>
-                    <div class="status-dot" id="status-dot-likeff"></div>
-                    <div class="module-message" id="message-likeff"></div>
-                {% endwith %}
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Pagination (Enhanced) -->
-        <div class="pagination">
-            <button class="page-arrow" onclick="prevPage()" disabled><i class="fas fa-chevron-left"></i></button>
-            <div class="page-dot active" onclick="goToPage(1)"></div>
-            <div class="page-dot" onclick="goToPage(2)"></div>
-            <div class="page-dot" onclick="goToPage(3)"></div>
-            <div class="page-dot" onclick="goToPage(4)"></div>
-            <button class="page-arrow" onclick="nextPage()"><i class="fas fa-chevron-right"></i></button>
-        </div>
-    </div>
+    </main>
 
     <script>
-        // Enhanced Loading Screen with Strict 5-Second Timeout
-        window.addEventListener('load', () => {
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+
+            // Enhanced Loading Screen with SessionStorage (from old dashboard)
             const loadingScreen = document.getElementById('loadingScreen');
+            const loader = document.getElementById('loader'); // Fallback
             const isLoaded = sessionStorage.getItem('IsLoadedClientUA');
 
             if (isLoaded !== 'true') {
-                // Show animation only if not loaded in session
+                // Show enhanced animation only if not loaded in session
                 setTimeout(() => {
                     loadingScreen.classList.add('hidden');
                     sessionStorage.setItem('IsLoadedClientUA', 'true');
@@ -1814,242 +1269,144 @@ body {
                 // Hide immediately if already loaded
                 loadingScreen.classList.add('hidden');
             }
-        });
 
-        // Sidebar Toggle (Unchanged)
-        function toggleSidebar() {
+            // Sidebar Toggle
             const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
-            sidebar.classList.toggle('expanded');
-            mainContent.style.marginLeft = sidebar.classList.contains('expanded') ? '240px' : '70px';
-        }
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('expanded');
+            });
 
-        // Profile Toggle (Unchanged)
-        function toggleProfile() {
-            const profileCard = document.getElementById('profileCard');
-            const overlay = document.getElementById('overlay');
-            profileCard.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.getElementById('notificationPanel').classList.remove('active');
-        }
+            // Paginação
+            const pages = ['page1', 'page2', 'page3', 'page4'];
+            const btns = document.querySelectorAll('.pagination-btn');
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            function showPage(page) {
+                pages.forEach(p => document.getElementById(p).style.display = 'none');
+                document.getElementById(page).style.display = 'grid';
+                btns.forEach(b => b.classList.remove('active'));
+                document.querySelector(`[data-page="${page.replace('page', '')}"]`).classList.add('active');
+                sidebarItems.forEach(item => item.classList.remove('active'));
+                document.querySelector(`.sidebar-item[data-page="${page.replace('page', '')}"]`).classList.add('active');
+            }
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => showPage('page' + btn.dataset.page));
+            });
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showPage('page' + item.dataset.page);
+                });
+            });
 
-        // Enhanced Notification Toggle with Read Marking
-        function toggleNotifications() {
+            // Modal Perfil
+            const profileBtn = document.getElementById('profile-btn');
+            const profileModal = document.getElementById('profile-modal');
+            const closeModal = document.getElementById('close-profile-modal');
+            profileBtn.addEventListener('click', () => {
+                profileModal.classList.add('active');
+            });
+            closeModal.addEventListener('click', () => {
+                profileModal.classList.remove('active');
+            });
+            profileModal.addEventListener('click', (e) => {
+                if (e.target === profileModal) profileModal.classList.remove('active');
+            });
+
+            // Copiar Token
+            const copyBtn = document.getElementById('copy-token-btn');
+            const tokenInput = document.getElementById('api-token');
+            copyBtn.addEventListener('click', () => {
+                tokenInput.select();
+                navigator.clipboard.writeText(tokenInput.value).then(() => {
+                    const original = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i data-lucide="check"></i> Copiado!';
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        copyBtn.innerHTML = original;
+                        lucide.createIcons();
+                    }, 2000);
+                });
+            });
+
+            // Enhanced Notification System (from old dashboard, with timestamps)
+            const notificationBtn = document.getElementById('notification-btn');
             const notificationPanel = document.getElementById('notificationPanel');
             const overlay = document.getElementById('overlay');
-            notificationPanel.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.getElementById('profileCard').classList.remove('active');
+            const notificationBadge = document.getElementById('notification-badge');
 
-            if (notificationPanel.classList.contains('active')) {
-                // Mark all notifications as read on open
-                const notificationItems = document.querySelectorAll('.notification-item');
-                notificationItems.forEach(item => {
-                    if (!item.classList.contains('read')) {
+            // Function to calculate relative time
+            function getRelativeTime(timestamp) {
+                const now = new Date();
+                const notifTime = new Date(timestamp);
+                const diffMs = now - notifTime;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                if (diffMins < 1) return 'Agora';
+                if (diffMins < 60) return `há ${diffMins} min`;
+                return `há ${diffHours} h`;
+            }
+
+            // Update timestamps
+            document.querySelectorAll('time[data-timestamp]').forEach(timeEl => {
+                const ts = timeEl.dataset.timestamp;
+                timeEl.textContent = getRelativeTime(ts);
+            });
+
+            // Track last viewed time with sessionStorage
+            let lastViewed = sessionStorage.getItem('lastNotificationsViewed');
+            if (lastViewed) {
+                const now = Date.now();
+                const viewedAgo = Math.floor((now - parseInt(lastViewed)) / 60000);
+                console.log(`Notificações vistas há ${viewedAgo} minutos`); // Log for demo
+            }
+
+            function toggleNotifications() {
+                notificationPanel.classList.toggle('active');
+                overlay.classList.toggle('active');
+                profileModal.classList.remove('active'); // Close profile if open
+
+                if (notificationPanel.classList.contains('active')) {
+                    // Mark all as read
+                    document.querySelectorAll('.notification-item').forEach(item => {
                         item.classList.add('read');
-                    }
-                });
+                    });
 
-                // Use localStorage to persist read state
-                localStorage.setItem('notificationsRead', 'true');
-                sessionStorage.setItem('notificationsReadSession', 'true');
+                    // Persist read state
+                    localStorage.setItem('notificationsRead', 'true');
+                    sessionStorage.setItem('notificationsReadSession', 'true');
+                    sessionStorage.setItem('lastNotificationsViewed', Date.now().toString());
 
-                // Hide badge if all read
-                const badge = document.getElementById('notificationCount');
-                badge.style.display = 'none';
-            }
-        }
-
-        // Close Panels (Unchanged)
-        function closeAllPanels() {
-            document.getElementById('profileCard').classList.remove('active');
-            document.getElementById('notificationPanel').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
-        }
-
-        // Copy Token (Enhanced)
-        function copyToken(button, token) {
-            navigator.clipboard.writeText(token).then(() => {
-                button.classList.add('copied');
-                const originalHTML = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                setTimeout(() => {
-                    button.classList.remove('copied');
-                    button.innerHTML = originalHTML;
-                }, 2500);
-            }).catch(() => {
-                Swal.fire({
-                    title: 'Erro!',
-                    text: 'Falha ao copiar o token.',
-                    icon: 'error',
-                    position: 'top-end',
-                });
-            });
-        }
-
-        // Confirm Logout (Unchanged)
-        function confirmLogout(event) {
-            event.preventDefault();
-            Swal.fire({
-                title: 'Deseja sair?',
-                text: 'Você será desconectado da sessão.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sim, sair',
-                cancelButtonText: 'Cancelar',
-                position: 'top-end',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/logout';
+                    // Hide badge
+                    if (notificationBadge) notificationBadge.style.display = 'none';
                 }
+            }
+
+            notificationBtn.addEventListener('click', toggleNotifications);
+
+            // Close panels on overlay click
+            overlay.addEventListener('click', () => {
+                notificationPanel.classList.remove('active');
+                profileModal.classList.remove('active');
+                overlay.classList.remove('active');
             });
-        }
-
-        // Navigation (Unchanged)
-        function navigateTo(url) {
-            window.location.href = url;
-        }
-
-        // Enhanced Pagination with Session Persistence
-        let currentPage = sessionStorage.getItem('currentPage') ? parseInt(sessionStorage.getItem('currentPage')) : 1;
-        const totalPages = 4;
-
-        function updatePagination() {
-            document.querySelectorAll('.modules-grid').forEach(grid => grid.style.display = 'none');
-            document.getElementById(`page${currentPage}`).style.display = 'grid';
-            document.querySelectorAll('.page-dot').forEach((dot, index) => {
-                dot.classList.toggle('active', index + 1 === currentPage);
-            });
-            document.querySelector('.page-arrow:first-child').disabled = currentPage === 1;
-            document.querySelector('.page-arrow:last-child').disabled = currentPage === totalPages;
-            sessionStorage.setItem('currentPage', currentPage);
-            if (!document.getElementById('search-input').value) {
-                searchModules();
-            }
-        }
-
-        function goToPage(page) {
-            currentPage = page;
-            updatePagination();
-        }
-
-        function nextPage() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                updatePagination();
-            }
-        }
-
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                updatePagination();
-            }
-        }
-
-        // Module Status Check (Unchanged)
-        function checkModuleStatus(moduleId, url) {
-            const module = document.querySelector(`[data-module-id="${moduleId}"]`);
-            const status = module.getAttribute('data-status');
-            const usage = parseInt(module.getAttribute('data-usage'));
-            const limit = parseInt(module.getAttribute('data-limit'));
-            const messageElement = document.getElementById(`message-${moduleId}`);
-
-            if (module.classList.contains('maintenance')) {
-                Swal.fire({
-                    title: 'Em Manutenção',
-                    text: 'Este módulo está em manutenção no momento.',
-                    icon: 'warning',
-                    position: 'top-end',
-                });
-                return;
-            }
-
-            if (status === 'OFF') {
-                Swal.fire({
-                    title: 'Módulo Desativado',
-                    text: 'Este módulo está temporariamente desativado.',
-                    icon: 'error',
-                    position: 'top-end',
-                });
-                return;
-            }
-
-            if (usage >= limit) {
-                Swal.fire({
-                    title: 'Limite Atingido',
-                    text: 'Você atingiu o limite de uso deste módulo.',
-                    icon: 'warning',
-                    position: 'top-end',
-                });
-                return;
-            }
-
-            navigateTo(url);
-        }
-
-        // Update Module Status Dots (Unchanged)
-        function updateModuleStatus() {
-            document.querySelectorAll('.module-card').forEach(module => {
-                const moduleId = module.getAttribute('data-module-id');
-                const status = module.getAttribute('data-status');
-                const usage = parseInt(module.getAttribute('data-usage'));
-                const limit = parseInt(module.getAttribute('data-limit'));
-                const dot = document.getElementById(`status-dot-${moduleId}`);
-                const messageElement = document.getElementById(`message-${moduleId}`);
-
-                if (status === 'ON') {
-                    dot.classList.remove('bolinha-vermelha', 'bolinha-amarela');
-                    dot.classList.add('bolinha-verde');
-                    messageElement.classList.remove('active', 'warn', 'alert', 'success');
-                    if (usage >= limit) {
-                        messageElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Limite Atingido';
-                        messageElement.classList.add('active', 'warn');
-                    }
-                } else {
-                    dot.classList.remove('bolinha-verde', 'bolinha-amarela');
-                    dot.classList.add('bolinha-vermelha');
-                    messageElement.innerHTML = '<i class="fas fa-times-circle"></i> Desativado';
-                    messageElement.classList.add('active', 'alert');
-                }
-            });
-        }
-
-        // Enhanced Search Modules
-        function searchModules() {
-            const searchInput = document.getElementById('search-input').value.toLowerCase();
-            const allModules = document.querySelectorAll('.module-card');
-
-            allModules.forEach(module => {
-                const title = module.querySelector('.module-title').textContent.toLowerCase();
-                const description = module.querySelector('.module-description').textContent.toLowerCase();
-                const modulePage = module.closest('.modules-grid').id;
-                const isCurrentPage = modulePage === `page${currentPage}`;
-
-                if (searchInput === '') {
-                    module.style.display = isCurrentPage ? 'flex' : 'none';
-                } else {
-                    const matchesSearch = title.includes(searchInput) || description.includes(searchInput);
-                    module.style.display = matchesSearch ? 'flex' : 'none';
-                }
-            });
-
-            document.querySelector('.pagination').style.display = searchInput ? 'none' : 'flex';
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            updatePagination();
-            updateModuleStatus();
 
             // Check for read notifications on load
             const notificationsRead = localStorage.getItem('notificationsRead') || sessionStorage.getItem('notificationsReadSession');
-            const notificationCount = parseInt(document.getElementById('notificationCount').textContent);
-            if (notificationsRead === 'true' || notificationCount === 0) {
-                document.getElementById('notificationCount').style.display = 'none';
-                // Mark UI as read
+            if (notificationsRead === 'true') {
+                if (notificationBadge) notificationBadge.style.display = 'none';
                 document.querySelectorAll('.notification-item').forEach(item => item.classList.add('read'));
             }
+
+            // Função de Status
+            window.checkModuleStatus = function(id, url) {
+                const card = document.querySelector(`[data-module-id="${id}"]`);
+                if (card.classList.contains('maintenance')) {
+                    Swal.fire({ icon: 'warning', title: 'Em Manutenção', text: 'Este módulo está temporariamente indisponível.', confirmButtonColor: '#6E44FF' });
+                } else {
+                    window.location.href = url;
+                }
+            };
         });
     </script>
 </body>
