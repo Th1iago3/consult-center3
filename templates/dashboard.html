@@ -1209,12 +1209,12 @@
         <div class="modules-grid" id="page2" style="display: none;">
             {% for module in [
                 {'id': 'nomelv', 'title': 'Localizar NOME (C&C Plus)', 'icon': 'fa-user', 'desc': 'Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.'},
-                {'id': 'nome', 'title': 'Localizar NOME (C&C Plus)', 'icon': 'fa-user', 'desc': 'Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.'},
-                {'id': 'nome2', 'title': 'Localizar NOME (C&C Plus)', 'icon': 'fa-user', 'desc': 'Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.'},
+                {'id': 'nome', 'title': 'Localizar NOME (DATA)', 'icon': 'fa-user', 'desc': 'Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.'},
+                {'id': 'nome2', 'title': 'Localizar NOME (DATAPRIME)', 'icon': 'fa-user', 'desc': 'Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.'},
                 {'id': 'tel', 'title': 'Localizar TELEFONE (C&C Plus)', 'icon': 'fa-phone', 'desc': 'Encontre dados associados a um número de telefone, incluindo proprietário e endereço.'},
-                {'id': 'tellv', 'title': 'Localizar TELEFONE (C&C Plus)', 'icon': 'fa-phone', 'desc': 'Encontre dados associados a um número de telefone, incluindo proprietário e endereço.'},
-                {'id': 'teldual', 'title': 'Localizar TELEFONE (C&C Plus)', 'icon': 'fa-phone', 'desc': 'Encontre dados associados a um número de telefone, incluindo proprietário e endereço.'},
-                {'id': 'datanome', 'title': 'Localizar DATA de NASCIMENTO (C&C Plus)', 'icon': 'fa-calendar', 'desc': 'Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.'}
+                {'id': 'tellv', 'title': 'Localizar TELEFONE (DATA)', 'icon': 'fa-phone', 'desc': 'Encontre dados associados a um número de telefone, incluindo proprietário e endereço.'},
+                {'id': 'teldual', 'title': 'Localizar TELEFONE (OPERADORA)', 'icon': 'fa-phone', 'desc': 'Encontre dados associados a um número de telefone, incluindo proprietário e endereço.'},
+                {'id': 'datanome', 'title': 'Localizar DATA de NASCIMENTO (DATA)', 'icon': 'fa-calendar', 'desc': 'Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.'}
             ] %}
             <div class="module-card {% if 'disabled' in module_card_class %}disabled{% endif %}" 
                  onclick="checkModuleStatus('{{ module.id }}')" 
