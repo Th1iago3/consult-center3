@@ -3,50 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bem-vindo(a) Admin - Consult Center</title>
-    <!-- Font Awesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts (Roboto) -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- SweetAlert2 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <title>Bem-vindo(a) Admin - ConsultCenter</title>
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         :root {
-            --primary-color: #5E3EFF;
-            --secondary-color: #8B6CFF;
-            --accent-color: #FF5ACF;
-            --background-start: #0A0F1F;
-            --background-end: #1A2040;
-            --card-bg: rgba(20, 25, 45, 0.98);
-            --text-dark: #E8ECEF;
-            --text-light: rgba(150, 155, 180, 0.8);
-            --white: #FFFFFF;
-            --success: #00D68F;
-            --error: #FF3D71;
-            --warning: #FFB800;
-            --shadow: rgba(0, 0, 0, 0.6);
-            --glow: rgba(94, 62, 255, 0.5);
-            --border-radius: 16px;
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --separator-color: rgba(94, 62, 255, 0.3);
+            /* Cores Primárias (Roxo como no original) */
+            --primary-purple: #6E44FF; /* Roxo principal */
+            --secondary-purple: #A06CFF; /* Roxo secundário */
+            --accent-pink: #FF6BD6; /* Destaque (opcional) */
+           
+            /* Cores de Fundo e Texto */
+            --background-dark: #121212; /* Fundo principal muito escuro */
+            --background-light: #1A1A1A; /* Fundo secundário/card */
+            --card-bg: rgba(25, 25, 25, 0.9); /* Fundo do card com transparência */
+            --text-white: #E0E0E0; /* Texto principal claro */
+            --text-light: #A0A0A0; /* Texto secundário/sutil */
+            --border-color: #333333; /* Cor da borda sutil */
+            /* Efeitos de Sombra e Brilho */
+            --glowximity: rgba(110, 68, 255, 0.5); /* Brilho do roxo */
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 10px 30px var(--shadow-dark);
+            --shadow-glow: 0 0 15px var(--glowximity);
+           
+            /* Tipografia */
+            --font-family: 'Poppins', sans-serif;
+            /* Adicionais para Admin */
+            --success: #4CAF50;
+            --error: #F44336;
+            --warning: #FF9800;
+            --border-radius: 15px;
+            --transition: all 0.3s ease;
         }
-
+        /* Base e Reset */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            font-family: var(--font-family);
         }
-
+        html {
+            scroll-behavior: smooth;
+        }
         body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, var(--background-start), var(--background-end));
-            color: var(--text-dark);
+            background: linear-gradient(135deg, var(--background-dark) 0%, var(--background-light) 100%);
+            color: var(--text-white);
             min-height: 100vh;
             display: flex;
             overflow-x: hidden;
         }
-
         /* Enhanced Sidebar */
         #sidebar {
             position: fixed;
@@ -54,22 +63,32 @@
             top: 0;
             width: 80px;
             height: 100vh;
-            background: linear-gradient(180deg, var(--card-bg), rgba(15, 20, 40, 0.98));
+            background: var(--card-bg);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px 0;
             transition: width 0.6s var(--transition);
             z-index: 1100;
-            box-shadow: 3px 0 15px var(--shadow);
-            border-right: 1px solid rgba(94, 62, 255, 0.25);
+            box-shadow: var(--shadow-card);
+            border-right: 1px solid var(--border-color);
             overflow-y: auto;
         }
-
         #sidebar.expanded {
             width: 280px;
         }
-
+        .logo-sidebar {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--primary-purple);
+            text-shadow: 0 0 5px var(--glowximity);
+            display: none;
+        }
+        #sidebar.expanded .logo-sidebar {
+            display: block;
+        }
         .sidebar-toggle {
             width: 50px;
             height: 50px;
@@ -82,36 +101,33 @@
             font-size: 24px;
             cursor: pointer;
             transition: var(--transition);
-            background: rgba(94, 62, 255, 0.2);
-            border: 1px solid rgba(94, 62, 255, 0.4);
+            background: rgba(110, 68, 255, 0.2);
+            border: 1px solid var(--primary-purple);
         }
-
         #sidebar.expanded .sidebar-toggle i {
             transform: rotate(180deg);
         }
-
         .sidebar-toggle:hover {
-            background: var(--primary-color);
-            color: var(--white);
+            background: var(--primary-purple);
+            color: var(--text-white);
             transform: scale(1.05);
-            box-shadow: 0 0 10px var(--glow);
+            box-shadow: var(--shadow-glow);
         }
-
         .toggle-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 12px 16px;
-            background: rgba(94, 62, 255, 0.1);
-            border-radius: 12px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
             margin: 8px 0;
             transition: var(--transition);
             width: 90%;
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            border: 1px solid var(--border-color);
         }
-
         .toggle-item::before {
             content: '';
             position: absolute;
@@ -119,46 +135,40 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background: linear-gradient(45deg, transparent, var(--glowximity), transparent);
             transition: left 0.5s;
         }
-
         .toggle-item:hover::before {
             left: 100%;
         }
-
         .toggle-item:hover {
-            background: rgba(94, 62, 255, 0.25);
+            border-color: var(--primary-purple);
             transform: translateX(5px);
+            box-shadow: var(--shadow-glow);
         }
-
         .toggle-item span {
             font-size: 14px;
-            color: var(--text-dark);
+            color: var(--text-white);
             display: none;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 180px;
         }
-
         #sidebar.expanded .toggle-item span {
             display: block;
         }
-
         .toggle-switch {
             position: relative;
             width: 50px;
             height: 24px;
             flex-shrink: 0;
         }
-
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
-
         .slider {
             position: absolute;
             cursor: pointer;
@@ -166,11 +176,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: var(--text-light);
+            background: var(--border-color);
             transition: var(--transition);
             border-radius: 24px;
         }
-
         .slider:before {
             position: absolute;
             content: "";
@@ -178,20 +187,17 @@
             width: 20px;
             left: 2px;
             bottom: 2px;
-            background: var(--white);
+            background: var(--text-white);
             transition: var(--transition);
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px var(--shadow-dark);
         }
-
         input:checked + .slider {
             background: var(--success);
         }
-
         input:checked + .slider:before {
             transform: translateX(26px);
         }
-
         /* Main Content with Tabs */
         .main-content {
             margin-left: 80px;
@@ -200,20 +206,18 @@
             transition: margin-left 0.6s var(--transition);
             overflow-y: auto;
         }
-
         #sidebar.expanded ~ .main-content {
             margin-left: 280px;
         }
-
         .tabs {
             display: flex;
             background: var(--card-bg);
             border-radius: var(--border-radius);
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px var(--shadow);
+            box-shadow: var(--shadow-card);
             overflow: hidden;
+            border: 1px solid var(--border-color);
         }
-
         .tab-button {
             flex: 1;
             padding: 15px 20px;
@@ -221,224 +225,225 @@
             border: none;
             color: var(--text-light);
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-
+        .tab-button i {
+            width: 20px;
+            height: 20px;
+        }
         .tab-button.active {
-            background: var(--primary-color);
-            color: var(--white);
+            background: var(--primary-purple);
+            color: var(--text-white);
+            box-shadow: var(--shadow-glow);
         }
-
         .tab-button:hover:not(.active) {
-            background: rgba(94, 62, 255, 0.1);
-            color: var(--text-dark);
+            background: rgba(110, 68, 255, 0.1);
+            color: var(--text-white);
         }
-
         .tab-content {
             display: none;
             background: var(--card-bg);
             border-radius: var(--border-radius);
             padding: 30px;
-            box-shadow: 0 8px 25px var(--shadow);
-            border: 1px solid var(--separator-color);
-            backdrop-filter: blur(10px);
-            animation: fadeInTab 0.5s ease-out;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease-out;
         }
-
-        @keyframes fadeInTab {
+        @keyframes fadeIn {
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-
         .tab-content.active {
             display: block;
         }
-
         /* Dashboard Tab */
         .dashboard-welcome {
             text-align: center;
             padding: 40px 0;
         }
-
         .dashboard-welcome h2 {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--white);
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-white);
             margin-bottom: 20px;
-            background: linear-gradient(90deg, var(--white), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
         }
-
+        .dashboard-welcome p {
+            color: var(--text-light);
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
         .dashboard-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-top: 30px;
         }
-
         .stat-card {
-            background: rgba(94, 62, 255, 0.15);
-            padding: 20px;
+            background: linear-gradient(145deg, var(--card-bg), rgba(110, 68, 255, 0.1));
+            padding: 25px;
             border-radius: var(--border-radius);
             text-align: center;
             transition: var(--transition);
-            border: 1px solid rgba(94, 62, 255, 0.2);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
         }
-
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-purple);
+        }
         .stat-card:hover {
-            background: rgba(94, 62, 255, 0.25);
             transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
         }
-
         .stat-card i {
-            font-size: 32px;
-            color: var(--primary-color);
-            margin-bottom: 10px;
+            font-size: 40px;
+            color: var(--primary-purple);
+            margin-bottom: 15px;
+            display: block;
         }
-
         .stat-card h3 {
             font-size: 18px;
-            color: var(--text-dark);
-            margin-bottom: 5px;
+            color: var(--text-light);
+            margin-bottom: 10px;
         }
-
         .stat-card p {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 700;
-            color: var(--white);
+            color: var(--text-white);
         }
-
         /* Users Tab */
         .users-section {
             position: relative;
         }
-
         .form-group {
             margin-bottom: 20px;
         }
-
         .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text-white);
             margin-bottom: 8px;
         }
-
+        .form-group label i {
+            color: var(--primary-purple);
+            width: 18px;
+            height: 18px;
+        }
         .form-group input,
         .form-group select {
             width: 100%;
             padding: 14px 16px;
-            border: 1px solid var(--separator-color);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             font-size: 14px;
-            color: var(--text-dark);
-            background: rgba(25, 30, 50, 0.95);
+            color: var(--text-white);
             transition: var(--transition);
         }
-
         .form-group input:focus,
         .form-group select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 12px var(--glow);
             outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 10px var(--glowximity);
         }
-
         .form-group select {
             appearance: none;
-            background: rgba(25, 30, 50, 0.95) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238B6CFF' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 16px center;
+            background: var(--card-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236E44FF' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 16px center;
             padding-right: 40px;
         }
-
         .auto-expire-note {
             font-size: 12px;
             color: var(--success);
             margin-top: 5px;
             display: none;
         }
-
         .button {
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
             border: none;
-            color: var(--white);
+            color: var(--text-white);
             padding: 14px 24px;
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
             transition: var(--transition);
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-
         .button:hover {
-            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
-            box-shadow: 0 6px 20px var(--glow);
             transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
         }
-
         .button.secondary {
-            background: rgba(94, 62, 255, 0.15);
-            color: var(--text-dark);
+            background: var(--card-bg);
+            color: var(--primary-purple);
+            border: 1px solid var(--primary-purple);
         }
-
         .button.secondary:hover {
-            background: rgba(94, 62, 255, 0.25);
-            box-shadow: 0 4px 15px var(--shadow);
+            background: var(--primary-purple);
+            color: var(--text-white);
         }
-
         #usersList {
             max-height: 400px;
             overflow-y: auto;
             margin-top: 20px;
-            border: 1px solid var(--separator-color);
-            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
             padding: 15px;
-            background: rgba(25, 30, 50, 0.95);
-            animation: fadeInUpList 0.5s ease-out forwards;
+            background: var(--background-light);
+            animation: fadeIn 0.5s ease-out;
         }
-
-        @keyframes fadeInUpList {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
         .user-info {
-            background: rgba(94, 62, 255, 0.15);
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 18px;
             margin-bottom: 12px;
             transition: var(--transition);
-            border: 1px solid rgba(94, 62, 255, 0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-
         .user-info:hover {
-            background: rgba(94, 62, 255, 0.25);
+            border-color: var(--primary-purple);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--shadow);
+            box-shadow: var(--shadow-glow);
         }
-
         .user-info p {
             font-size: 13px;
             color: var(--text-light);
-            margin: 6px 0;
+            margin: 0;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
-
         .user-info p strong {
-            color: var(--text-dark);
+            color: var(--text-white);
             min-width: 120px;
         }
-
         .copy-user-btn {
             background: var(--success);
             border: none;
-            color: var(--white);
+            color: var(--text-white);
             padding: 4px 8px;
             border-radius: 6px;
             font-size: 11px;
@@ -446,56 +451,65 @@
             transition: var(--transition);
             margin-left: 10px;
         }
-
         .copy-user-btn:hover {
-            background: #00B77E;
+            background: #45A049;
             transform: scale(1.05);
         }
-
         /* Modules Tab */
         .modules-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
         }
-
         .module-card {
-            background: rgba(25, 30, 50, 0.95);
-            padding: 20px;
+            background: var(--card-bg);
+            padding: 25px;
             border-radius: var(--border-radius);
-            border: 1px solid var(--separator-color);
+            border: 1px solid var(--border-color);
             transition: var(--transition);
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
-
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-purple), var(--secondary-purple));
+        }
         .module-card:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 6px 20px var(--glow);
+            border-color: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
             transform: translateY(-5px);
         }
-
         .module-card h3 {
-            color: var(--text-dark);
-            margin-bottom: 10px;
+            color: var(--text-white);
+            margin-bottom: 15px;
             font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-
+        .module-card h3 i {
+            width: 20px;
+            height: 20px;
+            color: var(--primary-purple);
+        }
         .module-card .toggle-switch {
             justify-content: flex-end;
         }
-
         /* Messages Tab */
         .messages-section {
             text-align: center;
         }
-
         .message-modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             z-index: 1000;
@@ -503,11 +517,9 @@
             justify-content: center;
             padding: 20px;
         }
-
         .message-modal.active {
             display: flex;
         }
-
         .message-modal-content {
             background: var(--card-bg);
             padding: 30px;
@@ -515,200 +527,194 @@
             width: 100%;
             max-width: 500px;
             text-align: center;
-            box-shadow: 0 15px 40px var(--shadow);
-            border: 1px solid var(--separator-color);
-            animation: popInModal 0.4s ease-out forwards;
-            transform: translateY(50px);
-            opacity: 0;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease-out;
+            transform: scale(0.9);
             transition: var(--transition);
         }
-
         .message-modal.active .message-modal-content {
-            transform: translateY(0);
-            opacity: 1;
+            transform: scale(1);
         }
-
-        @keyframes popInModal {
-            0% { transform: scale(0.9) translateY(50px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
         .message-modal-content h3 {
-            color: var(--text-dark);
-            font-size: 22px;
+            color: var(--text-white);
+            font-size: 24px;
             font-weight: 700;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-
+        .message-modal-content h3 i {
+            color: var(--primary-purple);
+            width: 24px;
+            height: 24px;
+        }
         .message-modal-content textarea {
             width: 100%;
             padding: 14px;
-            border: 1px solid var(--separator-color);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             margin-bottom: 15px;
             font-size: 14px;
-            background: rgba(25, 30, 50, 0.95);
-            color: var(--text-dark);
+            background: var(--background-light);
+            color: var(--text-white);
             resize: vertical;
-            min-height: 100px;
+            min-height: 120px;
             transition: var(--transition);
         }
-
         .message-modal-content textarea:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 12px var(--glow);
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 10px var(--glowximity);
             outline: none;
         }
-
         .message-modal-content .buttons {
             display: flex;
             gap: 10px;
         }
-
         .message-modal-content .buttons .button {
             flex: 1;
             width: auto;
         }
-
+        #recentMessages {
+            background: var(--background-light);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+        .recent-message {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-purple);
+            transition: var(--transition);
+        }
+        .recent-message:hover {
+            box-shadow: var(--shadow-glow);
+            transform: translateX(5px);
+        }
+        .recent-message h4 {
+            color: var(--text-white);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .recent-message p {
+            color: var(--text-light);
+            font-size: 13px;
+            margin: 0;
+        }
         /* Back Link */
         .back-link {
             display: inline-flex;
             align-items: center;
-            color: var(--secondary-color);
+            color: var(--secondary-purple);
             text-decoration: none;
             font-size: 14px;
             margin-top: 20px;
             transition: var(--transition);
             justify-content: center;
+            gap: 8px;
         }
-
         .back-link:hover {
-            color: var(--primary-color);
+            color: var(--primary-purple);
         }
-
-        .back-link::before {
-            content: '←';
-            margin-right: 6px;
-            transition: transform 0.3s ease;
-        }
-
-        .back-link:hover::before {
-            transform: translateX(-3px);
-        }
-
         /* SweetAlert2 Enhanced */
-        .swal2-container {
-            z-index: 1200;
-        }
-
         .swal2-popup {
-            width: 400px !important;
-            padding: 25px !important;
-            border-radius: var(--border-radius) !important;
-            background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.99)) !important;
-            box-shadow: 0 10px 30px var(--shadow) !important;
-            border: 1px solid var(--separator-color) !important;
-            font-family: 'Roboto', sans-serif !important;
-            backdrop-filter: blur(10px) !important;
+            background: var(--card-bg) !important;
+            color: var(--text-white) !important;
+            border: 1px solid var(--primary-purple) !important;
+            box-shadow: var(--shadow-glow) !important;
+            font-family: var(--font-family) !important;
         }
-
         .swal2-title {
-            color: var(--text-dark) !important;
-            font-size: 20px !important;
-            font-weight: 700 !important;
-            background: linear-gradient(90deg, var(--white), var(--secondary-color)) !important;
+            color: var(--text-white) !important;
+            background: linear-gradient(90deg, var(--text-white), var(--secondary-purple)) !important;
             -webkit-background-clip: text !important;
             -webkit-text-fill-color: transparent !important;
         }
-
         .swal2-content {
             color: var(--text-light) !important;
-            font-size: 14px !important;
         }
-
         .swal2-confirm, .swal2-cancel {
-            padding: 12px 24px !important;
-            border-radius: 8px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            transition: var(--transition) !important;
-            box-shadow: 0 4px 15px var(--shadow) !important;
-        }
-
-        .swal2-confirm {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)) !important;
             border: none !important;
+            box-shadow: 0 5px 15px var(--glowximity) !important;
         }
-
         .swal2-confirm:hover {
-            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color)) !important;
-            transform: scale(1.05) !important;
+            background: linear-gradient(135deg, var(--secondary-purple), var(--accent-pink)) !important;
+            transform: translateY(-2px) !important;
         }
-
         .swal2-cancel {
-            background: linear-gradient(135deg, var(--error), var(--accent-color)) !important;
-            border: none !important;
+            background: linear-gradient(135deg, var(--error), var(--accent-pink)) !important;
         }
-
         .swal2-cancel:hover {
-            background: linear-gradient(135deg, var(--accent-color), var(--error)) !important;
-            transform: scale(1.05) !important;
+            background: linear-gradient(135deg, var(--accent-pink), var(--error)) !important;
+            transform: translateY(-2px) !important;
         }
-
-        .swal2-actions {
-            gap: 12px !important;
-        }
-
         /* Responsivity */
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             #sidebar {
                 width: 70px;
             }
-
             #sidebar.expanded {
                 width: 250px;
             }
-
             .main-content {
                 margin-left: 70px;
                 padding: 15px;
             }
-
             #sidebar.expanded ~ .main-content {
                 margin-left: 250px;
             }
-
             .tabs {
                 flex-direction: column;
             }
-
             .tab-content {
                 padding: 20px;
             }
+            .dashboard-stats {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
         }
-
-        @media (max-width: 480px) {
+        @media (max-width: 576px) {
             .main-content {
                 padding: 10px;
+                margin-left: 0 !important;
             }
-
+            #sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            #sidebar.expanded {
+                transform: translateX(0);
+                width: 100% !important;
+            }
             h2 {
-                font-size: 22px;
+                font-size: 24px;
             }
-
             .button {
                 padding: 12px 18px;
+            }
+            .modules-section {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Enhanced Sidebar for Quick Module Access -->
+    <!-- Sidebar -->
     <div id="sidebar">
+        <div class="logo-sidebar">
+            <span class="consult">Consult</span><span class="center">Admin</span>
+        </div>
         <button class="sidebar-toggle" onclick="toggleSidebar()">
-            <i class="fas fa-angle-right"></i>
+            <i data-lucide="chevron-left"></i>
         </button>
         <div class="toggle-item" data-module="cpfdata">
+            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar CPF (DATASUS)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpfdata" onchange="toggleModule(this)">
@@ -716,6 +722,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="cpflv">
+            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar CPF (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpflv" onchange="toggleModule(this)">
@@ -723,6 +730,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="cpf">
+            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar CPF (DATA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf" onchange="toggleModule(this)">
@@ -730,6 +738,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="cpf2">
+            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar CPF (DATAPRIME)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf2" onchange="toggleModule(this)">
@@ -737,6 +746,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="cpf3">
+            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar CPF (SISREGII)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="cpf3" onchange="toggleModule(this)">
@@ -744,6 +754,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="vacinas">
+            <i data-lucide="shield" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta Vacina (SIPNI)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="vacinas" onchange="toggleModule(this)">
@@ -751,6 +762,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="nomelv">
+            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar Nome (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nomelv" onchange="toggleModule(this)">
@@ -758,6 +770,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="nome">
+            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar Nome (DATA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nome" onchange="toggleModule(this)">
@@ -765,6 +778,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="nome2">
+            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar Nome (DATAPRIME)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="nome2" onchange="toggleModule(this)">
@@ -772,6 +786,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="tel">
+            <i data-lucide="phone" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta TELEFONE (DATA)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="tel" onchange="toggleModule(this)">
@@ -779,6 +794,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="telLv">
+            <i data-lucide="phone" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta TELEFONE (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="telLv" onchange="toggleModule(this)">
@@ -786,6 +802,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="teldual">
+            <i data-lucide="phone" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta TELEFONE (NACIONAL)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="teldual" onchange="toggleModule(this)">
@@ -793,6 +810,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="datanome">
+            <i data-lucide="calendar" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar DATA de NASCIMENTO</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="datanome" onchange="toggleModule(this)">
@@ -800,6 +818,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="placa">
+            <i data-lucide="car" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta Veicular (NACIONAL)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="placa" onchange="toggleModule(this)">
@@ -807,6 +826,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="placaestadual">
+            <i data-lucide="car" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta Veicular (ESTADUAL)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="placaestadual" onchange="toggleModule(this)">
@@ -814,6 +834,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="placalv">
+            <i data-lucide="car" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta Veicular (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="placalv" onchange="toggleModule(this)">
@@ -821,6 +842,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="fotor">
+            <i data-lucide="camera" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta Foto (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="fotor" onchange="toggleModule(this)">
@@ -828,6 +850,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="pix">
+            <i data-lucide="qr-code" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Consulta PIX (NACIONAL)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="pix" onchange="toggleModule(this)">
@@ -835,6 +858,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="ip">
+            <i data-lucide="globe" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Localizar IP (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="ip" onchange="toggleModule(this)">
@@ -842,6 +866,7 @@
             </label>
         </div>
         <div class="toggle-item" data-module="likeff">
+            <i data-lucide="thumbs-up" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
             <span>Adicionar Likes (C&C Plus)</span>
             <label class="toggle-switch">
                 <input type="checkbox" data-module="likeff" onchange="toggleModule(this)">
@@ -849,56 +874,65 @@
             </label>
         </div>
     </div>
-
-    <!-- Main Content with Tabs -->
+    <!-- Main Content -->
     <div class="main-content">
-        <!-- Tabs Navigation -->
+        <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'dashboard')"><i class="fas fa-home"></i> Dashboard</button>
-            <button class="tab-button" onclick="openTab(event, 'users')"><i class="fas fa-users"></i> Gerenciar Usuários</button>
-            <button class="tab-button" onclick="openTab(event, 'modules')"><i class="fas fa-cogs"></i> Módulos</button>
-            <button class="tab-button" onclick="openTab(event, 'messages')"><i class="fas fa-envelope"></i> Mensagens</button>
+            <button class="tab-button active" onclick="openTab(event, 'dashboard')">
+                <i data-lucide="home"></i> Dashboard
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'users')">
+                <i data-lucide="users"></i> Gerenciar Usuários
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'modules')">
+                <i data-lucide="settings"></i> Módulos
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'messages')">
+                <i data-lucide="mail"></i> Mensagens
+            </button>
         </div>
-
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
             <div class="dashboard-welcome">
-                <h2>Bem-vindo(a), Admin!</h2>
-                <p style="color: var(--text-light); font-size: 16px; margin-bottom: 30px;">Gerencie o sistema de forma eficiente e completa.</p>
+                <h2>Bem-vindo(a), <span class="highlight">Admin</span>!</h2>
+                <p>Gerencie o sistema de forma eficiente e completa com o ConsultCenter.</p>
                 <div class="dashboard-stats">
                     <div class="stat-card">
-                        <i class="fas fa-users"></i>
+                        <i data-lucide="users"></i>
                         <h3>Total de Usuários</h3>
                         <p id="totalUsers">{{ users | length if users else 0 }}</p>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-toggle-on"></i>
+                        <i data-lucide="toggle-right"></i>
                         <h3>Módulos Ativos</h3>
                         <p id="activeModules">0</p>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-chart-line"></i>
+                        <i data-lucide="activity"></i>
                         <h3>Usuários Ativos</h3>
                         <p id="activeUsers">0</p>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-bell"></i>
+                        <i data-lucide="bell"></i>
                         <h3>Notificações Pendentes</h3>
                         <p>0</p>
                     </div>
                 </div>
-                <a href="/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para o Início</a>
+                <a href="/dashboard" class="back-link">
+                    <i data-lucide="arrow-left"></i> Voltar para o Início
+                </a>
             </div>
         </div>
-
         <!-- Users Tab -->
         <div id="users" class="tab-content">
             <div class="users-section">
-                <h2 style="margin-bottom: 20px; text-align: center;">Gerenciar Usuários</h2>
-                <button class="button secondary" onclick="toggleUsersView()" style="width: auto; margin-bottom: 20px;"><i class="fas fa-eye"></i> Ver Usuários</button>
+                <h2>Gerenciar Usuários</h2>
+                <button class="button secondary" onclick="toggleUsersView()" style="width: auto; margin-bottom: 20px;">
+                    <i data-lucide="eye"></i> Ver Usuários
+                </button>
                 <form id="adminForm" method="POST">
                     <div class="form-group">
-                        <label for="action">Ação</label>
+                        <label for="action"><i data-lucide="zap"></i> Ação</label>
                         <select name="action" id="action" onchange="toggleFields()">
                             <option value="add_user">Adicionar Usuário</option>
                             <option value="delete_user">Excluir Usuário</option>
@@ -907,15 +941,15 @@
                     </div>
                     <div id="userFields">
                         <div class="form-group">
-                            <label for="user">Usuário</label>
+                            <label for="user"><i data-lucide="user"></i> Usuário</label>
                             <input type="text" name="user" placeholder="Nome de usuário" required>
                         </div>
                         <div id="passwordField" class="form-group">
-                            <label for="password">Senha</label>
+                            <label for="password"><i data-lucide="key"></i> Senha</label>
                             <input type="password" name="password" placeholder="Senha" required>
                         </div>
                         <div id="roleField" class="form-group">
-                            <label for="role">Tipo de Plano</label>
+                            <label for="role"><i data-lucide="package"></i> Tipo de Plano</label>
                             <select name="role" id="role" onchange="calculateExpiration()">
                                 <option value="">Selecione um plano</option>
                                 <option value="user_semanal">Semanal (7 dias)</option>
@@ -926,156 +960,157 @@
                             <div class="auto-expire-note" id="autoExpireNote">Expiração calculada automaticamente. Você pode editar manualmente.</div>
                         </div>
                         <div id="expirationFieldDiv" class="form-group">
-                            <label for="expiration">Data de Expiração</label>
+                            <label for="expiration"><i data-lucide="calendar"></i> Data de Expiração</label>
                             <input type="date" name="expiration" id="expirationField" required>
                         </div>
                     </div>
-                    <button type="submit" class="button"><i class="fas fa-save"></i> Executar Ação</button>
+                    <button type="submit" class="button">
+                        <i data-lucide="save"></i> Executar Ação
+                    </button>
                 </form>
                 <div id="usersList"></div>
             </div>
         </div>
-
         <!-- Modules Tab -->
         <div id="modules" class="tab-content">
-            <h2 style="margin-bottom: 20px; text-align: center;">Gerenciar Módulos</h2>
-            <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Ative ou desative módulos para todos os usuários.</p>
+            <h2>Gerenciar Módulos</h2>
+            <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Ative ou desative módulos para todos os usuários com facilidade.</p>
             <div class="modules-section">
                 <div class="module-card" data-module="cpfdata">
-                    <h3><i class="fas fa-id-card"></i> Localizar CPF (DATASUS)</h3>
+                    <h3><i data-lucide="id-card"></i> Localizar CPF (DATASUS)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="cpfdata" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="cpflv">
-                    <h3><i class="fas fa-id-card"></i> Localizar CPF (C&C Plus)</h3>
+                    <h3><i data-lucide="id-card"></i> Localizar CPF (C&C Plus)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="cpflv" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="cpf">
-                    <h3><i class="fas fa-id-card"></i> Localizar CPF (DATA)</h3>
+                    <h3><i data-lucide="id-card"></i> Localizar CPF (DATA)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="cpf" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="cpf2">
-                    <h3><i class="fas fa-id-card"></i> Localizar CPF (DATAPRIME)</h3>
+                    <h3><i data-lucide="id-card"></i> Localizar CPF (DATAPRIME)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="cpf2" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="cpf3">
-                    <h3><i class="fas fa-id-card"></i> Localizar CPF (SISREGII)</h3>
+                    <h3><i data-lucide="id-card"></i> Localizar CPF (SISREGII)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="cpf3" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="vacinas">
-                    <h3><i class="fas fa-syringe"></i> Consulta Vacina (SIPNI)</h3>
+                    <h3><i data-lucide="shield-check"></i> Consulta Vacina (SIPNI)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="vacinas" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="nomelv">
-                    <h3><i class="fas fa-user"></i> Localizar Nome (C&C Plus)</h3>
+                    <h3><i data-lucide="user"></i> Localizar Nome (C&C Plus)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="nomelv" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="nome">
-                    <h3><i class="fas fa-user"></i> Localizar Nome (DATA)</h3>
+                    <h3><i data-lucide="user"></i> Localizar Nome (DATA)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="nome" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="nome2">
-                    <h3><i class="fas fa-user"></i> Localizar Nome (DATAPRIME)</h3>
+                    <h3><i data-lucide="user"></i> Localizar Nome (DATAPRIME)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="nome2" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="tel">
-                    <h3><i class="fas fa-phone"></i> Consulta TELEFONE (DATA)</h3>
+                    <h3><i data-lucide="phone"></i> Consulta TELEFONE (DATA)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="tel" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="telLv">
-                    <h3><i class="fas fa-phone"></i> Consulta TELEFONE (C&C Plus)</h3>
+                    <h3><i data-lucide="phone"></i> Consulta TELEFONE (C&C Plus)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="telLv" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="teldual">
-                    <h3><i class="fas fa-phone"></i> Consulta TELEFONE (NACIONAL)</h3>
+                    <h3><i data-lucide="phone"></i> Consulta TELEFONE (NACIONAL)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="teldual" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="datanome">
-                    <h3><i class="fas fa-calendar"></i> Localizar DATA de NASCIMENTO</h3>
+                    <h3><i data-lucide="calendar"></i> Localizar DATA de NASCIMENTO</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="datanome" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="placa">
-                    <h3><i class="fas fa-car"></i> Consulta Veicular (NACIONAL)</h3>
+                    <h3><i data-lucide="car"></i> Consulta Veicular (NACIONAL)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="placa" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="placaestadual">
-                    <h3><i class="fas fa-car"></i> Consulta Veicular (ESTADUAL)</h3>
+                    <h3><i data-lucide="car"></i> Consulta Veicular (ESTADUAL)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="placaestadual" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="placalv">
-                    <h3><i class="fas fa-car"></i> Consulta Veicular (C&C Plus)</h3>
+                    <h3><i data-lucide="car"></i> Consulta Veicular (C&C Plus)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="placalv" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="fotor">
-                    <h3><i class="fas fa-camera"></i> Consulta Foto (C&C Plus)</h3>
+                    <h3><i data-lucide="camera"></i> Consulta Foto (C&C Plus)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="fotor" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="pix">
-                    <h3><i class="fas fa-qrcode"></i> Consulta PIX (NACIONAL)</h3>
+                    <h3><i data-lucide="qr-code"></i> Consulta PIX (NACIONAL)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="pix" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="ip">
-                    <h3><i class="fas fa-globe"></i> Localizar IP (C&C Plus)</h3>
+                    <h3><i data-lucide="globe"></i> Localizar IP (C&C Plus)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="ip" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="module-card" data-module="likeff">
-                    <h3><i class="fas fa-thumbs-up"></i> Adicionar Likes (C&C Plus)</h3>
+                    <h3><i data-lucide="thumbs-up"></i> Adicionar Likes (C&C Plus)</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
                         <input type="checkbox" data-module="likeff" onchange="toggleModule(this)">
                         <span class="slider"></span>
@@ -1083,36 +1118,45 @@
                 </div>
             </div>
         </div>
-
         <!-- Messages Tab -->
         <div id="messages" class="tab-content">
             <div class="messages-section">
-                <h2 style="margin-bottom: 20px; text-align: center;">Broadcast Mensagens</h2>
-                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie notificações para todos os usuários.</p>
-                <button class="button" onclick="openMessageModal()" style="width: auto; margin-bottom: 20px;"><i class="fas fa-paper-plane"></i> Nova Mensagem</button>
-                <div id="recentMessages" style="background: rgba(25, 30, 50, 0.95); padding: 20px; border-radius: 12px; border: 1px solid var(--separator-color);">
-                    <h3 style="color: var(--text-dark); margin-bottom: 15px;">Mensagens Recentes</h3>
-                    <p style="color: var(--text-light);">Nenhuma mensagem recente.</p>
+                <h2>Broadcast Mensagens</h2>
+                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie notificações para todos os usuários de forma rápida e segura.</p>
+                <button class="button" onclick="openMessageModal()" style="width: auto; margin-bottom: 20px;">
+                    <i data-lucide="plus"></i> Nova Mensagem
+                </button>
+                <div id="recentMessages">
+                    <h3 style="color: var(--text-white); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="clock"></i> Mensagens Recentes
+                    </h3>
+                    <div id="messagesList">
+                        <p style="color: var(--text-light);">Nenhuma mensagem recente.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Enhanced Message Modal -->
+    <!-- Message Modal -->
     <div id="messageModal" class="message-modal">
         <div class="message-modal-content">
-            <h3><i class="fas fa-envelope"></i> Enviar Mensagem para Todos</h3>
+            <h3><i data-lucide="mail"></i> Enviar Mensagem para Todos</h3>
             <textarea id="messageInput" placeholder="Digite sua mensagem aqui... (Suporte a Markdown simples)"></textarea>
             <div class="buttons">
-                <button class="button secondary" onclick="closeMessageModal()"><i class="fas fa-times"></i> Cancelar</button>
-                <button class="button" onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Enviar</button>
+                <button class="button secondary" onclick="closeMessageModal()">
+                    <i data-lucide="x"></i> Cancelar
+                </button>
+                <button class="button" onclick="sendMessage()">
+                    <i data-lucide="send"></i> Enviar
+                </button>
             </div>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Initialize toggles and stats
+        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
             const moduleStatus = {{ modules_state | tojson }};
             document.querySelectorAll('.toggle-switch input').forEach(toggle => {
                 const moduleId = toggle.getAttribute('data-module');
@@ -1120,27 +1164,24 @@
             });
             updateStats();
             toggleFields();
-            calculateExpiration(); // Initial calculation
+            calculateExpiration();
+            loadRecentMessages();
+            lucide.createIcons(); // Recriar ícones após DOM
         });
-
-        // Tab System
+        // Funções de Tab
         function openTab(evt, tabName) {
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(content => content.classList.remove('active'));
-
             const tabButtons = document.querySelectorAll('.tab-button');
             tabButtons.forEach(button => button.classList.remove('active'));
-
             document.getElementById(tabName).classList.add('active');
             evt.currentTarget.classList.add('active');
+            lucide.createIcons();
         }
-
-        // Update Dashboard Stats
+        // Atualizar Stats
         function updateStats() {
             const activeModules = document.querySelectorAll('.toggle-switch input:checked').length;
             document.getElementById('activeModules').textContent = activeModules;
-
-            // Active users (simplified, fetch if needed)
             fetch('/i/settings/admin', {
                 method: 'POST',
                 body: new URLSearchParams({ action: 'get_stats' }),
@@ -1150,8 +1191,7 @@
                 document.getElementById('activeUsers').textContent = 'N/A';
             });
         }
-
-        // Automatic Expiration Calculation
+        // Cálculo Automático de Expiração
         function calculateExpiration() {
             const role = document.getElementById('role').value;
             const expirationField = document.getElementById('expirationField');
@@ -1171,8 +1211,7 @@
             note.style.display = 'block';
             note.textContent = `Expiração calculada automaticamente para ${days} dias. Edite se necessário.`;
         }
-
-        // Toggle Module
+        // Toggle Módulo
         function toggleModule(checkbox) {
             const moduleId = checkbox.getAttribute('data-module');
             const isEnabled = checkbox.checked;
@@ -1188,45 +1227,52 @@
             .then(data => {
                 if (data.success) {
                     Swal.fire({
+                        icon: 'success',
                         title: 'Sucesso!',
                         text: `Módulo ${moduleId} ${isEnabled ? 'ativado' : 'desativado'} com sucesso!`,
-                        icon: 'success',
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
                         timer: 2000,
                         timerProgressBar: true,
                     });
                     updateStats();
                 } else {
                     Swal.fire({
+                        icon: 'error',
                         title: 'Erro!',
                         text: data.message || 'Erro ao atualizar o módulo.',
-                        icon: 'error',
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
                     });
                     checkbox.checked = !isEnabled;
                 }
             })
             .catch(error => {
                 Swal.fire({
-                    title: 'Erro!',
-                    text: 'Erro ao atualizar o módulo: ' + error.message,
-                    icon: 'error',
-                });
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: 'Erro ao atualizar o módulo: ' + error.message,
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
+                    });
                 checkbox.checked = !isEnabled;
             });
         }
-
-        // Sidebar Toggle
+        // Toggle Sidebar
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('expanded');
+            lucide.createIcons();
         }
-
         // Toggle Fields
         function toggleFields() {
             const action = document.getElementById('action').value;
             const passwordField = document.getElementById('passwordField');
             const roleField = document.getElementById('roleField');
             const expirationFieldDiv = document.getElementById('expirationFieldDiv');
-
             if (action === 'delete_user' || action === 'reset_device') {
                 passwordField.style.display = 'block';
                 roleField.style.display = 'none';
@@ -1241,8 +1287,7 @@
                 document.getElementById('expirationField').setAttribute('required', 'required');
             }
         }
-
-        // Enhanced Form Submission
+        // Submissão do Form
         document.getElementById('adminForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
@@ -1254,9 +1299,12 @@
             .then(data => {
                 if (data.message) {
                     Swal.fire({
+                        icon: data.category === 'success' ? 'success' : 'error',
                         title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
                         text: data.message,
-                        icon: data.category === 'success' ? 'success' : 'error',
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
                         timer: 3000,
                         timerProgressBar: true,
                     });
@@ -1270,14 +1318,16 @@
             })
             .catch(error => {
                 Swal.fire({
+                    icon: 'error',
                     title: 'Erro!',
                     text: 'Erro ao processar o pedido: ' + error.message,
-                    icon: 'error',
+                    background: 'var(--background-light)',
+                    color: 'var(--text-white)',
+                    confirmButtonColor: 'var(--primary-purple)',
                 });
             });
         });
-
-        // Enhanced Success Modal with Better Copy
+        // Modal de Sucesso Aprimorado
         function showEnhancedSuccessModal(data) {
             const userDetails = `Usuário: ${data.user}\nSenha: ${data.password}\nToken: ${data.token}\nExpiração: ${data.expiration}\nTipo: ${data.role === 'user_semanal' ? 'Semanal' : data.role === 'user_mensal' ? 'Mensal' : data.role === 'user_anual' ? 'Anual' : data.role === 'admin' ? 'Administrador' : data.role}`;
             Swal.fire({
@@ -1298,6 +1348,9 @@
                 cancelButtonText: 'Fechar',
                 allowOutsideClick: true,
                 allowEscapeKey: true,
+                background: 'var(--background-light)',
+                color: 'var(--text-white)',
+                confirmButtonColor: 'var(--primary-purple)',
             });
             document.getElementById('copyBtn').onclick = () => {
                 navigator.clipboard.writeText(userDetails).then(() => {
@@ -1307,18 +1360,23 @@
                         icon: 'success',
                         timer: 2000,
                         timerProgressBar: true,
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
                     });
                 }).catch(() => {
                     Swal.fire({
                         title: 'Erro!',
                         text: 'Falha ao copiar. Tente novamente.',
                         icon: 'error',
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
                     });
                 });
             };
         }
-
-        // Toggle Users View with Copy Buttons
+        // Toggle Users View
         let usersVisible = false;
         function toggleUsersView() {
             const usersList = document.getElementById('usersList');
@@ -1341,7 +1399,7 @@
                             userInfo.innerHTML = `
                                 <p><strong>Usuário:</strong> ${user}</p>
                                 <p><strong>Senha:</strong> ${info.password}</p>
-                                <p><strong>Token:</strong> ${info.token} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${info.token}').then(() => { this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar';, 2000); })">Copiar Token</button></p>
+                                <p><strong>Token:</strong> ${info.token} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${info.token}').then(() => { this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar Token';, 2000); })">Copiar Token</button></p>
                                 <p><strong>Expiração:</strong> ${info.expiration}</p>
                                 <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' : info.role === 'user_mensal' ? 'Mensal' : info.role === 'user_anual' ? 'Anual' : info.role === 'admin' ? 'Administrador' : info.role}</p>
                                 <p><strong>Dispositivos:</strong> ${info.devices ? info.devices.join(', ') : "Ilimitado"} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${userDetails}').then(() => { this.textContent = 'Copiado Tudo!'; setTimeout(() => this.textContent = 'Copiar Tudo';, 2000); })">Copiar Tudo</button></p>
@@ -1354,32 +1412,36 @@
                 })
                 .catch(error => {
                     Swal.fire({
+                        icon: 'error',
                         title: 'Erro!',
                         text: 'Erro ao carregar usuários: ' + error.message,
-                        icon: 'error',
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
                     });
                 });
             }
         }
-
-        // Enhanced Message Modal
+        // Mensagens - Modal
         function openMessageModal() {
             document.getElementById('messageModal').classList.add('active');
             document.getElementById('messageInput').focus();
+            lucide.createIcons();
         }
-
         function closeMessageModal() {
             document.getElementById('messageModal').classList.remove('active');
             document.getElementById('messageInput').value = '';
         }
-
         function sendMessage() {
             const message = document.getElementById('messageInput').value.trim();
             if (!message) {
                 Swal.fire({
+                    icon: 'error',
                     title: 'Erro!',
                     text: 'Por favor, insira uma mensagem.',
-                    icon: 'error',
+                    background: 'var(--background-light)',
+                    color: 'var(--text-white)',
+                    confirmButtonColor: 'var(--primary-purple)',
                 });
                 return;
             }
@@ -1395,29 +1457,69 @@
             .then(data => {
                 if (data.message) {
                     Swal.fire({
+                        icon: data.category === 'success' ? 'success' : 'error',
                         title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
                         text: data.message,
-                        icon: data.category === 'success' ? 'success' : 'error',
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
                         timer: 3000,
                         timerProgressBar: true,
                     });
                     if (data.category === 'success') {
                         document.getElementById('messageInput').value = '';
                         closeMessageModal();
-                        // Update recent messages if needed
+                        addRecentMessage(message);
                     }
                 }
             })
             .catch(error => {
                 Swal.fire({
+                    icon: 'error',
                     title: 'Erro!',
                     text: 'Erro ao enviar mensagem: ' + error.message,
-                    icon: 'error',
+                    background: 'var(--background-light)',
+                    color: 'var(--text-white)',
+                    confirmButtonColor: 'var(--primary-purple)',
                 });
             });
         }
-
-        // Close modal on outside click
+        // LocalStorage e SessionStorage para Mensagens Recentes
+        function addRecentMessage(message) {
+            const now = new Date().toLocaleString('pt-BR');
+            const recentMessage = { message, timestamp: now };
+            // SessionStorage para sessão atual
+            let sessionMessages = JSON.parse(sessionStorage.getItem('recentMessages') || '[]');
+            sessionMessages.unshift(recentMessage);
+            sessionMessages = sessionMessages.slice(0, 5); // Manter apenas 5
+            sessionStorage.setItem('recentMessages', JSON.stringify(sessionMessages));
+            // LocalStorage para persistência
+            let localMessages = JSON.parse(localStorage.getItem('persistentMessages') || '[]');
+            localMessages.unshift(recentMessage);
+            localMessages = localMessages.slice(0, 10); // Manter apenas 10
+            localStorage.setItem('persistentMessages', JSON.stringify(localMessages));
+            loadRecentMessages();
+        }
+        function loadRecentMessages() {
+            const messagesList = document.getElementById('messagesList');
+            // Priorizar sessionStorage, fallback para localStorage
+            let messages = JSON.parse(sessionStorage.getItem('recentMessages') || '[]');
+            if (messages.length === 0) {
+                messages = JSON.parse(localStorage.getItem('persistentMessages') || '[]').slice(0, 5);
+            }
+            if (messages.length === 0) {
+                messagesList.innerHTML = '<p style="color: var(--text-light);">Nenhuma mensagem recente.</p>';
+                return;
+            }
+            messagesList.innerHTML = messages.map(msg => `
+                <div class="recent-message">
+                    <h4><i data-lucide="clock" style="width: 16px; height: 16px; color: var(--primary-purple); vertical-align: middle;"></i> ${msg.timestamp}</h4>
+                    <p>${msg.message}</p>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+        // Fechar modal ao clicar fora
         document.getElementById('messageModal').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) closeMessageModal();
         });
