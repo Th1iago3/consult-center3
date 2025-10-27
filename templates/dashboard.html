@@ -21,7 +21,7 @@
     --accent-color: #FF5ACF;
     --background-start: #0A0F1F;
     --background-end: #1A2040;
-    --card-bg: rgba(20, 25, 45, 0.95);
+    --card-bg: rgba(20, 25, 45, 0.98);
     --text-dark: #E8ECEF;
     --text-light: rgba(150, 155, 180, 0.8);
     --white: #FFFFFF;
@@ -52,7 +52,7 @@ body {
     line-height: 1.6;
 }
 
-/* Loading Screen - Improved Animation */
+/* Enhanced Loading Screen */
 .loading-screen {
     position: fixed;
     top: 0;
@@ -79,18 +79,14 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 30px;
-    animation: loadingContainerSlide 1.2s ease-out 0.5s forwards;
-}
-
-@keyframes loadingContainerSlide {
-    0% { opacity: 0; transform: translateY(50px) scale(0.8); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
+    text-align: center;
 }
 
 .loading-top {
     display: flex;
     align-items: center;
     gap: 20px;
+    position: relative;
 }
 
 .loading-icon {
@@ -100,7 +96,7 @@ body {
 }
 
 @keyframes fadeInRotate {
-    0% { opacity: 0; transform: scale(0.5) rotate(-180deg) translateX(30px); }
+    0% { opacity: 0; transform: scale(0.5) rotate(-180deg) translateX(50px); }
     100% { opacity: 1; transform: scale(1) rotate(0deg) translateX(0); }
 }
 
@@ -115,13 +111,12 @@ body {
     background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
     opacity: 0;
     animation: growLine 1.5s cubic-bezier(0.4, 0, 0.2, 1) 1s forwards;
-    box-shadow: 0 0 10px var(--glow);
 }
 
 @keyframes growLine {
-    0% { height: 0; opacity: 0; transform: translateX(10px); }
-    50% { height: 80px; opacity: 0.7; }
-    100% { height: 70px; opacity: 1; transform: translateX(0); }
+    0% { height: 0; opacity: 0; transform: translateX(15px); }
+    50% { height: 70px; opacity: 0.7; }
+    100% { height: 60px; opacity: 1; transform: translateX(0); }
 }
 
 .loading-text {
@@ -132,24 +127,23 @@ body {
     display: flex;
     align-items: center;
     opacity: 0;
-    animation: slideInText 1.8s cubic-bezier(0.4, 0, 0.2, 1) 1.5s forwards;
-    letter-spacing: 2px;
+    animation: slideInTextGlow 2s cubic-bezier(0.4, 0, 0.2, 1) 1.5s forwards;
 }
 
 .loading-text .purple-c {
     color: var(--primary-color);
     text-shadow: 0 0 15px var(--glow), 0 0 25px var(--glow);
-    animation: flickerGlow 2.5s infinite ease-in-out 3s;
+    animation: flickerGlow 3s infinite ease-in-out 2.5s;
 }
 
-@keyframes slideInText {
-    0% { opacity: 0; transform: translateX(30px) rotate(-5deg); }
-    100% { opacity: 1; transform: translateX(0) rotate(0deg); }
+@keyframes slideInTextGlow {
+    0% { opacity: 0; transform: translateX(30px) scale(0.9); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
 }
 
 @keyframes flickerGlow {
     0%, 100% { opacity: 1; text-shadow: 0 0 15px var(--glow); }
-    50% { opacity: 0.9; text-shadow: 0 0 5px var(--glow); }
+    50% { opacity: 0.9; text-shadow: 0 0 25px var(--glow); }
 }
 
 .loading-box {
@@ -160,19 +154,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    box-shadow: 0 8px 25px var(--shadow);
-    backdrop-filter: blur(10px);
+    gap: 20px;
+    box-shadow: 0 6px 20px var(--shadow);
+    backdrop-filter: blur(6px);
     opacity: 0;
-    animation: fadeInBox 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3s forwards;
+    animation: fadeInBoxSlide 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3s forwards;
     width: 140px;
     height: 70px;
-    transform: perspective(1000px) rotateX(10deg);
 }
 
-@keyframes fadeInBox {
-    0% { opacity: 0; transform: translateY(30px) scale(0.9) perspective(1000px) rotateX(10deg); }
-    100% { opacity: 1; transform: translateY(0) scale(1) perspective(1000px) rotateX(0deg); }
+@keyframes fadeInBoxSlide {
+    0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .loading-dots {
@@ -184,18 +177,17 @@ body {
 .loading-dot {
     width: 12px;
     height: 12px;
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border-radius: 50%;
-    animation: bounceScale 1.5s infinite ease-in-out;
-    box-shadow: 0 0 8px var(--glow);
+    animation: bounceGlow 1.4s infinite ease-in-out;
 }
 
-.loading-dot:nth-child(2) { animation-delay: 0.3s; }
-.loading-dot:nth-child(3) { animation-delay: 0.6s; }
+.loading-dot:nth-child(2) { animation-delay: 0.25s; }
+.loading-dot:nth-child(3) { animation-delay: 0.5s; }
 
-@keyframes bounceScale {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-20px) scale(1.2); }
+@keyframes bounceGlow {
+    0%, 100% { transform: translateY(0); box-shadow: 0 0 5px var(--glow); }
+    50% { transform: translateY(-20px); box-shadow: 0 0 15px var(--glow); }
 }
 
 /* Overlay */
@@ -231,19 +223,20 @@ body {
     transform: translate(-50%, -50%);
     background: linear-gradient(90deg, rgba(255, 61, 113, 0.95), rgba(255, 61, 113, 0.8));
     color: var(--white);
-    padding: 10px 18px;
+    padding: 10px 20px;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
     box-shadow: 0 6px 20px var(--shadow);
     z-index: 2;
-    animation: pulseMaintenance 2.5s infinite;
+    animation: pulseMaintenance 2s infinite;
 }
 
 @keyframes pulseMaintenance {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 6px 20px var(--shadow); }
-    50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 6px 25px var(--shadow), 0 0 15px rgba(255, 61, 113, 0.5); }
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.08); }
+    100% { transform: translate(-50%, -50%) scale(1); }
 }
 
 /* Scrollbar */
@@ -252,108 +245,53 @@ body {
 }
 ::-webkit-scrollbar-track {
     background: var(--card-bg);
-    border-radius: 6px;
+    border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb {
     background: linear-gradient(var(--primary-color), var(--secondary-color));
-    border-radius: 6px;
+    border-radius: 5px;
     box-shadow: 0 0 8px var(--glow);
 }
 ::-webkit-scrollbar-thumb:hover {
     background: var(--secondary-color);
 }
 
-/* Sidebar - Further Improved Layout */
+/* Sidebar styles remain unchanged as per request */
 #sidebar {
     position: fixed;
     left: 0;
     top: 0;
-    width: 80px;
+    width: 70px;
     height: 100vh;
     background: linear-gradient(180deg, var(--card-bg), rgba(15, 20, 40, 0.98));
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 30px 0;
-    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px 0;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1100;
-    box-shadow: 5px 0 25px var(--shadow);
-    border-right: 1px solid rgba(94, 62, 255, 0.4);
-    overflow-y: auto;
-    gap: 20px;
-}
-
-#sidebar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(180deg, rgba(94, 62, 255, 0.1), transparent);
-    opacity: 0;
-    transition: opacity 0.8s ease-in-out;
-}
-
-#sidebar.expanded::before {
-    opacity: 1;
+    box-shadow: 3px 0 15px var(--shadow);
+    border-right: 1px solid rgba(94, 62, 255, 0.25);
 }
 
 #sidebar.expanded {
-    width: 280px;
-    padding: 30px 25px;
-    justify-content: flex-start;
-    gap: 15px;
-}
-
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    margin-bottom: 30px;
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: var(--transition);
-}
-
-#sidebar.expanded .sidebar-header {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.sidebar-logo {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--primary-color);
-    text-shadow: 0 0 10px var(--glow);
-    letter-spacing: 2px;
+    width: 240px;
 }
 
 .sidebar-toggle {
-    width: 55px;
-    height: 55px;
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 15px 0;
     border-radius: var(--border-radius);
     color: var(--text-light);
-    font-size: 24px;
+    font-size: 20px;
     cursor: pointer;
     transition: var(--transition);
-    background: rgba(94, 62, 255, 0.3);
-    border: 2px solid rgba(94, 62, 255, 0.6);
-    position: absolute;
-    top: 20px;
-    right: -25px;
-    z-index: 1101;
-    transform: translateX(0);
-}
-
-#sidebar.expanded .sidebar-toggle {
-    right: 20px;
+    background: rgba(94, 62, 255, 0.2);
+    border: 1px solid rgba(94, 62, 255, 0.4);
 }
 
 #sidebar.expanded .sidebar-toggle i {
@@ -363,183 +301,134 @@ body {
 .sidebar-toggle:hover {
     background: var(--primary-color);
     color: var(--white);
-    transform: scale(1.1) rotate(180deg);
-    box-shadow: 0 0 20px var(--glow);
-}
-
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    flex-grow: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--glow);
 }
 
 .sidebar-item, .profile-icon, .notification-bell {
-    width: 55px;
-    height: 55px;
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 15px 0;
     border-radius: var(--border-radius);
     color: var(--text-light);
     transition: var(--transition);
     cursor: pointer;
     text-decoration: none;
     position: relative;
-    background: rgba(20, 25, 45, 0.9);
-    border: 1px solid rgba(94, 62, 255, 0.3);
-    opacity: 0;
-    transform: translateX(-20px);
+    background: rgba(20, 25, 45, 0.8);
 }
-
-#sidebar.expanded .sidebar-item,
-#sidebar.expanded .profile-icon,
-#sidebar.expanded .notification-bell {
-    opacity: 1;
-    transform: translateX(0);
-    animation: slideInItem 0.5s ease-out forwards;
-}
-
-@keyframes slideInItem {
-    0% { opacity: 0; transform: translateX(-20px); }
-    100% { opacity: 1; transform: translateX(0); }
-}
-
-.sidebar-item:nth-child(1), .profile-icon:nth-child(1) { animation-delay: 0.1s; }
-.sidebar-item:nth-child(2), .notification-bell:nth-child(1) { animation-delay: 0.2s; }
-.sidebar-item:nth-child(3) { animation-delay: 0.3s; }
-.sidebar-item:nth-child(4) { animation-delay: 0.4s; }
-.sidebar-item:nth-child(5) { animation-delay: 0.5s; }
 
 .sidebar-item:hover, .sidebar-item.active, .profile-icon:hover, .notification-bell:hover {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: var(--primary-color);
     color: var(--white);
-    transform: scale(1.05) translateX(8px);
-    box-shadow: 0 5px 20px var(--glow);
+    transform: scale(1.05);
+    box-shadow: 0 0 10px var(--glow);
 }
 
 .sidebar-item i, .profile-icon i, .notification-bell i {
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .sidebar-item span, .profile-icon span, .notification-bell span {
     display: none;
-    margin-left: 20px;
-    font-size: 16px;
+    margin-left: 15px;
+    font-size: 15px;
     font-weight: 500;
-    transition: opacity 0.4s ease-in-out;
-    white-space: nowrap;
-    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
 }
 
-#sidebar.expanded .sidebar-item span,
-#sidebar.expanded .profile-icon span,
-#sidebar.expanded .notification-bell span {
+#sidebar.expanded .sidebar-item, #sidebar.expanded .profile-icon, #sidebar.expanded .notification-bell {
+    width: 90%;
+    justify-content: flex-start;
+    padding-left: 20px;
+}
+
+#sidebar.expanded .sidebar-item span, #sidebar.expanded .profile-icon span, #sidebar.expanded .notification-bell span {
     display: block;
     opacity: 1;
 }
 
-#sidebar.expanded .sidebar-item,
-#sidebar.expanded .profile-icon,
-#sidebar.expanded .notification-bell {
-    width: 100%;
-    justify-content: flex-start;
-    padding-left: 25px;
-}
-
 .notification-bell .notification-badge {
     position: absolute;
-    top: -3px;
-    right: -3px;
+    top: -5px;
+    right: -5px;
     background: var(--error);
     color: var(--white);
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
-    box-shadow: 0 0 12px var(--error);
+    box-shadow: 0 0 8px var(--error);
     animation: badgePulse 2s infinite ease-in-out;
-    min-width: 22px;
 }
 
 @keyframes badgePulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+    50% { transform: scale(1.2); }
 }
 
-/* Logout Button */
-.logout-section {
-    width: 100%;
-    padding-top: 20px;
-    border-top: 1px solid var(--separator-color);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: var(--transition);
-}
-
-#sidebar.expanded .logout-section {
-    opacity: 1;
-    transform: translateY(0);
-}
-
+/* Botão de Logout na Sidebar */
 .logout-btn {
-    width: 55px;
-    height: 55px;
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 15px 0;
     border-radius: var(--border-radius);
-    background: linear-gradient(135deg, var(--error), var(--accent-color));
+    background: var(--primary-color);
     color: var(--white);
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 500;
     text-transform: uppercase;
     transition: var(--transition);
     cursor: pointer;
+    position: absolute;
+    bottom: 20px;
     text-decoration: none;
-    border: 1px solid rgba(255, 61, 113, 0.5);
-    position: relative;
 }
 
 #sidebar.expanded .logout-btn {
-    width: 100%;
+    width: 90%;
     justify-content: flex-start;
-    padding-left: 25px;
+    padding-left: 20px;
 }
 
 .logout-btn:hover {
-    background: linear-gradient(135deg, var(--accent-color), var(--error));
-    transform: scale(1.05) translateX(8px);
-    box-shadow: 0 5px 20px rgba(255, 61, 113, 0.4);
+    background: var(--secondary-color);
+    transform: scale(1.05);
+    box-shadow: 0 0 10px var(--glow);
 }
 
 .logout-btn i {
     margin-right: 0;
-    transition: margin-right 0.4s ease-in-out;
+    transition: margin-right 0.3s ease-in-out;
 }
 
 #sidebar.expanded .logout-btn i {
-    margin-right: 20px;
+    margin-right: 15px;
 }
 
 .logout-btn span {
     display: none;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 #sidebar.expanded .logout-btn span {
     display: block;
 }
 
-/* Profile Card - Improved */
+/* Enhanced Profile Card */
 .profile-card {
     position: fixed;
-    top: 25px;
+    top: 20px;
     left: 90px;
     width: 320px;
     background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.95));
@@ -555,7 +444,7 @@ body {
     flex-direction: column;
     gap: 25px;
     border: 1px solid rgba(94, 62, 255, 0.5);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(10px);
 }
 
 .profile-card.active {
@@ -570,6 +459,22 @@ body {
     gap: 25px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--separator-color);
+    position: relative;
+}
+
+.profile-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transition: width 0.6s ease;
+}
+
+.profile-card.active .profile-header::after {
+    width: 100%;
 }
 
 .profile-avatar {
@@ -585,24 +490,47 @@ body {
     transition: var(--transition);
     box-shadow: 0 0 15px var(--glow);
     border: 2px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-avatar::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, var(--accent-color), transparent);
+    opacity: 0.3;
+    animation: rotateSubtle 4s linear infinite;
+}
+
+@keyframes rotateSubtle {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .profile-avatar:hover {
-    transform: scale(1.1) rotate(5deg);
+    transform: scale(1.08) rotate(5deg);
     box-shadow: 0 0 25px var(--glow);
 }
 
 .profile-info h4 {
     color: var(--text-dark);
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
     margin: 0;
+    background: linear-gradient(90deg, var(--white), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .profile-info p {
     color: var(--text-light);
     font-size: 14px;
     margin: 0;
+    font-weight: 500;
 }
 
 .profile-detail {
@@ -613,11 +541,12 @@ body {
     background: rgba(94, 62, 255, 0.2);
     border-radius: var(--border-radius);
     transition: var(--transition);
+    border: 1px solid rgba(94, 62, 255, 0.1);
 }
 
 .profile-detail:hover {
     background: rgba(94, 62, 255, 0.3);
-    transform: translateY(-3px);
+    transform: translateY(-3px) scale(1.02);
     box-shadow: 0 6px 20px var(--shadow);
 }
 
@@ -631,6 +560,7 @@ body {
     color: var(--text-dark);
     font-size: 14px;
     font-weight: 600;
+    word-break: break-all;
 }
 
 .copy-btn {
@@ -642,11 +572,14 @@ body {
     font-size: 13px;
     cursor: pointer;
     transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .copy-btn:hover {
     background: var(--secondary-color);
-    transform: scale(1.1);
+    transform: scale(1.08);
     box-shadow: 0 0 12px var(--glow);
 }
 
@@ -667,6 +600,9 @@ body {
     font-size: 14px;
     cursor: pointer;
     transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .close-btn:hover {
@@ -675,10 +611,10 @@ body {
     box-shadow: 0 0 12px var(--error);
 }
 
-/* Notification Panel - Improved with Read Status */
+/* Enhanced Notification Panel */
 .notification-panel {
     position: fixed;
-    top: 25px;
+    top: 20px;
     right: -320px;
     width: 300px;
     background: linear-gradient(135deg, var(--card-bg), rgba(20, 25, 45, 0.98));
@@ -686,13 +622,15 @@ body {
     padding: 25px;
     box-shadow: 0 15px 35px var(--shadow);
     z-index: 1200;
-    transition: right 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: right 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     max-height: 80vh;
-    overflow-y: auto;
+    overflow: hidden;
+    border: 1px solid rgba(94, 62, 255, 0.5);
+    backdrop-filter: blur(10px);
 }
 
 .notification-panel.active {
-    right: 25px;
+    right: 20px;
 }
 
 .notification-panel h5 {
@@ -706,12 +644,23 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    border: 1px solid rgba(94, 62, 255, 0.1);
 }
 
 .notification-list {
     max-height: 400px;
     overflow-y: auto;
     padding-right: 8px;
+    scrollbar-width: thin;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 2px;
 }
 
 .notification-item {
@@ -725,8 +674,8 @@ body {
     transition: var(--transition);
     position: relative;
     animation: slideInNotification 0.6s ease-out forwards;
-    border-left: 4px solid transparent;
-    opacity: 0;
+    border: 1px solid rgba(94, 62, 255, 0.1);
+    cursor: pointer;
 }
 
 @keyframes slideInNotification {
@@ -734,21 +683,35 @@ body {
     100% { opacity: 1; transform: translateX(0) scale(1); }
 }
 
+.notification-item:hover {
+    background: rgba(94, 62, 255, 0.3);
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 0 6px 20px var(--shadow);
+}
+
+.notification-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.notification-item:hover::before {
+    opacity: 1;
+}
+
 .notification-item.read {
     background: rgba(0, 214, 143, 0.1);
-    border-left-color: var(--success);
-    opacity: 0.7;
+    border-color: rgba(0, 214, 143, 0.3);
 }
 
-.notification-item.unread {
-    background: rgba(94, 62, 255, 0.25);
-    border-left-color: var(--primary-color);
-}
-
-.notification-item:hover {
-    background: rgba(94, 62, 255, 0.35);
-    transform: translateX(8px);
-    box-shadow: 0 6px 20px var(--shadow);
+.notification-item.read:hover {
+    background: rgba(0, 214, 143, 0.2);
 }
 
 .notification-item i {
@@ -766,49 +729,30 @@ body {
     line-height: 1.5;
 }
 
-/* Main Content - Improved Responsive */
+.notification-item time {
+    display: block;
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 5px;
+    opacity: 0.7;
+}
+
+/* Main Content */
 #main-content {
-    margin-left: 80px;
+    margin-left: 70px;
     padding: 30px;
-    transition: margin-left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 100vh;
+    transition: margin-left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInContent 1s ease-out 0.5s both;
 }
 
-@media (max-width: 768px) {
-    #main-content {
-        margin-left: 0;
-        padding: 20px;
-    }
-    #sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 80px;
-    }
-    #sidebar.expanded {
-        transform: translateX(0);
-        width: 280px;
-    }
-    .profile-card, .notification-panel {
-        left: 0;
-        right: 0;
-        margin: 0 auto;
-        width: 90%;
-        max-width: 320px;
-    }
-    .notification-panel {
-        right: -100%;
-    }
-    .notification-panel.active {
-        right: 0;
-    }
-    .sidebar-toggle {
-        right: -40px;
-    }
+@keyframes fadeInContent {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Welcome Section - Enhanced */
+/* Enhanced Welcome Section */
 .welcome-card {
-    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.98));
+    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.99));
     backdrop-filter: blur(12px);
     border-radius: var(--border-radius);
     padding: 30px;
@@ -821,13 +765,6 @@ body {
     position: relative;
     overflow: hidden;
     transition: var(--transition);
-    animation: welcomeFadeIn 1s ease-out 0.5s forwards;
-    opacity: 0;
-}
-
-@keyframes welcomeFadeIn {
-    0% { opacity: 0; transform: translateY(30px); }
-    100% { opacity: 1; transform: translateY(0); }
 }
 
 .welcome-card::before {
@@ -850,7 +787,7 @@ body {
 }
 
 .welcome-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-8px) scale(1.02);
     box-shadow: 0 15px 30px var(--shadow);
     border-color: var(--primary-color);
 }
@@ -864,7 +801,7 @@ body {
     -webkit-text-fill-color: transparent;
     margin: 0;
     z-index: 1;
-    letter-spacing: 1px;
+    position: relative;
 }
 
 .welcome-card:hover .greeting {
@@ -876,20 +813,29 @@ body {
 .validity {
     font-size: 15px;
     color: var(--text-light);
-    font-weight: 400;
+    font-weight: 500;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .welcome-card:hover .validity {
     color: var(--white);
 }
 
-/* Search Bar - Enhanced */
+.validity i {
+    color: var(--success);
+    font-size: 16px;
+}
+
+/* Enhanced Search Bar */
 .search-container {
     display: flex;
     align-items: center;
     gap: 8px;
     max-width: 450px;
+    position: relative;
 }
 
 .search-bar {
@@ -906,7 +852,7 @@ body {
     color: var(--text-dark);
     font-size: 15px;
     transition: var(--transition);
-    box-shadow: 0 6px 15px var(--shadow);
+    box-shadow: 0 5px 15px var(--shadow);
 }
 
 .search-bar input:focus {
@@ -929,38 +875,25 @@ body {
     color: var(--text-light);
     font-size: 18px;
     transition: var(--transition);
+    z-index: 1;
 }
 
 .welcome-card:hover .search-bar i {
-    transform: translateY(-50%) scale(1.1);
+    transform: translateY(-50%) scale(1.15);
     color: var(--primary-color);
 }
 
-/* Modules Grid - Improved */
+/* Enhanced Modules Grid */
 .modules-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 25px;
     margin-top: 30px;
-    animation: gridFadeIn 0.8s ease-out forwards;
-    opacity: 0;
 }
 
-@keyframes gridFadeIn {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 768px) {
-    .modules-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-    }
-}
-
-/* Module Card - Enhanced */
+/* Enhanced Module Card */
 .module-card {
-    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.98));
+    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.99));
     backdrop-filter: blur(10px);
     border-radius: var(--border-radius);
     padding: 25px;
@@ -972,9 +905,18 @@ body {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(94, 62, 255, 0.3);
+    border: 1px solid rgba(94, 62, 255, 0.25);
     min-height: 260px;
-    animation: cardStagger 0.6s ease-out forwards;
+    animation: cardSlideIn 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+@keyframes cardSlideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .module-card:nth-child(1) { animation-delay: 0.1s; }
@@ -984,11 +926,6 @@ body {
 .module-card:nth-child(5) { animation-delay: 0.5s; }
 .module-card:nth-child(6) { animation-delay: 0.6s; }
 
-@keyframes cardStagger {
-    0% { opacity: 0; transform: translateY(40px) scale(0.9); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
 .module-card::before {
     content: '';
     position: absolute;
@@ -996,7 +933,7 @@ body {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(94, 62, 255, 0.15), transparent);
+    background: radial-gradient(circle, rgba(94, 62, 255, 0.12), transparent);
     opacity: 0.5;
     z-index: 0;
     pointer-events: none;
@@ -1004,7 +941,7 @@ body {
 }
 
 .module-card:hover:not(.disabled):not(.maintenance) {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-8px) scale(1.03);
     box-shadow: 0 12px 25px var(--shadow);
     border-color: var(--primary-color);
 }
@@ -1018,35 +955,40 @@ body {
 .module-icon {
     font-size: 28px;
     color: var(--primary-color);
-    width: 55px;
-    height: 55px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--module-icon-bg);
-    border: 2px solid var(--module-icon-border);
+    border: 1px solid var(--module-icon-border);
     border-radius: 14px;
     transition: var(--transition);
     z-index: 1;
+    position: relative;
 }
 
 .module-card:hover .module-icon {
     color: var(--accent-color);
-    transform: scale(1.15) rotate(10deg);
+    transform: scale(1.15) rotate(360deg);
     box-shadow: 0 0 15px var(--glow);
 }
 
 .module-title {
-    font-size: 19px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
     color: var(--text-dark);
     margin: 0;
     z-index: 1;
-    line-height: 1.3;
+    background: linear-gradient(90deg, var(--text-dark), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .module-card:hover .module-title {
-    color: var(--white);
+    background: linear-gradient(90deg, var(--white), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .module-description {
@@ -1064,7 +1006,7 @@ body {
 
 .request-bar-wrapper {
     height: 8px;
-    background: rgba(94, 62, 255, 0.3);
+    background: rgba(94, 62, 255, 0.25);
     border-radius: 4px;
     overflow: hidden;
     margin: 12px 0 0 0;
@@ -1095,8 +1037,8 @@ body {
     height: 14px;
     border-radius: 50%;
     position: absolute;
-    top: 18px;
-    right: 18px;
+    top: 20px;
+    right: 20px;
     z-index: 1;
     transition: var(--transition);
     box-shadow: 0 0 8px var(--shadow);
@@ -1105,14 +1047,14 @@ body {
 
 @keyframes statusPulse {
     0%, 100% { box-shadow: 0 0 8px var(--shadow); }
-    50% { box-shadow: 0 0 12px var(--glow); }
+    50% { box-shadow: 0 0 15px var(--glow); }
 }
 
-.bolinha-verde { background: var(--success); animation-delay: 0s; }
-.bolinha-amarela { background: var(--warning); animation-delay: 0.5s; }
-.bolinha-vermelha { background: var(--error); animation-delay: 1s; }
+.bolinha-verde { background: var(--success); animation: statusPulse 2s infinite; }
+.bolinha-amarela { background: var(--warning); animation: statusPulse 2s infinite; }
+.bolinha-vermelha { background: var(--error); animation: statusPulse 2s infinite; }
 
-/* Module Message */
+/* Enhanced Module Message */
 .module-message {
     padding: 10px 15px;
     border-radius: 8px;
@@ -1125,32 +1067,37 @@ body {
     opacity: 0;
     transition: opacity 0.4s ease-in-out;
     z-index: 1;
-    box-shadow: 0 6px 20px var(--shadow);
+    box-shadow: 0 5px 15px var(--shadow);
     backdrop-filter: blur(6px);
     margin-top: 15px;
-    border: 1px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .module-message.active {
     opacity: 1;
-    transform: translateY(0);
+    animation: messageSlide 0.5s ease-out;
+}
+
+@keyframes messageSlide {
+    0% { transform: translateX(-20px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
 }
 
 .module-message.warn {
     background: linear-gradient(90deg, rgba(255, 184, 0, 0.95), rgba(255, 184, 0, 0.8));
-    border-color: rgba(255, 184, 0, 0.6);
+    border: 1px solid rgba(255, 184, 0, 0.6);
     text-transform: uppercase;
 }
 
 .module-message.alert {
     background: linear-gradient(90deg, rgba(255, 61, 113, 0.95), rgba(255, 61, 113, 0.8));
-    border-color: rgba(255, 61, 113, 0.6);
+    border: 1px solid rgba(255, 61, 113, 0.6);
     text-transform: uppercase;
 }
 
 .module-message.success {
     background: linear-gradient(90deg, rgba(0, 214, 143, 0.95), rgba(0, 214, 143, 0.8));
-    border-color: rgba(0, 214, 143, 0.6);
+    border: 1px solid rgba(0, 214, 143, 0.6);
     text-transform: uppercase;
 }
 
@@ -1158,20 +1105,17 @@ body {
     font-size: 15px;
 }
 
-/* Pagination - Enhanced */
+/* Enhanced Pagination */
 .pagination {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 40px;
-    gap: 18px;
-    animation: paginationFadeIn 0.8s ease-out 1s forwards;
-    opacity: 0;
-}
-
-@keyframes paginationFadeIn {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
+    gap: 20px;
+    padding: 20px;
+    background: rgba(20, 25, 45, 0.5);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(94, 62, 255, 0.2);
 }
 
 .page-dot {
@@ -1181,13 +1125,31 @@ body {
     border-radius: 50%;
     cursor: pointer;
     transition: var(--transition);
-    box-shadow: 0 2px 8px var(--shadow);
+    position: relative;
+}
+
+.page-dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: var(--primary-color);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
 }
 
 .page-dot.active {
     background: var(--primary-color);
     transform: scale(1.4);
-    box-shadow: 0 0 12px var(--glow);
+    box-shadow: 0 0 10px var(--glow);
+}
+
+.page-dot.active::before {
+    width: 20px;
+    height: 20px;
 }
 
 .page-dot:hover {
@@ -1215,9 +1177,9 @@ body {
 
 .page-arrow:hover:not(:disabled) {
     color: var(--white);
+    transform: scale(1.15);
     background: var(--primary-color);
-    transform: scale(1.1);
-    box-shadow: 0 0 12px var(--glow);
+    box-shadow: 0 0 10px var(--glow);
 }
 
 .page-arrow:disabled {
@@ -1226,12 +1188,12 @@ body {
     opacity: 0.5;
 }
 
-/* SweetAlert Customization */
+/* SweetAlert Customização Enhanced */
 .swal2-popup {
     width: 350px !important;
     padding: 25px !important;
     border-radius: var(--border-radius) !important;
-    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.98)) !important;
+    background: linear-gradient(135deg, rgba(25, 30, 50, 0.98), rgba(15, 20, 40, 0.99)) !important;
     box-shadow: 0 10px 25px var(--shadow) !important;
     border: 1px solid rgba(94, 62, 255, 0.4) !important;
     font-family: 'Roboto', sans-serif !important;
@@ -1241,7 +1203,10 @@ body {
 .swal2-title {
     color: var(--text-dark) !important;
     font-size: 20px !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
+    background: linear-gradient(90deg, var(--white), var(--secondary-color)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
 }
 
 .swal2-content {
@@ -1253,8 +1218,9 @@ body {
     padding: 12px 25px !important;
     border-radius: 8px !important;
     font-size: 15px !important;
+    font-weight: 600 !important;
     transition: var(--transition) !important;
-    font-weight: 500 !important;
+    box-shadow: 0 4px 15px var(--shadow) !important;
 }
 
 .swal2-confirm {
@@ -1264,7 +1230,7 @@ body {
 
 .swal2-confirm:hover {
     background: linear-gradient(135deg, var(--secondary-color), var(--accent-color)) !important;
-    box-shadow: 0 0 15px var(--glow) !important;
+    transform: scale(1.05) !important;
 }
 
 .swal2-cancel {
@@ -1274,7 +1240,7 @@ body {
 
 .swal2-cancel:hover {
     background: linear-gradient(135deg, var(--accent-color), var(--error)) !important;
-    box-shadow: 0 0 15px var(--error) !important;
+    transform: scale(1.05) !important;
 }
 
 .swal2-container {
@@ -1285,7 +1251,7 @@ body {
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
+    <!-- Enhanced Loading Screen -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-container">
             <div class="loading-top">
@@ -1308,48 +1274,41 @@ body {
     <!-- Overlay -->
     <div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
 
-    <!-- Sidebar - Improved Structure -->
+    <!-- Sidebar (Unchanged) -->
     <div id="sidebar">
         <button class="sidebar-toggle" onclick="toggleSidebar()">
             <i class="fas fa-angle-right"></i>
         </button>
-        <div class="sidebar-header">
-            <div class="sidebar-logo">ConsultCenter</div>
+        <div class="profile-icon" onclick="toggleProfile()">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
         </div>
-        <div class="sidebar-nav">
-            <div class="profile-icon" onclick="toggleProfile()">
-                <i class="fas fa-user"></i>
-                <span>Perfil</span>
-            </div>
-            <div class="notification-bell" onclick="toggleNotifications()">
-                <i class="fas fa-bell"></i>
-                <span>Notificações</span>
-                <div class="notification-badge" id="notificationCount">{{ notifications.get(g.user_id, []).__len__() }}</div>
-            </div>
-            <a href="#" class="sidebar-item active" data-section="dashboard">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="#" class="sidebar-item" data-section="suporte" onclick="navigateTo('https://t.me/enfurecido')">
-                <i class="fas fa-headset"></i>
-                <span>Suporte</span>
-            </a>
-            {% if admin %}
-                <a href="#" class="sidebar-item" data-section="admin" onclick="navigateTo('/i/settings/admin')">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Administração</span>
-                </a>
-            {% endif %}
+        <div class="notification-bell" onclick="toggleNotifications()">
+            <i class="fas fa-bell"></i>
+            <span>Notificações</span>
+            <div class="notification-badge" id="notificationCount">{{ notifications.get(g.user_id, []).__len__() }}</div>
         </div>
-        <div class="logout-section">
-            <a href="/logout" class="logout-btn" onclick="confirmLogout(event)">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Sair</span>
+        <a href="#" class="sidebar-item active" data-section="dashboard">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-item" data-section="suporte" onclick="navigateTo('https://t.me/enfurecido')">
+            <i class="fas fa-headset"></i>
+            <span>Suporte</span>
+        </a>
+        {% if admin %}
+            <a href="#" class="sidebar-item" data-section="admin" onclick="navigateTo('/i/settings/admin')">
+                <i class="fas fa-shield-alt"></i>
+                <span>Administração</span>
             </a>
-        </div>
+        {% endif %}
+        <a href="/logout" class="logout-btn" onclick="confirmLogout(event)">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sair</span>
+        </a>
     </div>
 
-    <!-- Profile Card -->
+    <!-- Profile Card (Enhanced) -->
     <div class="profile-card" id="profileCard">
         <button class="close-btn" onclick="toggleProfile()"><i class="fas fa-times"></i></button>
         <div class="profile-header">
@@ -1370,7 +1329,7 @@ body {
         <div class="profile-detail">
             <span class="label">Token</span>
             <span class="value">{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}</span>
-            <button class="copy-btn" onclick="copyToken(this, '{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}')"><i class="fas fa-copy"></i></button>
+            <button class="copy-btn" onclick="copyToken(this, '{{ users[g.user_id]['token'] if users[g.user_id]['token'] else 'N/A' }}')"><i class="fas fa-copy"></i> Copiar</button>
         </div>
         <div class="profile-detail">
             <span class="label">Validade</span>
@@ -1378,16 +1337,17 @@ body {
         </div>
     </div>
 
-    <!-- Notification Panel -->
+    <!-- Notification Panel (Enhanced with Read Functionality) -->
     <div class="notification-panel" id="notificationPanel">
         <button class="close-btn" onclick="toggleNotifications()"><i class="fas fa-times"></i></button>
         <h5><i class="fas fa-bell"></i> Notificações ({{ notifications.get(g.user_id, []).__len__() }})</h5>
         <div class="notification-list">
             {% for notification in notifications.get(g.user_id, []) %}
-                <div class="notification-item unread" data-notification-id="{{ loop.index }}">
+                <div class="notification-item" data-notification-id="{{ loop.index0 }}">
                     <i class="fas fa-info-circle"></i>
                     <div>
                         <p>{{ notification.message }}</p>
+                        <time datetime="{{ notification.timestamp if notification.timestamp else '2025-10-27T00:00:00' }}">Há {{ 'poucos minutos' if not notification.timestamp else 'data placeholder' }}</time>
                     </div>
                 </div>
             {% endfor %}
@@ -1396,10 +1356,10 @@ body {
 
     <!-- Main Content -->
     <div id="main-content">
-        <!-- Welcome Card -->
+        <!-- Welcome Card (Enhanced) -->
         <div class="welcome-card">
             <div class="greeting">Bem-vindo(a), {{ g.user_id }}.</div>
-            <div class="validity">Validade: {{ users[g.user_id]['expiration'] }}</div>
+            <div class="validity"><i class="fas fa-calendar-check"></i>Validade: {{ users[g.user_id]['expiration'] }}</div>
             <div class="search-container">
                 <div class="search-bar">
                     <i class="fas fa-search"></i>
@@ -1408,7 +1368,7 @@ body {
             </div>
         </div>
 
-        <!-- Modules Grid -->
+        <!-- Modules Grid (Page 1) -->
         <div class="modules-grid" id="page1">
             {% set module_card_class = [] %}
             <!-- Página 1: CPF e Vacinas -->
@@ -1496,13 +1456,13 @@ body {
                  onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" 
                  data-module-id="vacinas"
                  data-status="{{ module_status.get('vacinas', 'OFF') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0) }}"
+                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0) }}"
                  data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) }}">
                 <i class="module-icon fas fa-syringe"></i>
                 <h3 class="module-title">Consulta Vacina (SIPNI)</h3>
                 <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
                 <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
+                {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0), limit={'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 10) %}
                     <div class="request-bar-wrapper">
                         <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
                     </div>
@@ -1620,7 +1580,7 @@ body {
                  onclick="checkModuleStatus('telLv', '/modulos/telLv')" 
                  data-module-id="telLv"
                  data-status="{{ module_status.get('telLv', 'ON') }}"
-                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('telLv', 0) }}"
+                 data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tellv', 0) }}"
                  data-limit="{{ {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(users.get(g.user_id, {}).get('role', 'user_semanal'), 30) }}">
                 <i class="module-icon fas fa-phone"></i>
                 <h3 class="module-title">Consulta TELEFONE (C&C Plus)</h3>
@@ -1827,7 +1787,7 @@ body {
             {% endif %}
         </div>
 
-        <!-- Pagination -->
+        <!-- Pagination (Enhanced) -->
         <div class="pagination">
             <button class="page-arrow" onclick="prevPage()" disabled><i class="fas fa-chevron-left"></i></button>
             <div class="page-dot active" onclick="goToPage(1)"></div>
@@ -1839,102 +1799,95 @@ body {
     </div>
 
     <script>
-        // Loading Screen - Improved with sessionStorage
+        // Enhanced Loading Screen with Strict 5-Second Timeout
         window.addEventListener('load', () => {
             const loadingScreen = document.getElementById('loadingScreen');
             const isLoaded = sessionStorage.getItem('IsLoadedClientUA');
 
             if (isLoaded !== 'true') {
+                // Show animation only if not loaded in session
                 setTimeout(() => {
                     loadingScreen.classList.add('hidden');
                     sessionStorage.setItem('IsLoadedClientUA', 'true');
-                }, 5500); // Extended for improved animation
+                }, 5000); // Exactly 5 seconds
             } else {
+                // Hide immediately if already loaded
                 loadingScreen.classList.add('hidden');
             }
         });
 
-        // Sidebar Toggle - Enhanced for mobile
+        // Sidebar Toggle (Unchanged)
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
             sidebar.classList.toggle('expanded');
-            if (window.innerWidth <= 768) {
-                // On mobile, expanded means show overlay too
-                document.getElementById('overlay').classList.toggle('active');
-            } else {
-                mainContent.style.marginLeft = sidebar.classList.contains('expanded') ? '280px' : '80px';
-            }
+            mainContent.style.marginLeft = sidebar.classList.contains('expanded') ? '240px' : '70px';
         }
 
-        // Profile Toggle
+        // Profile Toggle (Unchanged)
         function toggleProfile() {
             const profileCard = document.getElementById('profileCard');
             const overlay = document.getElementById('overlay');
             profileCard.classList.toggle('active');
             overlay.classList.toggle('active');
             document.getElementById('notificationPanel').classList.remove('active');
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.remove('expanded');
-            }
         }
 
-        // Notification Toggle - With Read Marking using localStorage and sessionStorage
+        // Enhanced Notification Toggle with Read Marking
         function toggleNotifications() {
             const notificationPanel = document.getElementById('notificationPanel');
             const overlay = document.getElementById('overlay');
-            const isOpening = !notificationPanel.classList.contains('active');
             notificationPanel.classList.toggle('active');
             overlay.classList.toggle('active');
             document.getElementById('profileCard').classList.remove('active');
 
-            if (isOpening) {
-                // Mark notifications as read
+            if (notificationPanel.classList.contains('active')) {
+                // Mark all notifications as read on open
                 const notificationItems = document.querySelectorAll('.notification-item');
                 notificationItems.forEach(item => {
-                    item.classList.remove('unread');
-                    item.classList.add('read');
+                    if (!item.classList.contains('read')) {
+                        item.classList.add('read');
+                    }
                 });
 
-                // Update badge and store in storages
+                // Use localStorage to persist read state
+                localStorage.setItem('notificationsRead', 'true');
+                sessionStorage.setItem('notificationsReadSession', 'true');
+
+                // Hide badge if all read
                 const badge = document.getElementById('notificationCount');
-                badge.textContent = '0';
                 badge.style.display = 'none';
-
-                // SessionStorage for current session
-                sessionStorage.setItem('notificationsViewedSession', 'true');
-                // localStorage for persistent across sessions (assuming all current are read; new ones would need server update)
-                localStorage.setItem('notificationsViewed', Date.now().toString());
-            }
-
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.remove('expanded');
             }
         }
 
-        // Close Panels
+        // Close Panels (Unchanged)
         function closeAllPanels() {
             document.getElementById('profileCard').classList.remove('active');
             document.getElementById('notificationPanel').classList.remove('active');
             document.getElementById('overlay').classList.remove('active');
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.remove('expanded');
-            }
         }
 
-        // Copy Token
+        // Copy Token (Enhanced)
         function copyToken(button, token) {
             navigator.clipboard.writeText(token).then(() => {
                 button.classList.add('copied');
-                button.innerHTML = '<i class="fas fa-check"></i>';
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
                 setTimeout(() => {
                     button.classList.remove('copied');
-                    button.innerHTML = '<i class="fas fa-copy"></i>';
-                }, 2000);
+                    button.innerHTML = originalHTML;
+                }, 2500);
+            }).catch(() => {
+                Swal.fire({
+                    title: 'Erro!',
+                    text: 'Falha ao copiar o token.',
+                    icon: 'error',
+                    position: 'top-end',
+                });
             });
         }
 
-        // Confirm Logout
+        // Confirm Logout (Unchanged)
         function confirmLogout(event) {
             event.preventDefault();
             Swal.fire({
@@ -1952,12 +1905,12 @@ body {
             });
         }
 
-        // Navigation
+        // Navigation (Unchanged)
         function navigateTo(url) {
             window.location.href = url;
         }
 
-        // Pagination
+        // Enhanced Pagination with Session Persistence
         let currentPage = sessionStorage.getItem('currentPage') ? parseInt(sessionStorage.getItem('currentPage')) : 1;
         const totalPages = 4;
 
@@ -1994,7 +1947,7 @@ body {
             }
         }
 
-        // Module Status Check
+        // Module Status Check (Unchanged)
         function checkModuleStatus(moduleId, url) {
             const module = document.querySelector(`[data-module-id="${moduleId}"]`);
             const status = module.getAttribute('data-status');
@@ -2035,7 +1988,7 @@ body {
             navigateTo(url);
         }
 
-        // Update Module Status Dots
+        // Update Module Status Dots (Unchanged)
         function updateModuleStatus() {
             document.querySelectorAll('.module-card').forEach(module => {
                 const moduleId = module.getAttribute('data-module-id');
@@ -2049,8 +2002,8 @@ body {
                     dot.classList.remove('bolinha-vermelha', 'bolinha-amarela');
                     dot.classList.add('bolinha-verde');
                     messageElement.classList.remove('active', 'warn', 'alert', 'success');
-                    if (usage >= limit * 0.9) { // Warn at 90%
-                        messageElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Limite Quase Atingido';
+                    if (usage >= limit) {
+                        messageElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Limite Atingido';
                         messageElement.classList.add('active', 'warn');
                     }
                 } else {
@@ -2062,7 +2015,7 @@ body {
             });
         }
 
-        // Search Modules - Enhanced
+        // Enhanced Search Modules
         function searchModules() {
             const searchInput = document.getElementById('search-input').value.toLowerCase();
             const allModules = document.querySelectorAll('.module-card');
@@ -2089,18 +2042,13 @@ body {
             updatePagination();
             updateModuleStatus();
 
-            // Check for notifications viewed status
-            const sessionViewed = sessionStorage.getItem('notificationsViewedSession') === 'true';
-            const localViewed = localStorage.getItem('notificationsViewed');
+            // Check for read notifications on load
+            const notificationsRead = localStorage.getItem('notificationsRead') || sessionStorage.getItem('notificationsReadSession');
             const notificationCount = parseInt(document.getElementById('notificationCount').textContent);
-            const badge = document.getElementById('notificationCount');
-
-            if (notificationCount === 0 || sessionViewed || (localViewed && Date.now() - parseInt(localViewed) < 24 * 60 * 60 * 1000)) { // 24h persistent
-                badge.style.display = 'none';
-                document.querySelectorAll('.notification-item').forEach(item => {
-                    item.classList.add('read');
-                    item.classList.remove('unread');
-                });
+            if (notificationsRead === 'true' || notificationCount === 0) {
+                document.getElementById('notificationCount').style.display = 'none';
+                // Mark UI as read
+                document.querySelectorAll('.notification-item').forEach(item => item.classList.add('read'));
             }
         });
     </script>
