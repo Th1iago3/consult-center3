@@ -784,7 +784,7 @@ def cpflv(module_uuid):
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                if data.get('NOME') and data.get('CPF'):
+                if data.get('response'):
                     if manage_module_usage(g.user_id, 'cpflv'):
                         result = data
                         reset_all()
