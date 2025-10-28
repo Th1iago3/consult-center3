@@ -22,10 +22,10 @@
             --text-white: #E0E0E0;
             --text-light: #A0A0A0;
             --border-color: #333333;
-            --glowximity: rgba(110, 68, 255, 0.5);
+            --glow-purple: rgba(110, 68, 255, 0.5);
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
-            --shadow-glow: 0 0 15px var(--glowximity);
+            --shadow-glow: 0 0 15px var(--glow-purple);
             --font-family: 'Poppins', sans-serif;
             --success: #00D68F;
             --error: #FF3D71;
@@ -97,8 +97,8 @@
             100% { opacity: 1; transform: scale(1) rotate(0deg) translateX(0); }
         }
         @keyframes pulseGlow {
-            0%, 100% { filter: drop-shadow(0 0 5px var(--glowximity)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 20px var(--glowximity)); transform: scale(1.05); }
+            0%, 100% { filter: drop-shadow(0 0 5px var(--glow-purple)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 20px var(--glow-purple)); transform: scale(1.05); }
         }
         .loading-line {
             width: 3px;
@@ -124,7 +124,7 @@
         }
         .loading-text .purple-c {
             color: var(--primary-purple);
-            filter: drop-shadow(0 0 15px var(--glowximity));
+            filter: drop-shadow(0 0 15px var(--glow-purple));
             animation: flickerGlow 3s infinite ease-in-out 2.5s;
         }
         @keyframes slideInTextGlow {
@@ -132,8 +132,8 @@
             100% { opacity: 1; transform: translateX(0) scale(1); }
         }
         @keyframes flickerGlow {
-            0%, 100% { opacity: 1; filter: drop-shadow(0 0 15px var(--glowximity)); }
-            50% { opacity: 0.9; filter: drop-shadow(0 0 25px var(--glowximity)); }
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 15px var(--glow-purple)); }
+            50% { opacity: 0.9; filter: drop-shadow(0 0 25px var(--glow-purple)); }
         }
         .loading-box {
             background: rgba(25, 25, 25, 0.95);
@@ -170,8 +170,8 @@
         .loading-dot:nth-child(2) { animation-delay: 0.25s; }
         .loading-dot:nth-child(3) { animation-delay: 0.5s; }
         @keyframes bounceGlow {
-            0%, 100% { transform: translateY(0); box-shadow: 0 0 5px var(--glowximity); }
-            50% { transform: translateY(-20px); box-shadow: 0 0 15px var(--glowximity); }
+            0%, 100% { transform: translateY(0); box-shadow: 0 0 0 0 rgba(110, 68, 255, 0.7); }
+            50% { transform: translateY(-20px); box-shadow: 0 0 15px rgba(110, 68, 255, 0.7); }
         }
         /* LOADER (Fallback) */
         .loader {
@@ -208,8 +208,8 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes glowPulse {
-            0% { box-shadow: 0 0 15px var(--glowximity); }
-            100% { box-shadow: 0 0 30px var(--glowximity); }
+            0% { box-shadow: 0 0 15px var(--glow-purple); }
+            100% { box-shadow: 0 0 30px var(--glow-purple); }
         }
         .loader-text {
             margin-top: 30px;
@@ -265,7 +265,7 @@
             display: block;
         }
         .logo .consult { color: var(--text-white); }
-        .logo .center { color: var(--primary-purple); text-shadow: 0 0 5px var(--glowximity); font-weight: 800; }
+        .logo .center { color: var(--primary-purple); text-shadow: 0 0 5px var(--glow-purple); font-weight: 800; }
         .sidebar-toggle {
             width: 50px;
             height: 50px;
@@ -485,7 +485,7 @@
             height: 100%;
             background: linear-gradient(90deg, var(--accent-pink), var(--primary-purple));
             transition: width 0.5s ease;
-            box-shadow: 0 0 5px var(--glowximity);
+            box-shadow: 0 0 5px var(--glow-purple);
         }
         .request-count {
             font-size: 12px;
@@ -635,7 +635,7 @@
         .notification-item.read:hover {
             background: rgba(0, 214, 143, 0.2);
         }
-        .notification-item i {
+        .notification-item svg {
             color: var(--primary-purple);
             font-size: 18px;
             margin-top: 3px;
@@ -770,6 +770,32 @@
             transform: translateY(-1px);
             box-shadow: 0 8px 20px rgba(110, 68, 255, 0.6);
         }
+        .gift-redeem {
+            margin-top: 20px;
+        }
+        .gift-redeem label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text-white);
+            margin-bottom: 8px;
+        }
+        .gift-redeem input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text-white);
+            transition: var(--transition);
+        }
+        .gift-redeem input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 10px var(--glow-purple);
+        }
         /* SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--background-dark); }
@@ -798,8 +824,6 @@
             </div>
         </div>
     </div>
-
-    </div>
     <!-- SIDEBAR -->
     <nav id="sidebar">
         <div class="sidebar-header">
@@ -825,6 +849,9 @@
             <p>Validade: {{ users[g.user_id]['expiration'] }}</p>
         </div>
         <div class="header-actions">
+            <button id="novidades-btn" class="header-icon-btn">
+                <svg data-lucide="sparkles"></svg>
+            </button>
             <button id="notification-btn" class="header-icon-btn">
                 <svg data-lucide="bell"></svg>
                 <span id="notification-badge" class="notification-badge"></span>
@@ -908,12 +935,12 @@
                     <div class="module-message" id="message-cpf2"></div>
                 </div>
                 <!-- VACINAS -->
-                <div class="module-card" onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" data-module-id="vacinas" data-status="{{ module_status.get('cpf5', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" data-module-id="vacinas" data-status="{{ module_status.get('vacinas', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="syringe"></svg></div>
                     <h3 class="module-title">Consultar Vacinas (SIPNI)</h3>
                     <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0), limit=500 %}
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0), limit=500 %}
                             <div class="request-bar-wrapper">
                                 <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
                             </div>
@@ -924,7 +951,6 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-vacinas"></div>
                 </div>
-
                 <!-- CPF (SISREGII) -->
                 <div class="module-card" onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" data-module-id="cpf3" data-status="{{ module_status.get('cpf3', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
@@ -942,8 +968,7 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-cpf3"></div>
                 </div>
-
-                
+                <!-- DATA NOME -->
                 <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome" data-status="{{ module_status.get('datanome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="calendar"></svg></div>
                     <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
@@ -960,7 +985,6 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-datanome"></div>
                 </div>
-                
                 <!-- FOTO C&C Plus -->
                 <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor" data-status="{{ module_status.get('fotor', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="camera"></svg></div>
@@ -979,7 +1003,7 @@
                     <div class="module-message" id="message-fotor"></div>
                 </div>
                 <!-- PIX NACIONAL -->
-                <div class="module-card" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix" data-status="{{ module_status.get('pix', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix" data-status="{{ module_status.get('pix', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="layout-dashboard"></svg></div>
                     <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
                     <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
@@ -995,8 +1019,8 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-pix"></div>
                 </div>
-                
-                 <div class="module-card" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}" data-limit="500">
+                <!-- NOME C&C Plus -->
+                <div class="module-card" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
                     <h3 class="module-title">Localizar NOME (C&C Plus)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
@@ -1012,7 +1036,7 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-nomelv"></div>
                 </div>
-
+                <!-- MAE -->
                 <div class="module-card" onclick="checkModuleStatus('mae', '/modulos/mae')" data-module-id="mae" data-status="{{ module_status.get('mae', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('mae', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
                     <h3 class="module-title">Consultar Mae (C&C Plus)</h3>
@@ -1029,7 +1053,7 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-mae"></div>
                 </div>
-
+                <!-- PAI -->
                 <div class="module-card" onclick="checkModuleStatus('pai', '/modulos/pai')" data-module-id="pai" data-status="{{ module_status.get('pai', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pai', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
                     <h3 class="module-title">Consultar Pai (C&C Plus)</h3>
@@ -1045,6 +1069,40 @@
                     <div class="status-dot" id="status-dot-pai"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-pai"></div>
+                </div>
+                <!-- NOME DATA -->
+                <div class="module-card" onclick="checkModuleStatus('nome', '/modulos/nome')" data-module-id="nome" data-status="{{ module_status.get('nome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="user"></svg></div>
+                    <h3 class="module-title">Localizar Nome (DATA)</h3>
+                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-nome"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-nome"></div>
+                </div>
+                <!-- NOME DATAPRIME -->
+                <div class="module-card" onclick="checkModuleStatus('nome2', '/modulos/nome2')" data-module-id="nome2" data-status="{{ module_status.get('nome2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="user"></svg></div>
+                    <h3 class="module-title">Localizar Nome (DATAPRIME)</h3>
+                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-nome2"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-nome2"></div>
                 </div>
             </div>
             <!-- Página 2 -->
@@ -1121,7 +1179,7 @@
                     <div class="module-message" id="message-placa"></div>
                 </div>
                 <!-- PLACA ESTADUAL -->
-                <div class="module-card" onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" data-module-id="placaestadual" data-status="{{ module_status.get('placaestadual', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" data-module-id="placaestadual" data-status="{{ module_status.get('placaestadual', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="car"></svg></div>
                     <h3 class="module-title">Consulta Veicular (ESTADUAL)</h3>
                     <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
@@ -1155,9 +1213,9 @@
                     <div class="module-message" id="message-placalv"></div>
                 </div>
             </div>
-
-             <div class="dashboard-grid" id="page4" style="display: none;">
-                <!-- IP C&C Plus -->
+            <!-- Página 4 -->
+            <div class="dashboard-grid" id="page4" style="display: none;">
+                <!-- CNPJ COMPLETO -->
                 <div class="module-card" onclick="checkModuleStatus('cnpjcompleto', '/modulos/cnpjcompleto')" data-module-id="cnpjcompleto" data-status="{{ module_status.get('cnpjcompleto', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cnpjcompleto', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="building-2"></svg></div>
                     <h3 class="module-title">Consultar CNPJ (C&C Plus)</h3>
@@ -1175,8 +1233,6 @@
                     <div class="module-message" id="message-cnpjcompleto"></div>
                 </div>
             </div>
-
-            
             <!-- Página 5 -->
             <div class="dashboard-grid" id="page5" style="display: none;">
                 <!-- IP C&C Plus -->
@@ -1222,10 +1278,9 @@
                 <button class="pagination-btn" data-page="2">2</button>
                 <button class="pagination-btn" data-page="3">3</button>
                 <button class="pagination-btn" data-page="4">4</button>
-                <button class="pagination-btn" data-page="4">5</button>
+                <button class="pagination-btn" data-page="5">5</button>
             </div>
         </section>
-
         <!-- Notification Panel -->
         <div class="notification-panel" id="notificationPanel">
             <h5>
@@ -1244,7 +1299,6 @@
                 {% endfor %}
             </div>
         </div>
-
         <!-- MODAL PERFIL -->
         <div class="modal" id="profile-modal">
             <div class="modal-content">
@@ -1271,23 +1325,29 @@
                         <svg data-lucide="copy"></svg> Copiar Token
                     </button>
                 </div>
+                <hr style="margin: 25px 0; border-color: var(--border-color);">
+                <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">Resgatar Cartão-Presente</h3>
+                <form id="redeemForm" method="POST" action="/redeem">
+                    <div class="gift-redeem form-group">
+                        <label for="gift-code"><svg data-lucide="gift" style="width: 18px; height: 18px;"></svg> Código do Gift</label>
+                        <input type="text" name="code" id="gift-code" placeholder="Cole o código aqui" required>
+                    </div>
+                    <button type="submit" class="btn-custom btn-primary">
+                        <svg data-lucide="gift"></svg> Resgatar
+                    </button>
+                </form>
             </div>
         </div>
     </main>
-
     <script>
         function navigateTo(url) {
             window.location.href = url;
         }
-
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-
             // Enhanced Loading Screen with SessionStorage (from old dashboard)
             const loadingScreen = document.getElementById('loadingScreen');
-            const loader = document.getElementById('loader'); // Fallback
             const isLoaded = sessionStorage.getItem('IsLoadedClientUA');
-
             if (isLoaded !== 'true') {
                 // Show enhanced animation only if not loaded in session
                 setTimeout(() => {
@@ -1298,14 +1358,12 @@
                 // Hide immediately if already loaded
                 loadingScreen.classList.add('hidden');
             }
-
             // Sidebar Toggle
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebar-toggle');
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('expanded');
             });
-
             // Paginação
             const pages = ['page1', 'page2', 'page3', 'page4', 'page5'];
             const btns = document.querySelectorAll('.pagination-btn');
@@ -1327,7 +1385,11 @@
                     showPage('page' + item.dataset.page);
                 });
             });
-
+            // Novidades Button
+            const novidadesBtn = document.getElementById('novidades-btn');
+            novidadesBtn.addEventListener('click', () => {
+                navigateTo('/novidades');
+            });
             // Modal Perfil
             const profileBtn = document.getElementById('profile-btn');
             const profileModal = document.getElementById('profile-modal');
@@ -1341,7 +1403,6 @@
             profileModal.addEventListener('click', (e) => {
                 if (e.target === profileModal) profileModal.classList.remove('active');
             });
-
             // Copiar Token
             const copyBtn = document.getElementById('copy-token-btn');
             const tokenInput = document.getElementById('api-token');
@@ -1357,13 +1418,11 @@
                     }, 2000);
                 });
             });
-
             // Enhanced Notification System (from old dashboard, with timestamps)
             const notificationBtn = document.getElementById('notification-btn');
             const notificationPanel = document.getElementById('notificationPanel');
             const overlay = document.getElementById('overlay');
             const notificationBadge = document.getElementById('notification-badge');
-
             // Function to calculate relative time
             function getRelativeTime(timestamp) {
                 const now = new Date();
@@ -1375,13 +1434,11 @@
                 if (diffMins < 60) return `há ${diffMins} min`;
                 return `há ${diffHours} h`;
             }
-
             // Update timestamps
             document.querySelectorAll('time[data-timestamp]').forEach(timeEl => {
                 const ts = timeEl.dataset.timestamp;
                 timeEl.textContent = getRelativeTime(ts);
             });
-
             // Track last viewed time with sessionStorage
             let lastViewed = sessionStorage.getItem('lastNotificationsViewed');
             if (lastViewed) {
@@ -1389,44 +1446,36 @@
                 const viewedAgo = Math.floor((now - parseInt(lastViewed)) / 60000);
                 console.log(`Notificações vistas há ${viewedAgo} minutos`); // Log for demo
             }
-
             function toggleNotifications() {
                 notificationPanel.classList.toggle('active');
                 overlay.classList.toggle('active');
                 profileModal.classList.remove('active'); // Close profile if open
-
                 if (notificationPanel.classList.contains('active')) {
                     // Mark all as read
                     document.querySelectorAll('.notification-item').forEach(item => {
                         item.classList.add('read');
                     });
-
                     // Persist read state
                     localStorage.setItem('notificationsRead', 'true');
                     sessionStorage.setItem('notificationsReadSession', 'true');
                     sessionStorage.setItem('lastNotificationsViewed', Date.now().toString());
-
                     // Hide badge
                     if (notificationBadge) notificationBadge.style.display = 'none';
                 }
             }
-
             notificationBtn.addEventListener('click', toggleNotifications);
-
             // Close panels on overlay click
             overlay.addEventListener('click', () => {
                 notificationPanel.classList.remove('active');
                 profileModal.classList.remove('active');
                 overlay.classList.remove('active');
             });
-
             // Check for read notifications on load
             const notificationsRead = localStorage.getItem('notificationsRead') || sessionStorage.getItem('notificationsReadSession');
             if (notificationsRead === 'true') {
                 if (notificationBadge) notificationBadge.style.display = 'none';
                 document.querySelectorAll('.notification-item').forEach(item => item.classList.add('read'));
             }
-
             // Função de Status
             window.checkModuleStatus = function(id, url) {
                 const card = document.querySelector(`[data-module-id="${id}"]`);
@@ -1444,7 +1493,6 @@
                 }
                 navigateTo(url);
             };
-
             // Update Module Status Dots
             function updateModuleStatus() {
                 document.querySelectorAll('.module-card').forEach(module => {
@@ -1455,7 +1503,6 @@
                     const dot = document.getElementById(`status-dot-${moduleId}`);
                     const messageElement = document.getElementById(`message-${moduleId}`);
                     const maintenanceLabel = module.querySelector('.maintenance-label');
-
                     if (status === 'ON') {
                         dot.classList.remove('bolinha-vermelha', 'bolinha-amarela');
                         dot.classList.add('bolinha-verde');
@@ -1482,7 +1529,6 @@
                     }
                 });
             }
-
             updateModuleStatus();
         });
     </script>
