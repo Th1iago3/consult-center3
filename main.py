@@ -304,7 +304,7 @@ def admin_panel():
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
             return jsonify({'message': 'Usuário já existe!', 'category': 'error'})
-         elif action == "view_users":
+        elif action == "view_users":
             return jsonify({'users': users})
         elif action == 'delete_user':
             username = request.form.get('user')
