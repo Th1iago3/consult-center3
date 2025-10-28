@@ -51,7 +51,7 @@ module_status = {
     'datanome': 'ON',
     'placa': 'ON',
     'placaestadual': 'OFF',
-    'fotor': 'OFF',
+    'fotor': 'ON',
     'pix': 'ON',
     'placalv': 'ON',
     'ip': 'ON',
