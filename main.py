@@ -1587,6 +1587,7 @@ def fotor():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
+
     results = None
     documento = ""
     selected_option = ""
@@ -1594,6 +1595,7 @@ def fotor():
     if request.method == 'POST':
         documento = request.form.get('documento', '').strip()
         selected_option = request.form.get('estado', '')
+
         if not documento:
             flash('Documento não fornecido.', 'error')
         else:
@@ -1602,53 +1604,89 @@ def fotor():
                     token = request.form.get('token', '')
                     if not token or token != users.get(g.user_id, {}).get('token'):
                         flash('Token inválido ou não fornecido.', 'error')
-                        return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
+                        return render_template(
+                            'fotor.html',
+                            is_admin=is_admin,
+                            notifications=user_notifications,
+                            results=results,
+                            documento=documento,
+                            selected_option=selected_option
+                        )
 
-                if selected_option == "fotoba":
-                    url = f"https://api.bygrower.online/core/?token={chave}&base=FotoBA&query={documento}"
-                elif selected_option == "fotorj":
-                    url = f"https://api.bygrower.online/core/?token={chave}&base=FotoRJ&query={documento}"
-                elif selected_option == "fotomg":
-                    url = f"http://82.29.58.211:2000/mg_cpf_foto/{documento}"
-                else:
-                    url = f"https://api.bygrower.online/core/?token={chave}&base=FotoSP&query={documento}"
+                # -------------------------------------------------
+                # NOVAS APIs – todas retornam JSON:
+                # {"response":{"response":[{"cpf":"...", "fotob64":"..."}]}}
+                # -------------------------------------------------
+                base_url = "http://br1.stormhost.online:10004/api/token=@signficativo/consulta"
+                tipo_map = {
+                    "fotorj": "fotorj",
+                    "fotoce": "fotoce",
+                    "fotosp": "fotosp",
+                    "fotoes": "fotoes",
+                    "fotoma": "fotoma",
+                    "fotoro": "fotoro"
+                }
 
+                tipo = tipo_map.get(selected_option)
+                if not tipo:
+                    flash('Estado inválido.', 'error')
+                    return render_template(
+                        'fotor.html',
+                        is_admin=is_admin,
+                        notifications=user_notifications,
+                        results=results,
+                        documento=documento,
+                        selected_option=selected_option
+                    )
+
+                url = f"{base_url}?dado={documento}&tipo={tipo}"
                 logger.info(f"Requisição para API: {url}")
-                response = requests.get(url, verify=False, timeout=10)
+
+                response = requests.get(url, verify=False, timeout=12)
                 response.raise_for_status()
-                data = decode_json_with_bom(response.text)
+                raw = response.text.strip()
 
-                if selected_option == "fotomg" and data and "foto_base64" in data:
-                    results = {
-                        "CPF": data.get("CPF", ""),
-                        "Nome": data.get("Nome", ""),
-                        "Nome da Mãe": data.get("Nome da Mãe", ""),
-                        "Nome do Pai": data.get("Nome do Pai", ""),
-                        "Data de Nascimento": data.get("Data de Nascimento", ""),
-                        "Categoria CNH Concedida": data.get("Categoria CNH Concedida", ""),
-                        "Validade CNH": data.get("Validade CNH", ""),
-                        "foto_base64": data.get("foto_base64", "")
-                    }
-                elif data:
-                    results = data['resultado']
+                # Remove possível BOM e tenta decodificar JSON
+                data = decode_json_with_bom(raw)
 
-                if results and manage_module_usage(g.user_id, 'fotor'):
-                    reset_all()
-                elif results:
-                    flash('Limite de uso atingido para FOTOR.', 'error')
-                    results = None
+                # Estrutura esperada
+                inner = data.get("response", {}).get("response", [])
+                if not inner or not isinstance(inner, list) or not inner[0].get("fotob64"):
+                    flash('Nenhum resultado encontrado para o documento fornecido.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o documento fornecido.', 'error')
+                    foto_b64 = inner[0]["fotob64"]
+                    cpf_ret = inner[0].get("cpf", "")
+
+                    results = {
+                        "foto_base64": foto_b64,
+                        "cpf": cpf_ret or documento
+                    }
+
+                    if manage_module_usage(g.user_id, 'fotor'):
+                        reset_all()
+                    else:
+                        flash('Limite de uso atingido para FOTOR.', 'error')
+                        results = None
+
             except requests.Timeout:
                 flash('A requisição excedeu o tempo limite.', 'error')
             except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text[:200]}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
             except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                flash(f'Resposta da API inválida (JSON malformado).', 'error')
+            except Exception as e:
+                flash(f'Erro inesperado: {str(e)}', 'error')
 
-    return render_template('fotor.html', is_admin=is_admin, notifications=user_notifications, results=results, documento=documento, selected_option=selected_option)
+    return render_template(
+        'fotor.html',
+        is_admin=is_admin,
+        notifications=user_notifications,
+        results=results,
+        documento=documento,
+        selected_option=selected_option
+    )
 
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 def nomelv():
