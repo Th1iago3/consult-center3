@@ -312,7 +312,7 @@ def check_login_attempts(user_id):
 
 @app.before_request
 def security_check():
-    if request.endpoint not in ['login', '/@A30', 'preview.jpg']:
+    if request.endpoint not in ['login', '@A30', 'preview']:
         if not check_referrer() or not check_user_agent():
             log_access(request.endpoint, "Invalid referrer or user agent")
             return redirect('/')
