@@ -55,7 +55,10 @@ module_status = {
     'pix': 'ON',
     'placalv': 'ON',
     'ip': 'ON',
-    'likeff': 'OFF'
+    'likeff': 'OFF',
+    'mae': 'ON',
+    'pai': 'ON',
+    'cnpjcompleto': 'ON'
 }
 
 chave = "vmb1"
@@ -312,7 +315,7 @@ def check_login_attempts(user_id):
 
 @app.before_request
 def security_check():
-    if request.endpoint not in ['login', '@A30', 'preview']:
+    if request.endpoint not in ['login', 'creditos', 'preview']:
         if not check_referrer() or not check_user_agent():
             log_access(request.endpoint, "Invalid referrer or user agent")
             return redirect('/')
@@ -502,7 +505,7 @@ def admin_panel():
                     'token': token,
                     'expiration': expiration,
                     'role': role,
-                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff', 'pai', 'mae']},
+                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff', 'pai', 'mae', 'cnpjcompleto']},
                     'devices': []
                 }
                 save_data(users, 'users.json')
@@ -692,7 +695,103 @@ def pai():
                 flash(f'Erro inesperado: {str(e)}', 'error')
 
     return render_template('pai.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome)
-    
+
+@app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
+def cnpjcompleto():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_data('notifications.json')
+    user_notifications = len(notifications.get(g.user_id, []))
+
+    result = None
+    cnpj_input = ""
+
+    if request.method == 'POST':
+        cnpj_input = request.form.get('cnpj', '').strip().replace(/\D/g, '')
+
+        if len(cnpj_input) != 14:
+            flash('CNPJ inválido. Digite 14 números.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=user_notifications, result=result, cnpj_input=cnpj_input)
+
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
+                logger.info(f"Requisição CNPJ Completo: {url}")
+
+                response = requests.get(url, verify=False, timeout=15)
+                response.raise_for_status()
+                data = decode_json_with_bom(response.text)
+
+                empresa = data.get("empresa", {})
+                estab = empresa.get("estabelecimento", {})
+
+                # Extrai atividades secundárias
+                secundarias = [
+                    f"{a.get('subclasse', '')} - {a.get('descricao', '')}"
+                    for a in estab.get("atividades_secundarias", [])
+                ]
+
+                # Sócios
+                socios = [
+                    f"{s.get('nome', 'Não informado')} ({s.get('qualificacao_socio', {}).get('descricao', 'Não informado')})"
+                    for s in empresa.get("socios", [])
+                ]
+
+                result = {
+                    "razao_social": empresa.get("razao_social", "Não informado"),
+                    "nome_fantasia": estab.get("nome_fantasia") or "Não informado",
+                    "cnpj": f"{cnpj_input[:2]}.{cnpj_input[2:5]}.{cnpj_input[5:8]}/{cnpj_input[8:12]}-{cnpj_input[12:]}",
+                    "abertura": estab.get("data_inicio_atividade", "Não informado"),
+                    "situacao": estab.get("situacao_cadastral", "Não informado"),
+                    "atividade_principal": f"{estab.get('atividade_principal', {}).get('subclasse', '')} - {estab.get('atividade_principal', {}).get('descricao', '')}",
+                    "atividades_secundarias": secundarias or ["Nenhuma"],
+                    "logradouro": f"{estab.get('tipo_logradouro', '')} {estab.get('logradouro', '')}, {estab.get('numero', '')}",
+                    "complemento": estab.get("complemento") or "",
+                    "bairro": estab.get("bairro", "Não informado"),
+                    "municipio": estab.get("cidade", {}).get("nome", "Não informado"),
+                    "uf": estab.get("estado", {}).get("sigla", "Não informado"),
+                    "cep": estab.get("cep", "Não informado"),
+                    "telefone": f"({estab.get('ddd1', '')}) {estab.get('telefone1', '')}" if estab.get('ddd1') else "Não informado",
+                    "email": estab.get("email", "Não informado"),
+                    "capital_social": f"R$ {empresa.get('capital_social', '0')}",
+                    "natureza_juridica": empresa.get("natureza_juridica", {}).get("descricao", "Não informado"),
+                    "porte": empresa.get("porte", {}).get("descricao", "Não informado"),
+                    "socios": socios or ["Não informados"]
+                }
+
+                if manage_module_usage(g.user_id, 'cnpjcompleto'):
+                    reset_all()
+                else:
+                    flash('Limite de uso atingido para CNPJ Completo.', 'error')
+                    result = None
+
+            except requests.Timeout:
+                flash('Tempo de requisição esgotado.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na API: {e.response.status_code}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro de conexão: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash('Resposta inválida da API.', 'error')
+            except Exception as e:
+                flash(f'Erro inesperado: {str(e)}', 'error')
+
+    return render_template(
+        'cnpjcompleto.html',
+        is_admin=is_admin,
+        notifications=user_notifications,
+        result=result,
+        cnpj_input=cnpj_input
+    )
+
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 def cpf():
     if 'user_id' not in g:
