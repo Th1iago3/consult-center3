@@ -263,11 +263,27 @@ def dashboard():
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
 def admin_panel():
     users = load_data('users.json')
-    if users[g.user_id]['role'] != 'admin':
-        return jsonify({"error": "Access denied"}), 403
+    notifications = load_data('notifications.json')
     gifts = load_data('gifts.json')
+    user_id = g.user_id
+
+    if users.get(user_id, {}).get('role') != 'admin':
+        return jsonify({"error": "Access denied"}), 403
+
+    user_agent = request.headers.get('User-Agent', '').lower()
+    if 'bot' in user_agent or 'spider' in user_agent:
+        return jsonify({"error": "Access denied"}), 403
+
     if request.method == 'POST':
         action = request.form.get('action')
+        user_input = request.form.get('user')
+        password = request.form.get('password', '')
+        expiration = request.form.get('expiration', '')
+        message = request.form.get('message', '')
+        role = request.form.get('role', 'user_semanal')
+        module = request.form.get('module', '')
+        status = request.form.get('status', '')
+
         if action == 'add_user':
             username = request.form.get('user')
             password = request.form.get('password')
@@ -311,17 +327,21 @@ def admin_panel():
             if module in module_status:
                 module_status[module] = status
                 return jsonify({'success': True})
-        elif action == 'send_notification':
-            message = request.form.get('message')
-            notif_id = str(uuid.uuid4())
-            notifications = load_data('notifications.json')
-            notifications.append({
-                'id': notif_id,
-                'message': message,
-                'timestamp': datetime.now().isoformat()
-            })
-            save_data(notifications, 'notifications.json')
-            return jsonify({'message': 'Notificação enviada para todos!', 'category': 'success'})
+        elif action == "send_message" and user_input and message:
+            if user_input == 'all':
+                for user in users:
+                    if user != user_id:
+                        notifications.setdefault(user, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
+                save_data(notifications, 'notifications.json')
+                return jsonify({'message': 'Mensagem enviada para todos os usuários', 'category': 'success'})
+            if user_input in users:
+                notifications.setdefault(user_input, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
+                save_data(notifications, 'notifications.json')
+                return jsonify({'message': f'Mensagem enviada para {user_input}', 'category': 'success'})
+            return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
+        elif action == "view_gifts":
+            return jsonify({'gifts': gifts})
+
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
 
 # Redeem Gift
@@ -370,7 +390,7 @@ def notifications_page():
             user['read_notifications'] = read_ids
             save_data(users, 'users.json')
         return jsonify({'success': True})
-    return render_template('notifications.html', unread=unread, read=read)
+    return render_template('notifications.html', unread=unread, read=read, users=users)
 
 # Novidades Page
 @app.route('/novidades', methods=['GET'])
@@ -379,7 +399,7 @@ def novidades():
     if users[g.user_id]['role'] == 'guest':
         abort(403)
     news = load_data('news.json')
-    return render_template('novidades.html', news=news)
+    return render_template('novidades.html', news=news, users=users)
 
 # Create Novidade
 @app.route('/novidades/new', methods=['GET', 'POST'])
@@ -419,7 +439,7 @@ def new_novidade():
         flash('Novidade enviada com sucesso!', 'success')
         return redirect('/novidades')
 
-    return render_template('new_novidade.html')
+    return render_template('new_novidade.html', users=users)
 
 # Edit Novidade
 @app.route('/novidades/edit/<news_id>', methods=['GET', 'POST'])
@@ -444,7 +464,7 @@ def edit_novidade(news_id):
         save_data(news, 'news.json')
         flash('Novidade editada com sucesso!', 'success')
         return redirect('/novidades')
-    return render_template('edit_novidade.html', item=item)
+    return render_template('edit_novidade.html', item=item, users=users)
 
 # Delete Novidade
 @app.route('/novidades/delete/<news_id>', methods=['POST'])
@@ -468,22 +488,10 @@ def delete_novidade(news_id):
     return redirect('/novidades')
 
 # Dynamic Module Handler
-@app.before_request
-def generate_module_uuid():
-    if 'module_uuid' not in session:
-        session['module_uuid'] = str(uuid.uuid4())
-
-def module_decorator(f):
-    @wraps(f)
-    def decorated(uuid_str, *args, **kwargs):
-        if uuid_str != session.get('module_uuid'):
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated
 
 # Module Routes
 
-@app.route('/modulos/<uuid_str>/mae', methods=['GET', 'POST'])
+@app.route('/modulos/mae', methods=['GET', 'POST'])
 @module_decorator
 def mae():
     users = load_data('users.json')
@@ -526,7 +534,7 @@ def mae():
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 
-@app.route('/modulos/<uuid_str>/pai', methods=['GET', 'POST'])
+@app.route('/modulos/pai', methods=['GET', 'POST'])
 @module_decorator
 def pai():
     users = load_data('users.json')
@@ -569,7 +577,7 @@ def pai():
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 
-@app.route('/modulos/<uuid_str>/cnpjcompleto', methods=['GET', 'POST'])
+@app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 @module_decorator
 def cnpjcompleto():
     users = load_data('users.json')
