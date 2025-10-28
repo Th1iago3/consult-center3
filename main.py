@@ -645,7 +645,7 @@ def cnpjcompleto():
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
 
-@app.route('/modulos/<uuid_str>/cpf', methods=['GET', 'POST'])
+@app.route('/modulos/cpf', methods=['GET', 'POST'])
 @module_decorator
 def cpf():
     users = load_data('users.json')
@@ -682,7 +682,7 @@ def cpf():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
-@app.route('/modulos/<uuid_str>/cpf2', methods=['GET', 'POST'])
+@app.route('/modulos/cpf2', methods=['GET', 'POST'])
 @module_decorator
 def cpf2():
     users = load_data('users.json')
@@ -719,7 +719,7 @@ def cpf2():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
-@app.route('/modulos/<uuid_str>/cpfdata', methods=['GET', 'POST'])
+@app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 @module_decorator
 def cpfdata():
     users = load_data('users.json')
@@ -849,7 +849,7 @@ def cpfdata():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
-@app.route('/modulos/<uuid_str>/cpf3', methods=['GET', 'POST'])
+@app.route('/modulos/cpf3', methods=['GET', 'POST'])
 @module_decorator
 def cpf3():
     users = load_data('users.json')
@@ -886,7 +886,7 @@ def cpf3():
                 flash(f'Resposta da API inválida: {response.text if "response" in locals() else str(e)}', 'error')
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
-@app.route('/modulos/<uuid_str>/cpflv', methods=['GET', 'POST'])
+@app.route('/modulos/cpflv', methods=['GET', 'POST'])
 @module_decorator
 def cpflv():
     users = load_data('users.json')
@@ -928,7 +928,7 @@ def cpflv():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
-@app.route('/modulos/<uuid_str>/vacinas', methods=['GET', 'POST'])
+@app.route('/modulos/vacinas', methods=['GET', 'POST'])
 @module_decorator
 def vacinas():
     users = load_data('users.json')
@@ -972,7 +972,7 @@ def vacinas():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
 
-@app.route('/modulos/<uuid_str>/datanome', methods=['GET', 'POST'])
+@app.route('/modulos/datanome', methods=['GET', 'POST'])
 @module_decorator
 def datanome():
     users = load_data('users.json')
@@ -1035,7 +1035,7 @@ def datanome():
     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count,
                            results=results, nome=nome, datanasc=datanasc)
 
-@app.route('/modulos/<uuid_str>/placalv', methods=['GET', 'POST'])
+@app.route('/modulos/placalv', methods=['GET', 'POST'])
 @module_decorator
 def placalv():
     users = load_data('users.json')
@@ -1078,7 +1078,7 @@ def placalv():
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
 
-@app.route('/modulos/<uuid_str>/telLv', methods=['GET', 'POST'])
+@app.route('/modulos/telLv', methods=['GET', 'POST'])
 @module_decorator
 def tellv():
     users = load_data('users.json')
@@ -1121,7 +1121,7 @@ def tellv():
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, telefone=telefone)
 
-@app.route('/modulos/<uuid_str>/teldual', methods=['GET', 'POST'])
+@app.route('/modulos/teldual', methods=['GET', 'POST'])
 @module_decorator
 def teldual():
     users = load_data('users.json')
@@ -1158,7 +1158,7 @@ def teldual():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
 
-@app.route('/modulos/<uuid_str>/tel', methods=['GET', 'POST'])
+@app.route('/modulos/tel', methods=['GET', 'POST'])
 @module_decorator
 def tel():
     users = load_data('users.json')
@@ -1195,7 +1195,7 @@ def tel():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
 
-@app.route('/modulos/<uuid_str>/placa', methods=['GET', 'POST'])
+@app.route('/modulos/placa', methods=['GET', 'POST'])
 @module_decorator
 def placa():
     users = load_data('users.json')
@@ -1234,7 +1234,7 @@ def placa():
     return render_template('placa.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
 
-@app.route('/modulos/<uuid_str>/placaestadual', methods=['GET', 'POST'])
+@app.route('/modulos/placaestadual', methods=['GET', 'POST'])
 @module_decorator
 def placaestadual():
     users = load_data('users.json')
@@ -1271,7 +1271,7 @@ def placaestadual():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
 
-@app.route('/modulos/<uuid_str>/pix', methods=['GET', 'POST'])
+@app.route('/modulos/pix', methods=['GET', 'POST'])
 @module_decorator
 def pix():
     users = load_data('users.json')
@@ -1310,7 +1310,7 @@ def pix():
     return render_template('pix.html', is_admin=is_admin, notifications=unread_count,
                            result=result, chave=chave)
 
-@app.route('/modulos/<uuid_str>/fotor', methods=['GET', 'POST'])
+@app.route('/modulos/fotor', methods=['GET', 'POST'])
 @module_decorator
 def fotor():
     users = load_data('users.json')
@@ -1387,7 +1387,7 @@ def fotor():
         selected_option=selected_option
     )
 
-@app.route('/modulos/<uuid_str>/nomelv', methods=['GET', 'POST'])
+@app.route('/modulos/nomelv', methods=['GET', 'POST'])
 @module_decorator
 def nomelv():
     users = load_data('users.json')
@@ -1432,7 +1432,7 @@ def nomelv():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
-@app.route('/modulos/<uuid_str>/nome', methods=['GET', 'POST'])
+@app.route('/modulos/nome', methods=['GET', 'POST'])
 @module_decorator
 def nome():
     users = load_data('users.json')
@@ -1469,7 +1469,7 @@ def nome():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
-@app.route('/modulos/<uuid_str>/ip', methods=['GET', 'POST'])
+@app.route('/modulos/ip', methods=['GET', 'POST'])
 @module_decorator
 def ip():
     users = load_data('users.json')
@@ -1515,7 +1515,7 @@ def ip():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
 
-@app.route('/modulos/<uuid_str>/nome2', methods=['GET', 'POST'])
+@app.route('/modulos/nome2', methods=['GET', 'POST'])
 @module_decorator
 def nome2():
     users = load_data('users.json')
@@ -1552,7 +1552,7 @@ def nome2():
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
-@app.route('/modulos/<uuid_str>/likeff', methods=['GET', 'POST'])
+@app.route('/modulos/likeff', methods=['GET', 'POST'])
 @module_decorator
 def likeff():
     users = load_data('users.json')
