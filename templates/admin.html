@@ -16,7 +16,7 @@
             --primary-purple: #6E44FF; /* Roxo principal */
             --secondary-purple: #A06CFF; /* Roxo secundário */
             --accent-pink: #FF6BD6; /* Destaque (opcional) */
-          
+         
             /* Cores de Fundo e Texto */
             --background-dark: #121212; /* Fundo principal muito escuro */
             --background-light: #1A1A1A; /* Fundo secundário/card */
@@ -29,7 +29,7 @@
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
             --shadow-glow: 0 0 15px var(--glow-purple);
-          
+         
             /* Tipografia */
             --font-family: 'Poppins', sans-serif;
             /* Adicionais para Admin */
@@ -354,6 +354,50 @@
         }
         .module-card .toggle-switch {
             justify-content: flex-end;
+        }
+        /* Toggle Switch CSS */
+        .toggle-switch {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            width: 50px;
+            height: 26px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: var(--transition);
+            border-radius: 26px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-white);
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-purple);
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--glow-purple);
         }
         /* Messages Tab */
         .messages-section {
