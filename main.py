@@ -364,6 +364,7 @@ def new_novidade():
     user = users[g.user_id]
     if user['role'] == 'guest':
         abort(403)
+
     if request.method == 'POST':
         title = request.form.get('title')
         desc = request.form.get('desc')
@@ -371,12 +372,17 @@ def new_novidade():
         news = load_data('news.json')
         news_id = str(uuid.uuid4())
         image_path = None
+
         if image and image.filename:
-            ext = os.path.splitext(image.filename)[1]
-            if ext.lower() in ['.jpg', '.jpeg', '.png', '.gif']:
-                image_path = os.path.join(app.config['UPLOAD_FOLDER'], f'{news_id}{ext}')
-                image.save(image_path)
-                image_path = f'/static/novidades/{news_id}{ext}'
+            ext = os.path.splitext(image.filename)[1].lower()
+            if ext in ['.jpg', '.jpeg', '.png', '.gif']:
+                # Salva no mesmo diretório do script
+                image_filename = f'{news_id}{ext}'
+                image_path_full = os.path.join(os.path.dirname(__file__), image_filename)
+                image.save(image_path_full)
+                # Caminho relativo para usar no HTML (raiz do site)
+                image_path = f'/{image_filename}'
+
         news.append({
             'id': news_id,
             'title': title,
@@ -388,6 +394,7 @@ def new_novidade():
         save_data(news, 'news.json')
         flash('Novidade enviada com sucesso!', 'success')
         return redirect('/novidades')
+
     return render_template('new_novidade.html')
 
 # Edit Novidade
