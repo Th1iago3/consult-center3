@@ -810,7 +810,8 @@
             <a href="#" class="sidebar-item active" data-page="1"><svg data-lucide="user"></svg><span>Pessoas</span></a>
             <a href="#" class="sidebar-item" data-page="2"><svg data-lucide="phone"></svg><span>Telefone</span></a>
             <a href="#" class="sidebar-item" data-page="3"><svg data-lucide="car"></svg><span>Veículos</span></a>
-            <a href="#" class="sidebar-item" data-page="4"><svg data-lucide="layout-dashboard"></svg><span>Extras</span></a>
+            <a href="#" class="sidebar-item" data-page="4"><svg data-lucide="file-text"></svg><span>Documentos</span></a>
+            <a href="#" class="sidebar-item" data-page="5"><svg data-lucide="layout-dashboard"></svg><span>Extras</span></a>
             {% if users[g.user_id]['role'] == 'admin' %}
             <a href="#" class="sidebar-item" onclick="navigateTo('/i/settings/admin')"><svg data-lucide="settings"></svg><span>Administração</span></a>
             {% endif %}
@@ -1154,8 +1155,30 @@
                     <div class="module-message" id="message-placalv"></div>
                 </div>
             </div>
-            <!-- Página 4 -->
-            <div class="dashboard-grid" id="page4" style="display: none;">
+
+             <div class="dashboard-grid" id="page4" style="display: none;">
+                <!-- IP C&C Plus -->
+                <div class="module-card" onclick="checkModuleStatus('cnpjcompleto', '/modulos/cnpjcompleto')" data-module-id="cnpjcompleto" data-status="{{ module_status.get('cnpjcompleto', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cnpjcompleto', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="building-2"></svg></div>
+                    <h3 class="module-title">Consultar CNPJ (C&C Plus)</h3>
+                    <p class="module-description">Consulte informacoes completas sobre qualquer CNPJ. Como: Empresa, Descricao, Cadastro, Origem, Situacao, etc.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cnpjcompleto', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-cnpjcompleto"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-cnpjcompleto"></div>
+                </div>
+            </div>
+
+            
+            <!-- Página 5 -->
+            <div class="dashboard-grid" id="page5" style="display: none;">
                 <!-- IP C&C Plus -->
                 <div class="module-card" onclick="checkModuleStatus('ip', '/modulos/ip')" data-module-id="ip" data-status="{{ module_status.get('ip', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="globe"></svg></div>
@@ -1198,7 +1221,8 @@
                 <button class="pagination-btn active" data-page="1">1</button>
                 <button class="pagination-btn" data-page="2">2</button>
                 <button class="pagination-btn" data-page="3">3</button>
-                <button class="pagination-btn" data-page="4">4</button>
+                <button class="pagination-btn" data-page="4">4</button>\
+                <button class="pagination-btn" data-page="4">5</button>
             </div>
         </section>
 
@@ -1283,7 +1307,7 @@
             });
 
             // Paginação
-            const pages = ['page1', 'page2', 'page3', 'page4'];
+            const pages = ['page1', 'page2', 'page3', 'page4', 'page5'];
             const btns = document.querySelectorAll('.pagination-btn');
             const sidebarItems = document.querySelectorAll('.sidebar-item');
             function showPage(page) {
