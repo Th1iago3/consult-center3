@@ -711,7 +711,7 @@ def cnpjcompleto():
     cnpj_input = ""
 
     if request.method == 'POST':
-        cnpj_input = request.form.get('cnpj', '').strip().replace(/\D/g, '')
+        cnpj_input = request.form.get('cnpj', '').strip()
 
         if len(cnpj_input) != 14:
             flash('CNPJ inválido. Digite 14 números.', 'error')
