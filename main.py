@@ -230,7 +230,25 @@ def dashboard():
     is_admin = user['role'] == 'admin'
     is_guest = user['role'] == 'guest'
     affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
+    
+    if user['role'] != 'guest':
+        if datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
+            flash('Sua sessão expirou. Faça login novamente.', 'error')
+            return redirect('/')
+
     if request.method == 'POST':
+        if is_admin:
+            action = request.form.get('action')
+            target_user = request.form.get('user')
+            module = request.form.get('module')
+
+            if action == 'view_modules' and target_user in users:
+                user_modules = users[target_user].get('modules', {})
+                role = users[target_user].get('role', 'user_semanal')
+                max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(role, 30)
+                if is_admin:
+                    return jsonify({"user": target_user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
+                return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
         # Handle module usage view or other admin actions
         if is_admin:
             action = request.form.get('action')
@@ -238,7 +256,8 @@ def dashboard():
                 target_user = request.form.get('user')
                 if target_user in users:
                     return jsonify(users[target_user].get('modules', {}))
-    return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link)
+
+    return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status)
 
 # Admin Panel
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
