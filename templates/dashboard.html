@@ -855,43 +855,9 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-cpfdata"></div>
                 </div>
-                <!-- NOME C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}" data-limit="500">
-                    <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
-                    <h3 class="module-title">Localizar NOME (C&C Plus)</h3>
-                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-                    <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
-                        {% endwith %}
-                    </div>
-                    <div class="status-dot" id="status-dot-nomelv"></div>
-                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-nomelv"></div>
-                </div>
-                <!-- NOME DATA -->
-                <div class="module-card" onclick="checkModuleStatus('nomedata', '/modulos/nomedata')" data-module-id="nomedata" data-status="{{ module_status.get('nomedata', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomedata', 0) }}" data-limit="500">
-                    <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
-                    <h3 class="module-title">Localizar NOME (DATA)</h3>
-                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-                    <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomedata', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
-                        {% endwith %}
-                    </div>
-                    <div class="status-dot" id="status-dot-nomedata"></div>
-                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-nomedata"></div>
-                </div>
                 <!-- CPF C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv" data-status="{{ module_status.get('cpflv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}" data-limit="500">
-                    <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
+                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
                     <h3 class="module-title">Localizar CPF (C&C Plus)</h3>
                     <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
                     <div class="module-footer">
@@ -906,24 +872,77 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-cpflv"></div>
                 </div>
-                <!-- CPF NACIONAL -->
-                <div class="module-card" onclick="checkModuleStatus('cpfdual', '/modulos/cpfdual')" data-module-id="cpfdual" data-status="{{ module_status.get('cpfdual', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpfdual', 0) }}" data-limit="500">
-                    <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
-                    <h3 class="module-title">Localizar CPF (NACIONAL)</h3>
+                <!-- CPF DATA -->
+                <div class="module-card" onclick="checkModuleStatus('cpf', '/modulos/cpf')" data-module-id="cpf" data-status="{{ module_status.get('cpf', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
+                    <h3 class="module-title">Localizar CPF (DATA)</h3>
                     <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdual', 0), limit=500 %}
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), limit=500 %}
                             <div class="request-bar-wrapper">
                                 <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
                             </div>
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot" id="status-dot-cpfdual"></div>
+                    <div class="status-dot" id="status-dot-cpfdata"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-cpfdual"></div>
+                    <div class="module-message" id="message-cpfdata"></div>
+                </div>
+                <!-- CPF (DATAPRIME) -->
+                <div class="module-card" onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" data-module-id="cpf2" data-status="{{ module_status.get('cpf2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
+                    <h3 class="module-title">Localizar CPF (DATAPRIME)</h3>
+                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-cpf2"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-cpf2"></div>
+                </div>
+                <!-- VACINAS -->
+                <div class="module-card" onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" data-module-id="vacinas" data-status="{{ module_status.get('cpf5', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="syringe"></svg></div>
+                    <h3 class="module-title">Consultar Vacinas (SIPNI)</h3>
+                    <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf5', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-cpf5"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-cpf5"></div>
                 </div>
 
+                <!-- CPF (SISREGII) -->
+                <div class="module-card" onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" data-module-id="cpf3" data-status="{{ module_status.get('cpf3', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="syringe"></svg></div>
+                    <h3 class="module-title">Localizar CPF (SISREGII)</h3>
+                    <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-cpf3"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-cpf3"></div>
+                </div>
+
+                
                 <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome" data-status="{{ module_status.get('datanome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="calendar"></svg></div>
                     <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
@@ -940,6 +959,7 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-datanome"></div>
                 </div>
+                
                 <!-- FOTO C&C Plus -->
                 <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor" data-status="{{ module_status.get('fotor', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="camera"></svg></div>
@@ -973,6 +993,22 @@
                     <div class="status-dot" id="status-dot-pix"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-pix"></div>
+                </div>
+                 <div class="module-card" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}" data-limit="500">
+                    <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
+                    <h3 class="module-title">Localizar NOME (C&C Plus)</h3>
+                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), limit=500 %}
+                            <div class="request-bar-wrapper">
+                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
+                            </div>
+                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-nomelv"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-nomelv"></div>
                 </div>
             </div>
             <!-- Página 2 -->
