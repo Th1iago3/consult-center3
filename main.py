@@ -290,18 +290,22 @@ def admin_panel():
             expiration = request.form.get('expiration')
             role = request.form.get('role', 'user_semanal')
             if username not in users:
+                token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
                 users[username] = {
                     'password': password,
                     'expiration': expiration,
+                    'token': token
                     'role': role,
                     'permissions': {m: None for m in module_status.keys()} if role != 'guest' else {},
-                    'modules': {m: 0 for m in module_status.keys()},
+                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff', 'pai', 'mae', 'cnpjcompleto']},
                     'read_notifications': [],
                     'affiliate_code': secrets.token_urlsafe(8) if role != 'guest' else None
                 }
                 save_data(users, 'users.json')
-                return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success'})
+                return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
             return jsonify({'message': 'Usuário já existe!', 'category': 'error'})
+         elif action == "view_users":
+            return jsonify({'users': users})
         elif action == 'delete_user':
             username = request.form.get('user')
             if username in users and username != g.user_id:
