@@ -502,7 +502,7 @@ def admin_panel():
                     'token': token,
                     'expiration': expiration,
                     'role': role,
-                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff']},
+                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff', 'pai', 'mae']},
                     'devices': []
                 }
                 save_data(users, 'users.json')
@@ -571,6 +571,128 @@ def logout():
     return resp
     
 # Module Routes (implement each with manage_module_usage)
+@app.route('/modulos/mae', methods=['GET', 'POST'])
+def mae():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_data('notifications.json')
+    user_notifications = len(notifications.get(g.user_id, []))
+
+    result = None
+    nome = ""
+
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        if not nome:
+            flash('NOME não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('mae.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome)
+
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                data = decode_json_with_bom(response.text)
+
+                # Verifica se há resultados válidos
+                if data.get('status') and data.get('response'):
+                    results = data['response']
+                    # Filtra apenas resultados com CPF e NOME válidos
+                    valid_results = [r for r in results if r.get('CPF') and r.get('NOME')]
+                    if valid_results:
+                        if manage_module_usage(g.user_id, 'mae'):
+                            result = valid_results  # Lista de filhos
+                            reset_all()
+                        else:
+                            flash('Limite de uso atingido para MÃE.', 'error')
+                    else:
+                        flash('Nenhum resultado válido encontrado.', 'error')
+                else:
+                    flash('Nenhum resultado encontrado para o nome informado.', 'error')
+
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
+            except Exception as e:
+                flash(f'Erro inesperado: {str(e)}', 'error')
+
+    return render_template('mae.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome)
+                        
+                       
+@app.route('/modulos/pai', methods=['GET', 'POST'])
+def pai():
+    if 'user_id' not in g:
+        flash('Você precisa estar logado para acessar esta página.', 'error')
+        return redirect('/')
+
+    users = load_data('users.json')
+    is_admin = users.get(g.user_id, {}).get('role') == 'admin'
+    notifications = load_data('notifications.json')
+    user_notifications = len(notifications.get(g.user_id, []))
+
+    result = None
+    nome = ""
+
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        if not nome:
+            flash('NOME não fornecido.', 'error')
+        else:
+            try:
+                if not is_admin:
+                    token = request.form.get('token', '')
+                    if not token or token != users.get(g.user_id, {}).get('token'):
+                        flash('Token inválido ou não fornecido.', 'error')
+                        return render_template('pai.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome)
+
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
+                logger.info(f"Requisição para API: {url}")
+                response = requests.get(url, verify=False, timeout=10)
+                response.raise_for_status()
+                data = decode_json_with_bom(response.text)
+
+                # Verifica se há resultados válidos
+                if data.get('status') and data.get('response'):
+                    results = data['response']
+                    valid_results = [r for r in results if r.get('CPF') and r.get('NOME') and r.get('PAI')]
+                    if valid_results:
+                        if manage_module_usage(g.user_id, 'pai'):
+                            result = valid_results
+                            reset_all()
+                        else:
+                            flash('Limite de uso atingido para PAI.', 'error')
+                    else:
+                        flash('Nenhum resultado válido encontrado.', 'error')
+                else:
+                    flash('Nenhum resultado encontrado para o nome do pai informado.', 'error')
+
+            except requests.Timeout:
+                flash('A requisição excedeu o tempo limite.', 'error')
+            except requests.HTTPError as e:
+                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
+            except requests.RequestException as e:
+                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
+            except Exception as e:
+                flash(f'Erro inesperado: {str(e)}', 'error')
+
+    return render_template('pai.html', is_admin=is_admin, notifications=user_notifications, result=result, nome=nome)
+    
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 def cpf():
     if 'user_id' not in g:
@@ -996,6 +1118,7 @@ def datanome():
     is_admin = users.get(g.user_id, {}).get('role') == 'admin'
     notifications = load_data('notifications.json')
     user_notifications = len(notifications.get(g.user_id, []))
+
     results = []
     nome = ""
     datanasc = ""
@@ -1015,23 +1138,23 @@ def datanome():
                         return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
                                                results=results, nome=nome, datanasc=datanasc)
 
-                # Usa a mesma API de nomelv (nomev2)
+                # Usa a mesma API de nomelv
                 url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
                 logger.info(f"Requisição para API (datanome): {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = decode_json_with_bom(response.text)
 
-                # Aceita lista direta ou dentro de 'resultado'
+                # Normaliza resposta: lista direta ou dentro de 'resultado'
                 raw_results = []
                 if isinstance(data, list):
                     raw_results = data
                 elif isinstance(data, dict) and 'resultado' in data and isinstance(data['resultado'], list):
                     raw_results = data['resultado']
 
-                # Converte a data do usuário (YYYY-MM-DD) → datetime
+                # Valida e converte data do usuário
                 try:
-                    user_date = datetime.strptime(datanasc, '%Y-%m-%d')
+                    user_date = datetime.strptime(datanasc, '%Y-%m-%d').date()
                 except ValueError:
                     flash('Formato de data inválido. Use o seletor de data.', 'error')
                     return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
@@ -1039,14 +1162,14 @@ def datanome():
 
                 # Filtra por data de nascimento
                 for item in raw_results:
-                    if 'NASCIMENTO' in item:
+                    if 'NASCIMENTO' in item and item['NASCIMENTO']:
                         try:
                             api_date_str = item['NASCIMENTO'].strip()
-                            api_date = datetime.strptime(api_date_str, '%d/%m/%Y')
-                            if api_date.date() == user_date.date():
+                            api_date = datetime.strptime(api_date_str, '%d/%m/%Y').date()
+                            if api_date == user_date:
                                 results.append(item)
                         except (ValueError, AttributeError):
-                            continue  # Ignora datas mal formatadas
+                            continue  # Ignora datas inválidas
 
                 if results:
                     if manage_module_usage(g.user_id, 'datanome'):
@@ -1065,10 +1188,12 @@ def datanome():
                 flash(f'Erro ao conectar com a API: {str(e)}', 'error')
             except json.JSONDecodeError:
                 flash('Resposta da API inválida (JSON malformado).', 'error')
+            except Exception as e:
+                flash(f'Erro inesperado: {str(e)}', 'error')
 
     return render_template('datanome.html', is_admin=is_admin, notifications=user_notifications,
                            results=results, nome=nome, datanasc=datanasc)
-
+    
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
 def placalv():
     if 'user_id' not in g:
