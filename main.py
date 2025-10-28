@@ -137,7 +137,7 @@ def check_login_attempts(user_id):
 # Before Request Security Check
 @app.before_request
 def security_check():
-    if request.endpoint not in ['login', 'register', 'creditos', 'preview']:
+    if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
         if 'user_id' not in session:
             flash('Você precisa estar logado para acessar esta página.', 'error')
             return redirect('/')
