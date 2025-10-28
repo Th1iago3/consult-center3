@@ -155,65 +155,70 @@ def security_check():
                 session.clear()
                 return redirect('/')
 
-# Registration for Guests
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form.get('user')
-        password = request.form.get('password')
-        if not username or not password:
-            flash('Usuário e senha são obrigatórios.', 'error')
-            return render_template('register.html')
-        users = load_data('users.json')
-        if username in users:
-            flash('Usuário já existe.', 'error')
-            return render_template('register.html')
-        # Handle affiliate
-        aff_code = request.args.get('aff')
-        referred_by = None
-        if aff_code:
-            for u, data in users.items():
-                if data.get('affiliate_code') == aff_code:
-                    referred_by = u
-                    break
-        users[username] = {
-            'password': password,
-            'role': 'guest',
-            'expiration': '2099-12-31',  # Permanent for guests
-            'permissions': {},  # No modules
-            'modules': {m: 0 for m in module_status.keys()},
-            'read_notifications': [],
-            'referred_by': referred_by,
-            'affiliate_code': secrets.token_urlsafe(8) if referred_by else None
-        }
-        save_data(users, 'users.json')
-        flash('Registro concluído com sucesso! Faça login.', 'success')
-        return redirect('/')
-    return render_template('register.html')
-
 # Login
 @app.route('/', methods=['GET', 'POST'])
-def login():
+def login_or_register():
     if request.method == 'POST':
-        username = request.form.get('user')
-        password = request.form.get('password')
-        users = load_data('users.json')
-        can_login, message = check_login_attempts(username)
-        if not can_login:
-            flash(message, 'error')
-            return render_template('login.html')
-        if username in users and users[username]['password'] == password:
-            if users[username]['role'] != 'guest':
-                expiration_date = datetime.strptime(users[username]['expiration'], '%Y-%m-%d')
-                if datetime.now() > expiration_date:
-                    flash('Conta expirada. Contate o suporte.', 'error')
-                    return render_template('login.html')
-            session['user_id'] = username
-            login_attempts[username] = {'count': 0, 'last_attempt': time.time()}
-            return redirect('/dashboard')
+        action = request.form.get('action')
+        if action == 'login':
+            # Lógica de login
+            username = request.form.get('user')
+            password = request.form.get('password')
+            users = load_data('users.json')
+            can_login, message = check_login_attempts(username)
+            if not can_login:
+                flash(message, 'error')
+                return render_template('login.html')
+            if username in users and users[username]['password'] == password:
+                if users[username]['role'] != 'guest':
+                    expiration_date = datetime.strptime(users[username]['expiration'], '%Y-%m-%d')
+                    if datetime.now() > expiration_date:
+                        flash('Conta expirada. Contate o suporte.', 'error')
+                        return render_template('login.html')
+                session['user_id'] = username
+                login_attempts[username] = {'count': 0, 'last_attempt': time.time()}
+                return redirect('/dashboard')
+            else:
+                flash('Usuário ou senha incorretos.', 'error')
+                return render_template('login.html')
+        elif action == 'register':
+            # Lógica de registro
+            username = request.form.get('user')
+            password = request.form.get('password')
+            if not username or not password:
+                flash('Usuário e senha são obrigatórios.', 'error')
+                return render_template('login.html')
+            users = load_data('users.json')
+            if username in users:
+                flash('Usuário já existe.', 'error')
+                return render_template('login.html')
+            # Handle affiliate
+            aff_code = request.args.get('aff')
+            referred_by = None
+            if aff_code:
+                for u, data in users.items():
+                    if data.get('affiliate_code') == aff_code:
+                        referred_by = u
+                        break
+            users[username] = {
+                'password': password,
+                'role': 'guest',
+                'expiration': '2099-12-31',  # Permanent for guests
+                'permissions': {},  # No modules
+                'modules': {m: 0 for m in module_status.keys()},
+                'read_notifications': [],
+                'referred_by': referred_by,
+                'affiliate_code': secrets.token_urlsafe(8) if referred_by else None
+            }
+            save_data(users, 'users.json')
+            flash('Registro concluído com sucesso! Faça login.', 'success')
+            return redirect('/')
         else:
-            flash('Usuário ou senha incorretos.', 'error')
+            flash('Ação inválida.', 'error')
+            return render_template('login.html')
+    # Para GET, renderiza o template unificado
     return render_template('login.html')
+    
 
 # Dashboard
 @app.route('/dashboard', methods=['GET', 'POST'])
