@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novidades - ConsultCenter</title>
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-purple: #6E44FF;
+            --secondary-purple: #A06CFF;
+            --accent-pink: #FF6BD6;
+            --background-dark: #121212;
+            --background-light: #1A1A1A;
+            --card-bg: rgba(25, 25, 25, 0.9);
+            --text-white: #E0E0E0;
+            --text-light: #A0A0A0;
+            --border-color: #333333;
+            --glow-purple: rgba(110, 68, 255, 0.5);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 10px 30px var(--shadow-dark);
+            --shadow-glow: 0 0 15px var(--glow-purple);
+            --font-family: 'Poppins', sans-serif;
+            --success: #00D68F;
+            --error: #FF3D71;
+            --warning: #FFB800;
+            --sidebar-width-collapsed: 80px;
+            --sidebar-width-expanded: 260px;
+            --header-height: 70px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+        }
+        body {
+            background: var(--background-dark);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* MAIN HEADER */
+        #main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: var(--header-height);
+            width: 100%;
+            background: rgba(18, 18, 18, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .welcome-message h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .welcome-message p {
+            font-size: 14px;
+            color: var(--text-light);
+            margin: 5px 0 0;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-icon-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--text-white);
+            cursor: pointer;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+        .header-icon-btn:hover {
+            background: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        /* MAIN CONTENT */
+        #main-content {
+            padding: 20px;
+            padding-top: calc(var(--header-height) + 20px);
+        }
+        /* NOVIDADES LIST */
+        .novidades-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .novidade-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+        }
+        .novidade-card img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .novidade-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 10px;
+        }
+        .novidade-desc {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+        }
+        .novidade-date {
+            font-size: 12px;
+            color: var(--text-light);
+            opacity: 0.7;
+        }
+        .novidade-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn-custom {
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary {
+            background: var(--primary-purple);
+            color: var(--text-white);
+            box-shadow: 0 5px 15px rgba(110, 68, 255, 0.4);
+        }
+        .btn-primary:hover {
+            background: var(--secondary-purple);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(110, 68, 255, 0.6);
+        }
+        .btn-danger {
+            background: var(--error);
+            color: var(--text-white);
+            box-shadow: 0 5px 15px rgba(255, 61, 113, 0.4);
+        }
+        .btn-danger:hover {
+            background: #FF5C8A;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(255, 61, 113, 0.6);
+        }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--background-dark); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-purple); }
+    </style>
+</head>
+<body>
+    <!-- MAIN HEADER -->
+    <header id="main-header">
+        <div class="welcome-message">
+            <h1>Novidades</h1>
+            <p>Veja as últimas atualizações</p>
+        </div>
+        <div class="header-actions">
+            {% if users[g.user_id]['role'] != 'guest' %}
+            <a href="/novidades/new" class="header-icon-btn"><svg data-lucide="plus"></svg></a>
+            {% endif %}
+            <a href="/dashboard" class="header-icon-btn"><svg data-lucide="arrow-left"></svg></a>
+        </div>
+    </header>
+    <!-- MAIN CONTENT -->
+    <main id="main-content">
+        <section class="novidades-section">
+            <div class="novidades-list">
+                {% for item in news %}
+                <div class="novidade-card">
+                    {% if item.image %}
+                    <img src="{{ item.image }}" alt="{{ item.title }}">
+                    {% endif %}
+                    <h3 class="novidade-title">{{ item.title }}</h3>
+                    <p class="novidade-desc">{{ item.desc }}</p>
+                    <p class="novidade-date">{{ item.date }}</p>
+                    {% if users[g.user_id]['role'] == 'admin' or item.sender == g.user_id %}
+                    <div class="novidade-actions">
+                        <a href="/novidades/edit/{{ item.id }}" class="btn-custom btn-primary">
+                            <svg data-lucide="edit"></svg> Editar
+                        </a>
+                        <form method="POST" action="/novidades/delete/{{ item.id }}">
+                            <button type="submit" class="btn-custom btn-danger" onclick="return confirm('Tem certeza que deseja excluir?');">
+                                <svg data-lucide="trash"></svg> Excluir
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p>Nenhuma novidade disponível no momento.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
