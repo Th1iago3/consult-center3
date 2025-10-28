@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response, session
+from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response, session, send_from_directory
 from flask_socketio import SocketIO, emit
 import json
 import os
@@ -312,7 +312,7 @@ def check_login_attempts(user_id):
 
 @app.before_request
 def security_check():
-    if request.endpoint not in ['login', '/@A30']:
+    if request.endpoint not in ['login', '/@A30', 'preview.jpg']:
         if not check_referrer() or not check_user_agent():
             log_access(request.endpoint, "Invalid referrer or user agent")
             return redirect('/')
@@ -373,7 +373,15 @@ def reset_session_cookies():
         return resp
     return jsonify({"error": "User not authenticated"}), 401
         
-        
+
+@app.route('/preview.jpg', methods=['GET'])
+def preview():
+    # Diretório atual (onde está o app.py)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Envia o arquivo preview.jpg
+    return send_from_directory(current_dir, 'preview.jpg')
+    
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
