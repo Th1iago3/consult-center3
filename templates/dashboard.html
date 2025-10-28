@@ -856,7 +856,7 @@
                     <div class="module-message" id="message-cpfdata"></div>
                 </div>
                 <!-- CPF C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv" data-status="{{ module_status.get('cpflv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
                     <h3 class="module-title">Localizar CPF (C&C Plus)</h3>
                     <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
