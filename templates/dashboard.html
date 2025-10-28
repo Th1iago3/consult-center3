@@ -885,9 +885,9 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot" id="status-dot-cpfdata"></div>
+                    <div class="status-dot" id="status-dot-cpf"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-cpfdata"></div>
+                    <div class="module-message" id="message-cpf"></div>
                 </div>
                 <!-- CPF (DATAPRIME) -->
                 <div class="module-card" onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" data-module-id="cpf2" data-status="{{ module_status.get('cpf2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}" data-limit="500">
@@ -919,9 +919,9 @@
                             <p class="request-count">{{ usage }}/{{ limit }}</p>
                         {% endwith %}
                     </div>
-                    <div class="status-dot" id="status-dot-cpf5"></div>
+                    <div class="status-dot" id="status-dot-vacinas"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-cpf5"></div>
+                    <div class="module-message" id="message-vacinas"></div>
                 </div>
 
                 <!-- CPF (SISREGII) -->
