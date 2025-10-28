@@ -238,7 +238,7 @@ def dashboard():
                 target_user = request.form.get('user')
                 if target_user in users:
                     return jsonify(users[target_user].get('modules', {}))
-    return render_template('dashboard.html', admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link)
+    return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link)
 
 # Admin Panel
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
