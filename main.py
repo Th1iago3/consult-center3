@@ -372,15 +372,14 @@ def reset_session_cookies():
         
         return resp
     return jsonify({"error": "User not authenticated"}), 401
-        
 
-@app.route('/preview.jpg', methods=['GET'])
+@app.route('/preview.jpg')
 def preview():
-    # Diretório atual (onde está o app.py)
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Envia o arquivo preview.jpg
-    return send_from_directory(current_dir, 'preview.jpg')
+    response = make_response(send_from_directory(current_dir, 'preview.jpg'))
+    response.headers['Content-Type'] = 'image/jpeg'
+    response.headers['Cache-Control'] = 'public, max-age=31536000'
+    return response
     
 @app.route('/', methods=['GET', 'POST'])
 def login():
