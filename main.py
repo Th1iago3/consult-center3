@@ -229,7 +229,7 @@ def dashboard():
     unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
     is_admin = user['role'] == 'admin'
     is_guest = user['role'] == 'guest'
-    affiliate_link = None if is_guest else url_for('register', aff=user.get('affiliate_code'), _external=True)
+    affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
     if request.method == 'POST':
         # Handle module usage view or other admin actions
         if is_admin:
