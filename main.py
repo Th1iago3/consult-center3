@@ -487,12 +487,9 @@ def delete_novidade(news_id):
     flash('Novidade excluída com sucesso!', 'success')
     return redirect('/novidades')
 
-# Dynamic Module Handler
-
 # Module Routes
 
 @app.route('/modulos/mae', methods=['GET', 'POST'])
-@module_decorator
 def mae():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -535,7 +532,6 @@ def mae():
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 
 @app.route('/modulos/pai', methods=['GET', 'POST'])
-@module_decorator
 def pai():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -578,7 +574,6 @@ def pai():
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
-@module_decorator
 def cnpjcompleto():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -646,7 +641,6 @@ def cnpjcompleto():
     return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
 
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
-@module_decorator
 def cpf():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -683,7 +677,6 @@ def cpf():
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
-@module_decorator
 def cpf2():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -720,7 +713,6 @@ def cpf2():
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
-@module_decorator
 def cpfdata():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -850,7 +842,6 @@ def cpfdata():
     return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
-@module_decorator
 def cpf3():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -887,7 +878,6 @@ def cpf3():
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
-@module_decorator
 def cpflv():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -929,7 +919,6 @@ def cpflv():
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
-@module_decorator
 def vacinas():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -973,7 +962,6 @@ def vacinas():
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
 
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
-@module_decorator
 def datanome():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1036,7 +1024,6 @@ def datanome():
                            results=results, nome=nome, datanasc=datanasc)
 
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
-@module_decorator
 def placalv():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1079,7 +1066,6 @@ def placalv():
                            result=result, placa=placa)
 
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
-@module_decorator
 def tellv():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1122,7 +1108,6 @@ def tellv():
                            result=result, telefone=telefone)
 
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
-@module_decorator
 def teldual():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1159,7 +1144,6 @@ def teldual():
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
 
 @app.route('/modulos/tel', methods=['GET', 'POST'])
-@module_decorator
 def tel():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1196,7 +1180,6 @@ def tel():
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
 
 @app.route('/modulos/placa', methods=['GET', 'POST'])
-@module_decorator
 def placa():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1235,7 +1218,6 @@ def placa():
                            result=result, placa=placa)
 
 @app.route('/modulos/placaestadual', methods=['GET', 'POST'])
-@module_decorator
 def placaestadual():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1272,7 +1254,6 @@ def placaestadual():
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
 
 @app.route('/modulos/pix', methods=['GET', 'POST'])
-@module_decorator
 def pix():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1311,7 +1292,6 @@ def pix():
                            result=result, chave=chave)
 
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
-@module_decorator
 def fotor():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1388,7 +1368,6 @@ def fotor():
     )
 
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
-@module_decorator
 def nomelv():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1433,7 +1412,6 @@ def nomelv():
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
 @app.route('/modulos/nome', methods=['GET', 'POST'])
-@module_decorator
 def nome():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1470,7 +1448,6 @@ def nome():
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
 @app.route('/modulos/ip', methods=['GET', 'POST'])
-@module_decorator
 def ip():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1516,7 +1493,6 @@ def ip():
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
 
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
-@module_decorator
 def nome2():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1553,7 +1529,6 @@ def nome2():
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
 @app.route('/modulos/likeff', methods=['GET', 'POST'])
-@module_decorator
 def likeff():
     users = load_data('users.json')
     user = users[g.user_id]
