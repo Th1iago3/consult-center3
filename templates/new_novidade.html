@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Novidade - ConsultCenter</title>
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-purple: #6E44FF;
+            --secondary-purple: #A06CFF;
+            --accent-pink: #FF6BD6;
+            --background-dark: #121212;
+            --background-light: #1A1A1A;
+            --card-bg: rgba(25, 25, 25, 0.9);
+            --text-white: #E0E0E0;
+            --text-light: #A0A0A0;
+            --border-color: #333333;
+            --glow-purple: rgba(110, 68, 255, 0.5);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 10px 30px var(--shadow-dark);
+            --shadow-glow: 0 0 15px var(--glow-purple);
+            --font-family: 'Poppins', sans-serif;
+            --success: #00D68F;
+            --error: #FF3D71;
+            --header-height: 70px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+        }
+        body {
+            background: var(--background-dark);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* MAIN HEADER */
+        #main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: var(--header-height);
+            width: 100%;
+            background: rgba(18, 18, 18, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .welcome-message h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .welcome-message p {
+            font-size: 14px;
+            color: var(--text-light);
+            margin: 5px 0 0;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-icon-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--text-white);
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+        .header-icon-btn:hover {
+            background: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        /* MAIN CONTENT */
+        #main-content {
+            padding: 20px;
+            padding-top: calc(var(--header-height) + 20px);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+        input[type="text"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-white);
+            font-size: 15px;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(110, 68, 255, 0.2);
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: var(--background-light);
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        .file-input-label:hover {
+            border-color: var(--primary-purple);
+            color: var(--text-white);
+        }
+        .file-input-label svg {
+            width: 20px;
+            height: 20px;
+        }
+        .btn-submit {
+            background: var(--primary-purple);
+            color: white;
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(110, 68, 255, 0.4);
+        }
+        .btn-submit:hover {
+            background: var(--secondary-purple);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(110, 68, 255, 0.6);
+        }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .btn-cancel {
+            background: transparent;
+            color: var(--text-light);
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-cancel:hover {
+            background: var(--background-light);
+            color: var(--text-white);
+            border-color: var(--primary-purple);
+        }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--background-dark); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-purple); }
+    </style>
+</head>
+<body>
+    <!-- MAIN HEADER -->
+    <header id="main-header">
+        <div class="welcome-message">
+            <h1>Nova Novidade</h1>
+            <p>Crie um anúncio para todos os usuários</p>
+        </div>
+        <div class="header-actions">
+            <a href="/novidades" class="header-icon-btn">
+                <svg data-lucide="arrow-left"></svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main id="main-content">
+        <div class="form-card">
+            <form method="POST" enctype="multipart/form-data" id="novidadeForm">
+                <div class="form-group">
+                    <label for="title">Título da Novidade</label>
+                    <input type="text" name="title" id="title" required placeholder="Ex: Novo recurso disponível!">
+                </div>
+
+                <div class="form-group">
+                    <label for="desc">Descrição</label>
+                    <textarea name="desc" id="desc" required placeholder="Descreva os detalhes da novidade..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Imagem (opcional)</label>
+                    <label for="image" class="file-input-label">
+                        <svg data-lucide="image"></svg>
+                        <span id="file-name">Nenhum arquivo selecionado</span>
+                    </label>
+                    <input type="file" name="image" id="image" accept=".jpg,.jpeg,.png,.gif" hidden>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/novidades" class="btn-cancel">
+                        <svg data-lucide="x"></svg> Cancelar
+                    </a>
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <svg data-lucide="send"></svg> Publicar Novidade
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+
+            // Atualiza nome do arquivo selecionado
+            const fileInput = document.getElementById('image');
+            const fileNameSpan = document.getElementById('file-name');
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) {
+                    fileNameSpan.textContent = fileInput.files[0].name;
+                } else {
+                    fileNameSpan.textContent = 'Nenhum arquivo selecionado';
+                }
+            });
+
+            // Validação e loading no submit
+            const form = document.getElementById('novidadeForm');
+            const submitBtn = document.getElementById('submitBtn');
+            form.addEventListener('submit', function(e) {
+                const title = document.getElementById('title').value.trim();
+                const desc = document.getElementById('desc').value.trim();
+
+                if (!title || !desc) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Campos obrigatórios',
+                        text: 'Preencha o título e a descrição.',
+                        background: '#1A1A1A',
+                        color: '#E0E0E0',
+                        confirmButtonColor: '#6E44FF'
+                    });
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<svg data-lucide="loader-2" class="spin"></svg> Publicando...';
+                lucide.createIcons();
+            });
+        });
+
+        // Animação de loading
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .spin { animation: spin 1s linear infinite; }
+            @keyframes spin { to { transform: rotate(360deg); } }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+    <!-- Flash Messages (Flask) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              Swal.fire({
+                icon: '{{ 'success' if category == 'success' else 'error' }}',
+                title: '{{ 'Sucesso!' if category == 'success' else 'Erro' }}',
+                text: '{{ message }}',
+                background: '#1A1A1A',
+                color: '#E0E0E0',
+                confirmButtonColor: '#6E44FF',
+                timer: 3000,
+                timerProgressBar: true
+              });
+            });
+          </script>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+</body>
+</html>
