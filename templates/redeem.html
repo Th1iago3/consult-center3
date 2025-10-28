@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resgatar Gift - ConsultCenter</title>
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        :root {
+            --primary-purple: #6E44FF;
+            --secondary-purple: #A06CFF;
+            --accent-pink: #FF6BD6;
+            --background-dark: #121212;
+            --background-light: #1A1A1A;
+            --card-bg: rgba(25, 25, 25, 0.9);
+            --text-white: #E0E0E0;
+            --text-light: #A0A0A0;
+            --border-color: #333333;
+            --glow-purple: rgba(110, 68, 255, 0.5);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 10px 30px var(--shadow-dark);
+            --shadow-glow: 0 0 15px var(--glow-purple);
+            --font-family: 'Poppins', sans-serif;
+            --success: #4CAF50;
+            --error: #F44336;
+            --warning: #FF9800;
+            --border-radius: 15px;
+            --transition: all 0.3s ease;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background: linear-gradient(135deg, var(--background-dark) 0%, var(--background-light) 100%);
+            color: var(--text-white);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        .redeem-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .redeem-container h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .redeem-container h2 i {
+            color: var(--primary-purple);
+            width: 24px;
+            height: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text-white);
+            margin-bottom: 8px;
+            justify-content: flex-start;
+        }
+        .form-group label i {
+            color: var(--primary-purple);
+            width: 18px;
+            height: 18px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text-white);
+            transition: var(--transition);
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 10px var(--glow-purple);
+        }
+        .button {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+            border: none;
+            color: var(--text-white);
+            padding: 14px 24px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--secondary-purple);
+            text-decoration: none;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: var(--transition);
+            gap: 8px;
+        }
+        .back-link:hover {
+            color: var(--primary-purple);
+        }
+        /* SweetAlert2 Enhanced */
+        .swal2-popup {
+            background: var(--card-bg) !important;
+            color: var(--text-white) !important;
+            border: 1px solid var(--primary-purple) !important;
+            box-shadow: var(--shadow-glow) !important;
+            font-family: var(--font-family) !important;
+        }
+        .swal2-title {
+            color: var(--text-white) !important;
+        }
+        .swal2-content {
+            color: var(--text-light) !important;
+        }
+        .swal2-confirm {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)) !important;
+            border: none !important;
+            box-shadow: 0 5px 15px var(--glow-purple) !important;
+        }
+        .swal2-confirm:hover {
+            background: linear-gradient(135deg, var(--secondary-purple), var(--accent-pink)) !important;
+            transform: translateY(-2px) !important;
+        }
+        /* Responsivity */
+        @media (max-width: 576px) {
+            .redeem-container {
+                padding: 20px;
+            }
+            h2 {
+                font-size: 24px;
+            }
+            .button {
+                padding: 12px 18px;
+            }
+        }
+    </style>
+</head>
+<body onload="lucide.createIcons();">
+    <div class="redeem-container">
+        <h2><i data-lucide="gift"></i> Resgatar Gift</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <script>
+                    {% for category, message in messages %}
+                        Swal.fire({
+                            icon: '{{ category }}',
+                            title: '{{ category|capitalize }}!',
+                            text: '{{ message }}',
+                            confirmButtonColor: 'var(--primary-purple)',
+                        });
+                    {% endfor %}
+                </script>
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div class="form-group">
+                <label for="code"><i data-lucide="key"></i> Código do Gift</label>
+                <input type="text" name="code" id="code" placeholder="Insira o código aqui" required>
+            </div>
+            <button type="submit" class="button">
+                <i data-lucide="check"></i> Resgatar
+            </button>
+        </form>
+        <a href="/dashboard" class="back-link">
+            <i data-lucide="arrow-left"></i> Voltar ao Dashboard
+        </a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html>
