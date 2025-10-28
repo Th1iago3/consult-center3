@@ -16,7 +16,7 @@
             --primary-purple: #6E44FF; /* Roxo principal */
             --secondary-purple: #A06CFF; /* Roxo secundário */
             --accent-pink: #FF6BD6; /* Destaque (opcional) */
-           
+          
             /* Cores de Fundo e Texto */
             --background-dark: #121212; /* Fundo principal muito escuro */
             --background-light: #1A1A1A; /* Fundo secundário/card */
@@ -25,11 +25,11 @@
             --text-light: #A0A0A0; /* Texto secundário/sutil */
             --border-color: #333333; /* Cor da borda sutil */
             /* Efeitos de Sombra e Brilho */
-            --glowximity: rgba(110, 68, 255, 0.5); /* Brilho do roxo */
+            --glow-purple: rgba(110, 68, 255, 0.5); /* Brilho do roxo */
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
-            --shadow-glow: 0 0 15px var(--glowximity);
-           
+            --shadow-glow: 0 0 15px var(--glow-purple);
+          
             /* Tipografia */
             --font-family: 'Poppins', sans-serif;
             /* Adicionais para Admin */
@@ -56,158 +56,11 @@
             display: flex;
             overflow-x: hidden;
         }
-        /* Enhanced Sidebar */
-        #sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 80px;
-            height: 100vh;
-            background: var(--card-bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-            transition: width 0.6s var(--transition);
-            z-index: 1100;
-            box-shadow: var(--shadow-card);
-            border-right: 1px solid var(--border-color);
-            overflow-y: auto;
-        }
-        #sidebar.expanded {
-            width: 280px;
-        }
-        .logo-sidebar {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            text-align: center;
-            color: var(--primary-purple);
-            text-shadow: 0 0 5px var(--glowximity);
-            display: none;
-        }
-        #sidebar.expanded .logo-sidebar {
-            display: block;
-        }
-        .sidebar-toggle {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 15px 0;
-            border-radius: var(--border-radius);
-            color: var(--text-light);
-            font-size: 24px;
-            cursor: pointer;
-            transition: var(--transition);
-            background: rgba(110, 68, 255, 0.2);
-            border: 1px solid var(--primary-purple);
-        }
-        #sidebar.expanded .sidebar-toggle i {
-            transform: rotate(180deg);
-        }
-        .sidebar-toggle:hover {
-            background: var(--primary-purple);
-            color: var(--text-white);
-            transform: scale(1.05);
-            box-shadow: var(--shadow-glow);
-        }
-        .toggle-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            margin: 8px 0;
-            transition: var(--transition);
-            width: 90%;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-        .toggle-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent, var(--glowximity), transparent);
-            transition: left 0.5s;
-        }
-        .toggle-item:hover::before {
-            left: 100%;
-        }
-        .toggle-item:hover {
-            border-color: var(--primary-purple);
-            transform: translateX(5px);
-            box-shadow: var(--shadow-glow);
-        }
-        .toggle-item span {
-            font-size: 14px;
-            color: var(--text-white);
-            display: none;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 180px;
-        }
-        #sidebar.expanded .toggle-item span {
-            display: block;
-        }
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 24px;
-            flex-shrink: 0;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--border-color);
-            transition: var(--transition);
-            border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 2px;
-            bottom: 2px;
-            background: var(--text-white);
-            transition: var(--transition);
-            border-radius: 50%;
-            box-shadow: 0 2px 4px var(--shadow-dark);
-        }
-        input:checked + .slider {
-            background: var(--success);
-        }
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
         /* Main Content with Tabs */
         .main-content {
-            margin-left: 80px;
             flex: 1;
             padding: 20px;
-            transition: margin-left 0.6s var(--transition);
             overflow-y: auto;
-        }
-        #sidebar.expanded ~ .main-content {
-            margin-left: 280px;
         }
         .tabs {
             display: flex;
@@ -359,7 +212,7 @@
         .form-group select:focus {
             outline: none;
             border-color: var(--primary-purple);
-            box-shadow: 0 0 10px var(--glowximity);
+            box-shadow: 0 0 10px var(--glow-purple);
         }
         .form-group select {
             appearance: none;
@@ -566,7 +419,7 @@
         }
         .message-modal-content textarea:focus {
             border-color: var(--primary-purple);
-            box-shadow: 0 0 10px var(--glowximity);
+            box-shadow: 0 0 10px var(--glow-purple);
             outline: none;
         }
         .message-modal-content .buttons {
@@ -606,6 +459,61 @@
             font-size: 13px;
             margin: 0;
         }
+        /* Gifts Tab */
+        .gifts-section {
+            text-align: center;
+        }
+        #giftsList {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            background: var(--background-light);
+            animation: fadeIn 0.5s ease-out;
+        }
+        .gift-info {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .gift-info:hover {
+            border-color: var(--primary-purple);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+        .gift-info p {
+            font-size: 13px;
+            color: var(--text-light);
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .gift-info p strong {
+            color: var(--text-white);
+            min-width: 120px;
+        }
+        /* Novidades Tab */
+        .novidades-section {
+            text-align: center;
+        }
+        .novidade-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-group input[type="file"] {
+            padding: 0;
+            background: transparent;
+            border: none;
+        }
         /* Back Link */
         .back-link {
             display: inline-flex;
@@ -641,7 +549,7 @@
         .swal2-confirm, .swal2-cancel {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)) !important;
             border: none !important;
-            box-shadow: 0 5px 15px var(--glowximity) !important;
+            box-shadow: 0 5px 15px var(--glow-purple) !important;
         }
         .swal2-confirm:hover {
             background: linear-gradient(135deg, var(--secondary-purple), var(--accent-pink)) !important;
@@ -656,18 +564,8 @@
         }
         /* Responsivity */
         @media (max-width: 992px) {
-            #sidebar {
-                width: 70px;
-            }
-            #sidebar.expanded {
-                width: 250px;
-            }
             .main-content {
-                margin-left: 70px;
                 padding: 15px;
-            }
-            #sidebar.expanded ~ .main-content {
-                margin-left: 250px;
             }
             .tabs {
                 flex-direction: column;
@@ -682,15 +580,6 @@
         @media (max-width: 576px) {
             .main-content {
                 padding: 10px;
-                margin-left: 0 !important;
-            }
-            #sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-            #sidebar.expanded {
-                transform: translateX(0);
-                width: 100% !important;
             }
             h2 {
                 font-size: 24px;
@@ -705,191 +594,6 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div id="sidebar">
-        <div class="logo-sidebar">
-            <span class="consult">Consult</span><span class="center">Admin</span>
-        </div>
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
-            <i data-lucide="chevron-left"></i>
-        </button>
-        <div class="toggle-item" data-module="cpfdata">
-            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar CPF (DATASUS)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="cpfdata" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="cpflv">
-            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar CPF (C&C Plus)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="cpflv" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="cpf">
-            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar CPF (DATA)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="cpf" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="cpf2">
-            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar CPF (DATAPRIME)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="cpf2" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="cpf3">
-            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar CPF (SISREGII)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="cpf3" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="vacinas">
-            <i data-lucide="shield" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta Vacina (SIPNI)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="vacinas" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="nomelv">
-            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar Nome (C&C Plus)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="nomelv" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="nome">
-            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar Nome (DATA)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="nome" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="nome2">
-            <i data-lucide="user" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar Nome (DATAPRIME)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="nome2" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="tel">
-            <i data-lucide="phone" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta TELEFONE (DATA)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="tel" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="telLv">
-            <i data-lucide="phone" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta TELEFONE (C&C Plus)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="telLv" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="teldual">
-            <i data-lucide="phone" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta TELEFONE (NACIONAL)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="teldual" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="datanome">
-            <i data-lucide="calendar" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar DATA de NASCIMENTO</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="datanome" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="placa">
-            <i data-lucide="car" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta Veicular (NACIONAL)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="placa" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="placaestadual">
-            <i data-lucide="car" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta Veicular (ESTADUAL)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="placaestadual" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="placalv">
-            <i data-lucide="car" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta Veicular (C&C Plus)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="placalv" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="fotor">
-            <i data-lucide="camera" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta Foto (C&C Plus)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="fotor" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="pix">
-            <i data-lucide="qr-code" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consulta PIX (NACIONAL)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="pix" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="ip">
-            <i data-lucide="globe" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Localizar IP (C&C Plus)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="ip" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="mae">
-            <i data-lucide="id-card" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consultar Mae</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="mae" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-         <div class="toggle-item" data-module="pai">
-            <i data-lucide="id-card" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consultar pai</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="mae" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-item" data-module="cnpjcompleto">
-            <i data-lucide="building-2" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
-            <span>Consultar CNPJ</span>
-            <label class="toggle-switch">
-                <input type="checkbox" data-module="cnpjcompleto" onchange="toggleModule(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-    </div>
     <!-- Main Content -->
     <div class="main-content">
         <!-- Tabs -->
@@ -905,6 +609,12 @@
             </button>
             <button class="tab-button" onclick="openTab(event, 'messages')">
                 <i data-lucide="mail"></i> Mensagens
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'gifts')">
+                <i data-lucide="gift"></i> Gifts
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'novidades')">
+                <i data-lucide="sparkles"></i> Novidades
             </button>
         </div>
         <!-- Dashboard Tab -->
@@ -1166,6 +876,48 @@
                 </div>
             </div>
         </div>
+        <!-- Gifts Tab -->
+        <div id="gifts" class="tab-content">
+            <div class="gifts-section">
+                <h2>Gerenciar Gifts</h2>
+                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Crie gifts para conceder permissões a usuários.</p>
+                <form id="giftForm" method="POST">
+                    <input type="hidden" name="action" value="create_gift">
+                    <div class="form-group">
+                        <label for="modules"><i data-lucide="package"></i> Módulos (separados por vírgula ou 'all')</label>
+                        <input type="text" name="modules" id="modules" placeholder="all ou cpf,tel,pix" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expiration_days"><i data-lucide="calendar"></i> Dias de Expiração</label>
+                        <input type="number" name="expiration_days" id="expiration_days" value="30" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="uses"><i data-lucide="repeat"></i> Usos Permitidos</label>
+                        <input type="number" name="uses" id="uses" value="1" min="1" required>
+                    </div>
+                    <button type="submit" class="button">
+                        <i data-lucide="gift"></i> Criar Gift
+                    </button>
+                </form>
+                <button class="button secondary" onclick="toggleGiftsView()" style="width: auto; margin-top: 20px; margin-bottom: 20px;">
+                    <i data-lucide="eye"></i> Ver Gifts
+                </button>
+                <div id="giftsList"></div>
+            </div>
+        </div>
+        <!-- Novidades Tab -->
+        <div id="novidades" class="tab-content">
+            <div class="novidades-section">
+                <h2>Gerenciar Novidades</h2>
+                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie novidades com título, descrição e imagem.</p>
+                <a href="/novidades/new" class="button" style="width: auto; margin-bottom: 20px;">
+                    <i data-lucide="plus"></i> Nova Novidade
+                </a>
+                <a href="/novidades" class="button secondary" style="width: auto; margin-bottom: 20px;">
+                    <i data-lucide="eye"></i> Ver Novidades
+                </a>
+            </div>
+        </div>
     </div>
     <!-- Message Modal -->
     <div id="messageModal" class="message-modal">
@@ -1281,21 +1033,15 @@
             })
             .catch(error => {
                 Swal.fire({
-                        icon: 'error',
-                        title: 'Erro!',
-                        text: 'Erro ao atualizar o módulo: ' + error.message,
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                    });
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro ao atualizar o módulo: ' + error.message,
+                    background: 'var(--background-light)',
+                    color: 'var(--text-white)',
+                    confirmButtonColor: 'var(--primary-purple)',
+                });
                 checkbox.checked = !isEnabled;
             });
-        }
-        // Toggle Sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('expanded');
-            lucide.createIcons();
         }
         // Toggle Fields
         function toggleFields() {
@@ -1452,6 +1198,87 @@
                 });
             }
         }
+        // Toggle Gifts View
+        let giftsVisible = false;
+        function toggleGiftsView() {
+            const giftsList = document.getElementById('giftsList');
+            if (giftsVisible) {
+                giftsList.style.display = 'none';
+                giftsVisible = false;
+            } else {
+                // Fetch gifts
+                // Assuming backend returns {gifts: {...}}
+                fetch('/i/settings/admin', {
+                    method: 'POST',
+                    body: new URLSearchParams({ action: 'view_gifts' }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    giftsList.innerHTML = '';
+                    Object.entries(data.gifts || {}).forEach(([code, info]) => {
+                        const giftInfo = document.createElement('div');
+                        giftInfo.className = 'gift-info';
+                        giftInfo.innerHTML = `
+                            <p><strong>Código:</strong> ${code}</p>
+                            <p><strong>Módulos:</strong> ${info.modules === 'all' ? 'Todos' : info.modules.join(', ')}</p>
+                            <p><strong>Dias de Expiração:</strong> ${info.expiration_days}</p>
+                            <p><strong>Usos Restantes:</strong> ${info.uses_left}</p>
+                            <p><strong>Criado em:</strong> ${info.created}</p>
+                            <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${code}').then(() => { this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar Código';, 2000); })">Copiar Código</button>
+                        `;
+                        giftsList.appendChild(giftInfo);
+                    });
+                    giftsList.style.display = 'block';
+                    giftsVisible = true;
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: 'Erro ao carregar gifts: ' + error.message,
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
+                    });
+                });
+            }
+        }
+        // Submissão do Gift Form
+        document.getElementById('giftForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch('/i/settings/admin', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    Swal.fire({
+                        icon: data.category === 'success' ? 'success' : 'error',
+                        title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
+                        text: data.message,
+                        html: data.category === 'success' ? `<p>Código: ${data.code}</p>` : '',
+                        background: 'var(--background-light)',
+                        color: 'var(--text-white)',
+                        confirmButtonColor: 'var(--primary-purple)',
+                        timer: 3000,
+                        timerProgressBar: true,
+                    });
+                    event.target.reset();
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro ao criar gift: ' + error.message,
+                    background: 'var(--background-light)',
+                    color: 'var(--text-white)',
+                    confirmButtonColor: 'var(--primary-purple)',
+                });
+            });
+        });
         // Mensagens - Modal
         function openMessageModal() {
             document.getElementById('messageModal').classList.add('active');
