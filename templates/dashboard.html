@@ -979,7 +979,7 @@
                 </div>
                 <!-- PIX NACIONAL -->
                 <div class="module-card" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix" data-status="{{ module_status.get('pix', 'OFF') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}" data-limit="500">
-                    <div class="module-icon-wrapper"><svg data-lucide="qrcode"></svg></div>
+                    <div class="module-icon-wrapper"><svg data-lucide="layout-dashboard"></svg></div>
                     <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
                     <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
                     <div class="module-footer">
@@ -994,6 +994,7 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-pix"></div>
                 </div>
+                
                  <div class="module-card" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}" data-limit="500">
                     <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
                     <h3 class="module-title">Localizar NOME (C&C Plus)</h3>
