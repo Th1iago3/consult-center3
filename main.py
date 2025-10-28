@@ -1282,7 +1282,7 @@ def tellv():
                         return render_template('tellv.html', is_admin=is_admin, notifications=user_notifications,
                                                result=result, telefone=telefone)
 
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefone2"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
                 logger.info(f"Requisição para API (tellv): {url}")
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
