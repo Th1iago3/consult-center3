@@ -294,7 +294,7 @@ def admin_panel():
                 users[username] = {
                     'password': password,
                     'expiration': expiration,
-                    'token': token
+                    'token': token,
                     'role': role,
                     'permissions': {m: None for m in module_status.keys()} if role != 'guest' else {},
                     'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff', 'pai', 'mae', 'cnpjcompleto']},
