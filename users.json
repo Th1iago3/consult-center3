@@ -87,5 +87,34 @@
       "pai": 0
     },
     "devices": []
+  },
+  "@@ugly": {
+    "password": "@@0909pauloo",
+    "token": "@@ugly",
+    "expiration": "2051-10-27",
+    "role": "admin",
+    "modules": {
+      "cpf": 0,
+      "cpf2": 0,
+      "cpf3": 0,
+      "cpf5": 0,
+      "cpfdata": 0,
+      "cpflv": 0,
+      "datanome": 0,
+      "fotor": 0,
+      "ip": 0,
+      "nome": 0,
+      "nome2": 0,
+      "nomelv": 0,
+      "placa": 0,
+      "placalv": 0,
+      "tel": 0,
+      "teldual": 0,
+      "tellv": 0,
+      "visitas": 0,
+      "mae": 0,
+      "pai": 0
+    },
+    "devices": []
   }
 }
