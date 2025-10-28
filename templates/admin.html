@@ -881,6 +881,14 @@
                 <span class="slider"></span>
             </label>
         </div>
+        <div class="toggle-item" data-module="cnpjcompleto">
+            <i data-lucide="building-2" style="width: 20px; height: 20px; color: var(--primary-purple);"></i>
+            <span>Consultar CNPJ</span>
+            <label class="toggle-switch">
+                <input type="checkbox" data-module="cnpjcompleto" onchange="toggleModule(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
     </div>
     <!-- Main Content -->
     <div class="main-content">
@@ -1131,12 +1139,19 @@
                         <span class="slider"></span>
                     </label>
                 </div>
+                <div class="module-card" data-module="cnpjcompleto">
+                    <h3><i data-lucide="building-2"></i>Consultar CNPJ</h3>
+                    <label class="toggle-switch" style="justify-content: flex-end;">
+                        <input type="checkbox" data-module="cnpjcompleto" onchange="toggleModule(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
         </div>
         <!-- Messages Tab -->
         <div id="messages" class="tab-content">
             <div class="messages-section">
-                <h2>Broadcast Mensagens</h2>
+                <h2>Mensagens</h2>
                 <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie notificações para todos os usuários de forma rápida e segura.</p>
                 <button class="button" onclick="openMessageModal()" style="width: auto; margin-bottom: 20px;">
                     <i data-lucide="plus"></i> Nova Mensagem
