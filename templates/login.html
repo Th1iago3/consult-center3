@@ -28,7 +28,7 @@
             --primary-purple: #6E44FF; /* Roxo principal */
             --secondary-purple: #A06CFF; /* Roxo secundário */
             --accent-pink: #FF6BD6; /* Destaque (opcional) */
-           
+          
             /* Cores de Fundo e Texto */
             --background-dark: #121212; /* Fundo principal muito escuro */
             --background-light: #1A1A1A; /* Fundo secundário/card */
@@ -41,7 +41,7 @@
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
             --shadow-glow: 0 0 15px var(--glowximity);
-           
+          
             /* Tipografia */
             --font-family: 'Poppins', sans-serif;
         }
@@ -618,7 +618,7 @@
             font-size: 14px;
         }
         /* --------------------------------------------------
-        9. MODAL DE LOGIN
+        9. MODAL DE LOGIN E REGISTRO
         -------------------------------------------------- */
         .login-modal-overlay {
             position: fixed;
@@ -685,6 +685,37 @@
         .modal-subtitle {
             color: var(--text-light);
             font-size: 16px;
+        }
+        /* Tabs para Login e Registro */
+        .modal-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            position: relative;
+        }
+        .tab-btn.active {
+            color: var(--primary-purple);
+            border-bottom-color: var(--primary-purple);
+        }
+        .tab-btn:hover {
+            color: var(--text-white);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
         }
         .form-group {
             margin-bottom: 20px;
@@ -817,7 +848,7 @@
             .section-subtitle {
                 font-size: 16px;
             }
-           
+          
             .pricing-card, .feature-card, .contact-card {
                 padding: 25px;
             }
@@ -1086,8 +1117,8 @@
                     </div>
                 </div>
             </section>
-           
-            <!-- Modal de Login -->
+          
+            <!-- Modal de Login e Registro -->
             <div class="login-modal-overlay" id="login-modal-overlay" onclick="hideLogin()">
                 <div class="login-modal" id="login-modal" onclick="event.stopPropagation()">
                     <button class="close-btn" onclick="hideLogin()"><i data-lucide="x"></i></button>
@@ -1101,31 +1132,61 @@
                         {% endwith %}
                         <i data-lucide="lock" class="modal-icon"></i>
                         <h3 class="modal-title">Acesso ao ConsultCenter</h3>
-                        <p class="modal-subtitle">Entre com suas credenciais para acessar a plataforma.</p>
+                        <p class="modal-subtitle">Escolha uma opção abaixo para continuar.</p>
                     </div>
-                    <form id="loginForm" method="POST" action="/">
-                        <div class="form-group">
-                            <label for="user"><i data-lucide="user"></i> Usuário</label>
-                            <input type="text" id="user" name="user" placeholder="Seu usuário ou e-mail" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password"><i data-lucide="key"></i> Senha</label>
-                            <input type="password" id="password" name="password" placeholder="Sua senha" required>
-                        </div>
-                        <div class="form-options">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="showPassword" name="showPassword">
-                                <label for="showPassword">Mostrar Senha</label>
-                            </div>
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="rememberMe" name="rememberMe">
-                                <label for="rememberMe">Lembrar de mim</label>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-custom btn-primary login-submit full-width">
-                            Entrar <i data-lucide="arrow-right" class="icon-right"></i>
+                    <!-- Tabs -->
+                    <div class="modal-tabs">
+                        <button class="tab-btn active" onclick="switchTab('login-tab')">
+                            <i data-lucide="log-in"></i> Entrar
                         </button>
-                    </form>
+                        <button class="tab-btn" onclick="switchTab('register-tab')">
+                            <i data-lucide="user-plus"></i> Registrar
+                        </button>
+                    </div>
+                    <!-- Tab Login -->
+                    <div id="login-tab" class="tab-content active">
+                        <form id="loginForm" method="POST" action="/">
+                            <input type="hidden" name="action" value="login">
+                            <div class="form-group">
+                                <label for="user"><i data-lucide="user"></i> Usuário</label>
+                                <input type="text" id="user" name="user" placeholder="Seu usuário ou e-mail" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password"><i data-lucide="key"></i> Senha</label>
+                                <input type="password" id="password" name="password" placeholder="Sua senha" required>
+                            </div>
+                            <div class="form-options">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="showPassword" name="showPassword">
+                                    <label for="showPassword">Mostrar Senha</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                                    <label for="rememberMe">Lembrar de mim</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-custom btn-primary login-submit full-width">
+                                Entrar <i data-lucide="arrow-right" class="icon-right"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <!-- Tab Registro -->
+                    <div id="register-tab" class="tab-content">
+                        <form id="registerForm" method="POST" action="/">
+                            <input type="hidden" name="action" value="register">
+                            <div class="form-group">
+                                <label for="reg-user"><i data-lucide="user"></i> Usuário</label>
+                                <input type="text" id="reg-user" name="user" placeholder="Nome de usuário" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reg-password"><i data-lucide="key"></i> Senha</label>
+                                <input type="password" id="reg-password" name="password" placeholder="Senha" required>
+                            </div>
+                            <button type="submit" class="btn-custom btn-primary login-submit full-width">
+                                Registrar <i data-lucide="arrow-right" class="icon-right"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </main>
@@ -1142,7 +1203,7 @@
     <script>
         AOS.init();
         // JavaScript EMBUTIDO - Funcionalidades Aprimoradas
-      
+     
         // Funções Globais para o Modal de Login
         function showLogin() {
             const modalOverlay = document.getElementById('login-modal-overlay');
@@ -1158,6 +1219,15 @@
                 modalOverlay.style.display = 'none';
             }, 300);
         }
+        // Função para alternar entre tabs (Login/Register)
+        function switchTab(tabId) {
+            // Remover 'active' de todos os tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            // Adicionar 'active' ao tab selecionado
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
         // Função auxiliar para rolagem (usada nos botões CTA)
         function scrollToSection(id) {
             const section = document.getElementById(id);
@@ -1168,7 +1238,7 @@
                 });
             }
         }
-      
+     
         document.addEventListener('DOMContentLoaded', () => {
             const loader = document.getElementById('loader');
             const menuToggle = document.getElementById('menu-toggle');
@@ -1230,7 +1300,7 @@
             allNavItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                  
+                 
                     // Fechar submenu se estiver aberto
                     if (submenu.classList.contains('active')) {
                         menuToggle.click();
@@ -1240,13 +1310,13 @@
                     if (targetSection) {
                         // Animação de saída antes de rolar
                         mainContainer.style.opacity = '0';
-                      
+                     
                         setTimeout(() => {
                             window.scrollTo({
                                 top: targetSection.offsetTop - 80, // Ajuste para o header fixo
                                 behavior: 'smooth'
                             });
-                          
+                         
                             // Atualizar o hash da URL
                             window.location.hash = targetId.replace('-section', '');
                             // Animação de entrada após rolar
@@ -1257,7 +1327,7 @@
                     }
                 });
             });
-          
+         
             // 4. Observador para destacar o item de menu ativo
             const sections = document.querySelectorAll('section');
             const options = {
@@ -1269,7 +1339,7 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const currentId = entry.target.id;
-                      
+                     
                         // Remover 'active' de todos
                         allNavItems.forEach(item => item.classList.remove('active'));
                         // Adicionar 'active' ao item correspondente
@@ -1379,7 +1449,7 @@
                         // window.location.href = '/dashboard'; // Exemplo de redirecionamento
                     }
                 });
-              
+             
                 // Mostrar o modal de login se houver um erro
                 if (type === 'error') {
                     showLogin();
@@ -1393,7 +1463,7 @@
                 document.getElementById('password').value = rememberedPassword;
                 document.getElementById('rememberMe').checked = true;
             }
-          
+         
             // 9. Inicialmente esconder módulos extras
             hiddenModules.forEach(module => {
                 module.style.display = 'none';
