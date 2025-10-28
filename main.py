@@ -16,7 +16,6 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
@@ -50,8 +49,7 @@ module_status = {
     'pai': 'ON',
     'cnpjcompleto': 'ON'
 }
-
-chave = "vmb1"  # API key for some external services
+chave = "vmb1" # API key for some external services
 
 # JSON File Management
 def initialize_json(file_path, default_data={}):
@@ -71,7 +69,7 @@ def load_data(file_path):
 
 def save_data(data, file_path):
     with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4, default=str)  # Handle datetime serialization
+        json.dump(data, file, indent=4, default=str) # Handle datetime serialization
 
 # Logging
 def log_access(endpoint, message=''):
@@ -91,7 +89,7 @@ def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
     if user.get('role') == 'admin':
-        return True  # Admins have unlimited access
+        return True # Admins have unlimited access
     # Check permissions
     permissions = user.get('permissions', {})
     if module not in permissions or (permissions[module] and datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d')):
@@ -125,7 +123,7 @@ def check_login_attempts(user_id):
     if user_id not in login_attempts:
         login_attempts[user_id] = {'count': 0, 'last_attempt': now}
     attempts = login_attempts[user_id]
-    if now - attempts['last_attempt'] > 300:  # Reset after 5 minutes
+    if now - attempts['last_attempt'] > 300: # Reset after 5 minutes
         attempts['count'] = 0
         attempts['last_attempt'] = now
     attempts['count'] += 1
@@ -175,6 +173,23 @@ def login_or_register():
                     if datetime.now() > expiration_date:
                         flash('Conta expirada. Contate o suporte.', 'error')
                         return render_template('login.html')
+                
+                user_agent = request.headers.get('User-Agent')
+                
+                # Device management logic: if 'devices' key is absent, allow unlimited devices
+                if 'devices' not in users[username]:
+                    # User supports unlimited devices, no restriction applied
+                    pass
+                else:
+                    # User has device restriction
+                    if users[username]['devices'] and user_agent not in users[username]['devices']:
+                        flash('Dispositivo não autorizado. Login recusado.', 'error')
+                        return render_template('login.html')
+                    else:
+                        users[username]['devices'] = [user_agent]
+                
+                save_data(users, 'users.json')
+                
                 session['user_id'] = username
                 login_attempts[username] = {'count': 0, 'last_attempt': time.time()}
                 return redirect('/dashboard')
@@ -203,12 +218,13 @@ def login_or_register():
             users[username] = {
                 'password': password,
                 'role': 'guest',
-                'expiration': '2099-12-31',  # Permanent for guests
-                'permissions': {},  # No modules
+                'expiration': '2099-12-31', # Permanent for guests
+                'permissions': {}, # No modules
                 'modules': {m: 0 for m in module_status.keys()},
                 'read_notifications': [],
                 'referred_by': referred_by,
-                'affiliate_code': secrets.token_urlsafe(8) if referred_by else None
+                'affiliate_code': secrets.token_urlsafe(8) if referred_by else None,
+                'devices': []
             }
             save_data(users, 'users.json')
             flash('Registro concluído com sucesso! Faça login.', 'success')
@@ -218,7 +234,6 @@ def login_or_register():
             return render_template('login.html')
     # Para GET, renderiza o template unificado
     return render_template('login.html')
-    
 
 # Dashboard
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -226,7 +241,7 @@ def dashboard():
     users = load_data('users.json')
     user = users[g.user_id]
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     is_admin = user['role'] == 'admin'
     is_guest = user['role'] == 'guest'
     affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
@@ -237,25 +252,51 @@ def dashboard():
             return redirect('/')
 
     if request.method == 'POST':
-        if is_admin:
-            action = request.form.get('action')
-            target_user = request.form.get('user')
-            module = request.form.get('module')
-
-            if action == 'view_modules' and target_user in users:
-                user_modules = users[target_user].get('modules', {})
-                role = users[target_user].get('role', 'user_semanal')
-                max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(role, 30)
-                if is_admin:
-                    return jsonify({"user": target_user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
-                return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
-        # Handle module usage view or other admin actions
-        if is_admin:
-            action = request.form.get('action')
+        action = request.form.get('action')
+        if action == 'redeem':
+            code = request.form.get('code')
+            gifts = load_data('gifts.json')
+            if code in gifts and gifts[code]['uses_left'] > 0:
+                gift = gifts[code]
+                exp_date = (datetime.now() + timedelta(days=gift['expiration_days'])).strftime('%Y-%m-%d')
+                if 'permissions' not in user:
+                    user['permissions'] = {}
+                if gift['modules'] == 'all':
+                    for m in module_status.keys():
+                        user['permissions'][m] = exp_date
+                else:
+                    for m in gift['modules']:
+                        if m in module_status:
+                            user['permissions'][m] = exp_date
+                if user['role'] == 'guest':
+                    if gift['expiration_days'] <= 7:
+                        user['role'] = 'user_semanal'
+                    elif gift['expiration_days'] <= 30:
+                        user['role'] = 'user_mensal'
+                    else:
+                        user['role'] = 'user_anual'
+                    user['expiration'] = exp_date
+                if 'token' not in user:
+                    user['token'] = f"{g.user_id}-KEY{secrets.token_hex(13)}.center"
+                gifts[code]['uses_left'] -= 1
+                if gifts[code]['uses_left'] == 0:
+                    del gifts[code]
+                save_data(users, 'users.json')
+                save_data(gifts, 'gifts.json')
+                flash('Gift resgatado com sucesso!', 'success')
+            else:
+                flash('Código inválido ou expirado.', 'error')
+        elif is_admin:
             if action == 'view_modules':
                 target_user = request.form.get('user')
+                module = request.form.get('module')
                 if target_user in users:
-                    return jsonify(users[target_user].get('modules', {}))
+                    user_modules = users[target_user].get('modules', {})
+                    role = users[target_user].get('role', 'user_semanal')
+                    max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(role, 30)
+                    if is_admin:
+                        return jsonify({"user": target_user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
+                    return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
 
     return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status)
 
@@ -266,14 +307,11 @@ def admin_panel():
     notifications = load_data('notifications.json')
     gifts = load_data('gifts.json')
     user_id = g.user_id
-
     if users.get(user_id, {}).get('role') != 'admin':
         return jsonify({"error": "Access denied"}), 403
-
     user_agent = request.headers.get('User-Agent', '').lower()
     if 'bot' in user_agent or 'spider' in user_agent:
         return jsonify({"error": "Access denied"}), 403
-
     if request.method == 'POST':
         action = request.form.get('action')
         user_input = request.form.get('user')
@@ -283,35 +321,66 @@ def admin_panel():
         role = request.form.get('role', 'user_semanal')
         module = request.form.get('module', '')
         status = request.form.get('status', '')
-
-        if action == 'add_user':
-            username = request.form.get('user')
-            password = request.form.get('password')
-            expiration = request.form.get('expiration')
-            role = request.form.get('role', 'user_semanal')
-            if username not in users:
+        if action == "add_user" and user_input and password and expiration:
+            if user_input not in users:
                 token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
-                users[username] = {
+                users[user_input] = {
                     'password': password,
-                    'expiration': expiration,
                     'token': token,
+                    'expiration': expiration,
                     'role': role,
                     'permissions': {m: None for m in module_status.keys()} if role != 'guest' else {},
-                    'modules': {m: 0 for m in ['cpf', 'cpf2', 'cpf3', 'cpfdata', 'cpflv', 'datanome', 'placalv', 'tellv', 'placa', 'tel', 'ip', 'fotor', 'nome', 'nome2', 'nomelv', 'cpf5', 'teldual', 'likeff', 'pai', 'mae', 'cnpjcompleto']},
+                    'modules': {m: 0 for m in module_status.keys()},
                     'read_notifications': [],
-                    'affiliate_code': secrets.token_urlsafe(8) if role != 'guest' else None
+                    'affiliate_code': secrets.token_urlsafe(8) if role != 'guest' else None,
+                    'devices': []
                 }
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
             return jsonify({'message': 'Usuário já existe!', 'category': 'error'})
+
+        elif action == "delete_user" and user_input and password:
+            if user_input in users and users[user_input]['password'] == password:
+                del users[user_input]
+                save_data(users, 'users.json')
+                if g.user_id == user_input:
+                    resp = make_response(jsonify({'message': 'Usuário excluído. Você foi deslogado.', 'category': 'success'}))
+                    return resp
+                return jsonify({'message': 'Usuário excluído com sucesso!', 'category': 'success'})
+            return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
+
         elif action == "view_users":
             return jsonify({'users': users})
-        elif action == 'delete_user':
-            username = request.form.get('user')
-            if username in users and username != g.user_id:
-                del users[username]
-                save_data(users, 'users.json')
-                return jsonify({'message': 'Usuário excluído com sucesso!', 'category': 'success'})
+
+        elif action == "send_message" and message:
+            notif_id = str(uuid.uuid4())
+            user_input = request.form.get('user', 'all')
+            if user_input == 'all':
+                for user in users:
+                    if user != user_id:
+                        notifications.setdefault(user, []).append({'id': notif_id, 'message': message, 'timestamp': datetime.now().isoformat()})
+            else:
+                if user_input in users:
+                    notifications.setdefault(user_input, []).append({'id': notif_id, 'message': message, 'timestamp': datetime.now().isoformat()})
+                else:
+                    return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
+            save_data(notifications, 'notifications.json')
+            return jsonify({'message': 'Mensagem enviada com sucesso!', 'category': 'success'})
+
+        elif action == "reset_device" and user_input and password:
+            if user_input in users and users[user_input]['password'] == password:
+                if 'devices' in users[user_input]:
+                    users[user_input]['devices'] = []
+                    save_data(users, 'users.json')
+                return jsonify({'message': 'Dispositivos resetados com sucesso!', 'category': 'success'})
+            return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
+
+        elif action == "toggle_module" and module and status:
+            if module in module_status:
+                module_status[module] = status
+                return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
+            return jsonify({'success': False, 'message': 'Módulo não encontrado'})
+
         elif action == 'create_gift':
             modules = request.form.get('modules')  # comma separated or 'all'
             expiration_days = int(request.form.get('expiration_days', 30))
@@ -325,56 +394,15 @@ def admin_panel():
             }
             save_data(gifts, 'gifts.json')
             return jsonify({'message': 'Gift criado com sucesso!', 'code': code, 'category': 'success'})
-        elif action == 'toggle_module':
-            module = request.form.get('module')
-            status = request.form.get('status')
-            if module in module_status:
-                module_status[module] = status
-                return jsonify({'success': True})
-        elif action == "send_message" and user_input and message:
-            if user_input == 'all':
-                for user in users:
-                    if user != user_id:
-                        notifications.setdefault(user, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
-                save_data(notifications, 'notifications.json')
-                return jsonify({'message': 'Mensagem enviada para todos os usuários', 'category': 'success'})
-            if user_input in users:
-                notifications.setdefault(user_input, []).append({'message': message, 'timestamp': datetime.now().isoformat()})
-                save_data(notifications, 'notifications.json')
-                return jsonify({'message': f'Mensagem enviada para {user_input}', 'category': 'success'})
-            return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
+
         elif action == "view_gifts":
             return jsonify({'gifts': gifts})
 
-    return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
+        elif action == 'get_stats':
+            active_users = sum(1 for u in users.values() if u.get('role') != 'guest' and 'expiration' in u and datetime.now() < datetime.strptime(u['expiration'], '%Y-%m-%d'))
+            return jsonify({'active_users': active_users})
 
-# Redeem Gift
-@app.route('/redeem', methods=['GET', 'POST'])
-def redeem():
-    if request.method == 'POST':
-        code = request.form.get('code')
-        gifts = load_data('gifts.json')
-        if code in gifts and gifts[code]['uses_left'] > 0:
-            users = load_data('users.json')
-            user = users[g.user_id]
-            gift = gifts[code]
-            exp_date = (datetime.now() + timedelta(days=gift['expiration_days'])).date().isoformat()
-            if gift['modules'] == 'all':
-                for m in module_status.keys():
-                    user['permissions'][m] = exp_date
-            else:
-                for m in gift['modules']:
-                    if m in module_status:
-                        user['permissions'][m] = exp_date
-            gifts[code]['uses_left'] -= 1
-            if gifts[code]['uses_left'] == 0:
-                del gifts[code]
-            save_data(users, 'users.json')
-            save_data(gifts, 'gifts.json')
-            flash('Gift resgatado com sucesso!', 'success')
-        else:
-            flash('Código inválido ou expirado.', 'error')
-    return render_template('redeem.html')
+    return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
 
 # Notifications Page
 @app.route('/notifications', methods=['GET', 'POST'])
@@ -383,7 +411,7 @@ def notifications_page():
     user = users[g.user_id]
     if user['role'] == 'guest':
         abort(403)
-    notifications = load_data('notifications.json')
+    notifications = load_data('notifications.json').get(g.user_id, [])
     read_ids = user.get('read_notifications', [])
     unread = [n for n in notifications if n['id'] not in read_ids]
     read = [n for n in notifications if n['id'] in read_ids]
@@ -412,7 +440,6 @@ def new_novidade():
     user = users[g.user_id]
     if user['role'] == 'guest':
         abort(403)
-
     if request.method == 'POST':
         title = request.form.get('title')
         desc = request.form.get('desc')
@@ -420,17 +447,13 @@ def new_novidade():
         news = load_data('news.json')
         news_id = str(uuid.uuid4())
         image_path = None
-
         if image and image.filename:
             ext = os.path.splitext(image.filename)[1].lower()
             if ext in ['.jpg', '.jpeg', '.png', '.gif']:
-                # Salva no mesmo diretório do script
                 image_filename = f'{news_id}{ext}'
-                image_path_full = os.path.join(os.path.dirname(__file__), image_filename)
+                image_path_full = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
                 image.save(image_path_full)
-                # Caminho relativo para usar no HTML (raiz do site)
-                image_path = f'/{image_filename}'
-
+                image_path = f'/static/novidades/{image_filename}'
         news.append({
             'id': news_id,
             'title': title,
@@ -442,7 +465,6 @@ def new_novidade():
         save_data(news, 'news.json')
         flash('Novidade enviada com sucesso!', 'success')
         return redirect('/novidades')
-
     return render_template('new_novidade.html', users=users)
 
 # Edit Novidade
@@ -461,10 +483,11 @@ def edit_novidade(news_id):
         item['desc'] = request.form.get('desc')
         image = request.files.get('image')
         if image and image.filename:
-            ext = os.path.splitext(image.filename)[1]
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], f'{news_id}{ext}')
-            image.save(image_path)
-            item['image'] = f'/static/novidades/{news_id}{ext}'
+            ext = os.path.splitext(image.filename)[1].lower()
+            image_filename = f'{news_id}{ext}'
+            image_path_full = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+            image.save(image_path_full)
+            item['image'] = f'/static/novidades/{image_filename}'
         save_data(news, 'news.json')
         flash('Novidade editada com sucesso!', 'success')
         return redirect('/novidades')
@@ -492,18 +515,17 @@ def delete_novidade(news_id):
     return redirect('/novidades')
 
 # Module Routes
-
 @app.route('/modulos/mae', methods=['GET', 'POST'])
 def mae():
     users = load_data('users.json')
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     nome = ""
     if request.method == 'POST':
-        nome = request.form.get('nome', '').strip()
+        nome = request.form.get('nome')
         if not nome:
             flash('NOME não fornecido.', 'error')
         else:
@@ -541,11 +563,11 @@ def pai():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     nome = ""
     if request.method == 'POST':
-        nome = request.form.get('nome', '').strip()
+        nome = request.form.get('nome')
         if not nome:
             flash('NOME não fornecido.', 'error')
         else:
@@ -583,7 +605,7 @@ def cnpjcompleto():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     cnpj_input = ""
     if request.method == 'POST':
@@ -650,7 +672,7 @@ def cpf():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     cpf = ""
     if request.method == 'POST':
@@ -686,7 +708,7 @@ def cpf2():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     cpf = ""
     if request.method == 'POST':
@@ -722,7 +744,7 @@ def cpfdata():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     cpf = ""
     if request.method == 'POST':
@@ -851,7 +873,7 @@ def cpf3():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     cpf = ""
     if request.method == 'POST':
@@ -877,8 +899,8 @@ def cpf3():
                 flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
             except requests.RequestException as e:
                 flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError as e:
-                flash(f'Resposta da API inválida: {response.text if "response" in locals() else str(e)}', 'error')
+            except json.JSONDecodeError:
+                flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
@@ -887,7 +909,7 @@ def cpflv():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     cpf = ""
     if request.method == 'POST':
@@ -928,7 +950,7 @@ def vacinas():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = []
     cpf = ""
     if request.method == 'POST':
@@ -971,7 +993,7 @@ def datanome():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = []
     nome = ""
     datanasc = ""
@@ -1033,13 +1055,13 @@ def placalv():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     placa = ""
     if request.method == 'POST':
         placa = request.form.get('placa', '').strip().upper().replace(' ', '')
-        if not placa or not (len(placa) == 7 and placa[:3].isalpha() and placa[3:].isdigit()):
-            flash('Por favor, insira uma placa válida no formato AAA0000.', 'error')
+        if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
+            flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
         else:
             try:
                 url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
@@ -1070,12 +1092,12 @@ def placalv():
                            result=result, placa=placa)
 
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
-def tellv():
+def telLv():
     users = load_data('users.json')
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     telefone = ""
     if request.method == 'POST':
@@ -1117,7 +1139,7 @@ def teldual():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = None
     telefone = ""
     if request.method == 'POST':
@@ -1153,7 +1175,7 @@ def tel():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = None
     tel_input = ""
     if request.method == 'POST':
@@ -1189,7 +1211,7 @@ def placa():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     placa = ""
     if request.method == 'POST':
@@ -1227,7 +1249,7 @@ def placaestadual():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = None
     placa = ""
     if request.method == 'POST':
@@ -1263,7 +1285,7 @@ def pix():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     chave = ""
     if request.method == 'POST':
@@ -1301,7 +1323,7 @@ def fotor():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = None
     documento = ""
     selected_option = ""
@@ -1377,7 +1399,7 @@ def nomelv():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = None
     nome = ""
     if request.method == 'POST':
@@ -1421,7 +1443,7 @@ def nome():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = None
     nome = ""
     if request.method == 'POST':
@@ -1457,7 +1479,7 @@ def ip():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = None
     ip_address = ""
     if request.method == 'POST':
@@ -1502,7 +1524,7 @@ def nome2():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = None
     nome = ""
     if request.method == 'POST':
@@ -1538,7 +1560,7 @@ def likeff():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications if n['id'] not in user.get('read_notifications', [])])
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     uid = ""
     if request.method == 'POST':
@@ -1625,7 +1647,7 @@ def preview():
 
 if __name__ == '__main__':
     initialize_json('users.json')
-    initialize_json('notifications.json', default_data=[])
+    initialize_json('notifications.json', default_data={})
     initialize_json('gifts.json')
     initialize_json('news.json', default_data=[])
     from waitress import serve
