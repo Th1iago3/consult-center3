@@ -1327,7 +1327,8 @@
                 </div>
                 <hr style="margin: 25px 0; border-color: var(--border-color);">
                 <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">Resgatar Cartão-Presente</h3>
-                <form id="redeemForm" method="POST" action="/redeem">
+                <form id="redeemForm" method="POST" action="/dashboard">
+                    <input type="hidden" name="action" value="redeem">
                     <div class="gift-redeem form-group">
                         <label for="gift-code"><svg data-lucide="gift" style="width: 18px; height: 18px;"></svg> Código do Gift</label>
                         <input type="text" name="code" id="gift-code" placeholder="Cole o código aqui" required>
