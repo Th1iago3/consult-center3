@@ -256,7 +256,7 @@ def dashboard():
     affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
    
     max_limit = {
-        'guest': 0,
+        'guest': 10,
         'user_semanal': 30,
         'user_mensal': 250,
         'user_anual': 500
