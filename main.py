@@ -11,19 +11,22 @@ import uuid
 from functools import wraps
 import colorama
 from colorama import Fore, Style
+from flask_socketio import SocketIO, join_room, leave_room, emit
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
+socketio = SocketIO(app)
+
+# Online users for socketio
+users_online = {}
 
 # Rate limiting storage
 login_attempts = {}
-
 # Module status (can be toggled by admins)
 module_status = {
     'cpfdata': 'ON',
@@ -50,9 +53,7 @@ module_status = {
     'pai': 'ON',
     'cnpjcompleto': 'ON'
 }
-
-chave = "vmb1"  # API key for some external services
-
+chave = "vmb1" # API key for some external services
 # JSON File Management
 def initialize_json(file_path, default_data={}):
     try:
@@ -61,7 +62,6 @@ def initialize_json(file_path, default_data={}):
     except (FileNotFoundError, json.JSONDecodeError):
         with open(file_path, 'w') as file:
             json.dump(default_data, file)
-
 def load_data(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -75,11 +75,9 @@ def load_data(file_path):
         with open(file_path, 'w') as file:
             json.dump(default_data, file)
         return default_data
-
 def save_data(data, file_path):
     with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4, default=str)  # Handle datetime serialization
-
+        json.dump(data, file, indent=4, default=str) # Handle datetime serialization
 # Logging
 def log_access(endpoint, message=''):
     try:
@@ -92,13 +90,12 @@ def log_access(endpoint, message=''):
         message += f" [Error fetching real IP]"
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
-
 # Module Usage Management
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
     if user.get('role') == 'admin':
-        return True  # Admins have unlimited access
+        return True # Admins have unlimited access
     # Check permissions
     permissions = user.get('permissions', {})
     if module not in permissions or (permissions[module] and datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d')):
@@ -125,14 +122,13 @@ def manage_module_usage(user_id, module, increment=True):
     users[user_id] = user
     save_data(users, 'users.json')
     return True
-
 # Rate Limiting for Login Attempts
 def check_login_attempts(user_id):
     now = time.time()
     if user_id not in login_attempts:
         login_attempts[user_id] = {'count': 0, 'last_attempt': now}
     attempts = login_attempts[user_id]
-    if now - attempts['last_attempt'] > 300:  # Reset after 5 minutes
+    if now - attempts['last_attempt'] > 300: # Reset after 5 minutes
         attempts['count'] = 0
         attempts['last_attempt'] = now
     attempts['count'] += 1
@@ -140,7 +136,6 @@ def check_login_attempts(user_id):
         return False, "Muitas tentativas de login. Tente novamente em 5 minutos."
     login_attempts[user_id] = attempts
     return True, ""
-
 # Before Request Security Check
 @app.before_request
 def security_check():
@@ -161,7 +156,6 @@ def security_check():
                 flash('Sua conta expirou. Contate o suporte.', 'error')
                 session.clear()
                 return redirect('/')
-
 # Login
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
@@ -182,9 +176,9 @@ def login_or_register():
                     if datetime.now() > expiration_date:
                         flash('Conta expirada. Contate o suporte.', 'error')
                         return render_template('login.html')
-               
+              
                 user_agent = request.headers.get('User-Agent')
-               
+              
                 # Device management logic: if 'devices' key is absent, allow unlimited devices
                 if 'devices' not in users[username]:
                     # User supports unlimited devices, no restriction applied
@@ -196,9 +190,9 @@ def login_or_register():
                         return render_template('login.html')
                     else:
                         users[username]['devices'] = [user_agent]
-               
+              
                 save_data(users, 'users.json')
-               
+              
                 session['user_id'] = username
                 login_attempts[username] = {'count': 0, 'last_attempt': time.time()}
                 return redirect('/dashboard')
@@ -243,7 +237,6 @@ def login_or_register():
             return render_template('login.html')
     # Para GET, renderiza o template unificado
     return render_template('login.html')
-
 # Dashboard
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -254,7 +247,7 @@ def dashboard():
     is_admin = user['role'] == 'admin'
     is_guest = user['role'] == 'guest'
     affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
-   
+  
     max_limit = {
         'guest': 10,
         'user_semanal': 30,
@@ -262,8 +255,7 @@ def dashboard():
         'user_anual': 500
     }.get(user['role'], 0)
     if is_admin:
-        max_limit = 999999  # Large number for unlimited
-
+        max_limit = 999999 # Large number for unlimited
     if user['role'] != 'guest':
         if datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
             flash('Sua sessão expirou. Faça login novamente.', 'error')
@@ -391,7 +383,7 @@ def admin_panel():
                 return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
             return jsonify({'success': False, 'message': 'Módulo não encontrado'})
         elif action == 'create_gift':
-            modules = request.form.get('modules')  # comma separated or 'all'
+            modules = request.form.get('modules') # comma separated or 'all'
             expiration_days = int(request.form.get('expiration_days', 30))
             uses = int(request.form.get('uses', 1))
             code = secrets.token_urlsafe(12)
@@ -409,7 +401,6 @@ def admin_panel():
             active_users = sum(1 for u in users.values() if u.get('role') != 'guest' and 'expiration' in u and datetime.now() < datetime.strptime(u['expiration'], '%Y-%m-%d'))
             return jsonify({'active_users': active_users})
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
-
 # Notifications Page
 @app.route('/notifications', methods=['GET', 'POST'])
 def notifications_page():
@@ -429,7 +420,6 @@ def notifications_page():
             save_data(users, 'users.json')
         return jsonify({'success': True})
     return render_template('notifications.html', unread=unread, read=read, users=users)
-
 # Novidades Page
 @app.route('/novidades', methods=['GET'])
 def novidades():
@@ -438,7 +428,20 @@ def novidades():
         abort(403)
     news = load_data('news.json')
     return render_template('novidades.html', news=news, users=users)
-
+# View Novidade
+@app.route('/novidades/<news_id>', methods=['GET'])
+def view_novidade(news_id):
+    users = load_data('users.json')
+    if users[g.user_id]['role'] == 'guest':
+        abort(403)
+    news = load_data('news.json')
+    item = next((n for n in news if n['id'] == news_id), None)
+    if not item:
+        abort(404)
+    user_vote = None
+    if item.get('type') == 'poll':
+        user_vote = item.get('user_votes', {}).get(g.user_id)
+    return render_template('view_novidade.html', item=item, user_vote=user_vote)
 # Create Novidade
 @app.route('/novidades/new', methods=['GET', 'POST'])
 def new_novidade():
@@ -447,6 +450,7 @@ def new_novidade():
     if user['role'] == 'guest':
         abort(403)
     if request.method == 'POST':
+        nov_type = request.form.get('type')
         title = request.form.get('title')
         desc = request.form.get('desc')
         image = request.files.get('image')
@@ -460,19 +464,29 @@ def new_novidade():
                 image_path_full = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
                 image.save(image_path_full)
                 image_path = f'/static/novidades/{image_filename}'
-        news.append({
+        new_item = {
             'id': news_id,
+            'type': nov_type,
             'title': title,
             'desc': desc,
             'image': image_path,
             'date': datetime.now().isoformat(),
             'sender': g.user_id
-        })
+        }
+        if nov_type == 'poll':
+            options_str = request.form.get('options', '')
+            options = [o.strip() for o in options_str.split('\n') if o.strip()]
+            single_choice = 'single_choice' in request.form
+            allow_change = 'allow_change' in request.form
+            new_item['options'] = options
+            new_item['settings'] = {'single_choice': single_choice, 'allow_change': allow_change}
+            new_item['votes'] = {o: 0 for o in options}
+            new_item['user_votes'] = {}
+        news.append(new_item)
         save_data(news, 'news.json')
         flash('Novidade enviada com sucesso!', 'success')
         return redirect('/novidades')
     return render_template('new_novidade.html', users=users)
-
 # Edit Novidade
 @app.route('/novidades/edit/<news_id>', methods=['GET', 'POST'])
 def edit_novidade(news_id):
@@ -494,11 +508,22 @@ def edit_novidade(news_id):
             image_path_full = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
             image.save(image_path_full)
             item['image'] = f'/static/novidades/{image_filename}'
+        if item.get('type') == 'poll':
+            options_str = request.form.get('options', '')
+            options = [o.strip() for o in options_str.split('\n') if o.strip()]
+            single_choice = 'single_choice' in request.form
+            allow_change = 'allow_change' in request.form
+            # Update options, but if changed, reset votes?
+            # For simplicity, assume no change options after create, or handle manually
+            item['options'] = options
+            item['settings'] = {'single_choice': single_choice, 'allow_change': allow_change}
+            if set(options) != set(item['votes'].keys()):
+                item['votes'] = {o: 0 for o in options}
+                item['user_votes'] = {}
         save_data(news, 'news.json')
         flash('Novidade editada com sucesso!', 'success')
         return redirect('/novidades')
     return render_template('edit_novidade.html', item=item, users=users)
-
 # Delete Novidade
 @app.route('/novidades/delete/<news_id>', methods=['POST'])
 def delete_novidade(news_id):
@@ -519,6 +544,79 @@ def delete_novidade(news_id):
     save_data(news, 'news.json')
     flash('Novidade excluída com sucesso!', 'success')
     return redirect('/novidades')
+
+# SocketIO Events
+@socketio.on('connect')
+def on_connect():
+    if 'user_id' not in session:
+        return False
+    users_online[request.sid] = session['user_id']
+
+@socketio.on('disconnect')
+def on_disconnect():
+    if request.sid in users_online:
+        del users_online[request.sid]
+
+@socketio.on('join_poll')
+def join_poll(data):
+    poll_id = data.get('poll_id')
+    if poll_id:
+        join_room(f'poll_{poll_id}')
+
+@socketio.on('leave_poll')
+def leave_poll(data):
+    poll_id = data.get('poll_id')
+    if poll_id:
+        leave_room(f'poll_{poll_id}')
+
+@socketio.on('vote')
+def handle_vote(data):
+    poll_id = data.get('poll_id')
+    options = data.get('options')
+    if not isinstance(options, (str, list)):
+        return emit('vote_error', {'msg': 'Opções inválidas'}, to=request.sid)
+    if isinstance(options, str):
+        options = [options]
+    user_id = users_online.get(request.sid)
+    if not user_id:
+        return emit('vote_error', {'msg': 'Usuário não autenticado'}, to=request.sid)
+    news = load_data('news.json')
+    item = next((n for n in news if n['id'] == poll_id and n.get('type') == 'poll'), None)
+    if not item:
+        return emit('vote_error', {'msg': 'Enquete não encontrada'}, to=request.sid)
+    settings = item['settings']
+    user_votes = item['user_votes']
+    votes = item['votes']
+    if user_id in user_votes:
+        if not settings['allow_change']:
+            return emit('vote_error', {'msg': 'Não é permitido mudar o voto'}, to=request.sid)
+        # Remove old votes
+        old = user_votes[user_id]
+        if isinstance(old, str):
+            old = [old]
+        for o in old:
+            if o in votes:
+                votes[o] -= 1
+    if settings['single_choice']:
+        if len(options) != 1:
+            return emit('vote_error', {'msg': 'Selecione apenas uma opção'}, to=request.sid)
+        new_vote = options[0]
+    else:
+        new_vote = list(set(options))  # unique
+    for o in new_vote:
+        if o not in item['options']:
+            return emit('vote_error', {'msg': 'Opção inválida'}, to=request.sid)
+    # Add new votes
+    if settings['single_choice']:
+        user_votes[user_id] = new_vote
+        votes[new_vote] += 1
+    else:
+        user_votes[user_id] = new_vote
+        for o in new_vote:
+            votes[o] += 1
+    save_data(news, 'news.json')
+    emit('update_votes', {'votes': votes}, room=f'poll_{poll_id}')
+    emit('vote_success', {'msg': 'Voto registrado com sucesso!'}, to=request.sid)
 
 # Module Routes
 @app.route('/modulos/mae', methods=['GET', 'POST'])
@@ -562,7 +660,6 @@ def mae():
             except Exception as e:
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
-
 @app.route('/modulos/pai', methods=['GET', 'POST'])
 def pai():
     users = load_data('users.json')
@@ -604,7 +701,6 @@ def pai():
             except Exception as e:
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
-
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 def cnpjcompleto():
     users = load_data('users.json')
@@ -671,7 +767,6 @@ def cnpjcompleto():
             except Exception as e:
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
-
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 def cpf():
     users = load_data('users.json')
@@ -707,7 +802,6 @@ def cpf():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
 def cpf2():
     users = load_data('users.json')
@@ -743,7 +837,6 @@ def cpf2():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 def cpfdata():
     users = load_data('users.json')
@@ -872,7 +965,6 @@ def cpfdata():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
 def cpf3():
     users = load_data('users.json')
@@ -908,7 +1000,6 @@ def cpf3():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
 def cpflv():
     users = load_data('users.json')
@@ -949,7 +1040,6 @@ def cpflv():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def vacinas():
     users = load_data('users.json')
@@ -992,7 +1082,6 @@ def vacinas():
             except json.JSONDecodeError:
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
-
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 def datanome():
     users = load_data('users.json')
@@ -1054,7 +1143,6 @@ def datanome():
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count,
                            results=results, nome=nome, datanasc=datanasc)
-
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
 def placalv():
     users = load_data('users.json')
@@ -1096,7 +1184,6 @@ def placalv():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
-
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
 def telLv():
     users = load_data('users.json')
@@ -1138,7 +1225,6 @@ def telLv():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, telefone=telefone)
-
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
 def teldual():
     users = load_data('users.json')
@@ -1174,7 +1260,6 @@ def teldual():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
-
 @app.route('/modulos/tel', methods=['GET', 'POST'])
 def tel():
     users = load_data('users.json')
@@ -1210,7 +1295,6 @@ def tel():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
-
 @app.route('/modulos/placa', methods=['GET', 'POST'])
 def placa():
     users = load_data('users.json')
@@ -1248,7 +1332,6 @@ def placa():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('placa.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
-
 @app.route('/modulos/placaestadual', methods=['GET', 'POST'])
 def placaestadual():
     users = load_data('users.json')
@@ -1284,7 +1367,6 @@ def placaestadual():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
-
 @app.route('/modulos/pix', methods=['GET', 'POST'])
 def pix():
     users = load_data('users.json')
@@ -1322,7 +1404,6 @@ def pix():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('pix.html', is_admin=is_admin, notifications=unread_count,
                            result=result, chave=chave)
-
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 def fotor():
     users = load_data('users.json')
@@ -1398,7 +1479,6 @@ def fotor():
         documento=documento,
         selected_option=selected_option
     )
-
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 def nomelv():
     users = load_data('users.json')
@@ -1442,7 +1522,6 @@ def nomelv():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/nome', methods=['GET', 'POST'])
 def nome():
     users = load_data('users.json')
@@ -1478,7 +1557,6 @@ def nome():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/ip', methods=['GET', 'POST'])
 def ip():
     users = load_data('users.json')
@@ -1523,7 +1601,6 @@ def ip():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
-
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
 def nome2():
     users = load_data('users.json')
@@ -1559,7 +1636,6 @@ def nome2():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/likeff', methods=['GET', 'POST'])
 def likeff():
     users = load_data('users.json')
@@ -1634,27 +1710,22 @@ def likeff():
     return render_template('likeff.html', is_admin=is_admin,
                          notifications=unread_count,
                          result=result, uid=uid)
-
 # Logout
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
-
 # Credits
 @app.route('/@A30')
 def creditos():
     return "@enfurecido - {'0x106a90000'}"
-
 # Preview Image
 @app.route('/preview.jpg')
 def preview():
     return send_from_directory(app.root_path, 'preview.jpg', mimetype='image/jpeg')
-
 if __name__ == '__main__':
     initialize_json('users.json')
     initialize_json('notifications.json', default_data={})
     initialize_json('gifts.json')
     initialize_json('news.json', default_data=[])
-    from waitress import serve
-    serve(app, host='0.0.0.0', port=8855)
+    socketio.run(app, host='0.0.0.0', port=8855, allow_unsafe_werkzeug=True)
