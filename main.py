@@ -255,6 +255,15 @@ def dashboard():
     is_guest = user['role'] == 'guest'
     affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
    
+    max_limit = {
+        'guest': 0,
+        'user_semanal': 30,
+        'user_mensal': 250,
+        'user_anual': 500
+    }.get(user['role'], 0)
+    if is_admin:
+        max_limit = 999999  # Large number for unlimited
+
     if user['role'] != 'guest':
         if datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
             flash('Sua sessão expirou. Faça login novamente.', 'error')
@@ -305,8 +314,7 @@ def dashboard():
                     if is_admin:
                         return jsonify({"user": target_user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
                     return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
-    return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status)
-
+    return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
 # Admin Panel
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
 def admin_panel():
