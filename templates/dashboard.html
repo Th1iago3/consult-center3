@@ -867,33 +867,41 @@
             <!-- Página 1 -->
             <div class="dashboard-grid" id="page1">
                 <!-- CPF DATA -->
-                <div class="module-card" onclick="checkModuleStatus('cpfdata', '/modulos/cpfdata')" data-module-id="cpfdata" data-status="{{ module_status.get('cpfdata', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('cpfdata', '/modulos/cpfdata')" data-module-id="cpfdata" data-status="{{ module_status.get('cpfdata', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
                     <h3 class="module-title">Localizar CPF (DATASUS)</h3>
                     <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpfdata', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-cpfdata"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-cpfdata"></div>
                 </div>
-                <!-- CPF C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv" data-status="{{ module_status.get('cpflv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}" data-limit="500">
+                <!-- CPF C&C plus -->
+                <div class="module-card" onclick="checkModuleStatus('cpflv', '/modulos/cpflv')" data-module-id="cpflv" data-status="{{ module_status.get('cpflv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
                     <h3 class="module-title">Localizar CPF (C&C Plus)</h3>
                     <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpflv', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-cpflv"></div>
@@ -901,16 +909,20 @@
                     <div class="module-message" id="message-cpflv"></div>
                 </div>
                 <!-- CPF DATA -->
-                <div class="module-card" onclick="checkModuleStatus('cpf', '/modulos/cpf')" data-module-id="cpf" data-status="{{ module_status.get('cpf', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('cpf', '/modulos/cpf')" data-module-id="cpf" data-status="{{ module_status.get('cpf', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
                     <h3 class="module-title">Localizar CPF (DATA)</h3>
                     <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-cpf"></div>
@@ -918,16 +930,20 @@
                     <div class="module-message" id="message-cpf"></div>
                 </div>
                 <!-- CPF (DATAPRIME) -->
-                <div class="module-card" onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" data-module-id="cpf2" data-status="{{ module_status.get('cpf2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('cpf2', '/modulos/cpf2')" data-module-id="cpf2" data-status="{{ module_status.get('cpf2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
                     <h3 class="module-title">Localizar CPF (DATAPRIME)</h3>
                     <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf2', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-cpf2"></div>
@@ -935,16 +951,20 @@
                     <div class="module-message" id="message-cpf2"></div>
                 </div>
                 <!-- VACINAS -->
-                <div class="module-card" onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" data-module-id="vacinas" data-status="{{ module_status.get('vacinas', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('vacinas', '/modulos/vacinas')" data-module-id="vacinas" data-status="{{ module_status.get('vacinas', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="syringe"></svg></div>
                     <h3 class="module-title">Consultar Vacinas (SIPNI)</h3>
                     <p class="module-description">Acesse registros de vacinação e carteira de vacinação digital.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('vacinas', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-vacinas"></div>
@@ -952,16 +972,20 @@
                     <div class="module-message" id="message-vacinas"></div>
                 </div>
                 <!-- CPF (SISREGII) -->
-                <div class="module-card" onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" data-module-id="cpf3" data-status="{{ module_status.get('cpf3', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('cpf3', '/modulos/cpf3')" data-module-id="cpf3" data-status="{{ module_status.get('cpf3', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
                     <h3 class="module-title">Localizar CPF (SISREGII)</h3>
                     <p class="module-description">Consulte informações detalhadas através do CPF incluindo dados pessoais, endereço e situação cadastral.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cpf3', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-cpf3"></div>
@@ -969,16 +993,20 @@
                     <div class="module-message" id="message-cpf3"></div>
                 </div>
                 <!-- DATA NOME -->
-                <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome" data-status="{{ module_status.get('datanome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('datanome', '/modulos/datanome')" data-module-id="datanome" data-status="{{ module_status.get('datanome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="calendar"></svg></div>
                     <h3 class="module-title">Localizar DATA de NASCIMENTO (C&C Plus)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('datanome', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-datanome"></div>
@@ -986,16 +1014,20 @@
                     <div class="module-message" id="message-datanome"></div>
                 </div>
                 <!-- FOTO C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor" data-status="{{ module_status.get('fotor', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('fotor', '/modulos/fotor')" data-module-id="fotor" data-status="{{ module_status.get('fotor', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="camera"></svg></div>
                     <h3 class="module-title">Consulta Foto (C&C Plus)</h3>
                     <p class="module-description">Acesse fotos disponíveis em documentos oficiais e registros.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('fotor', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-fotor"></div>
@@ -1003,16 +1035,20 @@
                     <div class="module-message" id="message-fotor"></div>
                 </div>
                 <!-- PIX NACIONAL -->
-                <div class="module-card" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix" data-status="{{ module_status.get('pix', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('pix', '/modulos/pix')" data-module-id="pix" data-status="{{ module_status.get('pix', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pix', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="layout-dashboard"></svg></div>
                     <h3 class="module-title">Consulta PIX (NACIONAL)</h3>
                     <p class="module-description">Consulte os dados completos de qualquer chave PIX.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pix', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-pix"></div>
@@ -1020,16 +1056,20 @@
                     <div class="module-message" id="message-pix"></div>
                 </div>
                 <!-- NOME C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('nomelv', '/modulos/nomelv')" data-module-id="nomelv" data-status="{{ module_status.get('nomelv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="search"></svg></div>
                     <h3 class="module-title">Localizar NOME (C&C Plus)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nomelv', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-nomelv"></div>
@@ -1037,16 +1077,20 @@
                     <div class="module-message" id="message-nomelv"></div>
                 </div>
                 <!-- MAE -->
-                <div class="module-card" onclick="checkModuleStatus('mae', '/modulos/mae')" data-module-id="mae" data-status="{{ module_status.get('mae', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('mae', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('mae', '/modulos/mae')" data-module-id="mae" data-status="{{ module_status.get('mae', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('mae', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
                     <h3 class="module-title">Consultar Mae (C&C Plus)</h3>
                     <p class="module-description">Pesquise informações associadas a o nome de uma mae, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('mae', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('mae', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-mae"></div>
@@ -1054,16 +1098,20 @@
                     <div class="module-message" id="message-mae"></div>
                 </div>
                 <!-- PAI -->
-                <div class="module-card" onclick="checkModuleStatus('pai', '/modulos/pai')" data-module-id="pai" data-status="{{ module_status.get('pai', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pai', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('pai', '/modulos/pai')" data-module-id="pai" data-status="{{ module_status.get('pai', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('pai', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="id-card"></svg></div>
                     <h3 class="module-title">Consultar Pai (C&C Plus)</h3>
                     <p class="module-description">Pesquise informações associadas a o nome de um Pai, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pai', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('pai', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-pai"></div>
@@ -1071,16 +1119,20 @@
                     <div class="module-message" id="message-pai"></div>
                 </div>
                 <!-- NOME DATA -->
-                <div class="module-card" onclick="checkModuleStatus('nome', '/modulos/nome')" data-module-id="nome" data-status="{{ module_status.get('nome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('nome', '/modulos/nome')" data-module-id="nome" data-status="{{ module_status.get('nome', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="user"></svg></div>
                     <h3 class="module-title">Localizar Nome (DATA)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-nome"></div>
@@ -1088,16 +1140,20 @@
                     <div class="module-message" id="message-nome"></div>
                 </div>
                 <!-- NOME DATAPRIME -->
-                <div class="module-card" onclick="checkModuleStatus('nome2', '/modulos/nome2')" data-module-id="nome2" data-status="{{ module_status.get('nome2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('nome2', '/modulos/nome2')" data-module-id="nome2" data-status="{{ module_status.get('nome2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="user"></svg></div>
                     <h3 class="module-title">Localizar Nome (DATAPRIME)</h3>
                     <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-nome2"></div>
@@ -1108,16 +1164,20 @@
             <!-- Página 2 -->
             <div class="dashboard-grid" id="page2" style="display: none;">
                 <!-- TELEFONE DATA -->
-                <div class="module-card" onclick="checkModuleStatus('tel', '/modulos/tel')" data-module-id="tel" data-status="{{ module_status.get('tel', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tel', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('tel', '/modulos/tel')" data-module-id="tel" data-status="{{ module_status.get('tel', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('tel', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="phone"></svg></div>
                     <h3 class="module-title">Consulta TELEFONE (DATA)</h3>
                     <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tel', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('tel', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-tel"></div>
@@ -1125,16 +1185,20 @@
                     <div class="module-message" id="message-tel"></div>
                 </div>
                 <!-- TELEFONE C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('telLv', '/modulos/telLv')" data-module-id="telLv" data-status="{{ module_status.get('telLv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('telLv', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('telLv', '/modulos/telLv')" data-module-id="telLv" data-status="{{ module_status.get('telLv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('telLv', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="phone"></svg></div>
                     <h3 class="module-title">Consulta TELEFONE (C&C Plus)</h3>
                     <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('telLv', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('telLv', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-telLv"></div>
@@ -1142,16 +1206,20 @@
                     <div class="module-message" id="message-telLv"></div>
                 </div>
                 <!-- TELEFONE NACIONAL -->
-                <div class="module-card" onclick="checkModuleStatus('teldual', '/modulos/teldual')" data-module-id="teldual" data-status="{{ module_status.get('teldual', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('teldual', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('teldual', '/modulos/teldual')" data-module-id="teldual" data-status="{{ module_status.get('teldual', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('teldual', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="phone"></svg></div>
                     <h3 class="module-title">Consulta TELEFONE (NACIONAL)</h3>
                     <p class="module-description">Verifique dados associados a números de telefone, incluindo titular e endereço.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('teldual', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('teldual', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-teldual"></div>
@@ -1162,16 +1230,20 @@
             <!-- Página 3 -->
             <div class="dashboard-grid" id="page3" style="display: none;">
                 <!-- PLACA NACIONAL -->
-                <div class="module-card" onclick="checkModuleStatus('placa', '/modulos/placa')" data-module-id="placa" data-status="{{ module_status.get('placa', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placa', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('placa', '/modulos/placa')" data-module-id="placa" data-status="{{ module_status.get('placa', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placa', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="car"></svg></div>
                     <h3 class="module-title">Consulta Veicular (NACIONAL)</h3>
                     <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placa', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placa', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-placa"></div>
@@ -1179,16 +1251,20 @@
                     <div class="module-message" id="message-placa"></div>
                 </div>
                 <!-- PLACA ESTADUAL -->
-                <div class="module-card" onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" data-module-id="placaestadual" data-status="{{ module_status.get('placaestadual', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('placaestadual', '/modulos/placaestadual')" data-module-id="placaestadual" data-status="{{ module_status.get('placaestadual', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="car"></svg></div>
                     <h3 class="module-title">Consulta Veicular (ESTADUAL)</h3>
                     <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placaestadual', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-placaestadual"></div>
@@ -1196,16 +1272,20 @@
                     <div class="module-message" id="message-placaestadual"></div>
                 </div>
                 <!-- PLACA C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('placalv', '/modulos/placalv')" data-module-id="placalv" data-status="{{ module_status.get('placalv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('placalv', '/modulos/placalv')" data-module-id="placalv" data-status="{{ module_status.get('placalv', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="car"></svg></div>
                     <h3 class="module-title">Consulta Veicular (C&C Plus)</h3>
                     <p class="module-description">Verifique informações completas sobre veículos, incluindo proprietário e situação.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placalv', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('placalv', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-placalv"></div>
@@ -1216,16 +1296,20 @@
             <!-- Página 4 -->
             <div class="dashboard-grid" id="page4" style="display: none;">
                 <!-- CNPJ COMPLETO -->
-                <div class="module-card" onclick="checkModuleStatus('cnpjcompleto', '/modulos/cnpjcompleto')" data-module-id="cnpjcompleto" data-status="{{ module_status.get('cnpjcompleto', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cnpjcompleto', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('cnpjcompleto', '/modulos/cnpjcompleto')" data-module-id="cnpjcompleto" data-status="{{ module_status.get('cnpjcompleto', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('cnpjcompleto', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="building-2"></svg></div>
                     <h3 class="module-title">Consultar CNPJ (C&C Plus)</h3>
                     <p class="module-description">Consulte informacoes completas sobre qualquer CNPJ. Como: Empresa, Descricao, Cadastro, Origem, Situacao, etc.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cnpjcompleto', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('cnpjcompleto', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-cnpjcompleto"></div>
@@ -1236,16 +1320,20 @@
             <!-- Página 5 -->
             <div class="dashboard-grid" id="page5" style="display: none;">
                 <!-- IP C&C Plus -->
-                <div class="module-card" onclick="checkModuleStatus('ip', '/modulos/ip')" data-module-id="ip" data-status="{{ module_status.get('ip', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('ip', '/modulos/ip')" data-module-id="ip" data-status="{{ module_status.get('ip', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('ip', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="globe"></svg></div>
                     <h3 class="module-title">Localizar IP (C&C Plus)</h3>
                     <p class="module-description">Consulte a localização geológica de qualquer Endereço IP.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('ip', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-ip"></div>
@@ -1254,16 +1342,20 @@
                 </div>
                 {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
                 <!-- LIKE FF -->
-                <div class="module-card" onclick="checkModuleStatus('likeff', '/modulos/likeff')" data-module-id="likeff" data-status="{{ module_status.get('likeff', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}" data-limit="500">
+                <div class="module-card" onclick="checkModuleStatus('likeff', '/modulos/likeff')" data-module-id="likeff" data-status="{{ module_status.get('likeff', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) }}" data-limit="{{ max_limit }}">
                     <div class="module-icon-wrapper"><svg data-lucide="thumbs-up"></svg></div>
                     <h3 class="module-title">Adicionar Likes (C&C Plus)</h3>
                     <p class="module-description">Aumente os likes no seu perfil no Free Fire.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0), limit=500 %}
-                            <div class="request-bar-wrapper">
-                                <div class="request-bar" style="width: {{ (usage / limit * 100) | round | int }}%"></div>
-                            </div>
-                            <p class="request-count">{{ usage }}/{{ limit }}</p>
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('likeff', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="status-dot" id="status-dot-likeff"></div>
