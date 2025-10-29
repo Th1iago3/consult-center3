@@ -36,7 +36,7 @@ module_status = {
     'vacinas': 'ON',
     'cpf3': 'ON',
     'nomelv': 'ON',
-    'nome': 'OFF',
+    'nome': 'ON',
     'nome2': 'ON',
     'tel': 'OFF',
     'telLv': 'ON',
