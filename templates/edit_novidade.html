@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConsultCenter - Editar Novidade</title>
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-purple: #6E44FF;
+            --secondary-purple: #A06CFF;
+            --accent-pink: #FF6BD6;
+            --background-dark: #121212;
+            --background-light: #1A1A1A;
+            --card-bg: rgba(25, 25, 25, 0.9);
+            --text-white: #E0E0E0;
+            --text-light: #A0A0A0;
+            --border-color: #333333;
+            --glow-purple: rgba(110, 68, 255, 0.5);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 10px 30px var(--shadow-dark);
+            --shadow-glow: 0 0 15px var(--glow-purple);
+            --font-family: 'Poppins', sans-serif;
+            --success: #00D68F;
+            --error: #FF3D71;
+            --warning: #FFB800;
+            --transition: all 0.3s ease;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+        body {
+            background: var(--background-dark);
+            color: var(--text-white);
+            min-height: 100vh;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .edit-container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            max-width: 600px;
+        }
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-white);
+        }
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--background-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-white);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 10px var(--glow-purple);
+            outline: none;
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            background: var(--background-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        .current-image {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .current-image img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: var(--shadow-glow);
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-purple);
+            color: var(--text-white);
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(110, 68, 255, 0.4);
+        }
+        .btn-submit:hover {
+            background: var(--secondary-purple);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(110, 68, 255, 0.6);
+        }
+        .btn-back {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .btn-back:hover {
+            color: var(--primary-purple);
+        }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--background-dark); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-purple); }
+    </style>
+</head>
+<body>
+    <div class="edit-container">
+        <h2>Editar Novidade</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="title">Título</label>
+                <input type="text" id="title" name="title" value="{{ item.title }}" required>
+            </div>
+            <div class="form-group">
+                <label for="desc">Descrição</label>
+                <textarea id="desc" name="desc" required>{{ item.desc }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="image">Imagem (opcional)</label>
+                <input type="file" id="image" name="image" accept="image/*">
+                {% if item.image %}
+                <div class="current-image">
+                    <p>Imagem atual:</p>
+                    <img src="{{ item.image }}" alt="Imagem atual">
+                </div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn-submit">Salvar Alterações</button>
+        </form>
+        <a href="{{ url_for('novidades') }}" class="btn-back">Voltar para Novidades</a>
+    </div>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
