@@ -1,3 +1,4 @@
+<!-- novidades.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -11,6 +12,8 @@
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         :root {
             --primary-purple: #6E44FF;
@@ -177,6 +180,72 @@
             transform: translateY(-1px);
             box-shadow: 0 8px 20px rgba(255, 61, 113, 0.6);
         }
+        /* Poll Specific Styles */
+        .poll-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .poll-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        .poll-option:hover {
+            border-color: var(--primary-purple);
+        }
+        .poll-option.selected {
+            border-color: var(--success);
+            background: rgba(0, 214, 143, 0.1);
+        }
+        .poll-option.selected::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2300D68F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>') no-repeat center;
+            background-size: contain;
+            animation: checkmark 0.3s ease-in-out;
+        }
+        @keyframes checkmark {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .poll-option-label {
+            flex: 1;
+        }
+        .poll-vote-count {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        .poll-vote-btn {
+            background: var(--primary-purple);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .poll-vote-btn.voted {
+            background: var(--success);
+        }
+        .poll-vote-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        input[type="radio"], input[type="checkbox"] {
+            display: none;
+        }
         /* SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--background-dark); }
@@ -196,6 +265,7 @@
         </div>
         <div class="header-actions">
             <a href="/dashboard" class="header-icon-btn"><svg data-lucide="arrow-left"></svg></a>
+            <a href="/novidades/new" class="header-icon-btn"><svg data-lucide="plus"></svg></a>
         </div>
     </header>
     <!-- MAIN CONTENT -->
@@ -203,13 +273,25 @@
         <section class="novidades-section">
             <div class="novidades-list">
                 {% for item in news %}
-                <div class="novidade-card">
+                <div class="novidade-card" data-type="{{ item.type }}" data-id="{{ item.id }}" data-single="{{ item.settings.single_choice if item.type == 'poll' else '' }}" data-change="{{ item.settings.allow_change if item.type == 'poll' else '' }}">
                     {% if item.image %}
                     <img src="{{ item.image }}" alt="{{ item.title }}">
                     {% endif %}
                     <h3 class="novidade-title">{{ item.title }}</h3>
                     <p class="novidade-desc">{{ item.desc }}</p>
                     <p class="novidade-date">{{ item.date }}</p>
+                    {% if item.type == 'poll' %}
+                    <div class="poll-options">
+                        {% for option in item.options %}
+                        <div class="poll-option {{ 'selected' if option in (item.user_votes.get(g.user_id, []) if isinstance(item.user_votes.get(g.user_id), list) else [item.user_votes.get(g.user_id)]) else '' }}">
+                            <input type="{{ 'radio' if item.settings.single_choice else 'checkbox' }}" name="poll_{{ item.id }}" value="{{ option }}" {% if option in (item.user_votes.get(g.user_id, []) if isinstance(item.user_votes.get(g.user_id), list) else [item.user_votes.get(g.user_id)]) %}checked{% endif %}>
+                            <label class="poll-option-label">{{ option }}</label>
+                            <span class="poll-vote-count">({{ item.votes.get(option, 0) }} votos)</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button class="poll-vote-btn btn-custom btn-primary {{ 'voted disabled' if item.user_votes.get(g.user_id) and not item.settings.allow_change else '' }}">{{ 'Votado' if item.user_votes.get(g.user_id) and not item.settings.allow_change else 'Votar' }}</button>
+                    {% endif %}
                     {% if users[g.user_id]['role'] == 'admin' or item.sender == g.user_id %}
                     <div class="novidade-actions">
                         <a href="/novidades/edit/{{ item.id }}" class="btn-custom btn-primary">
@@ -232,6 +314,98 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
+            const socket = io();
+            const pollCards = document.querySelectorAll('.novidade-card[data-type="poll"]');
+            if (pollCards.length > 0) {
+                socket.on('connect', () => {
+                    pollCards.forEach(card => {
+                        const pollId = card.dataset.id;
+                        socket.emit('join_poll', { poll_id: pollId });
+                    });
+                });
+                socket.on('update_votes', data => {
+                    pollCards.forEach(card => {
+                        if (card.dataset.id === data.poll_id) {  // Assume server sends poll_id too, modify server if needed
+                            const voteCounts = card.querySelectorAll('.poll-vote-count');
+                            const options = card.querySelectorAll('.poll-option');
+                            Object.keys(data.votes).forEach((option, index) => {
+                                voteCounts[index].textContent = `(${data.votes[option]} votos)`;
+                            });
+                        }
+                    });
+                });
+                socket.on('vote_success', data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Voto registrado!',
+                        text: data.msg,
+                        background: '#1A1A1A',
+                        color: '#E0E0E0',
+                        confirmButtonColor: '#6E44FF'
+                    });
+                });
+                socket.on('vote_error', data => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro no voto',
+                        text: data.msg,
+                        background: '#1A1A1A',
+                        color: '#E0E0E0',
+                        confirmButtonColor: '#6E44FF'
+                    });
+                });
+                pollCards.forEach(card => {
+                    const voteBtn = card.querySelector('.poll-vote-btn');
+                    const options = card.querySelectorAll('.poll-option');
+                    const single = card.dataset.single === 'True';
+                    const allowChange = card.dataset.change === 'True';
+                    const pollId = card.dataset.id;
+                    if (!allowChange && Array.from(options).some(opt => opt.classList.contains('selected'))) {
+                        voteBtn.classList.add('voted', 'disabled');
+                        voteBtn.textContent = 'Votado';
+                        options.forEach(opt => opt.style.pointerEvents = 'none');
+                    }
+                    options.forEach(opt => {
+                        opt.addEventListener('click', () => {
+                            if (opt.style.pointerEvents === 'none') return;
+                            if (single) {
+                                options.forEach(o => o.classList.remove('selected'));
+                            }
+                            opt.classList.toggle('selected');
+                        });
+                    });
+                    voteBtn.addEventListener('click', () => {
+                        if (voteBtn.classList.contains('disabled')) return;
+                        const selected = Array.from(options).filter(opt => opt.classList.contains('selected')).map(opt => opt.querySelector('input').value);
+                        if (selected.length === 0) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Selecione uma opção',
+                                background: '#1A1A1A',
+                                color: '#E0E0E0',
+                                confirmButtonColor: '#6E44FF'
+                            });
+                            return;
+                        }
+                        if (single && selected.length > 1) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Apenas uma opção',
+                                background: '#1A1A1A',
+                                color: '#E0E0E0',
+                                confirmButtonColor: '#6E44FF'
+                            });
+                            return;
+                        }
+                        socket.emit('vote', { poll_id: pollId, options: selected });
+                        if (!allowChange) {
+                            voteBtn.classList.add('voted', 'disabled');
+                            voteBtn.textContent = 'Votado';
+                            options.forEach(opt => opt.style.pointerEvents = 'none');
+                        }
+                    });
+                });
+            }
         });
     </script>
 </body>
