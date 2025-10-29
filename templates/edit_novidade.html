@@ -1,3 +1,4 @@
+<!-- edit_novidade.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -150,7 +151,7 @@
 </head>
 <body>
     <div class="edit-container">
-        <h2>Editar Novidade</h2>
+        <h2>Editar {{ 'Enquete' if item.type == 'poll' else 'Novidade' }}</h2>
         <form method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="title">Título</label>
@@ -160,6 +161,20 @@
                 <label for="desc">Descrição</label>
                 <textarea id="desc" name="desc" required>{{ item.desc }}</textarea>
             </div>
+            {% if item.type == 'poll' %}
+            <div class="form-group">
+                <label for="options">Opções da Enquete (uma por linha)</label>
+                <textarea id="options" name="options" required>{{ '\n'.join(item.options) }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="single_choice" {{ 'checked' if item.settings.single_choice else '' }}> Escolha única
+                </label>
+                <label>
+                    <input type="checkbox" name="allow_change" {{ 'checked' if item.settings.allow_change else '' }}> Permitir trocar voto
+                </label>
+            </div>
+            {% endif %}
             <div class="form-group">
                 <label for="image">Imagem (opcional)</label>
                 <input type="file" id="image" name="image" accept="image/*">
