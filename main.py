@@ -16,6 +16,7 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
@@ -49,7 +50,8 @@ module_status = {
     'pai': 'ON',
     'cnpjcompleto': 'ON'
 }
-chave = "vmb1" # API key for some external services
+
+chave = "vmb1"  # API key for some external services
 
 # JSON File Management
 def initialize_json(file_path, default_data={}):
@@ -61,15 +63,22 @@ def initialize_json(file_path, default_data={}):
             json.dump(default_data, file)
 
 def load_data(file_path):
-    with open(file_path, 'r') as file:
-        try:
-            return json.load(file)
-        except json.JSONDecodeError:
-            return {}
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            if 'news.json' in file_path and not isinstance(data, list):
+                data = []
+                save_data(data, file_path)
+            return data
+    except (FileNotFoundError, json.JSONDecodeError):
+        default_data = [] if 'news.json' in file_path else {}
+        with open(file_path, 'w') as file:
+            json.dump(default_data, file)
+        return default_data
 
 def save_data(data, file_path):
     with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4, default=str) # Handle datetime serialization
+        json.dump(data, file, indent=4, default=str)  # Handle datetime serialization
 
 # Logging
 def log_access(endpoint, message=''):
@@ -89,7 +98,7 @@ def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
     if user.get('role') == 'admin':
-        return True # Admins have unlimited access
+        return True  # Admins have unlimited access
     # Check permissions
     permissions = user.get('permissions', {})
     if module not in permissions or (permissions[module] and datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d')):
@@ -123,7 +132,7 @@ def check_login_attempts(user_id):
     if user_id not in login_attempts:
         login_attempts[user_id] = {'count': 0, 'last_attempt': now}
     attempts = login_attempts[user_id]
-    if now - attempts['last_attempt'] > 300: # Reset after 5 minutes
+    if now - attempts['last_attempt'] > 300:  # Reset after 5 minutes
         attempts['count'] = 0
         attempts['last_attempt'] = now
     attempts['count'] += 1
@@ -173,9 +182,9 @@ def login_or_register():
                     if datetime.now() > expiration_date:
                         flash('Conta expirada. Contate o suporte.', 'error')
                         return render_template('login.html')
-                
+               
                 user_agent = request.headers.get('User-Agent')
-                
+               
                 # Device management logic: if 'devices' key is absent, allow unlimited devices
                 if 'devices' not in users[username]:
                     # User supports unlimited devices, no restriction applied
@@ -187,9 +196,9 @@ def login_or_register():
                         return render_template('login.html')
                     else:
                         users[username]['devices'] = [user_agent]
-                
+               
                 save_data(users, 'users.json')
-                
+               
                 session['user_id'] = username
                 login_attempts[username] = {'count': 0, 'last_attempt': time.time()}
                 return redirect('/dashboard')
@@ -245,12 +254,11 @@ def dashboard():
     is_admin = user['role'] == 'admin'
     is_guest = user['role'] == 'guest'
     affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
-    
+   
     if user['role'] != 'guest':
         if datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
             flash('Sua sessão expirou. Faça login novamente.', 'error')
             return redirect('/')
-
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'redeem':
@@ -297,7 +305,6 @@ def dashboard():
                     if is_admin:
                         return jsonify({"user": target_user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
                     return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
-
     return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status)
 
 # Admin Panel
@@ -338,7 +345,6 @@ def admin_panel():
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
             return jsonify({'message': 'Usuário já existe!', 'category': 'error'})
-
         elif action == "delete_user" and user_input and password:
             if user_input in users and users[user_input]['password'] == password:
                 del users[user_input]
@@ -348,10 +354,8 @@ def admin_panel():
                     return resp
                 return jsonify({'message': 'Usuário excluído com sucesso!', 'category': 'success'})
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
-
         elif action == "view_users":
             return jsonify({'users': users})
-
         elif action == "send_message" and message:
             notif_id = str(uuid.uuid4())
             user_input = request.form.get('user', 'all')
@@ -366,7 +370,6 @@ def admin_panel():
                     return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
             save_data(notifications, 'notifications.json')
             return jsonify({'message': 'Mensagem enviada com sucesso!', 'category': 'success'})
-
         elif action == "reset_device" and user_input and password:
             if user_input in users and users[user_input]['password'] == password:
                 if 'devices' in users[user_input]:
@@ -374,13 +377,11 @@ def admin_panel():
                     save_data(users, 'users.json')
                 return jsonify({'message': 'Dispositivos resetados com sucesso!', 'category': 'success'})
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
-
         elif action == "toggle_module" and module and status:
             if module in module_status:
                 module_status[module] = status
                 return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
             return jsonify({'success': False, 'message': 'Módulo não encontrado'})
-
         elif action == 'create_gift':
             modules = request.form.get('modules')  # comma separated or 'all'
             expiration_days = int(request.form.get('expiration_days', 30))
@@ -394,14 +395,11 @@ def admin_panel():
             }
             save_data(gifts, 'gifts.json')
             return jsonify({'message': 'Gift criado com sucesso!', 'code': code, 'category': 'success'})
-
         elif action == "view_gifts":
             return jsonify({'gifts': gifts})
-
         elif action == 'get_stats':
             active_users = sum(1 for u in users.values() if u.get('role') != 'guest' and 'expiration' in u and datetime.now() < datetime.strptime(u['expiration'], '%Y-%m-%d'))
             return jsonify({'active_users': active_users})
-
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
 
 # Notifications Page
