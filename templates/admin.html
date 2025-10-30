@@ -566,6 +566,92 @@
             max-width: 600px;
             margin: 0 auto;
         }
+        .backup-section > div {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--background-light);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+        .backup-section h3 {
+            color: var(--text-white);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .backup-section h3 i {
+            color: var(--primary-purple);
+            width: 20px;
+            height: 20px;
+        }
+        /* Custom File Upload Button */
+        .file-upload-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .file-upload-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+            color: var(--text-white);
+            padding: 14px 24px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            width: 100%;
+            text-align: center;
+        }
+        .file-upload-label:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+        .file-upload-label i {
+            width: 18px;
+            height: 18px;
+        }
+        /* Loading Bar */
+        .loading-bar {
+            display: none;
+            width: 100%;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-purple), var(--secondary-purple));
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: loading-anim 1.5s infinite;
+        }
+        @keyframes loading-anim {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .loading-text {
+            text-align: center;
+            color: var(--text-light);
+            margin-top: 10px;
+            font-size: 12px;
+        }
         /* Back Link */
         .back-link {
             display: inline-flex;
@@ -917,7 +1003,7 @@
         <div id="messages" class="tab-content">
             <div class="messages-section">
                 <h2>Mensagens</h2>
-                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie notificções para todos os usuários de forma rápida e segura.</p>
+                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie notificações para todos os usuários de forma rápida e segura.</p>
                 <button class="button" onclick="openMessageModal()" style="width: auto; margin-bottom: 20px;">
                     <i data-lucide="plus"></i> Nova Mensagem
                 </button>
@@ -940,7 +1026,7 @@
                     <input type="hidden" name="action" value="create_gift">
                     <div class="form-group">
                         <label for="modules"><i data-lucide="package"></i> Módulos (separados por vírgula ou 'all')</label>
-                    <input type="text" name="modules" id="modules" placeholder="all ou cpf,tel,pix" required>
+                        <input type="text" name="modules" id="modules" placeholder="all ou cpf,tel,pix" required>
                     </div>
                     <div class="form-group">
                         <label for="expiration_days"><i data-lucide="calendar"></i> Dias de Expiração</label>
@@ -978,22 +1064,40 @@
             <div class="backup-section">
                 <h2>Backup & Restore</h2>
                 <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Faça backup completo do sistema ou restaure de um arquivo .zip.</p>
-                <form id="backupForm" method="POST" action="/i/settings/admin" style="margin-bottom: 20px;">
-                    <input type="hidden" name="action" value="backup">
-                    <button type="submit" class="button" style="width: auto;">
-                        <i data-lucide="download"></i> Fazer Backup (Download .zip)
-                    </button>
-                </form>
-                <form id="restoreForm" method="POST" action="/i/settings/admin" enctype="multipart/form-data" class="backup-form">
-                    <input type="hidden" name="action" value="restore">
-                    <div class="form-group">
-                        <label for="zip_file"><i data-lucide="upload"></i> Upload do Arquivo de Backup (.zip)</label>
-                        <input type="file" name="zip_file" id="zip_file" accept=".zip" required>
-                    </div>
-                    <button type="submit" class="button">
-                        <i data-lucide="refresh-cw"></i> Restaurar Sistema
-                    </button>
-                </form>
+                
+                <!-- Backup Section -->
+                <div>
+                    <h3><i data-lucide="download"></i> Fazer Backup</h3>
+                    <p style="color: var(--text-light); margin-bottom: 15px;">Baixe um arquivo .zip com todos os dados e imagens do sistema.</p>
+                    <form id="backupForm" method="POST" action="/i/settings/admin">
+                        <input type="hidden" name="action" value="backup">
+                        <button type="submit" class="button" style="width: auto; max-width: 250px; margin: 0 auto;">
+                            <i data-lucide="download-cloud"></i> Baixar Backup (.zip)
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Restore Section -->
+                <div>
+                    <h3><i data-lucide="upload"></i> Restaurar Sistema</h3>
+                    <p style="color: var(--text-light); margin-bottom: 15px;">Selecione um arquivo .zip de backup para restaurar os dados e imagens.</p>
+                    <form id="restoreForm" method="POST" action="/i/settings/admin" enctype="multipart/form-data" class="backup-form">
+                        <input type="hidden" name="action" value="restore">
+                        <div class="file-upload-wrapper">
+                            <input type="file" name="zip_file" id="zip_file" class="file-upload-input" accept=".zip" required>
+                            <label for="zip_file" class="file-upload-label">
+                                <i data-lucide="upload"></i> Escolher Arquivo .zip
+                            </label>
+                        </div>
+                        <button type="submit" class="button" id="restoreBtn" style="width: auto; max-width: 250px; margin: 0 auto;">
+                            <i data-lucide="refresh-cw"></i> Restaurar
+                        </button>
+                        <div class="loading-bar" id="loadingBar">
+                            <div class="loading-progress" id="loadingProgress"></div>
+                        </div>
+                        <div class="loading-text" id="loadingText" style="display: none;">Processando restauração...</div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -1458,9 +1562,20 @@
         document.getElementById('messageModal').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) closeMessageModal();
         });
-        // Submissão do Restore Form (com Swal para confirmação)
+        // Submissão do Restore Form (com Swal para confirmação e loading bar)
         document.getElementById('restoreForm').addEventListener('submit', function(event) {
             event.preventDefault();
+            if (!document.getElementById('zip_file').files.length) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Por favor, selecione um arquivo .zip.',
+                    background: 'var(--background-light)',
+                    color: 'var(--text-white)',
+                    confirmButtonColor: 'var(--primary-purple)',
+                });
+                return;
+            }
             Swal.fire({
                 title: 'Confirmar Restauração?',
                 text: 'Isso substituirá os dados atuais. Certifique-se de ter um backup recente!',
@@ -1474,6 +1589,16 @@
                 color: 'var(--text-white)',
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Show loading bar
+                    const loadingBar = document.getElementById('loadingBar');
+                    const loadingProgress = document.getElementById('loadingProgress');
+                    const loadingText = document.getElementById('loadingText');
+                    const restoreBtn = document.getElementById('restoreBtn');
+                    loadingBar.style.display = 'block';
+                    loadingText.style.display = 'block';
+                    restoreBtn.disabled = true;
+                    restoreBtn.innerHTML = '<i data-lucide="loader"></i> Processando...';
+
                     const formData = new FormData(event.target);
                     fetch('/i/settings/admin', {
                         method: 'POST',
@@ -1481,6 +1606,13 @@
                     })
                     .then(response => response.json())
                     .then(data => {
+                        // Hide loading
+                        loadingBar.style.display = 'none';
+                        loadingText.style.display = 'none';
+                        restoreBtn.disabled = false;
+                        restoreBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Restaurar';
+                        lucide.createIcons();
+
                         Swal.fire({
                             icon: data.category === 'success' ? 'success' : 'error',
                             title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
@@ -1496,6 +1628,13 @@
                         }
                     })
                     .catch(error => {
+                        // Hide loading
+                        loadingBar.style.display = 'none';
+                        loadingText.style.display = 'none';
+                        restoreBtn.disabled = false;
+                        restoreBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Restaurar';
+                        lucide.createIcons();
+
                         Swal.fire({
                             icon: 'error',
                             title: 'Erro!',
@@ -1505,6 +1644,15 @@
                             confirmButtonColor: 'var(--primary-purple)',
                         });
                     });
+
+                    // Simulate progress (since no real progress event, animate to 100%)
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += Math.random() * 15;
+                        if (progress > 100) progress = 100;
+                        loadingProgress.style.width = progress + '%';
+                        if (progress >= 100) clearInterval(interval);
+                    }, 200);
                 }
             });
         });
