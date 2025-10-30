@@ -327,6 +327,7 @@ def admin_panel():
     user_agent = request.headers.get('User-Agent', '').lower()
     if 'bot' in user_agent or 'spider' in user_agent:
         return jsonify({"error": "Access denied"}), 403
+
     if request.method == 'POST':
         action = request.form.get('action')
         user_input = request.form.get('user')
@@ -336,6 +337,7 @@ def admin_panel():
         role = request.form.get('role', 'user_semanal')
         module = request.form.get('module', '')
         status = request.form.get('status', '')
+
         if action == "add_user" and user_input and password and expiration:
             if user_input not in users:
                 token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
@@ -353,6 +355,7 @@ def admin_panel():
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
             return jsonify({'message': 'Usuário já existe!', 'category': 'error'})
+
         elif action == "delete_user" and user_input and password:
             if user_input in users and users[user_input]['password'] == password:
                 del users[user_input]
@@ -362,8 +365,10 @@ def admin_panel():
                     return resp
                 return jsonify({'message': 'Usuário excluído com sucesso!', 'category': 'success'})
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
+
         elif action == "view_users":
             return jsonify({'users': users})
+
         elif action == "send_message" and message:
             notif_id = str(uuid.uuid4())
             user_input = request.form.get('user', 'all')
@@ -378,18 +383,21 @@ def admin_panel():
                     return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
             save_data(notifications, 'notifications.json')
             return jsonify({'message': 'Mensagem enviada com sucesso!', 'category': 'success'})
+
         elif action == "reset_device" and user_input and password:
             if user_input in users and users[user_input]['password'] == password:
                 if 'devices' in users[user_input]:
                     users[user_input]['devices'] = []
-                    save_data(users, 'users.json')
+                save_data(users, 'users.json')
                 return jsonify({'message': 'Dispositivos resetados com sucesso!', 'category': 'success'})
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
+
         elif action == "toggle_module" and module and status:
             if module in module_status:
                 module_status[module] = status
                 return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
             return jsonify({'success': False, 'message': 'Módulo não encontrado'})
+
         elif action == 'create_gift':
             modules = request.form.get('modules')  # comma separated or 'all'
             expiration_days = int(request.form.get('expiration_days', 30))
@@ -403,13 +411,70 @@ def admin_panel():
             }
             save_data(gifts, 'gifts.json')
             return jsonify({'message': 'Gift criado com sucesso!', 'code': code, 'category': 'success'})
+
         elif action == "view_gifts":
             return jsonify({'gifts': gifts})
+
         elif action == 'get_stats':
             active_users = sum(1 for u in users.values() if u.get('role') != 'guest' and 'expiration' in u and datetime.now() < datetime.strptime(u['expiration'], '%Y-%m-%d'))
             return jsonify({'active_users': active_users})
-    return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
 
+        elif action == 'backup':
+            import zipfile
+            from io import BytesIO
+            json_files = ['users.json', 'notifications.json', 'gifts.json', 'news.json']
+            zip_buffer = BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for file_name in json_files:
+                    file_path = file_name  # assuming in current dir
+                    if os.path.exists(file_path):
+                        zip_file.write(file_path, arcname=file_name)
+                # Include images from novidades folder
+                upload_folder = app.config['UPLOAD_FOLDER']
+                for filename in os.listdir(upload_folder):
+                    file_path = os.path.join(upload_folder, filename)
+                    if os.path.isfile(file_path):
+                        arcname = os.path.join('novidades', filename)
+                        zip_file.write(file_path, arcname=arcname)
+            zip_buffer.seek(0)
+            return send_file(zip_buffer, as_attachment=True, download_name='system_backup.zip', mimetype='application/zip')
+
+        elif action == 'restore':
+            if 'zip_file' not in request.files:
+                return jsonify({'message': 'Nenhum arquivo enviado.', 'category': 'error'})
+            zip_file = request.files['zip_file']
+            if zip_file.filename == '':
+                return jsonify({'message': 'Nenhum arquivo selecionado.', 'category': 'error'})
+            if not zip_file.filename.endswith('.zip'):
+                return jsonify({'message': 'Arquivo inválido. Deve ser .zip.', 'category': 'error'})
+            import zipfile
+            import shutil
+            temp_dir = 'temp_restore'
+            os.makedirs(temp_dir, exist_ok=True)
+            try:
+                with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                    zip_ref.extractall(temp_dir)
+                json_files = ['users.json', 'notifications.json', 'gifts.json', 'news.json']
+                for file_name in json_files:
+                    extracted_path = os.path.join(temp_dir, file_name)
+                    if os.path.exists(extracted_path):
+                        shutil.copy(extracted_path, file_name)
+                # Restore images
+                nov_temp_dir = os.path.join(temp_dir, 'novidades')
+                if os.path.exists(nov_temp_dir):
+                    upload_folder = app.config['UPLOAD_FOLDER']
+                    for filename in os.listdir(nov_temp_dir):
+                        src_path = os.path.join(nov_temp_dir, filename)
+                        dest_path = os.path.join(upload_folder, filename)
+                        if os.path.isfile(src_path):
+                            shutil.copy(src_path, dest_path)
+                shutil.rmtree(temp_dir)
+                return jsonify({'message': 'Restauração concluída com sucesso!', 'category': 'success'})
+            except Exception as e:
+                shutil.rmtree(temp_dir)
+                return jsonify({'message': f'Erro na restauração: {str(e)}', 'category': 'error'})
+
+    return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
 # Notifications Page
 @app.route('/notifications', methods=['GET', 'POST'])
 def notifications_page():
