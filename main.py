@@ -11,6 +11,17 @@ import uuid
 from functools import wraps
 import colorama
 from colorama import Fore, Style
+import urllib3
+import socket
+
+# Force IPv4 for all socket connections
+original_getaddrinfo = socket.getaddrinfo
+def force_ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+socket.getaddrinfo = force_ipv4_getaddrinfo
+
+# Disable insecure request warnings
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -56,15 +67,15 @@ chave = "vmb1"  # API key for some external services
 # JSON File Management
 def initialize_json(file_path, default_data={}):
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
-        with open(file_path, 'w') as file:
+        with open(file_path, 'w', encoding='utf-8') as file:
             json.dump(default_data, file)
 
 def load_data(file_path):
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
             if 'news.json' in file_path and not isinstance(data, list):
                 data = []
@@ -72,18 +83,18 @@ def load_data(file_path):
             return data
     except (FileNotFoundError, json.JSONDecodeError):
         default_data = [] if 'news.json' in file_path else {}
-        with open(file_path, 'w') as file:
+        with open(file_path, 'w', encoding='utf-8') as file:
             json.dump(default_data, file)
         return default_data
 
 def save_data(data, file_path):
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4, default=str)  # Handle datetime serialization
 
 # Logging
 def log_access(endpoint, message=''):
     try:
-        response = requests.get('https://ipinfo.io/json')
+        response = requests.get('https://ipinfo.io/json', verify=False)
         response.raise_for_status()
         ip_info = response.json()
         ip = ip_info.get('ip', '')
@@ -315,6 +326,7 @@ def dashboard():
                         return jsonify({"user": target_user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
                     return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
     return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
+
 # Admin Panel
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
 def admin_panel():
@@ -475,6 +487,7 @@ def admin_panel():
                 return jsonify({'message': f'Erro na restauração: {str(e)}', 'category': 'error'})
 
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
+
 # Notifications Page
 @app.route('/notifications', methods=['GET', 'POST'])
 def notifications_page():
@@ -1523,7 +1536,7 @@ def nome():
             flash('Nome não fornecido.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}S&tipo=nomev1"
+                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
                 response = requests.get(url, verify=False, timeout=10)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
