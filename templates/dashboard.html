@@ -1343,8 +1343,8 @@
                 {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
                 <!-- LIKE FF -->
                 <div class="module-card" onclick="checkModuleStatus('atestado', '/modulos/atestado')" data-module-id="atestado" data-status="{{ module_status.get('atestado', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('atestado', 0) }}" data-limit="{{ max_limit }}">
-                    <div class="module-icon-wrapper"><svg data-lucide="thumbs-up"></svg></div>
-                    <h3 class="module-title">Gerador de Atestado Médico/h3>
+                    <div class="module-icon-wrapper"><svg data-lucide="file-text"></svg></div>
+                    <h3 class="module-title">Gerador de Atestado Médico</h3>
                     <p class="module-description">Gere seu atestado medico com assinatura, nome, cpf, data, e muito mais.</p>
                     <div class="module-footer">
                         {% with usage=users.get(g.user_id, {}).get('modules', {}).get('atestado', 0) %}
