@@ -9,3 +9,4 @@ asyncio
 Flask-WTF
 Flask-SocketIO
 urllib3
+PyMuPDF
