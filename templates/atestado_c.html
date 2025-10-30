@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ConsultCenter - Gerador de Atestado Médico</title>
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-purple: #6E44FF;
+            --secondary-purple: #A06CFF;
+            --accent-pink: #FF6BD6;
+            --background-dark: #121212;
+            --background-light: #1A1A1A;
+            --card-bg: rgba(25, 25, 25, 0.9);
+            --text-white: #E0E0E0;
+            --text-light: #A0A0A0;
+            --border-color: #333333;
+            --glow-purple: rgba(110, 68, 255, 0.5);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 10px 30px var(--shadow-dark);
+            --shadow-glow: 0 0 15px var(--glow-purple);
+            --font-family: 'Poppins', sans-serif;
+            --success: #00D68F;
+            --error: #FF3D71;
+            --warning: #FFB800;
+            --header-height: 70px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+        }
+        body {
+            background: var(--background-dark);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            will-change: background;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 20%, rgba(110, 68, 255, 0.15), transparent 60%);
+            z-index: -1;
+            opacity: 0.3;
+            animation: subtlePulse 12s infinite ease-in-out;
+        }
+        @keyframes subtlePulse {
+            0% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+            100% { opacity: 0.2; }
+        }
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background: rgba(18, 18, 18, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 5px 20px var(--shadow-dark);
+        }
+        .navbar-toggle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--card-bg);
+            color: var(--text-white);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        .navbar-toggle:hover {
+            background: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        .navbar-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+        .navbar-toggle.active svg {
+            transform: rotate(180deg);
+        }
+        .nav-links {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 250px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 0 25px var(--shadow-dark);
+            backdrop-filter: blur(10px);
+            flex-direction: column;
+            gap: 10px;
+        }
+        .nav-links.active {
+            display: flex;
+        }
+        .nav-links a {
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .nav-links a:hover {
+            background: rgba(110, 68, 255, 0.2);
+            color: var(--text-white);
+            transform: translateX(5px);
+            box-shadow: 0 0 12px var(--glow-purple);
+        }
+        .nav-links a svg {
+            width: 20px;
+            height: 20px;
+            color: var(--primary-purple);
+        }
+        .nav-links a:hover svg {
+            color: var(--accent-pink);
+            transform: scale(1.15);
+        }
+        .sub-nav {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(110, 68, 255, 0.1);
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+        .sub-nav.active {
+            display: flex;
+        }
+        .sub-nav a {
+            font-size: 12px;
+            padding: 8px;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--text-white);
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+        .user-icon:hover {
+            background: var(--primary-purple);
+            box-shadow: var(--shadow-glow);
+        }
+        .user-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+        .logout-btn {
+            background: var(--primary-purple);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            color: var(--text-white);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 12px var(--glow-purple);
+        }
+        .logout-btn:hover {
+            background: var(--secondary-purple);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow-purple);
+        }
+        .logout-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        /* Container */
+        .container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: var(--shadow-card);
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            margin: calc(var(--header-height) + 20px) auto 20px;
+            border: 2px solid rgba(110, 68, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-card), var(--shadow-glow);
+        }
+        h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin: 15px 0;
+            position: relative;
+        }
+        .form-group label {
+            display: block;
+            color: var(--text-light);
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--background-dark);
+            color: var(--text-white);
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-purple);
+            outline: none;
+            box-shadow: var(--shadow-glow);
+        }
+        .form-group input::placeholder {
+            color: var(--text-light);
+        }
+        .button {
+            background: var(--primary-purple);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 20px;
+            color: var(--text-white);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 12px var(--glow-purple);
+            width: 100%;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .button:hover:not(:disabled) {
+            background: var(--secondary-purple);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow-purple);
+        }
+        .button:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .button.loading {
+            position: relative;
+        }
+        .button.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--text-white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .alert {
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            background: rgba(255, 61, 113, 0.15);
+            color: var(--error);
+            border-left: 4px solid var(--error);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .preview-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: var(--shadow-card);
+        }
+        .download-btn {
+            background: var(--success);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 20px;
+            color: var(--text-white);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 12px rgba(0, 214, 143, 0.5);
+            margin-top: 15px;
+            text-decoration: none;
+        }
+        .download-btn:hover {
+            background: #00B77E;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 214, 143, 0.7);
+        }
+        .download-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--background-dark); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-purple); }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 15px;
+            }
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+            .nav-links {
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            .form-group input, .form-group select {
+                font-size: 13px;
+                padding: 10px 15px;
+            }
+            .button {
+                font-size: 13px;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
+            <svg data-lucide="menu"></svg>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Página Principal</span></a>
+            <a href="#" onclick="toggleDropdown(event)"><svg data-lucide="chevron-down"></svg><span>Módulos</span></a>
+            <div class="sub-nav" id="subNavbar">
+                <a href="/modulos/atestado"><span>Atestado Médico</span></a>
+            </div>
+        </div>
+        <div class="user-profile">
+            <button class="user-icon"><svg data-lucide="user"></svg></button>
+            <a href="/logout" class="logout-btn">
+                <svg data-lucide="log-out"></svg><span>Sair</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Container -->
+    <div class="container">
+        <h2>Gerador de Atestado Médico</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST" id="gerarForm">
+            <div class="form-group">
+                <label for="nome_paciente">Nome do Paciente:</label>
+                <input type="text" name="nome_paciente" id="nome_paciente" placeholder="Nome completo do paciente" value="{{ request.form.nome_paciente if request.form else 'ERICK GABRIEL COTA' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="cpf">CPF:</label>
+                <input type="text" name="cpf" id="cpf" placeholder="CPF do paciente" value="{{ request.form.cpf if request.form else '413.759.068-01' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="profissional">Profissional (Médico):</label>
+                <input type="text" name="profissional" id="profissional" placeholder="Nome do profissional" value="{{ request.form.profissional if request.form else 'CAROLINA SAAD HASSEM' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="crm">CRM:</label>
+                <input type="text" name="crm" id="crm" placeholder="Número do CRM" value="{{ request.form.crm if request.form else '191662' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="data_atendimento">Data de Atendimento:</label>
+                <input type="date" name="data_atendimento" id="data_atendimento" value="{{ request.form.data_atendimento if request.form else '2025-10-28' }}">
+            </div>
+            <div class="form-group">
+                <label for="data_assinatura">Data de Assinatura:</label>
+                <input type="datetime-local" name="data_assinatura" id="data_assinatura" value="{{ request.form.data_assinatura if request.form else '2025-10-28T14:08' }}">
+            </div>
+            <div class="form-group">
+                <label for="cidade">Cidade:</label>
+                <input type="text" name="cidade" id="cidade" placeholder="Cidade" value="{{ request.form.cidade if request.form else 'Guaratinguetá' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="uf">UF:</label>
+                <input type="text" name="uf" id="uf" placeholder="UF" value="{{ request.form.uf if request.form else 'SP' }}" maxlength="2" required>
+            </div>
+            <div class="form-group">
+                <label for="cid">CID:</label>
+                <input type="text" name="cid" id="cid" placeholder="CID" value="{{ request.form.cid if request.form else 'J11' }}">
+            </div>
+            <div class="form-group">
+                <label for="dias_afastamento">Dias de Afastamento:</label>
+                <input type="text" name="dias_afastamento" id="dias_afastamento" placeholder="e.g., 01 (UM)" value="{{ request.form.dias_afastamento if request.form else '01 (UM)' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="n_atend">N° Atendimento:</label>
+                <input type="text" name="n_atend" id="n_atend" placeholder="Número de atendimento" value="{{ request.form.n_atend if request.form else '4532519' }}">
+            </div>
+            <div class="form-group">
+                <label for="n_pront">N° Prontuário:</label>
+                <input type="text" name="n_pront" id="n_pront" placeholder="Número do prontuário" value="{{ request.form.n_pront if request.form else '0009372517' }}">
+            </div>
+            <button type="submit" class="button" id="submitBtn">
+                <svg data-lucide="file-text"></svg> Gerar Atestado
+            </button>
+        </form>
+
+        {% if pdf_preview %}
+            <div class="preview-container">
+                <h3>Pré-visualização do Atestado:</h3>
+                <img src="{{ pdf_preview }}" alt="Pré-visualização do PDF" class="preview-image">
+                <a href="{{ url_for('download_edited', filename=edited_pdf) }}" class="download-btn">
+                    <svg data-lucide="download"></svg> Baixar PDF Editado
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+
+            // Navbar Toggle
+            function toggleNavbar() {
+                const navLinks = document.getElementById('navLinks');
+                const toggleBtn = document.querySelector('.navbar-toggle');
+                navLinks.classList.toggle('active');
+                toggleBtn.classList.toggle('active');
+            }
+            window.toggleNavbar = toggleNavbar;
+
+            // Dropdown Toggle
+            function toggleDropdown(e) {
+                e.preventDefault();
+                const subNav = document.getElementById('subNavbar');
+                subNav.classList.toggle('active');
+            }
+            window.toggleDropdown = toggleDropdown;
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                const subNav = document.getElementById('subNavbar');
+                const navLinks = document.getElementById('navLinks');
+                if (!e.target.closest('.nav-links') && subNav.classList.contains('active')) {
+                    subNav.classList.remove('active');
+                }
+                if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
+                    toggleNavbar();
+                }
+            });
+
+            // Form submission loading
+            const form = document.getElementById('gerarForm');
+            const submitBtn = document.getElementById('submitBtn');
+            form.addEventListener('submit', function(e) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = '<svg data-lucide="loader"></svg> Gerando...';
+                lucide.createIcons();
+            });
+
+            // CPF mask
+            const cpfInput = document.getElementById('cpf');
+            if (cpfInput) {
+                cpfInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                    e.target.value = value;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
