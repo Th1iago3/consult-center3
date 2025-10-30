@@ -279,9 +279,12 @@
                 <div class="form-group" id="poll-fields" style="display: none;">
                     <label>Opções da Enquete</label>
                     <div id="options-container">
-                        <!-- Initial option -->
                         <div class="option-input">
                             <input type="text" name="options[]" placeholder="Opção 1" required>
+                            <button type="button" class="btn-remove-option">Remover</button>
+                        </div>
+                        <div class="option-input">
+                            <input type="text" name="options[]" placeholder="Opção 2" required>
                             <button type="button" class="btn-remove-option">Remover</button>
                         </div>
                     </div>
@@ -315,16 +318,28 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-            // Show/hide poll fields
             const typeSelect = document.getElementById('type');
             const pollFields = document.getElementById('poll-fields');
             typeSelect.addEventListener('change', function() {
                 pollFields.style.display = this.value === 'poll' ? 'block' : 'none';
+                if (this.value === 'poll') {
+                    const container = document.getElementById('options-container');
+                    if (container.children.length < 2) {
+                        const newOption = document.createElement('div');
+                        newOption.classList.add('option-input');
+                        newOption.innerHTML = `
+                            <input type="text" name="options[]" placeholder="Opção 2" required>
+                            <button type="button" class="btn-remove-option">Remover</button>
+                        `;
+                        container.appendChild(newOption);
+                    }
+                }
             });
-            // Dynamic options
+
             const optionsContainer = document.getElementById('options-container');
             const addOptionBtn = document.getElementById('add-option');
-            let optionCount = 1;
+            let optionCount = optionsContainer.children.length;
+
             addOptionBtn.addEventListener('click', () => {
                 optionCount++;
                 const newOption = document.createElement('div');
@@ -335,24 +350,21 @@
                 `;
                 optionsContainer.appendChild(newOption);
             });
+
             optionsContainer.addEventListener('click', e => {
                 if (e.target.classList.contains('btn-remove-option')) {
-                    if (optionsContainer.children.length > 1) {
+                    if (optionsContainer.children.length > 2) {
                         e.target.parentElement.remove();
                     }
                 }
             });
-            // Atualiza nome do arquivo selecionado
+
             const fileInput = document.getElementById('image');
             const fileNameSpan = document.getElementById('file-name');
             fileInput.addEventListener('change', function() {
-                if (fileInput.files.length > 0) {
-                    fileNameSpan.textContent = fileInput.files[0].name;
-                } else {
-                    fileNameSpan.textContent = 'Nenhum arquivo selecionado';
-                }
+                fileNameSpan.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : 'Nenhum arquivo selecionado';
             });
-            // Validação e loading no submit
+
             const form = document.getElementById('novidadeForm');
             const submitBtn = document.getElementById('submitBtn');
             form.addEventListener('submit', function(e) {
@@ -406,7 +418,7 @@
                 lucide.createIcons();
             });
         });
-        // Animação de loading
+
         const style = document.createElement('style');
         style.innerHTML = `
             .spin { animation: spin 1s linear infinite; }
@@ -414,7 +426,6 @@
         `;
         document.head.appendChild(style);
     </script>
-    <!-- Flash Messages (Flask) -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
