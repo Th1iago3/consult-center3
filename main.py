@@ -13,25 +13,17 @@ import colorama
 from colorama import Fore, Style
 import urllib3
 import socket
-import fitz  # PyMuPDF for PDF editing
-
-# Force IPv4 for all socket connections
-
-# Disable insecure request warnings
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+import fitz # PyMuPDF for PDF editing
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
-
 # Rate limiting storage
 login_attempts = {}
-
 # Module status (can be toggled by admins)
 module_status = {
     'cpfdata': 'ON',
@@ -59,9 +51,7 @@ module_status = {
     'cnpjcompleto': 'ON',
     'atestado': 'ON'
 }
-
-chave = "vmb1"  # API key for some external services
-
+chave = "vmb1" # API key for some external services
 # JSON File Management
 def initialize_json(file_path, default_data={}):
     try:
@@ -70,7 +60,6 @@ def initialize_json(file_path, default_data={}):
     except (FileNotFoundError, json.JSONDecodeError):
         with open(file_path, 'w', encoding='utf-8') as file:
             json.dump(default_data, file)
-
 def load_data(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -84,11 +73,9 @@ def load_data(file_path):
         with open(file_path, 'w', encoding='utf-8') as file:
             json.dump(default_data, file)
         return default_data
-
 def save_data(data, file_path):
     with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(data, file, indent=4, default=str)  # Handle datetime serialization
-
+        json.dump(data, file, indent=4, default=str) # Handle datetime serialization
 # Logging
 def log_access(endpoint, message=''):
     try:
@@ -101,13 +88,12 @@ def log_access(endpoint, message=''):
         message += f" [Error fetching real IP]"
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
-
 # Module Usage Management
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
     if user.get('role') == 'admin':
-        return True  # Admins have unlimited access
+        return True # Admins have unlimited access
     # Check permissions
     permissions = user.get('permissions', {})
     if module not in permissions or (permissions[module] and datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d')):
@@ -134,14 +120,13 @@ def manage_module_usage(user_id, module, increment=True):
     users[user_id] = user
     save_data(users, 'users.json')
     return True
-
 # Rate Limiting for Login Attempts
 def check_login_attempts(user_id):
     now = time.time()
     if user_id not in login_attempts:
         login_attempts[user_id] = {'count': 0, 'last_attempt': now}
     attempts = login_attempts[user_id]
-    if now - attempts['last_attempt'] > 300:  # Reset after 5 minutes
+    if now - attempts['last_attempt'] > 300: # Reset after 5 minutes
         attempts['count'] = 0
         attempts['last_attempt'] = now
     attempts['count'] += 1
@@ -149,7 +134,6 @@ def check_login_attempts(user_id):
         return False, "Muitas tentativas de login. Tente novamente em 5 minutos."
     login_attempts[user_id] = attempts
     return True, ""
-
 # Before Request Security Check
 @app.before_request
 def security_check():
@@ -170,7 +154,6 @@ def security_check():
                 flash('Sua conta expirou. Contate o suporte.', 'error')
                 session.clear()
                 return redirect('/')
-
 # Login
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
@@ -191,9 +174,9 @@ def login_or_register():
                     if datetime.now() > expiration_date:
                         flash('Conta expirada. Contate o suporte.', 'error')
                         return render_template('login.html')
-               
+              
                 user_agent = request.headers.get('User-Agent')
-               
+              
                 # Device management logic: if 'devices' key is absent, allow unlimited devices
                 if 'devices' not in users[username]:
                     # User supports unlimited devices, no restriction applied
@@ -205,9 +188,9 @@ def login_or_register():
                         return render_template('login.html')
                     else:
                         users[username]['devices'] = [user_agent]
-               
+              
                 save_data(users, 'users.json')
-               
+              
                 session['user_id'] = username
                 login_attempts[username] = {'count': 0, 'last_attempt': time.time()}
                 return redirect('/dashboard')
@@ -252,7 +235,6 @@ def login_or_register():
             return render_template('login.html')
     # Para GET, renderiza o template unificado
     return render_template('login.html')
-
 # Dashboard
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -263,7 +245,7 @@ def dashboard():
     is_admin = user['role'] == 'admin'
     is_guest = user['role'] == 'guest'
     affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
-   
+  
     max_limit = {
         'guest': 10,
         'user_semanal': 30,
@@ -271,8 +253,7 @@ def dashboard():
         'user_anual': 500
     }.get(user['role'], 0)
     if is_admin:
-        max_limit = 999999  # Large number for unlimited
-
+        max_limit = 999999 # Large number for unlimited
     if user['role'] != 'guest':
         if datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
             flash('Sua sessão expirou. Faça login novamente.', 'error')
@@ -324,7 +305,6 @@ def dashboard():
                         return jsonify({"user": target_user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
                     return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
     return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
-
 # Admin Panel
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
 def admin_panel():
@@ -337,7 +317,6 @@ def admin_panel():
     user_agent = request.headers.get('User-Agent', '').lower()
     if 'bot' in user_agent or 'spider' in user_agent:
         return jsonify({"error": "Access denied"}), 403
-
     if request.method == 'POST':
         action = request.form.get('action')
         user_input = request.form.get('user')
@@ -347,7 +326,6 @@ def admin_panel():
         role = request.form.get('role', 'user_semanal')
         module = request.form.get('module', '')
         status = request.form.get('status', '')
-
         if action == "add_user" and user_input and password and expiration:
             if user_input not in users:
                 token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
@@ -365,7 +343,6 @@ def admin_panel():
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
             return jsonify({'message': 'Usuário já existe!', 'category': 'error'})
-
         elif action == "delete_user" and user_input and password:
             if user_input in users and users[user_input]['password'] == password:
                 del users[user_input]
@@ -375,10 +352,8 @@ def admin_panel():
                     return resp
                 return jsonify({'message': 'Usuário excluído com sucesso!', 'category': 'success'})
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
-
         elif action == "view_users":
             return jsonify({'users': users})
-
         elif action == "send_message" and message:
             notif_id = str(uuid.uuid4())
             user_input = request.form.get('user', 'all')
@@ -393,7 +368,6 @@ def admin_panel():
                     return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
             save_data(notifications, 'notifications.json')
             return jsonify({'message': 'Mensagem enviada com sucesso!', 'category': 'success'})
-
         elif action == "reset_device" and user_input and password:
             if user_input in users and users[user_input]['password'] == password:
                 if 'devices' in users[user_input]:
@@ -401,15 +375,13 @@ def admin_panel():
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Dispositivos resetados com sucesso!', 'category': 'success'})
             return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
-
         elif action == "toggle_module" and module and status:
             if module in module_status:
                 module_status[module] = status
                 return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
             return jsonify({'success': False, 'message': 'Módulo não encontrado'})
-
         elif action == 'create_gift':
-            modules = request.form.get('modules')  # comma separated or 'all'
+            modules = request.form.get('modules') # comma separated or 'all'
             expiration_days = int(request.form.get('expiration_days', 30))
             uses = int(request.form.get('uses', 1))
             code = secrets.token_urlsafe(12)
@@ -421,14 +393,11 @@ def admin_panel():
             }
             save_data(gifts, 'gifts.json')
             return jsonify({'message': 'Gift criado com sucesso!', 'code': code, 'category': 'success'})
-
         elif action == "view_gifts":
             return jsonify({'gifts': gifts})
-
         elif action == 'get_stats':
             active_users = sum(1 for u in users.values() if u.get('role') != 'guest' and 'expiration' in u and datetime.now() < datetime.strptime(u['expiration'], '%Y-%m-%d'))
             return jsonify({'active_users': active_users})
-
         elif action == 'backup':
             import zipfile
             from io import BytesIO
@@ -436,7 +405,7 @@ def admin_panel():
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                 for file_name in json_files:
-                    file_path = file_name  # assuming in current dir
+                    file_path = file_name # assuming in current dir
                     if os.path.exists(file_path):
                         zip_file.write(file_path, arcname=file_name)
                 # Include images from novidades folder
@@ -448,7 +417,6 @@ def admin_panel():
                         zip_file.write(file_path, arcname=arcname)
             zip_buffer.seek(0)
             return send_file(zip_buffer, as_attachment=True, download_name='system_backup.zip', mimetype='application/zip')
-
         elif action == 'restore':
             if 'zip_file' not in request.files:
                 return jsonify({'message': 'Nenhum arquivo enviado.', 'category': 'error'})
@@ -483,9 +451,7 @@ def admin_panel():
             except Exception as e:
                 shutil.rmtree(temp_dir)
                 return jsonify({'message': f'Erro na restauração: {str(e)}', 'category': 'error'})
-
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
-
 # Notifications Page
 @app.route('/notifications', methods=['GET', 'POST'])
 def notifications_page():
@@ -505,7 +471,6 @@ def notifications_page():
             save_data(users, 'users.json')
         return jsonify({'success': True})
     return render_template('notifications.html', unread=unread, read=read, users=users)
-
 # Novidades Page
 @app.route('/novidades', methods=['GET'])
 def novidades():
@@ -514,7 +479,6 @@ def novidades():
         abort(403)
     news = load_data('news.json')
     return render_template('novidades.html', news=news, users=users)
-
 # Create Novidade
 @app.route('/novidades/new', methods=['GET', 'POST'])
 def new_novidade():
@@ -548,7 +512,6 @@ def new_novidade():
         flash('Novidade enviada com sucesso!', 'success')
         return redirect('/novidades')
     return render_template('new_novidade.html', users=users)
-
 # Edit Novidade
 @app.route('/novidades/edit/<news_id>', methods=['GET', 'POST'])
 def edit_novidade(news_id):
@@ -574,7 +537,6 @@ def edit_novidade(news_id):
         flash('Novidade editada com sucesso!', 'success')
         return redirect('/novidades')
     return render_template('edit_novidade.html', item=item, users=users)
-
 # Delete Novidade
 @app.route('/novidades/delete/<news_id>', methods=['POST'])
 def delete_novidade(news_id):
@@ -595,7 +557,6 @@ def delete_novidade(news_id):
     save_data(news, 'news.json')
     flash('Novidade excluída com sucesso!', 'success')
     return redirect('/novidades')
-
 # Module Routes
 @app.route('/modulos/mae', methods=['GET', 'POST'])
 def mae():
@@ -638,7 +599,6 @@ def mae():
             except Exception as e:
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
-
 @app.route('/modulos/pai', methods=['GET', 'POST'])
 def pai():
     users = load_data('users.json')
@@ -680,7 +640,6 @@ def pai():
             except Exception as e:
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
-
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 def cnpjcompleto():
     users = load_data('users.json')
@@ -747,7 +706,6 @@ def cnpjcompleto():
             except Exception as e:
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
-
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 def cpf():
     users = load_data('users.json')
@@ -783,7 +741,6 @@ def cpf():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
 def cpf2():
     users = load_data('users.json')
@@ -819,7 +776,6 @@ def cpf2():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 def cpfdata():
     users = load_data('users.json')
@@ -948,7 +904,6 @@ def cpfdata():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
 def cpf3():
     users = load_data('users.json')
@@ -984,7 +939,6 @@ def cpf3():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
 def cpflv():
     users = load_data('users.json')
@@ -1025,7 +979,6 @@ def cpflv():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def vacinas():
     users = load_data('users.json')
@@ -1068,7 +1021,6 @@ def vacinas():
             except json.JSONDecodeError:
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
-
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 def datanome():
     users = load_data('users.json')
@@ -1130,7 +1082,6 @@ def datanome():
                 flash(f'Erro inesperado: {str(e)}', 'error')
     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count,
                            results=results, nome=nome, datanasc=datanasc)
-
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
 def placalv():
     users = load_data('users.json')
@@ -1172,7 +1123,6 @@ def placalv():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
-
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
 def telLv():
     users = load_data('users.json')
@@ -1214,7 +1164,6 @@ def telLv():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, telefone=telefone)
-
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
 def teldual():
     users = load_data('users.json')
@@ -1250,7 +1199,6 @@ def teldual():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
-
 @app.route('/modulos/tel', methods=['GET', 'POST'])
 def tel():
     users = load_data('users.json')
@@ -1286,7 +1234,6 @@ def tel():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
-
 @app.route('/modulos/placa', methods=['GET', 'POST'])
 def placa():
     users = load_data('users.json')
@@ -1324,7 +1271,6 @@ def placa():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('placa.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
-
 @app.route('/modulos/placaestadual', methods=['GET', 'POST'])
 def placaestadual():
     users = load_data('users.json')
@@ -1360,7 +1306,6 @@ def placaestadual():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
-
 @app.route('/modulos/pix', methods=['GET', 'POST'])
 def pix():
     users = load_data('users.json')
@@ -1398,7 +1343,6 @@ def pix():
                 flash('Resposta da API inválida (JSON malformado).', 'error')
     return render_template('pix.html', is_admin=is_admin, notifications=unread_count,
                            result=result, chave=chave)
-
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 def fotor():
     users = load_data('users.json')
@@ -1474,7 +1418,6 @@ def fotor():
         documento=documento,
         selected_option=selected_option
     )
-
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 def nomelv():
     users = load_data('users.json')
@@ -1518,7 +1461,6 @@ def nomelv():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/nome', methods=['GET', 'POST'])
 def nome():
     users = load_data('users.json')
@@ -1554,7 +1496,6 @@ def nome():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/ip', methods=['GET', 'POST'])
 def ip():
     users = load_data('users.json')
@@ -1599,7 +1540,6 @@ def ip():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
-
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
 def nome2():
     users = load_data('users.json')
@@ -1635,7 +1575,6 @@ def nome2():
             except json.JSONDecodeError:
                 flash(f'Resposta da API inválida: {response.text}', 'error')
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/likeff', methods=['GET', 'POST'])
 def likeff():
     users = load_data('users.json')
@@ -1710,7 +1649,6 @@ def likeff():
     return render_template('likeff.html', is_admin=is_admin,
                          notifications=unread_count,
                          result=result, uid=uid)
-
 # New Module: Atestado - Edit existing PDF
 @app.route('/modulos/atestado', methods=['GET', 'POST'])
 def atestado():
@@ -1718,21 +1656,19 @@ def atestado():
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     role = user['role']
-    
     if not is_admin and role not in ['user_mensal', 'user_anual']:
         flash('Acesso negado. Este módulo é apenas para usuários mensais, anuais ou admins.', 'error')
         return redirect('/dashboard')
 
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
-
     pdf_preview = None
     edited_pdf_path = None
 
     if request.method == 'POST':
         if not manage_module_usage(g.user_id, 'atestado'):
             flash('Limite de uso diário atingido para o módulo Atestado.', 'error')
-            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None, force_download=False)
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
 
         # === DADOS DO FORMULÁRIO ===
         nome_paciente = request.form.get('nome_paciente', 'ERICK GABRIEL COTA').strip().upper()
@@ -1740,7 +1676,7 @@ def atestado():
         profissional = request.form.get('profissional', 'CAROLINA SAAD HASSEM').strip().upper()
         crm = request.form.get('crm', '191662').strip()
         data_atendimento = request.form.get('data_atendimento', '28 de Outubro de 2025').strip()
-        data_assinatura = request.form.get('data_assinatura', datetime.now().strftime('%d/%m/%Y %H:%M:%S')).strip()
+        data_assinatura = request.form.get('data_assinatura', '28/10/2025 14:08:57').strip()
         cidade = request.form.get('cidade', 'Guaratinguetá').strip().title()
         uf = request.form.get('uf', 'SP').strip().upper()
         cid = request.form.get('cid', 'J11').strip().upper()
@@ -1752,39 +1688,51 @@ def atestado():
         original_pdf = 'atestado.pdf'
         if not os.path.exists(original_pdf):
             flash('Template atestado.pdf não encontrado.', 'error')
-            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None, force_download=False)
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
 
-        # Nome do arquivo com data/hora
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f'Atestado_{nome_paciente.replace(" ", "_")}_{timestamp}.pdf'
-        edited_pdf = os.path.join('static', filename)
+        edited_pdf = f'static/edited_atestado_{uuid.uuid4().hex}.pdf'
         preview_img = f'static/preview_{uuid.uuid4().hex}.png'
 
         try:
+            # === ABRIR PDF ===
             doc = fitz.open(original_pdf)
             page = doc[0]
 
-            # === FUNÇÃO PARA INSERIR TEXTO COM FONTE EXTERNA ===
+            # === CARREGAR FONTES LOCAIS (com fallback seguro) ===
+            font_normal_path = 'fonts/DejaVuSans.ttf'
+            font_bold_path = 'fonts/DejaVuSans-Bold.ttf'
+
+            font_normal = fitz.Font(fontfile=font_normal_path) if os.path.exists(font_normal_path) else None
+            font_bold = fitz.Font(fontfile=font_bold_path) if os.path.exists(font_bold_path) else None
+
+            # === FUNÇÃO PARA INSERIR TEXTO COM FONTE PERSONALIZADA ===
             def insert_text(text, point, font_size=10, bold=False):
-                font_path = FONT_BOLD_PATH if bold else FONT_NORMAL_PATH
-                try:
-                    font = fitz.Font(fontfile=font_path)
+                font = font_bold if bold and font_bold else (font_normal if not bold and font_normal else None)
+                if font:
                     page.insert_text(
                         point,
                         text,
                         fontsize=font_size,
-                        fontname="custom",
-                        fontfile=font_path,
+                        fontname="DejaVu",  # Nome interno (pode ser qualquer, mas precisa ser registrado)
+                        fontfile=None,
+                        font=font,
                         color=(0, 0, 0)
                     )
-                except:
-                    page.insert_text(point, text, fontsize=font_size, color=(0, 0, 0))
+                else:
+                    # Fallback: usar fonte padrão do PDF
+                    page.insert_text(
+                        point,
+                        text,
+                        fontsize=font_size,
+                        fontname="helv" if not bold else "hebo",
+                        color=(0, 0, 0)
+                    )
 
             # === LIMPAR ÁREAS ===
             def clear_area(rect):
                 page.draw_rect(rect, color=(1,1,1), fill=(1,1,1))
 
-            # === POSIÇÕES ===
+            # === POSIÇÕES (ajustadas para seu PDF) ===
             positions = {
                 "nome_paciente": (70, 105),
                 "cpf": (70, 120),
@@ -1799,37 +1747,44 @@ def atestado():
                 "crm_assinatura": (300, 475),
             }
 
-            # Limpar áreas
+            # === LIMPAR CAMPOS ===
             for rect in [
-                fitz.Rect(65, 100, 300, 115), fitz.Rect(65, 115, 300, 130), fitz.Rect(65, 130, 300, 145),
-                fitz.Rect(375, 100, 520, 115), fitz.Rect(375, 115, 520, 130), fitz.Rect(375, 130, 520, 145),
-                fitz.Rect(175, 255, 420, 270), fitz.Rect(65, 355, 150, 370), fitz.Rect(65, 405, 250, 420),
-                fitz.Rect(295, 455, 520, 470), fitz.Rect(295, 470, 520, 485), fitz.Rect(65, 300, 520, 350),
+                fitz.Rect(65, 100, 300, 115),
+                fitz.Rect(65, 115, 300, 130),
+                fitz.Rect(65, 130, 300, 145),
+                fitz.Rect(375, 100, 520, 115),
+                fitz.Rect(375, 115, 520, 130),
+                fitz.Rect(375, 130, 520, 145),
+                fitz.Rect(175, 255, 420, 270),
+                fitz.Rect(65, 355, 150, 370),
+                fitz.Rect(65, 405, 250, 420),
+                fitz.Rect(295, 455, 520, 470),
+                fitz.Rect(295, 470, 520, 485),
+                fitz.Rect(65, 300, 520, 350),  # corpo do texto
             ]:
                 clear_area(rect)
 
-            # Inserir textos
-            insert_text(nome_paciente, positions["nome_paciente"], 10, bold=True)
-            insert_text(cpf, positions["cpf"], 10)
-            insert_text(profissional, positions["profissional"], 10)
-            insert_text(n_atend, positions["n_atend"], 10)
-            insert_text(n_pront, positions["n_pront"], 10)
-            insert_text(data_assinatura, positions["data_assinatura"], 10)
-            insert_text(f"{cidade}, {uf} - {data_atendimento}", positions["cidade_data"], 10)
-            insert_text(cid, positions["cid"], 10, bold=True)
-            insert_text(dias_afastamento, positions["dias_afastamento"], 10, bold=True)
-            insert_text(f"Dr(a). {profissional}", positions["profissional_assinatura"], 10)
-            insert_text(f"{crm} CRM", positions["crm_assinatura"], 10)
+            # === INSERIR TEXTOS ===
+            insert_text(nome_paciente, positions["nome_paciente"], font_size=10, bold=True)
+            insert_text(cpf, positions["cpf"], font_size=10)
+            insert_text(profissional, positions["profissional"], font_size=10)
+            insert_text(n_atend, positions["n_atend"], font_size=10)
+            insert_text(n_pront, positions["n_pront"], font_size=10)
+            insert_text(data_assinatura, positions["data_assinatura"], font_size=10)
+            insert_text(f"{cidade}, {uf} - {data_atendimento}", positions["cidade_data"], font_size=10)
+            insert_text(cid, positions["cid"], font_size=10, bold=True)
+            insert_text(dias_afastamento, positions["dias_afastamento"], font_size=10, bold=True)
+            insert_text(f"Dr(a). {profissional}", positions["profissional_assinatura"], font_size=10)
+            insert_text(f"{crm} CRM", positions["crm_assinatura"], font_size=10)
 
-            # Corpo do atestado
+            # === CORPO DO ATESTADO ===
             corpo = f"Atesto para os devidos fins que {nome_paciente} foi atendido(a) neste serviço, necessitando de afastamento por {dias_afastamento} dia(s) das suas atividades profissionais."
             page.insert_textbox(
                 fitz.Rect(65, 300, 520, 350),
                 corpo,
                 fontsize=11,
-                fontfile=FONT_NORMAL_PATH,
-                align=fitz.TEXT_ALIGN_JUSTIFY,
-                color=(0, 0, 0)
+                fontname="helv",
+                align=fitz.TEXT_ALIGN_JUSTIFY
             )
 
             # === SALVAR PDF ===
@@ -1845,46 +1800,34 @@ def atestado():
             pdf_preview = preview_img
             edited_pdf_path = edited_pdf
 
-            # === FORÇAR DOWNLOAD AUTOMÁTICO ===
-            response = make_response(send_from_directory('static', filename, as_attachment=True))
-            response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
-            response.headers['X-Suggested-Filename'] = filename
-            response.headers['Cache-Control'] = 'no-cache'
-            return response
-
         except Exception as e:
             flash(f'Erro ao gerar atestado: {str(e)}', 'error')
-            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None, force_download=False)
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
 
-    # GET: exibe formulário
     return render_template(
         'atestado_c.html',
         is_admin=is_admin,
         notifications=unread_count,
         pdf_preview=pdf_preview,
-        edited_pdf=edited_pdf_path,
-        force_download=False
+        edited_pdf=edited_pdf_path
     )
+   
 @app.route('/download_edited/<path:filename>')
 def download_edited(filename):
     return send_from_directory(app.root_path, filename, as_attachment=True)
-
 # Logout
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
-
 # Credits
 @app.route('/@A30')
 def creditos():
     return "@enfurecido - {'0x106a90000'}"
-
 # Preview Image
 @app.route('/preview.jpg')
 def preview():
     return send_from_directory(app.root_path, 'preview.jpg', mimetype='image/jpeg')
-
 if __name__ == '__main__':
     initialize_json('users.json')
     initialize_json('notifications.json', default_data={})
