@@ -13,6 +13,7 @@ import colorama
 from colorama import Fore, Style
 import urllib3
 import socket
+import fitz  # PyMuPDF for PDF editing
 
 # Force IPv4 for all socket connections
 original_getaddrinfo = socket.getaddrinfo
@@ -59,7 +60,8 @@ module_status = {
     'likeff': 'OFF',
     'mae': 'ON',
     'pai': 'ON',
-    'cnpjcompleto': 'ON'
+    'cnpjcompleto': 'ON',
+    'atestado': 'ON'
 }
 
 chave = "vmb1"  # API key for some external services
@@ -614,8 +616,8 @@ def mae():
             flash('NOME não fornecido.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('status') and data.get('response'):
@@ -656,8 +658,8 @@ def pai():
             flash('NOME não fornecido.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('status') and data.get('response'):
@@ -698,8 +700,8 @@ def cnpjcompleto():
             flash('CNPJ inválido. Digite 14 números.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
-                response = requests.get(url, verify=False, timeout=15)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 empresa = data.get("empresa", {})
@@ -765,8 +767,8 @@ def cpf():
             flash('CPF não fornecido.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'CPF' in data and data['CPF'] and data.get('NOME'):
@@ -802,7 +804,7 @@ def cpf2():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=cpf1&query={cpf}"
-                response = requests.get(url, verify=False, timeout=10)
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('resultado'):
@@ -837,8 +839,8 @@ def cpfdata():
             flash('CPF não fornecido.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data and data.get('nome'):
@@ -966,8 +968,8 @@ def cpf3():
             flash('CPF não fornecido.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'CPF' in data and data['CPF']:
@@ -1003,7 +1005,7 @@ def cpflv():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
-                response = requests.get(url, verify=False, timeout=10)
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if (data.get('resultado') and
@@ -1043,8 +1045,8 @@ def vacinas():
             flash('Por favor, insira um CPF válido com 11 dígitos.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 imunizacoes = []
@@ -1088,8 +1090,8 @@ def datanome():
             flash('Nome e data de nascimento são obrigatórios.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 raw_results = []
@@ -1148,8 +1150,8 @@ def placalv():
             flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if isinstance(data, dict) and data.get('status') and 'response' in data and 'dados' in data['response']:
@@ -1190,8 +1192,8 @@ def telLv():
             flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if isinstance(data, dict) and data.get('status') and 'response' in data:
@@ -1233,7 +1235,7 @@ def teldual():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=teldual&query={telefone}"
-                response = requests.get(url, verify=False, timeout=10)
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'resultado' in data and data['resultado'] and any('cpf' in item for item in data['resultado']):
@@ -1269,7 +1271,7 @@ def tel():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=telefone&query={tel_input}"
-                response = requests.get(url, verify=False, timeout=10)
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'resultado' in data and 'cpf' in data['resultado']:
@@ -1304,8 +1306,8 @@ def placa():
             flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if isinstance(data, dict) and data.get('PLACA') == placa:
@@ -1343,7 +1345,7 @@ def placaestadual():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=placaestadual&query={placa}"
-                response = requests.get(url, verify=False, timeout=10)
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0 and data['resultado'][0].get('retorno') == 'ok':
@@ -1378,8 +1380,8 @@ def pix():
             flash('Por favor, insira uma chave válida (CPF, telefone ou e-mail).', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if isinstance(data, dict) and data.get('Status') == 'Sucesso' and 'nome' in data:
@@ -1418,7 +1420,7 @@ def fotor():
             flash('Documento não fornecido.', 'error')
         else:
             try:
-                base_url = "http://br1.stormhost.online:10004/api/token=@signficativo/consulta"
+                base_url = "https://br1.stormhost.online:10004/api/token=@signficativo/consulta"
                 tipo_map = {
                     "fotorj": "fotorj",
                     "fotoce": "fotoce",
@@ -1439,7 +1441,7 @@ def fotor():
                         selected_option=selected_option
                     )
                 url = f"{base_url}?dado={documento}&tipo={tipo}"
-                response = requests.get(url, verify=False, timeout=12)
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 raw = response.text.strip()
                 data = json.loads(raw.lstrip('\ufeff'))
@@ -1492,8 +1494,8 @@ def nomelv():
             flash('Nome não fornecido.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 results_list = []
@@ -1536,8 +1538,8 @@ def nome():
             flash('Nome não fornecido.', 'error')
         else:
             try:
-                url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
-                response = requests.get(url, verify=False, timeout=10)
+                url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('resultado') and len(data['resultado']) > 0:
@@ -1573,7 +1575,7 @@ def ip():
         else:
             try:
                 url = f"https://ipwho.is/{ip_address}"
-                response = requests.get(url, timeout=10)
+                response = requests.get(url, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('success'):
@@ -1618,7 +1620,7 @@ def nome2():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=nomeData&query={nome}"
-                response = requests.get(url, verify=False, timeout=10)
+                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('resultado') and 'itens' in data['resultado']:
@@ -1657,7 +1659,7 @@ def likeff():
                 token_url = "http://teamxcutehack.serv00.net/like/token_ind.json"
                 ffinfo_url = f"https://lk-team-ffinfo-five.vercel.app/ffinfo?id={uid}"
                 like_api_url = f"https://likeapiff.thory.in/like?uid={uid}&server_name={server_name}&token_url={requests.utils.quote(token_url)}"
-                ffinfo_response = requests.get(ffinfo_url, timeout=10)
+                ffinfo_response = requests.get(ffinfo_url, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 ffinfo_response.raise_for_status()
                 ffinfo_data = json.loads(ffinfo_response.text.lstrip('\ufeff'))
                 if not ffinfo_data:
@@ -1671,7 +1673,7 @@ def likeff():
                                         notifications=unread_count,
                                         result=result, uid=uid)
                 likes_before = int(str(ffinfo_data["account_info"]["├ Likes"]).replace(',', ''))
-                like_response = requests.get(like_api_url, timeout=10)
+                like_response = requests.get(like_api_url, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 if like_response.status_code != 200:
                     flash(f'Falha na API de likes com código {like_response.status_code}.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
@@ -1712,6 +1714,93 @@ def likeff():
     return render_template('likeff.html', is_admin=is_admin,
                          notifications=unread_count,
                          result=result, uid=uid)
+
+# New Module: Atestado - Edit existing PDF
+@app.route('/modulos/atestado', methods=['GET', 'POST'])
+def atestado():
+    users = load_data('users.json')
+    user = users[g.user_id]
+    is_admin = user['role'] == 'admin'
+    role = user['role']
+    if not is_admin and role not in ['user_mensal', 'user_anual']:
+        flash('Acesso negado. Este módulo é apenas para usuários mensais, anuais ou admins.', 'error')
+        return redirect('/dashboard')
+    notifications = load_data('notifications.json')
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
+    pdf_preview = None
+    edited_pdf_path = None
+    if request.method == 'POST':
+        if not manage_module_usage(g.user_id, 'atestado'):
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
+        nome_paciente = request.form.get('nome_paciente', 'ERICK GABRIEL COTA').upper()
+        cpf = request.form.get('cpf', '413.759.068-01')
+        profissional = request.form.get('profissional', 'CAROLINA SAAD HASSEM').upper()
+        crm = request.form.get('crm', '191662')
+        data_atendimento = request.form.get('data_atendimento', '28 de Outubro de 2025')
+        data_assinatura = request.form.get('data_assinatura', '28/10/2025 14:08:57')
+        cidade = request.form.get('cidade', 'Guaratinguetá').upper()
+        uf = request.form.get('uf', 'SP').upper()
+        cid = request.form.get('cid', 'J11').upper()
+        dias_afastamento = request.form.get('dias_afastamento', '01 (UM)').upper()
+        n_atend = request.form.get('n_atend', '4532519')
+        n_pront = request.form.get('n_pront', '0009372517')
+
+        # Original PDF
+        original_pdf = 'atestado.pdf'
+        if not os.path.exists(original_pdf):
+            flash('Arquivo de template atestado.pdf não encontrado.', 'error')
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
+
+        # Edited PDF path
+        edited_pdf = f'static/edited_atestado_{uuid.uuid4()}.pdf'
+
+        # Open and edit
+        doc = fitz.open(original_pdf)
+        page = doc[0]
+
+        # Function to replace text
+        def replace_text(page, old_text, new_text):
+            rects = page.search_for(old_text)
+            for rect in rects:
+                page.add_redact_annot(rect, fill=(1,1,1))  # White fill to erase
+            page.apply_redactions()
+            for rect in rects:
+                page.insert_text(rect.tl, new_text, fontsize=10, color=(0,0,0))  # Adjust font size and color
+
+        # Replace each field
+        replace_text(page, "ERICK GABRIEL COTA", nome_paciente)
+        replace_text(page, "413.759.068-01", cpf)
+        replace_text(page, "CAROLINA SAAD HASSEM", profissional)
+        replace_text(page, "4532519", n_atend)
+        replace_text(page, "0009372517", n_pront)
+        replace_text(page, "28/10/2025 14:08:57", data_assinatura)
+        replace_text(page, "Guaratinguetá, SP - 28 de Outubro de 2025", f"{cidade}, {uf} - {data_atendimento}")
+        replace_text(page, "J11", cid)
+        replace_text(page, "01 (UM)", dias_afastamento)
+        replace_text(page, "Dra. Carolina Saad Hassem", f"Dra. {profissional}")
+        replace_text(page, "191662", crm)
+
+        # Save edited PDF
+        doc.save(edited_pdf)
+        doc.close()
+
+        # Generate preview image
+        preview_doc = fitz.open(edited_pdf)
+        page_preview = preview_doc[0]
+        pix = page_preview.get_pixmap()
+        img_id = uuid.uuid4()
+        img_path = f'static/preview_{img_id}.png'
+        pix.save(img_path)
+        preview_doc.close()
+
+        edited_pdf_path = edited_pdf
+        pdf_preview = img_path
+
+    return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=pdf_preview, edited_pdf=edited_pdf_path)
+
+@app.route('/download_edited/<path:filename>')
+def download_edited(filename):
+    return send_from_directory(app.root_path, filename, as_attachment=True)
 
 # Logout
 @app.route('/logout')
