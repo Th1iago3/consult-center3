@@ -1,4 +1,3 @@
-<!-- edit_novidade.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -139,36 +138,6 @@
         .btn-back:hover {
             color: var(--primary-purple);
         }
-        .btn-add-option {
-            background: var(--secondary-purple);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .option-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .btn-remove-option {
-            background: var(--error);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        /* Option Animation */
-        .option-input input:focus {
-            animation: pulse 0.5s ease-in-out;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(110, 68, 255, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(110, 68, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(110, 68, 255, 0); }
-        }
         /* SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--background-dark); }
@@ -181,7 +150,7 @@
 </head>
 <body>
     <div class="edit-container">
-        <h2>Editar {{ 'Enquete' if item.type == 'poll' else 'Novidade' }}</h2>
+        <h2>Editar Novidade</h2>
         <form method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="title">Título</label>
@@ -191,28 +160,6 @@
                 <label for="desc">Descrição</label>
                 <textarea id="desc" name="desc" required>{{ item.desc }}</textarea>
             </div>
-            {% if item.type == 'poll' %}
-            <div class="form-group">
-                <label>Opções da Enquete</label>
-                <div id="options-container">
-                    {% for option in item.options %}
-                    <div class="option-input">
-                        <input type="text" name="options[]" value="{{ option }}" required>
-                        <button type="button" class="btn-remove-option">Remover</button>
-                    </div>
-                    {% endfor %}
-                </div>
-                <button type="button" id="add-option" class="btn-add-option">Adicionar Opção</button>
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" name="single_choice" {{ 'checked' if item.settings.single_choice else '' }}> Escolha única
-                </label>
-                <label>
-                    <input type="checkbox" name="allow_change" {{ 'checked' if item.settings.allow_change else '' }}> Permitir trocar voto
-                </label>
-            </div>
-            {% endif %}
             <div class="form-group">
                 <label for="image">Imagem (opcional)</label>
                 <input type="file" id="image" name="image" accept="image/*">
@@ -228,30 +175,7 @@
         <a href="{{ url_for('novidades') }}" class="btn-back">Voltar para Novidades</a>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-            // Dynamic options for edit
-            const optionsContainer = document.getElementById('options-container');
-            const addOptionBtn = document.getElementById('add-option');
-            let optionCount = optionsContainer.children.length;
-            addOptionBtn.addEventListener('click', () => {
-                optionCount++;
-                const newOption = document.createElement('div');
-                newOption.classList.add('option-input');
-                newOption.innerHTML = `
-                    <input type="text" name="options[]" placeholder="Nova Opção" required>
-                    <button type="button" class="btn-remove-option">Remover</button>
-                `;
-                optionsContainer.appendChild(newOption);
-            });
-            optionsContainer.addEventListener('click', e => {
-                if (e.target.classList.contains('btn-remove-option')) {
-                    if (optionsContainer.children.length > 1) {
-                        e.target.parentElement.remove();
-                    }
-                }
-            });
-        });
+        lucide.createIcons();
     </script>
 </body>
 </html>
