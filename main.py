@@ -13,149 +13,130 @@ import colorama
 from colorama import Fore, Style
 from flask_socketio import SocketIO, join_room, leave_room, emit
 
+# Desativar aviso SSL (para APIs que usam HTTP)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
-socketio = SocketIO(app)
 
-# Online users for socketio
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# === ARQUIVOS JSON ===
+POLLS_FILE = 'polls.json'
+USER_VOTES_FILE = 'user_votes.json'
+NEWS_FILE = 'news.json'
+
+# === DADOS GLOBAIS ===
 users_online = {}
-
-# Rate limiting storage
 login_attempts = {}
-# Module status (can be toggled by admins)
+
+# === MÓDULOS ===
 module_status = {
-    'cpfdata': 'ON',
-    'cpflv': 'OFF',
-    'cpf': 'ON',
-    'cpf2': 'OFF',
-    'vacinas': 'ON',
-    'cpf3': 'ON',
-    'nomelv': 'ON',
-    'nome': 'ON',
-    'nome2': 'ON',
-    'tel': 'OFF',
-    'telLv': 'ON',
-    'teldual': 'OFF',
-    'datanome': 'ON',
-    'placa': 'ON',
-    'placaestadual': 'OFF',
-    'fotor': 'ON',
-    'pix': 'ON',
-    'placalv': 'ON',
-    'ip': 'ON',
-    'likeff': 'OFF',
-    'mae': 'ON',
-    'pai': 'ON',
-    'cnpjcompleto': 'ON'
+    'cpfdata': 'ON', 'cpflv': 'OFF', 'cpf': 'ON', 'cpf2': 'OFF', 'vacinas': 'ON',
+    'cpf3': 'ON', 'nomelv': 'ON', 'nome': 'ON', 'nome2': 'ON', 'tel': 'OFF',
+    'telLv': 'ON', 'teldual': 'OFF', 'datanome': 'ON', 'placa': 'ON',
+    'placaestadual': 'OFF', 'fotor': 'ON', 'pix': 'ON', 'placalv': 'ON',
+    'ip': 'ON', 'likeff': 'OFF', 'mae': 'ON', 'pai': 'ON', 'cnpjcompleto': 'ON'
 }
-chave = "vmb1" # API key for some external services
-# JSON File Management
-def initialize_json(file_path, default_data={}):
-    try:
-        with open(file_path, 'r') as file:
-            json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        with open(file_path, 'w') as file:
-            json.dump(default_data, file)
+
+chave = "vmb1"
+
+# === FUNÇÕES DE ARQUIVO ===
+def initialize_json(file_path, default_data=None):
+    if default_data is None:
+        default_data = {} if 'news.json' not in file_path else []
+    if not os.path.exists(file_path):
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(default_data, f, ensure_ascii=False, indent=4)
+
 def load_data(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            if 'news.json' in file_path and not isinstance(data, list):
-                data = []
-                save_data(data, file_path)
-            return data
-    except (FileNotFoundError, json.JSONDecodeError):
-        default_data = [] if 'news.json' in file_path else {}
-        with open(file_path, 'w') as file:
-            json.dump(default_data, file)
-        return default_data
+    initialize_json(file_path)
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
 def save_data(data, file_path):
-    with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4, default=str) # Handle datetime serialization
-# Logging
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, default=str)
+
+# === CARREGAR DADOS ===
+polls = load_data(POLLS_FILE)
+user_votes = load_data(USER_VOTES_FILE)
+
+# === INICIALIZAÇÃO ===
+initialize_json('users.json')
+initialize_json('notifications.json', {})
+initialize_json('gifts.json')
+initialize_json(NEWS_FILE, [])
+
+# === FUNÇÕES AUXILIARES ===
 def log_access(endpoint, message=''):
     try:
-        response = requests.get('https://ipinfo.io/json')
-        response.raise_for_status()
-        ip_info = response.json()
-        ip = ip_info.get('ip', '')
-    except requests.RequestException:
+        ip = requests.get('https://ipinfo.io/json', timeout=3).json().get('ip', request.remote_addr)
+    except:
         ip = request.remote_addr
-        message += f" [Error fetching real IP]"
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
-# Module Usage Management
+    print(f"{Fore.CYAN}[INFO]{Style.RESET_ALL} {ip} - {now} → {endpoint} {message}")
+
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
-    if user.get('role') == 'admin':
-        return True # Admins have unlimited access
-    # Check permissions
+    if user.get('role') == 'admin': return True
     permissions = user.get('permissions', {})
-    if module not in permissions or (permissions[module] and datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d')):
-        flash(f'Você não tem permissão para acessar o módulo {module}.', 'error')
+    if module not in permissions or datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d'):
+        flash(f'Sem permissão para {module}.', 'error')
         return False
-    # Usage tracking
     if 'modules' not in user:
-        user['modules'] = {m: 0 for m in module_status.keys()}
+        user['modules'] = {m: 0 for m in module_status}
     if increment:
         user['modules'][module] += 1
     today = datetime.now().date().isoformat()
-    if 'last_reset' not in user or user['last_reset'] != today:
+    if user.get('last_reset') != today:
         user['modules'] = {k: 0 for k in user['modules']}
         user['last_reset'] = today
-    usage_limit = {
-        'guest': 0,
-        'user_semanal': 30,
-        'user_mensal': 250,
-        'user_anual': 500
-    }.get(user.get('role', 'guest'), 0)
-    if user['modules'][module] > usage_limit:
-        flash(f'Você excedeu o limite diário de {usage_limit} requisições para o módulo {module}.', 'error')
+    limit = {'guest': 0, 'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user.get('role'), 0)
+    if user['modules'][module] > limit:
+        flash(f'Limite diário excedido para {module}.', 'error')
         return False
     users[user_id] = user
     save_data(users, 'users.json')
     return True
-# Rate Limiting for Login Attempts
+
 def check_login_attempts(user_id):
     now = time.time()
-    if user_id not in login_attempts:
+    login_attempts[user_id] = login_attempts.get(user_id, {'count': 0, 'last_attempt': now})
+    if now - login_attempts[user_id]['last_attempt'] > 300:
         login_attempts[user_id] = {'count': 0, 'last_attempt': now}
-    attempts = login_attempts[user_id]
-    if now - attempts['last_attempt'] > 300: # Reset after 5 minutes
-        attempts['count'] = 0
-        attempts['last_attempt'] = now
-    attempts['count'] += 1
-    if attempts['count'] > 5:
-        return False, "Muitas tentativas de login. Tente novamente em 5 minutos."
-    login_attempts[user_id] = attempts
+    login_attempts[user_id]['count'] += 1
+    if login_attempts[user_id]['count'] > 5:
+        return False, "Muitas tentativas. Aguarde 5 min."
     return True, ""
-# Before Request Security Check
+
+# === SEGURANÇA ===
 @app.before_request
 def security_check():
-    if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
-        if 'user_id' not in session:
-            flash('Você precisa estar logado para acessar esta página.', 'error')
-            return redirect('/')
-        g.user_id = session['user_id']
-        users = load_data('users.json')
-        user = users.get(g.user_id, {})
-        if not user:
+    if request.endpoint in ['login_or_register', 'creditos', 'preview', 'static']:
+        return
+    if 'user_id' not in session:
+        flash('Faça login.', 'error')
+        return redirect('/')
+    g.user_id = session['user_id']
+    users = load_data('users.json')
+    user = users.get(g.user_id)
+    if not user:
+        session.clear()
+        return redirect('/')
+    if user['role'] not in ['admin', 'guest']:
+        exp = datetime.strptime(user['expiration'], '%Y-%m-%d')
+        if datetime.now() > exp:
+            flash('Conta expirada.', 'error')
             session.clear()
             return redirect('/')
-        # Check expiration
-        if user['role'] != 'admin' and user['role'] != 'guest':
-            expiration_date = datetime.strptime(user['expiration'], '%Y-%m-%d')
-            if datetime.now() > expiration_date:
-                flash('Sua conta expirou. Contate o suporte.', 'error')
-                session.clear()
-                return redirect('/')
 # Login
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
@@ -421,202 +402,200 @@ def notifications_page():
         return jsonify({'success': True})
     return render_template('notifications.html', unread=unread, read=read, users=users)
 # Novidades Page
-@app.route('/novidades', methods=['GET'])
+@app.route('/novidades')
 def novidades():
-    users = load_data('users.json')
-    if users[g.user_id]['role'] == 'guest':
-        abort(403)
-    news = load_data('news.json')
-    return render_template('novidades.html', news=news, users=users)
-# View Novidade
-@app.route('/novidades/<news_id>', methods=['GET'])
-def view_novidade(news_id):
-    users = load_data('users.json')
-    if users[g.user_id]['role'] == 'guest':
-        abort(403)
-    news = load_data('news.json')
-    item = next((n for n in news if n['id'] == news_id), None)
-    if not item:
-        abort(404)
-    user_vote = None
-    if item.get('type') == 'poll':
-        user_vote = item.get('user_votes', {}).get(g.user_id)
-    return render_template('view_novidade.html', item=item, user_vote=user_vote)
-# Create Novidade
+    news = load_data(NEWS_FILE)
+    for item in news:
+        if item.get('type') == 'poll':
+            poll_id = item['id']
+            item['votes'] = polls.get(poll_id, {}).get('votes', {})
+            item['user_votes'] = user_votes
+    news.sort(key=lambda x: x['date'], reverse=True)
+    return render_template('novidades.html', news=news)
+
 @app.route('/novidades/new', methods=['GET', 'POST'])
 def new_novidade():
-    users = load_data('users.json')
-    user = users[g.user_id]
-    if user['role'] == 'guest':
+    if load_data('users.json')[g.user_id]['role'] == 'guest':
         abort(403)
     if request.method == 'POST':
-        nov_type = request.form.get('type')
-        title = request.form.get('title')
-        desc = request.form.get('desc')
-        image = request.files.get('image')
-        news = load_data('news.json')
+        title = request.form['title'].strip()
+        desc = request.form['desc'].strip()
+        ntype = request.form['type']
+        if not title or not desc:
+            flash('Preencha título e descrição.', 'error')
+            return redirect('/novidades/new')
         news_id = str(uuid.uuid4())
         image_path = None
-        if image and image.filename:
-            ext = os.path.splitext(image.filename)[1].lower()
-            if ext in ['.jpg', '.jpeg', '.png', '.gif']:
-                image_filename = f'{news_id}{ext}'
-                image_path_full = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
-                image.save(image_path_full)
-                image_path = f'/static/novidades/{image_filename}'
+        if 'image' in request.files:
+            file = request.files['image']
+            if file.filename:
+                ext = os.path.splitext(file.filename)[1].lower()
+                if ext in ['.jpg', '.jpeg', '.png', '.gif']:
+                    filename = f"{news_id}{ext}"
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(filepath)
+                    image_path = f"/static/novidades/{filename}"
         new_item = {
             'id': news_id,
-            'type': nov_type,
+            'type': ntype,
             'title': title,
             'desc': desc,
-            'image': image_path,
             'date': datetime.now().isoformat(),
-            'sender': g.user_id
+            'sender': g.user_id,
+            'image': image_path
         }
-        if nov_type == 'poll':
+        if ntype == 'poll':
             options_str = request.form.get('options', '')
             options = [o.strip() for o in options_str.split('\n') if o.strip()]
-            single_choice = 'single_choice' in request.form
-            allow_change = 'allow_change' in request.form
-            new_item['options'] = options
-            new_item['settings'] = {'single_choice': single_choice, 'allow_change': allow_change}
-            new_item['votes'] = {o: 0 for o in options}
-            new_item['user_votes'] = {}
+            if len(options) < 2:
+                flash('Mínimo 2 opções.', 'error')
+                return redirect('/novidades/new')
+            new_item.update({
+                'options': options,
+                'settings': {
+                    'single_choice': 'single_choice' in request.form,
+                    'allow_change': 'allow_change' in request.form
+                }
+            })
+            polls[news_id] = {
+                'votes': {opt: 0 for opt in options},
+                'options': options,
+                'settings': new_item['settings']
+            }
+            save_data(polls, POLLS_FILE)
+        news = load_data(NEWS_FILE)
         news.append(new_item)
-        save_data(news, 'news.json')
-        flash('Novidade enviada com sucesso!', 'success')
+        save_data(news, NEWS_FILE)
+        flash('Novidade criada!', 'success')
         return redirect('/novidades')
-    return render_template('new_novidade.html', users=users)
-# Edit Novidade
+    return render_template('new_novidade.html')
+
 @app.route('/novidades/edit/<news_id>', methods=['GET', 'POST'])
 def edit_novidade(news_id):
-    users = load_data('users.json')
-    user = users[g.user_id]
-    if user['role'] == 'guest':
-        abort(403)
-    news = load_data('news.json')
+    news = load_data(NEWS_FILE)
     item = next((n for n in news if n['id'] == news_id), None)
-    if not item or (item['sender'] != g.user_id and user['role'] != 'admin'):
+    if not item or (item['sender'] != g.user_id and load_data('users.json')[g.user_id]['role'] != 'admin'):
         abort(403)
     if request.method == 'POST':
-        item['title'] = request.form.get('title')
-        item['desc'] = request.form.get('desc')
-        image = request.files.get('image')
-        if image and image.filename:
-            ext = os.path.splitext(image.filename)[1].lower()
-            image_filename = f'{news_id}{ext}'
-            image_path_full = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
-            image.save(image_path_full)
-            item['image'] = f'/static/novidades/{image_filename}'
-        if item.get('type') == 'poll':
+        item['title'] = request.form['title']
+        item['desc'] = request.form['desc']
+        if 'image' in request.files and request.files['image'].filename:
+            file = request.files['image']
+            ext = os.path.splitext(file.filename)[1].lower()
+            if ext in ['.jpg', '.jpeg', '.png', '.gif']:
+                filename = f"{news_id}{ext}"
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                item['image'] = f"/static/novidades/{filename}"
+        if item['type'] == 'poll':
             options_str = request.form.get('options', '')
             options = [o.strip() for o in options_str.split('\n') if o.strip()]
-            single_choice = 'single_choice' in request.form
-            allow_change = 'allow_change' in request.form
-            # Update options, but if changed, reset votes?
-            # For simplicity, assume no change options after create, or handle manually
+            if len(options) < 2:
+                flash('Mínimo 2 opções.', 'error')
+                return redirect(url_for('edit_novidade', news_id=news_id))
             item['options'] = options
-            item['settings'] = {'single_choice': single_choice, 'allow_change': allow_change}
-            if set(options) != set(item['votes'].keys()):
-                item['votes'] = {o: 0 for o in options}
-                item['user_votes'] = {}
-        save_data(news, 'news.json')
-        flash('Novidade editada com sucesso!', 'success')
+            item['settings'] = {
+                'single_choice': 'single_choice' in request.form,
+                'allow_change': 'allow_change' in request.form
+            }
+            polls[news_id]['options'] = options
+            polls[news_id]['settings'] = item['settings']
+            polls[news_id]['votes'] = {opt: polls[news_id]['votes'].get(opt, 0) for opt in options}
+            save_data(polls, POLLS_FILE)
+        save_data(news, NEWS_FILE)
+        flash('Editado!', 'success')
         return redirect('/novidades')
-    return render_template('edit_novidade.html', item=item, users=users)
-# Delete Novidade
+    return render_template('edit_novidade.html', item=item)
+
 @app.route('/novidades/delete/<news_id>', methods=['POST'])
 def delete_novidade(news_id):
-    users = load_data('users.json')
-    user = users[g.user_id]
-    if user['role'] == 'guest':
-        abort(403)
-    news = load_data('news.json')
+    news = load_data(NEWS_FILE)
     item = next((n for n in news if n['id'] == news_id), None)
-    if not item or (item['sender'] != g.user_id and user['role'] != 'admin'):
+    if not item or (item['sender'] != g.user_id and load_data('users.json')[g.user_id]['role'] != 'admin'):
         abort(403)
     news.remove(item)
-    if item['image']:
+    if item.get('image'):
         try:
-            os.remove(os.path.join(app.root_path + item['image']))
+            os.remove(os.path.join(app.root_path, item['image'][1:]))
         except:
             pass
-    save_data(news, 'news.json')
-    flash('Novidade excluída com sucesso!', 'success')
+    if item['type'] == 'poll':
+        polls.pop(news_id, None)
+        save_data(polls, POLLS_FILE)
+    save_data(news, NEWS_FILE)
+    flash('Excluído!', 'success')
     return redirect('/novidades')
 
-# SocketIO Events
+# === SOCKET.IO - ENQUETES EM TEMPO REAL ===
 @socketio.on('connect')
 def on_connect():
-    if 'user_id' not in session:
-        return False
-    users_online[request.sid] = session['user_id']
+    if 'user_id' in session:
+        users_online[request.sid] = session['user_id']
 
 @socketio.on('disconnect')
 def on_disconnect():
-    if request.sid in users_online:
-        del users_online[request.sid]
+    users_online.pop(request.sid, None)
 
 @socketio.on('join_poll')
-def join_poll(data):
+def handle_join(data):
     poll_id = data.get('poll_id')
-    if poll_id:
-        join_room(f'poll_{poll_id}')
-
-@socketio.on('leave_poll')
-def leave_poll(data):
-    poll_id = data.get('poll_id')
-    if poll_id:
-        leave_room(f'poll_{poll_id}')
+    if poll_id in polls:
+        join_room(poll_id)
+        emit('update_poll', {
+            'poll_id': poll_id,
+            'votes': polls[poll_id].get('votes', {}),
+            'user_votes': user_votes
+        }, room=poll_id)
 
 @socketio.on('vote')
 def handle_vote(data):
     poll_id = data.get('poll_id')
-    options = data.get('options')
-    if not isinstance(options, (str, list)):
-        return emit('vote_error', {'msg': 'Opções inválidas'}, to=request.sid)
-    if isinstance(options, str):
-        options = [options]
-    user_id = users_online.get(request.sid)
-    if not user_id:
-        return emit('vote_error', {'msg': 'Usuário não autenticado'}, to=request.sid)
-    news = load_data('news.json')
-    item = next((n for n in news if n['id'] == poll_id and n.get('type') == 'poll'), None)
-    if not item:
-        return emit('vote_error', {'msg': 'Enquete não encontrada'}, to=request.sid)
-    settings = item['settings']
-    user_votes = item['user_votes']
-    votes = item['votes']
-    if user_id in user_votes:
-        if not settings['allow_change']:
-            return emit('vote_error', {'msg': 'Não é permitido mudar o voto'}, to=request.sid)
-        # Remove old votes
-        old = user_votes[user_id]
-        if isinstance(old, str):
-            old = [old]
-        for o in old:
-            if o in votes:
-                votes[o] -= 1
-    if settings['single_choice']:
-        if len(options) != 1:
-            return emit('vote_error', {'msg': 'Selecione apenas uma opção'}, to=request.sid)
-        new_vote = options[0]
+    option = data.get('option')
+    user_id = session.get('user_id')
+    if poll_id not in polls or not user_id:
+        emit('vote_error', {'msg': 'Erro.'})
+        return
+    poll = polls[poll_id]
+    single = poll['settings'].get('single_choice', True)
+    allow_change = poll['settings'].get('allow_change', False)
+    user_votes.setdefault(user_id, {})
+    current = user_votes[user_id].get(poll_id)
+
+    if single:
+        if current and not allow_change:
+            emit('vote_error', {'msg': 'Não pode mudar.'})
+            return
+        if current and current in poll['votes']:
+            poll['votes'][current] -= 1
+        if option:
+            poll['votes'][option] = poll['votes'].get(option, 0) + 1
+            user_votes[user_id][poll_id] = option
+        else:
+            user_votes[user_id].pop(poll_id, None)
     else:
-        new_vote = list(set(options))  # unique
-    for o in new_vote:
-        if o not in item['options']:
-            return emit('vote_error', {'msg': 'Opção inválida'}, to=request.sid)
-    # Add new votes
-    if settings['single_choice']:
-        user_votes[user_id] = new_vote
-        votes[new_vote] += 1
-    else:
-        user_votes[user_id] = new_vote
-        for o in new_vote:
-            votes[o] += 1
-    save_data(news, 'news.json')
-    emit('update_votes', {'votes': votes}, room=f'poll_{poll_id}')
-    emit('vote_success', {'msg': 'Voto registrado com sucesso!'}, to=request.sid)
+        current = user_votes[user_id][poll_id] = current or []
+        if option in current and not allow_change:
+            emit('vote_error', {'msg': 'Já votou.'})
+            return
+        if option and option not in current:
+            current.append(option)
+            poll['votes'][option] = poll['votes'].get(option, 0) + 1
+        elif option in current:
+            current.remove(option)
+            poll['votes'][option] -= 1
+            if poll['votes'][option] <= 0:
+                del poll['votes'][option]
+        if not current:
+            user_votes[user_id].pop(poll_id, None)
+
+    save_data(polls, POLLS_FILE)
+    save_data(user_votes, USER_VOTES_FILE)
+    emit('update_poll', {
+        'poll_id': poll_id,
+        'votes': poll['votes'],
+        'user_votes': user_votes
+    }, room=poll_id)
+    emit('vote_success', {'msg': 'Voto registrado!'})
 
 # Module Routes
 @app.route('/modulos/mae', methods=['GET', 'POST'])
