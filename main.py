@@ -1725,79 +1725,133 @@ def atestado():
     if not is_admin and role not in ['user_mensal', 'user_anual']:
         flash('Acesso negado. Este módulo é apenas para usuários mensais, anuais ou admins.', 'error')
         return redirect('/dashboard')
+
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     pdf_preview = None
     edited_pdf_path = None
+
     if request.method == 'POST':
         if not manage_module_usage(g.user_id, 'atestado'):
+            flash('Limite de uso diário atingido para o módulo Atestado.', 'error')
             return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
-        nome_paciente = request.form.get('nome_paciente', 'ERICK GABRIEL COTA').upper()
-        cpf = request.form.get('cpf', '413.759.068-01')
-        profissional = request.form.get('profissional', 'CAROLINA SAAD HASSEM').upper()
-        crm = request.form.get('crm', '191662')
-        data_atendimento = request.form.get('data_atendimento', '28 de Outubro de 2025')
-        data_assinatura = request.form.get('data_assinatura', '28/10/2025 14:08:57')
-        cidade = request.form.get('cidade', 'Guaratinguetá').upper()
-        uf = request.form.get('uf', 'SP').upper()
-        cid = request.form.get('cid', 'J11').upper()
-        dias_afastamento = request.form.get('dias_afastamento', '01 (UM)').upper()
-        n_atend = request.form.get('n_atend', '4532519')
-        n_pront = request.form.get('n_pront', '0009372517')
 
-        # Original PDF
+        # === DADOS DO FORMULÁRIO ===
+        nome_paciente = request.form.get('nome_paciente', 'ERICK GABRIEL COTA').strip().upper()
+        cpf = request.form.get('cpf', '413.759.068-01').strip()
+        profissional = request.form.get('profissional', 'CAROLINA SAAD HASSEM').strip().upper()
+        crm = request.form.get('crm', '191662').strip()
+        data_atendimento = request.form.get('data_atendimento', '28 de Outubro de 2025').strip()
+        data_assinatura = request.form.get('data_assinatura', '28/10/2025 14:08:57').strip()
+        cidade = request.form.get('cidade', 'Guaratinguetá').strip().title()
+        uf = request.form.get('uf', 'SP').strip().upper()
+        cid = request.form.get('cid', 'J11').strip().upper()
+        dias_afastamento = request.form.get('dias_afastamento', '01 (UM)').strip().upper()
+        n_atend = request.form.get('n_atend', '4532519').strip()
+        n_pront = request.form.get('n_pront', '0009372517').strip()
+
+        # === CAMINHOS ===
         original_pdf = 'atestado.pdf'
         if not os.path.exists(original_pdf):
-            flash('Arquivo de template atestado.pdf não encontrado.', 'error')
+            flash('Template atestado.pdf não encontrado no diretório.', 'error')
             return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
 
-        # Edited PDF path
-        edited_pdf = f'static/edited_atestado_{uuid.uuid4()}.pdf'
+        edited_pdf = f'static/edited_atestado_{uuid.uuid4().hex}.pdf'
+        preview_img = f'static/preview_{uuid.uuid4().hex}.png'
 
-        # Open and edit
-        doc = fitz.open(original_pdf)
-        page = doc[0]
+        try:
+            doc = fitz.open(original_pdf)
+            page = doc[0]
 
-        # Function to replace text
-        def replace_text(page, old_text, new_text):
-            rects = page.search_for(old_text)
-            for rect in rects:
-                page.add_redact_annot(rect, fill=(1,1,1))  # White fill to erase
-            page.apply_redactions()
-            for rect in rects:
-                page.insert_text(rect.tl, new_text, fontsize=10, color=(0,0,0))  # Adjust font size and color
+            # === FUNÇÃO PARA INSERIR TEXTO COM FONTE E POSIÇÃO EXATA ===
+            def insert_text(text, point, font_size=10, font_name="helv", bold=False):
+                font = "helvb" if bold else font_name
+                rc = page.insert_text(point, text, fontsize=font_size, fontname=font, color=(0, 0, 0))
+                return rc
 
-        # Replace each field
-        replace_text(page, "ERICK GABRIEL COTA", nome_paciente)
-        replace_text(page, "413.759.068-01", cpf)
-        replace_text(page, "CAROLINA SAAD HASSEM", profissional)
-        replace_text(page, "4532519", n_atend)
-        replace_text(page, "0009372517", n_pront)
-        replace_text(page, "28/10/2025 14:08:57", data_assinatura)
-        replace_text(page, "Guaratinguetá, SP - 28 de Outubro de 2025", f"{cidade}, {uf} - {data_atendimento}")
-        replace_text(page, "J11", cid)
-        replace_text(page, "01 (UM)", dias_afastamento)
-        replace_text(page, "Dra. Carolina Saad Hassem", f"Dra. {profissional}")
-        replace_text(page, "191662", crm)
+            # === POSIÇÕES EXATAS (em pontos, 1pt = 1/72 polegada) ===
+            # Ajuste fino com base no PDF original
+            positions = {
+                "nome_paciente": (70, 105),
+                "cpf": (70, 120),
+                "profissional": (70, 135),
+                "n_atend": (380, 105),
+                "n_pront": (380, 120),
+                "data_assinatura": (380, 135),
+                "cidade_data": (180, 260),
+                "cid": (70, 360),
+                "dias_afastamento": (70, 410),
+                "profissional_assinatura": (300, 460),
+                "crm_assinatura": (300, 475),
+            }
 
-        # Save edited PDF
-        doc.save(edited_pdf)
-        doc.close()
+            # === LIMPAR ÁREAS ANTES DE ESCREVER (COBRIR COM BRANCO) ===
+            def clear_area(rect):
+                page.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
 
-        # Generate preview image
-        preview_doc = fitz.open(edited_pdf)
-        page_preview = preview_doc[0]
-        pix = page_preview.get_pixmap()
-        img_id = uuid.uuid4()
-        img_path = f'static/preview_{img_id}.png'
-        pix.save(img_path)
-        preview_doc.close()
+            # Limpar campos
+            clear_area(fitz.Rect(65, 100, 300, 115))   # Nome
+            clear_area(fitz.Rect(65, 115, 300, 130))   # CPF
+            clear_area(fitz.Rect(65, 130, 300, 145))   # Profissional
+            clear_area(fitz.Rect(375, 100, 520, 115))  # Nº Atend
+            clear_area(fitz.Rect(375, 115, 520, 130))  # Nº Pront
+            clear_area(fitz.Rect(375, 130, 520, 145))  # Data assinatura
+            clear_area(fitz.Rect(175, 255, 420, 270))  # Cidade + data
+            clear_area(fitz.Rect(65, 355, 150, 370))   # CID
+            clear_area(fitz.Rect(65, 405, 250, 420))   # Dias afastamento
+            clear_area(fitz.Rect(295, 455, 520, 470))  # Profissional (assinatura)
+            clear_area(fitz.Rect(295, 470, 520, 485))  # CRM (assinatura)
 
-        edited_pdf_path = edited_pdf
-        pdf_preview = img_path
+            # === INSERIR TEXTOS CORRETOS ===
+            insert_text(nome_paciente, positions["nome_paciente"], font_size=10, bold=True)
+            insert_text(cpf, positions["cpf"], font_size=10)
+            insert_text(profissional, positions["profissional"], font_size=10)
+            insert_text(n_atend, positions["n_atend"], font_size=10)
+            insert_text(n_pront, positions["n_pront"], font_size=10)
+            insert_text(data_assinatura, positions["data_assinatura"], font_size=10)
+            insert_text(f"{cidade}, {uf} - {data_atendimento}", positions["cidade_data"], font_size=10)
+            insert_text(cid, positions["cid"], font_size=10, bold=True)
+            insert_text(dias_afastamento, positions["dias_afastamento"], font_size=10, bold=True)
+            insert_text(f"Dr(a). {profissional}", positions["profissional_assinatura"], font_size=10)
+            insert_text(f"{crm} CRM", positions["crm_assinatura"], font_size=10)
 
-    return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=pdf_preview, edited_pdf=edited_pdf_path)
+            # === CORPO DO ATESTADO (texto principal) ===
+            corpo = f"Atesto para os devidos fins que {nome_paciente} foi atendido(a) neste serviço, necessitando de afastamento por {dias_afastamento} dia(s) das suas atividades profissionais."
+            clear_area(fitz.Rect(65, 300, 520, 350))
+            page.insert_textbox(
+                fitz.Rect(65, 300, 520, 350),
+                corpo,
+                fontsize=11,
+                fontname="helv",
+                align=fitz.TEXT_ALIGN_JUSTIFY
+            )
 
+            # === SALVAR PDF EDITADO ===
+            doc.save(edited_pdf)
+            doc.close()
+
+            # === GERAR PRÉ-VISUALIZAÇÃO ===
+            doc_preview = fitz.open(edited_pdf)
+            page_preview = doc_preview[0]
+            pix = page_preview.get_pixmap(dpi=150)
+            pix.save(preview_img)
+            doc_preview.close()
+
+            pdf_preview = preview_img
+            edited_pdf_path = edited_pdf
+
+        except Exception as e:
+            flash(f'Erro ao gerar atestado: {str(e)}', 'error')
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
+
+    return render_template(
+        'atestado_c.html',
+        is_admin=is_admin,
+        notifications=unread_count,
+        pdf_preview=pdf_preview,
+        edited_pdf=edited_pdf_path
+    )
+    
 @app.route('/download_edited/<path:filename>')
 def download_edited(filename):
     return send_from_directory(app.root_path, filename, as_attachment=True)
