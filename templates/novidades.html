@@ -1,4 +1,3 @@
-<!-- novidades.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,8 +11,6 @@
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Socket.IO -->
-    <script src="/socket.io/socket.io.js"></script>
     <style>
         :root {
             --primary-purple: #6E44FF;
@@ -180,87 +177,6 @@
             transform: translateY(-1px);
             box-shadow: 0 8px 20px rgba(255, 61, 113, 0.6);
         }
-        /* Poll Specific Styles - Bar Chart Style */
-        .poll-container {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(30, 30, 30, 0.6);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-        .poll-option-bar {
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            color: var(--text-light);
-        }
-        .poll-option-label {
-            width: 60px;
-            font-weight: 600;
-            color: var(--text-white);
-            text-align: right;
-            flex-shrink: 0;
-        }
-        .poll-bar-wrapper {
-            flex: 1;
-            height: 32px;
-            background: #222;
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
-        }
-        .poll-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #8B7CFF, #6E44FF);
-            border-radius: 16px;
-            width: 0%;
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 12px;
-            color: white;
-            font-weight: 600;
-            font-size: 13px;
-            box-shadow: 0 0 10px rgba(110, 68, 255, 0.4);
-        }
-        .poll-bar.voted {
-            background: linear-gradient(90deg, #00E676, #00D68F);
-            box-shadow: 0 0 10px rgba(0, 214, 143, 0.5);
-        }
-        .poll-percentage {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-weight: 600;
-            font-size: 13px;
-            color: white;
-            z-index: 2;
-        }
-        .poll-total {
-            margin-top: 10px;
-            font-size: 13px;
-            color: var(--text-light);
-            text-align: right;
-        }
-        /* Clickable bar */
-        .poll-option-bar {
-            cursor: pointer;
-            user-select: none;
-        }
-        .poll-option-bar.voted .poll-bar {
-            animation: pulseSuccess 0.6s ease;
-        }
-        @keyframes pulseSuccess {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
         /* SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--background-dark); }
@@ -280,9 +196,6 @@
         </div>
         <div class="header-actions">
             <a href="/dashboard" class="header-icon-btn"><svg data-lucide="arrow-left"></svg></a>
-            {% if users[g.user_id]['role'] == 'admin' %}
-            <a href="/novidades/new" class="header-icon-btn"><svg data-lucide="plus"></svg></a>
-            {% endif %}
         </div>
     </header>
     <!-- MAIN CONTENT -->
@@ -290,32 +203,13 @@
         <section class="novidades-section">
             <div class="novidades-list">
                 {% for item in news %}
-                <div class="novidade-card" data-type="{{ item.type }}" data-id="{{ item.id }}" data-single="{{ item.settings.single_choice if item.type == 'poll' else '' }}" data-change="{{ item.settings.allow_change if item.type == 'poll' else '' }}">
+                <div class="novidade-card">
                     {% if item.image %}
                     <img src="{{ item.image }}" alt="{{ item.title }}">
                     {% endif %}
                     <h3 class="novidade-title">{{ item.title }}</h3>
                     <p class="novidade-desc">{{ item.desc }}</p>
                     <p class="novidade-date">{{ item.date }}</p>
-                    {% if item.type == 'poll' %}
-                    <div class="poll-container">
-                        {% set total_votes = item.votes.values() | sum %}
-                        {% for option in item.options %}
-                        {% set votes = item.votes.get(option, 0) %}
-                        {% set percentage = (votes / total_votes * 100) | round(1) if total_votes > 0 else 0 %}
-                        {% set user_voted = option in (item.user_votes.get(g.user_id, []) if isinstance(item.user_votes.get(g.user_id), list) else [item.user_votes.get(g.user_id)]) %}
-                        <div class="poll-option-bar {{ 'voted' if user_voted else '' }}" data-option="{{ option }}">
-                            <div class="poll-option-label">{{ option }}</div>
-                            <div class="poll-bar-wrapper">
-                                <div class="poll-bar {{ 'voted' if user_voted else '' }}" style="width: {{ percentage }}%">
-                                    <span class="poll-percentage">{{ percentage }}%</span>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        <div class="poll-total">Total de votos: {{ total_votes }}</div>
-                    </div>
-                    {% endif %}
                     {% if users[g.user_id]['role'] == 'admin' or item.sender == g.user_id %}
                     <div class="novidade-actions">
                         <a href="/novidades/edit/{{ item.id }}" class="btn-custom btn-primary">
@@ -338,112 +232,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-            const socket = io();
-            const pollCards = document.querySelectorAll('.novidade-card[data-type="poll"]');
-
-            if (pollCards.length > 0) {
-                socket.on('connect', () => {
-                    pollCards.forEach(card => {
-                        const pollId = card.dataset.id;
-                        socket.emit('join_poll', { poll_id: pollId });
-                    });
-                });
-
-                socket.on('update_poll', data => {
-                    const card = document.querySelector(`.novidade-card[data-id="${data.poll_id}"]`);
-                    if (!card) return;
-
-                    const totalVotes = Object.values(data.votes).reduce((a, b) => a + b, 0);
-                    const options = card.querySelectorAll('.poll-option-bar');
-                    const userVotes = data.user_votes[g.user_id] || [];
-
-                    options.forEach(opt => {
-                        const optionText = opt.dataset.option;
-                        const votes = data.votes[optionText] || 0;
-                        const percentage = totalVotes > 0 ? (votes / totalVotes * 100).toFixed(1) : 0;
-                        const bar = opt.querySelector('.poll-bar');
-                        const percentSpan = opt.querySelector('.poll-percentage');
-
-                        bar.style.width = `${percentage}%`;
-                        percentSpan.textContent = `${percentage}%`;
-
-                        const isVoted = Array.isArray(userVotes) ? userVotes.includes(optionText) : userVotes === optionText;
-                        if (isVoted) {
-                            opt.classList.add('voted');
-                            bar.classList.add('voted');
-                        } else {
-                            opt.classList.remove('voted');
-                            bar.classList.remove('voted');
-                        }
-                    });
-
-                    card.querySelector('.poll-total').textContent = `Total de votos: ${totalVotes}`;
-                });
-
-                socket.on('vote_success', data => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Voto registrado!',
-                        text: data.msg,
-                        background: '#1A1A1A',
-                        color: '#E0E0E0',
-                        confirmButtonColor: '#6E44FF',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
-                });
-
-                socket.on('vote_error', data => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro',
-                        text: data.msg,
-                        background: '#1A1A1A',
-                        color: '#E0E0E0',
-                        confirmButtonColor: '#6E44FF'
-                    });
-                });
-
-                pollCards.forEach(card => {
-                    const singleChoice = card.dataset.single === 'True';
-                    const allowChange = card.dataset.change === 'True';
-                    const pollId = card.dataset.id;
-                    const options = card.querySelectorAll('.poll-option-bar');
-                    const userVoted = Array.from(options).some(opt => opt.classList.contains('voted'));
-
-                    if (!allowChange && userVoted) {
-                        options.forEach(opt => opt.style.pointerEvents = 'none');
-                    }
-
-                    options.forEach(opt => {
-                        opt.addEventListener('click', function() {
-                            if (opt.style.pointerEvents === 'none') return;
-
-                            const selectedOption = opt.dataset.option;
-                            const currentlySelected = opt.classList.contains('voted');
-
-                            if (singleChoice && !allowChange && userVoted) return;
-
-                            if (singleChoice) {
-                                options.forEach(o => {
-                                    o.classList.remove('voted');
-                                    o.querySelector('.poll-bar').classList.remove('voted');
-                                });
-                            }
-
-                            if (currentlySelected && allowChange) {
-                                opt.classList.remove('voted');
-                                opt.querySelector('.poll-bar').classList.remove('voted');
-                                socket.emit('vote', { poll_id: pollId, option: null });
-                            } else if (!currentlySelected) {
-                                opt.classList.add('voted');
-                                opt.querySelector('.poll-bar').classList.add('voted');
-                                socket.emit('vote', { poll_id: pollId, option: selectedOption });
-                            }
-                        });
-                    });
-                });
-            }
         });
     </script>
 </body>
