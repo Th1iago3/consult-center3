@@ -1753,7 +1753,7 @@ def atestado():
         # === CAMINHOS ===
         original_pdf = 'atestado.pdf'
         if not os.path.exists(original_pdf):
-            flash('Template atestado.pdf não encontrado no diretório.', 'error')
+            flash('Template atestado.pdf não encontrado.', 'error')
             return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
 
         edited_pdf = f'static/edited_atestado_{uuid.uuid4().hex}.pdf'
@@ -1763,14 +1763,22 @@ def atestado():
             doc = fitz.open(original_pdf)
             page = doc[0]
 
-            # === FUNÇÃO PARA INSERIR TEXTO COM FONTE E POSIÇÃO EXATA ===
-            def insert_text(text, point, font_size=10, font_name="helv", bold=False):
-                font = "helvb" if bold else font_name
-                rc = page.insert_text(point, text, fontsize=font_size, fontname=font, color=(0, 0, 0))
-                return rc
+            # === FUNÇÃO PARA INSERIR TEXTO COM FONTE GARANTIDA ===
+            def insert_text(text, point, font_size=10, bold=False):
+                fontname = "helv"  # Helvetica está embutida em 99% dos PDFs
+                if bold:
+                    fontname = "helvb"  # Helvetica Bold
+                try:
+                    page.insert_text(point, text, fontsize=font_size, fontname=fontname, color=(0,0,0))
+                except:
+                    # Fallback: usa fonte padrão do sistema
+                    page.insert_text(point, text, fontsize=font_size, fontname="DejaVuSans", color=(0,0,0))
 
-            # === POSIÇÕES EXATAS (em pontos, 1pt = 1/72 polegada) ===
-            # Ajuste fino com base no PDF original
+            # === LIMPAR ÁREAS (COBRIR COM BRANCO) ===
+            def clear_area(rect):
+                page.draw_rect(rect, color=(1,1,1), fill=(1,1,1), overlay=False)
+
+            # === POSIÇÕES EXATAS (ajustadas com base no seu PDF) ===
             positions = {
                 "nome_paciente": (70, 105),
                 "cpf": (70, 120),
@@ -1785,24 +1793,20 @@ def atestado():
                 "crm_assinatura": (300, 475),
             }
 
-            # === LIMPAR ÁREAS ANTES DE ESCREVER (COBRIR COM BRANCO) ===
-            def clear_area(rect):
-                page.draw_rect(rect, color=(1, 1, 1), fill=(1, 1, 1))
-
             # Limpar campos
-            clear_area(fitz.Rect(65, 100, 300, 115))   # Nome
-            clear_area(fitz.Rect(65, 115, 300, 130))   # CPF
-            clear_area(fitz.Rect(65, 130, 300, 145))   # Profissional
-            clear_area(fitz.Rect(375, 100, 520, 115))  # Nº Atend
-            clear_area(fitz.Rect(375, 115, 520, 130))  # Nº Pront
-            clear_area(fitz.Rect(375, 130, 520, 145))  # Data assinatura
-            clear_area(fitz.Rect(175, 255, 420, 270))  # Cidade + data
-            clear_area(fitz.Rect(65, 355, 150, 370))   # CID
-            clear_area(fitz.Rect(65, 405, 250, 420))   # Dias afastamento
-            clear_area(fitz.Rect(295, 455, 520, 470))  # Profissional (assinatura)
-            clear_area(fitz.Rect(295, 470, 520, 485))  # CRM (assinatura)
+            clear_area(fitz.Rect(65, 100, 300, 115))
+            clear_area(fitz.Rect(65, 115, 300, 130))
+            clear_area(fitz.Rect(65, 130, 300, 145))
+            clear_area(fitz.Rect(375, 100, 520, 115))
+            clear_area(fitz.Rect(375, 115, 520, 130))
+            clear_area(fitz.Rect(375, 130, 520, 145))
+            clear_area(fitz.Rect(175, 255, 420, 270))
+            clear_area(fitz.Rect(65, 355, 150, 370))
+            clear_area(fitz.Rect(65, 405, 250, 420))
+            clear_area(fitz.Rect(295, 455, 520, 470))
+            clear_area(fitz.Rect(295, 470, 520, 485))
 
-            # === INSERIR TEXTOS CORRETOS ===
+            # === INSERIR TEXTOS ===
             insert_text(nome_paciente, positions["nome_paciente"], font_size=10, bold=True)
             insert_text(cpf, positions["cpf"], font_size=10)
             insert_text(profissional, positions["profissional"], font_size=10)
@@ -1815,7 +1819,7 @@ def atestado():
             insert_text(f"Dr(a). {profissional}", positions["profissional_assinatura"], font_size=10)
             insert_text(f"{crm} CRM", positions["crm_assinatura"], font_size=10)
 
-            # === CORPO DO ATESTADO (texto principal) ===
+            # === CORPO DO ATESTADO ===
             corpo = f"Atesto para os devidos fins que {nome_paciente} foi atendido(a) neste serviço, necessitando de afastamento por {dias_afastamento} dia(s) das suas atividades profissionais."
             clear_area(fitz.Rect(65, 300, 520, 350))
             page.insert_textbox(
@@ -1826,16 +1830,15 @@ def atestado():
                 align=fitz.TEXT_ALIGN_JUSTIFY
             )
 
-            # === SALVAR PDF EDITADO ===
-            doc.save(edited_pdf)
+            # === SALVAR ===
+            doc.save(edited_pdf, garbage=4, deflate=True, clean=True)
             doc.close()
 
-            # === GERAR PRÉ-VISUALIZAÇÃO ===
-            doc_preview = fitz.open(edited_pdf)
-            page_preview = doc_preview[0]
-            pix = page_preview.get_pixmap(dpi=150)
+            # === PRÉ-VISUALIZAÇÃO ===
+            doc_prev = fitz.open(edited_pdf)
+            pix = doc_prev[0].get_pixmap(dpi=150)
             pix.save(preview_img)
-            doc_preview.close()
+            doc_prev.close()
 
             pdf_preview = preview_img
             edited_pdf_path = edited_pdf
