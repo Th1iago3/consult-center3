@@ -1763,18 +1763,22 @@ def atestado():
             doc = fitz.open(original_pdf)
             page = doc[0]
 
-            # === FUNÇÃO PARA INSERIR TEXTO COM FONTE GARANTIDA ===
-            def insert_text(text, point, font_size=10, bold=False):
-                fontname = "helv"  # Helvetica está embutida em 99% dos PDFs
-                if bold:
-                    fontname = "helvb"  # Helvetica Bold
-                try:
-                    page.insert_text(point, text, fontsize=font_size, fontname=fontname, color=(0,0,0))
-                except:
-                    # Fallback: usa fonte padrão do sistema
-                    page.insert_text(point, text, fontsize=font_size, fontname="DejaVuSans", color=(0,0,0))
+            # === FONTE GARANTIDA: DejaVuSans (vem com PyMuPDF) ===
+            FONT_NORMAL = "DejaVuSans"
+            FONT_BOLD = "DejaVuSans-Bold"
 
-            # === LIMPAR ÁREAS (COBRIR COM BRANCO) ===
+            # === FUNÇÃO PARA INSERIR TEXTO ===
+            def insert_text(text, point, font_size=10, bold=False):
+                font = FONT_BOLD if bold else FONT_NORMAL
+                page.insert_text(
+                    point,
+                    text,
+                    fontsize=font_size,
+                    fontname=font,
+                    color=(0, 0, 0)
+                )
+
+            # === LIMPAR ÁREAS ===
             def clear_area(rect):
                 page.draw_rect(rect, color=(1,1,1), fill=(1,1,1), overlay=False)
 
@@ -1793,7 +1797,7 @@ def atestado():
                 "crm_assinatura": (300, 475),
             }
 
-            # Limpar campos
+            # === LIMPAR CAMPOS ===
             clear_area(fitz.Rect(65, 100, 300, 115))
             clear_area(fitz.Rect(65, 115, 300, 130))
             clear_area(fitz.Rect(65, 130, 300, 145))
@@ -1826,11 +1830,11 @@ def atestado():
                 fitz.Rect(65, 300, 520, 350),
                 corpo,
                 fontsize=11,
-                fontname="helv",
+                fontname=FONT_NORMAL,
                 align=fitz.TEXT_ALIGN_JUSTIFY
             )
 
-            # === SALVAR ===
+            # === SALVAR PDF ===
             doc.save(edited_pdf, garbage=4, deflate=True, clean=True)
             doc.close()
 
