@@ -12,6 +12,7 @@ from functools import wraps
 import colorama
 from colorama import Fore, Style
 from flask_socketio import SocketIO, join_room, leave_room, emit
+import urllib3
 
 # Desativar aviso SSL (para APIs que usam HTTP)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
