@@ -16,10 +16,6 @@ import socket
 import fitz  # PyMuPDF for PDF editing
 
 # Force IPv4 for all socket connections
-original_getaddrinfo = socket.getaddrinfo
-def force_ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
-    return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
-socket.getaddrinfo = force_ipv4_getaddrinfo
 
 # Disable insecure request warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -617,7 +613,7 @@ def mae():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('status') and data.get('response'):
@@ -659,7 +655,7 @@ def pai():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('status') and data.get('response'):
@@ -701,7 +697,7 @@ def cnpjcompleto():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 empresa = data.get("empresa", {})
@@ -768,7 +764,7 @@ def cpf():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'CPF' in data and data['CPF'] and data.get('NOME'):
@@ -804,7 +800,7 @@ def cpf2():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=cpf1&query={cpf}"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('resultado'):
@@ -840,7 +836,7 @@ def cpfdata():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data and data.get('nome'):
@@ -969,7 +965,7 @@ def cpf3():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'CPF' in data and data['CPF']:
@@ -1005,7 +1001,7 @@ def cpflv():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if (data.get('resultado') and
@@ -1046,7 +1042,7 @@ def vacinas():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 imunizacoes = []
@@ -1091,7 +1087,7 @@ def datanome():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 raw_results = []
@@ -1151,7 +1147,7 @@ def placalv():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if isinstance(data, dict) and data.get('status') and 'response' in data and 'dados' in data['response']:
@@ -1193,7 +1189,7 @@ def telLv():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if isinstance(data, dict) and data.get('status') and 'response' in data:
@@ -1235,7 +1231,7 @@ def teldual():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=teldual&query={telefone}"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'resultado' in data and data['resultado'] and any('cpf' in item for item in data['resultado']):
@@ -1271,7 +1267,7 @@ def tel():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=telefone&query={tel_input}"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'resultado' in data and 'cpf' in data['resultado']:
@@ -1307,7 +1303,7 @@ def placa():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if isinstance(data, dict) and data.get('PLACA') == placa:
@@ -1345,7 +1341,7 @@ def placaestadual():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=placaestadual&query={placa}"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if 'resultado' in data and isinstance(data['resultado'], list) and len(data['resultado']) > 0 and data['resultado'][0].get('retorno') == 'ok':
@@ -1381,7 +1377,7 @@ def pix():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if isinstance(data, dict) and data.get('Status') == 'Sucesso' and 'nome' in data:
@@ -1441,7 +1437,7 @@ def fotor():
                         selected_option=selected_option
                     )
                 url = f"{base_url}?dado={documento}&tipo={tipo}"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 raw = response.text.strip()
                 data = json.loads(raw.lstrip('\ufeff'))
@@ -1495,7 +1491,7 @@ def nomelv():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 results_list = []
@@ -1539,7 +1535,7 @@ def nome():
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('resultado') and len(data['resultado']) > 0:
@@ -1575,7 +1571,7 @@ def ip():
         else:
             try:
                 url = f"https://ipwho.is/{ip_address}"
-                response = requests.get(url, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('success'):
@@ -1620,7 +1616,7 @@ def nome2():
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=nomeData&query={nome}"
-                response = requests.get(url, verify=False, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                response = requests.get(url, verify=False, timeout=30)
                 response.raise_for_status()
                 data = json.loads(response.text.lstrip('\ufeff'))
                 if data.get('resultado') and 'itens' in data['resultado']:
@@ -1659,7 +1655,7 @@ def likeff():
                 token_url = "http://teamxcutehack.serv00.net/like/token_ind.json"
                 ffinfo_url = f"https://lk-team-ffinfo-five.vercel.app/ffinfo?id={uid}"
                 like_api_url = f"https://likeapiff.thory.in/like?uid={uid}&server_name={server_name}&token_url={requests.utils.quote(token_url)}"
-                ffinfo_response = requests.get(ffinfo_url, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+                ffinfo_response = requests.get(ffinfo_url, timeout=30)
                 ffinfo_response.raise_for_status()
                 ffinfo_data = json.loads(ffinfo_response.text.lstrip('\ufeff'))
                 if not ffinfo_data:
