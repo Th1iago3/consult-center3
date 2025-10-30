@@ -16,7 +16,7 @@
             --primary-purple: #6E44FF; /* Roxo principal */
             --secondary-purple: #A06CFF; /* Roxo secundário */
             --accent-pink: #FF6BD6; /* Destaque (opcional) */
-         
+        
             /* Cores de Fundo e Texto */
             --background-dark: #121212; /* Fundo principal muito escuro */
             --background-light: #1A1A1A; /* Fundo secundário/card */
@@ -29,7 +29,7 @@
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
             --shadow-glow: 0 0 15px var(--glow-purple);
-         
+        
             /* Tipografia */
             --font-family: 'Poppins', sans-serif;
             /* Adicionais para Admin */
@@ -558,6 +558,14 @@
             background: transparent;
             border: none;
         }
+        /* Backup Tab */
+        .backup-section {
+            text-align: center;
+        }
+        .backup-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
         /* Back Link */
         .back-link {
             display: inline-flex;
@@ -659,6 +667,9 @@
             </button>
             <button class="tab-button" onclick="openTab(event, 'novidades')">
                 <i data-lucide="sparkles"></i> Novidades
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'backup')">
+                <i data-lucide="database"></i> Backup & Restore
             </button>
         </div>
         <!-- Dashboard Tab -->
@@ -960,6 +971,29 @@
                 <a href="/novidades" class="button secondary" style="width: auto; margin-bottom: 20px;">
                     <i data-lucide="eye"></i> Ver Novidades
                 </a>
+            </div>
+        </div>
+        <!-- Backup Tab -->
+        <div id="backup" class="tab-content">
+            <div class="backup-section">
+                <h2>Backup & Restore</h2>
+                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Faça backup completo do sistema ou restaure de um arquivo .zip.</p>
+                <form id="backupForm" method="POST" action="/i/settings/admin" style="margin-bottom: 20px;">
+                    <input type="hidden" name="action" value="backup">
+                    <button type="submit" class="button" style="width: auto;">
+                        <i data-lucide="download"></i> Fazer Backup (Download .zip)
+                    </button>
+                </form>
+                <form id="restoreForm" method="POST" action="/i/settings/admin" enctype="multipart/form-data" class="backup-form">
+                    <input type="hidden" name="action" value="restore">
+                    <div class="form-group">
+                        <label for="zip_file"><i data-lucide="upload"></i> Upload do Arquivo de Backup (.zip)</label>
+                        <input type="file" name="zip_file" id="zip_file" accept=".zip" required>
+                    </div>
+                    <button type="submit" class="button">
+                        <i data-lucide="refresh-cw"></i> Restaurar Sistema
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -1423,6 +1457,56 @@
         // Fechar modal ao clicar fora
         document.getElementById('messageModal').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) closeMessageModal();
+        });
+        // Submissão do Restore Form (com Swal para confirmação)
+        document.getElementById('restoreForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Confirmar Restauração?',
+                text: 'Isso substituirá os dados atuais. Certifique-se de ter um backup recente!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-purple)',
+                cancelButtonColor: 'var(--error)',
+                confirmButtonText: 'Sim, restaurar!',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--background-light)',
+                color: 'var(--text-white)',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData(event.target);
+                    fetch('/i/settings/admin', {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.fire({
+                            icon: data.category === 'success' ? 'success' : 'error',
+                            title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
+                            text: data.message,
+                            background: 'var(--background-light)',
+                            color: 'var(--text-white)',
+                            confirmButtonColor: 'var(--primary-purple)',
+                            timer: 3000,
+                            timerProgressBar: true,
+                        });
+                        if (data.category === 'success') {
+                            location.reload(); // Recarregar para atualizar dados
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro!',
+                            text: 'Erro ao restaurar: ' + error.message,
+                            background: 'var(--background-light)',
+                            color: 'var(--text-white)',
+                            confirmButtonColor: 'var(--primary-purple)',
+                        });
+                    });
+                }
+            });
         });
     </script>
 </body>
