@@ -13,25 +13,21 @@ import colorama
 from colorama import Fore, Style
 import urllib3
 import socket
-import fitz  # PyMuPDF for PDF editing
-import jwt  # For JWT handling
+import fitz # PyMuPDF for PDF editing
+import jwt # For JWT handling
 from werkzeug.security import generate_password_hash, check_password_hash
-
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.config['SECRET_KEY'] = os.urandom(24).hex()  # More secure secret key
+app.config['SECRET_KEY'] = os.urandom(24).hex() # More secure secret key
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
-
 # JWT Secret (should be env var in production)
 JWT_SECRET = os.urandom(32).hex()
-JWT_EXPIRATION = 3600  # 1 hour
-
+JWT_EXPIRATION = 3600 # 1 hour
 # Rate limiting storage (improved with expiration)
 login_attempts = {}
-
 # Module status
 module_status = {
     'cpfdata': 'ON',
@@ -59,11 +55,9 @@ module_status = {
     'cnpjcompleto': 'ON',
     'atestado': 'ON'
 }
-chave = "vmb1"  # API key
-
+chave = "vmb1" # API key
 # JSON File Management (with locking for concurrency)
 import fcntl
-
 def initialize_json(file_path, default_data={}):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -75,7 +69,6 @@ def initialize_json(file_path, default_data={}):
             fcntl.flock(file, fcntl.LOCK_EX)
             json.dump(default_data, file)
             fcntl.flock(file, fcntl.LOCK_UN)
-
 def load_data(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -90,13 +83,11 @@ def load_data(file_path):
         default_data = [] if 'news.json' in file_path else {}
         save_data(default_data, file_path)
         return default_data
-
 def save_data(data, file_path):
     with open(file_path, 'w', encoding='utf-8') as file:
         fcntl.flock(file, fcntl.LOCK_EX)
         json.dump(data, file, indent=4, default=str)
         fcntl.flock(file, fcntl.LOCK_UN)
-
 # Logging with IP masking for privacy
 def log_access(endpoint, message=''):
     try:
@@ -111,7 +102,6 @@ def log_access(endpoint, message=''):
         ip = 'unknown'
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
-
 # Module Usage Management (with daily reset)
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
@@ -140,7 +130,6 @@ def manage_module_usage(user_id, module, increment=True):
     users[user_id] = user
     save_data(users, 'users.json')
     return True
-
 # Rate Limiting for Login (with IP + UA key)
 def check_login_attempts(identifier):
     now = time.time()
@@ -155,7 +144,6 @@ def check_login_attempts(identifier):
         return False, "Muitas tentativas. Tente novamente em 5 minutos."
     login_attempts[identifier] = attempts
     return True, ""
-
 # JWT Utilities
 def generate_jwt(user_id):
     payload = {
@@ -164,7 +152,6 @@ def generate_jwt(user_id):
         'iat': datetime.utcnow()
     }
     return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
-
 def verify_jwt(token):
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
@@ -173,7 +160,6 @@ def verify_jwt(token):
         return None
     except jwt.InvalidTokenError:
         return None
-
 # Auth Decorator (JWT in secure cookie)
 def jwt_required(f):
     @wraps(f)
@@ -205,7 +191,6 @@ def jwt_required(f):
                 return resp
         return f(*args, **kwargs)
     return decorated
-
 # Before Request (bot detection, UA check)
 @app.before_request
 def security_check():
@@ -213,8 +198,7 @@ def security_check():
     if 'bot' in user_agent or 'spider' in user_agent:
         abort(403)
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
-        # Additional checks can be added here
-
+        pass  # Additional checks can be added here
 # Login/Register (with hashed passwords, UA limit)
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
@@ -223,7 +207,7 @@ def login_or_register():
         username = request.form.get('user', '').strip()
         password = request.form.get('password', '').strip()
         user_agent = request.headers.get('User-Agent', '')
-        identifier = f"{request.remote_addr}_{user_agent}"  # IP + UA for rate limit
+        identifier = f"{request.remote_addr}_{user_agent}" # IP + UA for rate limit
         can_attempt, msg = check_login_attempts(identifier)
         if not can_attempt:
             flash(msg, 'error')
@@ -244,7 +228,7 @@ def login_or_register():
                 if 'devices' in user and user_agent not in user['devices']:
                     flash('Dispositivo não autorizado.', 'error')
                     return render_template('login.html')
-                user['devices'] = list(set(user.get('devices', []) + [user_agent]))[:5]  # Limit to 5 devices
+                user['devices'] = list(set(user.get('devices', []) + [user_agent]))[:5] # Limit to 5 devices
                 save_data(users, 'users.json')
                 token = generate_jwt(username)
                 resp = make_response(redirect('/dashboard'))
@@ -283,7 +267,6 @@ def login_or_register():
             flash('Registro concluído. Faça login.', 'success')
             return redirect('/')
     return render_template('login.html')
-
 # Dashboard
 @app.route('/dashboard', methods=['GET', 'POST'])
 @jwt_required
@@ -337,7 +320,6 @@ def dashboard():
                 max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(role, 30) if role != 'admin' else 'Unlimited'
                 return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)} if module else user_modules, "maxRequests": max_requests})
     return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
-
 # Admin Panel (with more security checks)
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
 @jwt_required
@@ -470,7 +452,6 @@ def admin_panel():
         except Exception as e:
             return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
-
 # Notifications
 @app.route('/notifications', methods=['GET', 'POST'])
 @jwt_required
@@ -492,7 +473,6 @@ def notifications_page():
             save_data(users, 'users.json')
         return jsonify({'success': True})
     return render_template('notifications.html', unread=unread, read=read, users=users)
-
 # Novidades
 @app.route('/novidades', methods=['GET'])
 @jwt_required
@@ -502,7 +482,6 @@ def novidades():
         abort(403)
     news = load_data('news.json')
     return render_template('novidades.html', news=news, users=users)
-
 # New Novidade
 @app.route('/novidades/new', methods=['GET', 'POST'])
 @jwt_required
@@ -536,7 +515,6 @@ def new_novidade():
         flash('Novidade enviada!', 'success')
         return redirect('/novidades')
     return render_template('new_novidade.html', users=users)
-
 # Edit Novidade
 @app.route('/novidades/edit/<news_id>', methods=['GET', 'POST'])
 @jwt_required
@@ -562,7 +540,6 @@ def edit_novidade(news_id):
         flash('Novidade editada!', 'success')
         return redirect('/novidades')
     return render_template('edit_novidade.html', item=item, users=users)
-
 # Delete Novidade
 @app.route('/novidades/delete/<news_id>', methods=['POST'])
 @jwt_required
@@ -584,7 +561,6 @@ def delete_novidade(news_id):
     save_data(news, 'news.json')
     flash('Novidade excluída!', 'success')
     return redirect('/novidades')
-
 # Generic API Call
 def generic_api_call(url, module, process_func=None, flash_error=True):
     try:
@@ -602,7 +578,6 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
         if flash_error:
             flash('Algo deu errado.', 'error')
         return None
-
 # Module Routes
 @app.route('/modulos/mae', methods=['GET', 'POST'])
 @jwt_required
@@ -623,7 +598,6 @@ def mae():
             process = lambda d: [r for r in d.get('response', []) if r.get('CPF') and r.get('NOME')] if d.get('status') else None
             result = generic_api_call(url, 'mae', process)
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
-
 @app.route('/modulos/pai', methods=['GET', 'POST'])
 @jwt_required
 def pai():
@@ -643,7 +617,6 @@ def pai():
             process = lambda d: [r for r in d.get('response', []) if r.get('CPF') and r.get('NOME') and r.get('PAI')] if d.get('status') else None
             result = generic_api_call(url, 'pai', process)
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
-
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 @jwt_required
 def cnpjcompleto():
@@ -688,7 +661,6 @@ def cnpjcompleto():
                 }
             result = generic_api_call(url, 'cnpjcompleto', process)
     return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
-
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 @jwt_required
 def cpf():
@@ -708,7 +680,6 @@ def cpf():
             process = lambda d: d if 'CPF' in d and d['CPF'] and d.get('NOME') else None
             result = generic_api_call(url, 'cpf', process)
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
 @jwt_required
 def cpf2():
@@ -728,7 +699,6 @@ def cpf2():
             process = lambda d: d.get('resultado') if d.get('resultado') else None
             result = generic_api_call(url, 'cpf2', process)
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 @jwt_required
 def cpfdata():
@@ -842,7 +812,6 @@ def cpfdata():
                 return processed_result
             result = generic_api_call(url, 'cpfdata', process)
     return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
 @jwt_required
 def cpf3():
@@ -862,7 +831,6 @@ def cpf3():
             process = lambda d: d if 'CPF' in d and d['CPF'] else None
             result = generic_api_call(url, 'cpf3', process)
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
 @jwt_required
 def cpflv():
@@ -882,7 +850,6 @@ def cpflv():
             process = lambda d: d['resultado'] if d.get('resultado') and d['resultado'].get('status') == 'success' and 'data' in d['resultado'] and 'pessoa' in d['resultado']['data'] and 'identificacao' in d['resultado']['data']['pessoa'] and 'cpf' in d['resultado']['data']['pessoa']['identificacao'] else None
             result = generic_api_call(url, 'cpflv', process)
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 @jwt_required
 def vacinas():
@@ -902,7 +869,6 @@ def vacinas():
             process = lambda d: d.get('response', {}).get('dados', []) if isinstance(d, dict) and d.get('status') else d.get('resultado', []) if 'resultado' in d else []
             results = generic_api_call(url, 'vacinas', process) or []
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
-
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 @jwt_required
 def datanome():
@@ -940,7 +906,6 @@ def datanome():
                 return filtered
             results = generic_api_call(url, 'datanome', process) or []
     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome, datanasc=datanasc)
-
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
 @jwt_required
 def placalv():
@@ -960,7 +925,6 @@ def placalv():
             process = lambda d: d['response']['dados'] if isinstance(d, dict) and d.get('status') and 'response' in d and 'dados' in d['response'] and d['response']['dados'].get('veiculo', {}).get('placa') else None
             result = generic_api_call(url, 'placalv', process)
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
-
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
 @jwt_required
 def telLv():
@@ -980,7 +944,6 @@ def telLv():
             process = lambda d: d['response'] if isinstance(d, dict) and d.get('status') and 'response' in d and d['response'].get('CPF') and d['response']['CPF'] != 'SEM RESULTADO' else None
             result = generic_api_call(url, 'telLv', process)
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count, result=result, telefone=telefone)
-
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
 @jwt_required
 def teldual():
@@ -1000,7 +963,6 @@ def teldual():
             process = lambda d: d['resultado'] if 'resultado' in d and d['resultado'] and any('cpf' in item for item in d['resultado']) else None
             results = generic_api_call(url, 'teldual', process)
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
-
 @app.route('/modulos/tel', methods=['GET', 'POST'])
 @jwt_required
 def tel():
@@ -1020,7 +982,6 @@ def tel():
             process = lambda d: d['resultado']['msg'] if 'resultado' in d and 'cpf' in d['resultado'] else None
             results = generic_api_call(url, 'tel', process)
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
-
 @app.route('/modulos/placa', methods=['GET', 'POST'])
 @jwt_required
 def placa():
@@ -1040,7 +1001,6 @@ def placa():
             process = lambda d: d if isinstance(d, dict) and d.get('PLACA') == placa else None
             result = generic_api_call(url, 'placa', process)
     return render_template('placa.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
-
 @app.route('/modulos/placaestadual', methods=['GET', 'POST'])
 @jwt_required
 def placaestadual():
@@ -1060,7 +1020,6 @@ def placaestadual():
             process = lambda d: d['resultado'] if 'resultado' in d and isinstance(d['resultado'], list) and len(d['resultado']) > 0 and d['resultado'][0].get('retorno') == 'ok' else None
             results = generic_api_call(url, 'placaestadual', process)
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
-
 @app.route('/modulos/pix', methods=['GET', 'POST'])
 @jwt_required
 def pix():
@@ -1080,7 +1039,6 @@ def pix():
             process = lambda d: d if isinstance(d, dict) and d.get('Status') == 'Sucesso' and 'nome' in d else None
             result = generic_api_call(url, 'pix', process)
     return render_template('pix.html', is_admin=is_admin, notifications=unread_count, result=result, chave=chave)
-
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 @jwt_required
 def fotor():
@@ -1118,7 +1076,6 @@ def fotor():
                 } if d.get("response", {}).get("response", [{}])[0].get("fotob64") else None
                 results = generic_api_call(url, 'fotor', process)
     return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
-
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 @jwt_required
 def nomelv():
@@ -1138,7 +1095,6 @@ def nomelv():
             process = lambda d: d if isinstance(d, list) and len(d) > 0 else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d and isinstance(d['resultado'], list) else None
             results = generic_api_call(url, 'nomelv', process)
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/nome', methods=['GET', 'POST'])
 @jwt_required
 def nome():
@@ -1158,7 +1114,6 @@ def nome():
             process = lambda d: d.get('resultado') if d.get('resultado') and len(d['resultado']) > 0 else None
             results = generic_api_call(url, 'nome', process)
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/ip', methods=['GET', 'POST'])
 @jwt_required
 def ip():
@@ -1187,7 +1142,6 @@ def ip():
             } if d.get('success') else None
             results = generic_api_call(url, 'ip', process)
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
-
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
 @jwt_required
 def nome2():
@@ -1207,7 +1161,6 @@ def nome2():
             process = lambda d: d.get('resultado', {}).get('itens') if d.get('resultado') and 'itens' in d['resultado'] else None
             results = generic_api_call(url, 'nome2', process)
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-
 @app.route('/modulos/likeff', methods=['GET', 'POST'])
 @jwt_required
 def likeff():
@@ -1260,7 +1213,6 @@ def likeff():
             except Exception:
                 flash('Algo deu errado.', 'error')
     return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
-
 # Atestado
 @app.route('/modulos/atestado', methods=['GET', 'POST'])
 @jwt_required
@@ -1372,12 +1324,10 @@ def atestado():
         except Exception:
             flash('Algo deu errado ao gerar atestado.', 'error')
     return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=pdf_preview, edited_pdf=edited_pdf_path)
-
 @app.route('/download_edited/<path:filename>')
 @jwt_required
 def download_edited(filename):
     return send_from_directory(app.root_path, filename, as_attachment=True)
-
 # Logout
 @app.route('/logout')
 @jwt_required
@@ -1385,17 +1335,14 @@ def logout():
     resp = make_response(redirect('/'))
     resp.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Strict')
     return resp
-
 # Credits
 @app.route('/@A30')
 def creditos():
     return "@enfurecido - {'0x106a90000'}"
-
 # Preview
 @app.route('/preview.jpg')
 def preview():
     return send_from_directory(app.root_path, 'preview.jpg', mimetype='image/jpeg')
-
 if __name__ == '__main__':
     initialize_json('users.json')
     initialize_json('notifications.json', {})
