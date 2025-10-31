@@ -1,6 +1,6 @@
 {
   "20DIAS": {
-    "password": "@th2x_lkj",
+    "password": "scrypt:32768:8:1$T6nsbXH9ft41Js4W$0132fbf9a2b314d24796b72d6a14ec8aaec0bb0321c649b7edd647691968909ee3598bb4d17745d0cc9ce5159fb42f607e37149a46d9fd8078f8c1dd09ef8431",
     "token": "20DIAS",
     "expiration": "2025-11-28",
     "role": "user_anual",
@@ -31,7 +31,7 @@
     "last_reset": "2025-02-10"
   },
   "@t4x-fotkline": {
-    "password": "09pdK2020_",
+    "password": "scrypt:32768:8:1$R3BwMlR254pIobP2$811903c869a121db184a5fb9acbd167b4cc72d9f7cc0524f45022c6eea1a7943be172bf0bcb93768eb0806dfd7f1e08579b331d5588510757202e4b28d6e4336",
     "token": "@t4x-xd",
     "expiration": "2113-12-31",
     "role": "admin",
@@ -59,10 +59,12 @@
       "cnpjcompleto": 0,
       "atestado": 0
     },
-    "devices": []
+    "devices": [
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
+    ]
   },
   "@dustin": {
-    "password": "@@dustin@consult",
+    "password": "scrypt:32768:8:1$TsNKohxMmBgi67cp$9bd5d4145802f63f15df1b77f18b18bc6adea1e9dc3480a0c7627d2f881df3f98c0c7324bda23c443802e5861c77714dbeea340994b33b225f6da29598daeaf3",
     "token": "@dusti1nhz",
     "expiration": "2035-01-23",
     "role": "admin",
@@ -93,7 +95,7 @@
     "devices": []
   },
   "@@ugly": {
-    "password": "@@0909pauloo",
+    "password": "scrypt:32768:8:1$Ykq0M7Ui3mc09zf8$519bbe932388ca2e7b639d7a539b1575d5795312704814126eb81edc60aa0fa1354e3ab214d4f703f1e4f0d72e68009b7eba7bb0b80a79a9d70687f361ac59c9",
     "token": "@@ugly",
     "expiration": "2051-10-27",
     "role": "admin",
