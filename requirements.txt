@@ -10,3 +10,4 @@ Flask-WTF
 Flask-SocketIO
 urllib3
 PyMuPDF
+flask_limiter
