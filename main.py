@@ -14,17 +14,38 @@ from colorama import Fore, Style
 import urllib3
 import socket
 import fitz # PyMuPDF for PDF editing
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
+import threading
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.config['SECRET_KEY'] = os.urandom(24)
+app.config['SECRET_KEY'] = os.urandom(32)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
-# Rate limiting storage
+
+csrf = CSRFProtect(app)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
 login_attempts = {}
-# Module status (can be toggled by admins)
+register_attempts = {}
+ip_ban_list = set()
+
 module_status = {
     'cpfdata': 'ON',
     'cpflv': 'OFF',
@@ -51,8 +72,10 @@ module_status = {
     'cnpjcompleto': 'ON',
     'atestado': 'ON'
 }
-chave = "vmb1" # API key for some external services
-# JSON File Management
+chave = "vmb1"
+
+user_agent_registry = {}
+
 def initialize_json(file_path, default_data={}):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -60,6 +83,7 @@ def initialize_json(file_path, default_data={}):
     except (FileNotFoundError, json.JSONDecodeError):
         with open(file_path, 'w', encoding='utf-8') as file:
             json.dump(default_data, file)
+
 def load_data(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -73,10 +97,11 @@ def load_data(file_path):
         with open(file_path, 'w', encoding='utf-8') as file:
             json.dump(default_data, file)
         return default_data
+
 def save_data(data, file_path):
     with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(data, file, indent=4, default=str) # Handle datetime serialization
-# Logging
+        json.dump(data, file, indent=4, default=str)
+
 def log_access(endpoint, message=''):
     try:
         response = requests.get('https://ipinfo.io/json', verify=False)
@@ -88,18 +113,16 @@ def log_access(endpoint, message=''):
         message += f" [Error fetching real IP]"
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
-# Module Usage Management
+
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
     if user.get('role') == 'admin':
-        return True # Admins have unlimited access
-    # Check permissions
+        return True
     permissions = user.get('permissions', {})
     if module not in permissions or (permissions[module] and datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d')):
         flash(f'Você não tem permissão para acessar o módulo {module}.', 'error')
         return False
-    # Usage tracking
     if 'modules' not in user:
         user['modules'] = {m: 0 for m in module_status.keys()}
     if increment:
@@ -120,23 +143,33 @@ def manage_module_usage(user_id, module, increment=True):
     users[user_id] = user
     save_data(users, 'users.json')
     return True
-# Rate Limiting for Login Attempts
-def check_login_attempts(user_id):
+
+def check_attempts(storage, user_id_or_ip, max_attempts=5, window=300):
     now = time.time()
-    if user_id not in login_attempts:
-        login_attempts[user_id] = {'count': 0, 'last_attempt': now}
-    attempts = login_attempts[user_id]
-    if now - attempts['last_attempt'] > 300: # Reset after 5 minutes
+    if user_id_or_ip not in storage:
+        storage[user_id_or_ip] = {'count': 0, 'last_attempt': now}
+    attempts = storage[user_id_or_ip]
+    if now - attempts['last_attempt'] > window:
         attempts['count'] = 0
         attempts['last_attempt'] = now
     attempts['count'] += 1
-    if attempts['count'] > 5:
-        return False, "Muitas tentativas de login. Tente novamente em 5 minutos."
-    login_attempts[user_id] = attempts
+    if attempts['count'] > max_attempts:
+        ip = get_remote_address()
+        ip_ban_list.add(ip)
+        threading.Timer(3600, lambda: ip_ban_list.discard(ip)).start()
+        return False, "Muitas tentativas. Tente novamente mais tarde."
+    storage[user_id_or_ip] = attempts
     return True, ""
-# Before Request Security Check
+
 @app.before_request
+@limiter.limit("100/minute")
 def security_check():
+    ip = get_remote_address()
+    if ip in ip_ban_list:
+        abort(403, "Acesso bloqueado temporariamente devido a atividades suspeitas.")
+    user_agent = request.headers.get('User-Agent', '').lower()
+    if 'bot' in user_agent or 'spider' in user_agent or 'scanner' in user_agent:
+        abort(403, "Acesso negado para bots.")
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
         if 'user_id' not in session:
             flash('Você precisa estar logado para acessar esta página.', 'error')
@@ -147,68 +180,64 @@ def security_check():
         if not user:
             session.clear()
             return redirect('/')
-        # Check expiration
         if user['role'] != 'admin' and user['role'] != 'guest':
             expiration_date = datetime.strptime(user['expiration'], '%Y-%m-%d')
             if datetime.now() > expiration_date:
                 flash('Sua conta expirou. Contate o suporte.', 'error')
                 session.clear()
                 return redirect('/')
-# Login
+
 @app.route('/', methods=['GET', 'POST'])
+@csrf.exempt
+@limiter.limit("10/minute")
 def login_or_register():
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'login':
-            # Lógica de login
-            username = request.form.get('user')
+            username = request.form.get('user').strip()
             password = request.form.get('password')
-            users = load_data('users.json')
-            can_login, message = check_login_attempts(username)
-            if not can_login:
+            can_attempt, message = check_attempts(login_attempts, username)
+            if not can_attempt:
                 flash(message, 'error')
                 return render_template('login.html')
-            if username in users and users[username]['password'] == password:
+            users = load_data('users.json')
+            if username in users and check_password_hash(users[username]['password'], password):
                 if users[username]['role'] != 'guest':
                     expiration_date = datetime.strptime(users[username]['expiration'], '%Y-%m-%d')
                     if datetime.now() > expiration_date:
                         flash('Conta expirada. Contate o suporte.', 'error')
                         return render_template('login.html')
-              
                 user_agent = request.headers.get('User-Agent')
-              
-                # Device management logic: if 'devices' key is absent, allow unlimited devices
-                if 'devices' not in users[username]:
-                    # User supports unlimited devices, no restriction applied
-                    pass
-                else:
-                    # User has device restriction
-                    if users[username]['devices'] and user_agent not in users[username]['devices']:
-                        flash('Dispositivo não autorizado. Login recusado.', 'error')
-                        return render_template('login.html')
-                    else:
-                        users[username]['devices'] = [user_agent]
-              
+                if 'devices' in users[username] and user_agent not in users[username]['devices']:
+                    flash('Dispositivo não autorizado. Login recusado.', 'error')
+                    return render_template('login.html')
+                users[username]['devices'] = list(set(users[username].get('devices', []) + [user_agent]))
                 save_data(users, 'users.json')
-              
                 session['user_id'] = username
-                login_attempts[username] = {'count': 0, 'last_attempt': time.time()}
+                session.permanent = True
                 return redirect('/dashboard')
             else:
-                flash('Usuário ou senha incorretos.', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')
                 return render_template('login.html')
         elif action == 'register':
-            # Lógica de registro
-            username = request.form.get('user')
+            username = request.form.get('user').strip()
             password = request.form.get('password')
             if not username or not password:
-                flash('Usuário e senha são obrigatórios.', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')
+                return render_template('login.html')
+            can_attempt, message = check_attempts(register_attempts, get_remote_address())
+            if not can_attempt:
+                flash(message, 'error')
                 return render_template('login.html')
             users = load_data('users.json')
-            if username in users:
-                flash('Usuário já existe.', 'error')
+            user_agent = request.headers.get('User-Agent')
+            if user_agent in user_agent_registry:
+                flash('Algo deu errado. Tente novamente.', 'error')
                 return render_template('login.html')
-            # Handle affiliate
+            if username in users:
+                flash('Algo deu errado. Tente novamente.', 'error')
+                return render_template('login.html')
+            hashed_pw = generate_password_hash(password)
             aff_code = request.args.get('aff')
             referred_by = None
             if aff_code:
@@ -217,26 +246,27 @@ def login_or_register():
                         referred_by = u
                         break
             users[username] = {
-                'password': password,
+                'password': hashed_pw,
                 'role': 'guest',
-                'expiration': '2099-12-31', # Permanent for guests
-                'permissions': {}, # No modules
+                'expiration': '2099-12-31',
+                'permissions': {},
                 'modules': {m: 0 for m in module_status.keys()},
                 'read_notifications': [],
                 'referred_by': referred_by,
                 'affiliate_code': secrets.token_urlsafe(8) if referred_by else None,
-                'devices': []
+                'devices': [user_agent]
             }
+            user_agent_registry[user_agent] = username
             save_data(users, 'users.json')
             flash('Registro concluído com sucesso! Faça login.', 'success')
             return redirect('/')
         else:
-            flash('Ação inválida.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
             return render_template('login.html')
-    # Para GET, renderiza o template unificado
     return render_template('login.html')
-# Dashboard
+
 @app.route('/dashboard', methods=['GET', 'POST'])
+@limiter.limit("50/minute")
 def dashboard():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -245,7 +275,6 @@ def dashboard():
     is_admin = user['role'] == 'admin'
     is_guest = user['role'] == 'guest'
     affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
-  
     max_limit = {
         'guest': 10,
         'user_semanal': 30,
@@ -253,7 +282,7 @@ def dashboard():
         'user_anual': 500
     }.get(user['role'], 0)
     if is_admin:
-        max_limit = 999999 # Large number for unlimited
+        max_limit = 999999
     if user['role'] != 'guest':
         if datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
             flash('Sua sessão expirou. Faça login novamente.', 'error')
@@ -292,7 +321,7 @@ def dashboard():
                 save_data(gifts, 'gifts.json')
                 flash('Gift resgatado com sucesso!', 'success')
             else:
-                flash('Código inválido ou expirado.', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')
         elif is_admin:
             if action == 'view_modules':
                 target_user = request.form.get('user')
@@ -305,21 +334,19 @@ def dashboard():
                         return jsonify({"user": target_user, "modules": user_modules, "maxRequests": "Unlimited for admin"})
                     return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
     return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
-# Admin Panel
+
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
+@limiter.limit("20/minute")
 def admin_panel():
     users = load_data('users.json')
     notifications = load_data('notifications.json')
     gifts = load_data('gifts.json')
     user_id = g.user_id
     if users.get(user_id, {}).get('role') != 'admin':
-        return jsonify({"error": "Access denied"}), 403
-    user_agent = request.headers.get('User-Agent', '').lower()
-    if 'bot' in user_agent or 'spider' in user_agent:
-        return jsonify({"error": "Access denied"}), 403
+        abort(403, "Access denied")
     if request.method == 'POST':
         action = request.form.get('action')
-        user_input = request.form.get('user')
+        user_input = re.sub(r'[^a-zA-Z0-9_]', '', request.form.get('user', ''))
         password = request.form.get('password', '')
         expiration = request.form.get('expiration', '')
         message = request.form.get('message', '')
@@ -327,33 +354,34 @@ def admin_panel():
         module = request.form.get('module', '')
         status = request.form.get('status', '')
         if action == "add_user" and user_input and password and expiration:
-            if user_input not in users:
-                token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
-                users[user_input] = {
-                    'password': password,
-                    'token': token,
-                    'expiration': expiration,
-                    'role': role,
-                    'permissions': {m: None for m in module_status.keys()} if role != 'guest' else {},
-                    'modules': {m: 0 for m in module_status.keys()},
-                    'read_notifications': [],
-                    'affiliate_code': secrets.token_urlsafe(8) if role != 'guest' else None,
-                    'devices': []
-                }
-                save_data(users, 'users.json')
-                return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
-            return jsonify({'message': 'Usuário já existe!', 'category': 'error'})
-        elif action == "delete_user" and user_input and password:
-            if user_input in users and users[user_input]['password'] == password:
+            if user_input in users:
+                return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
+            hashed_pw = generate_password_hash(password)
+            token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
+            users[user_input] = {
+                'password': hashed_pw,
+                'token': token,
+                'expiration': expiration,
+                'role': role,
+                'permissions': {m: None for m in module_status.keys()} if role != 'guest' else {},
+                'modules': {m: 0 for m in module_status.keys()},
+                'read_notifications': [],
+                'affiliate_code': secrets.token_urlsafe(8) if role != 'guest' else None,
+                'devices': []
+            }
+            save_data(users, 'users.json')
+            return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
+        elif action == "delete_user" and user_input:
+            if user_input in users:
                 del users[user_input]
                 save_data(users, 'users.json')
                 if g.user_id == user_input:
                     resp = make_response(jsonify({'message': 'Usuário excluído. Você foi deslogado.', 'category': 'success'}))
                     return resp
                 return jsonify({'message': 'Usuário excluído com sucesso!', 'category': 'success'})
-            return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
+            return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
         elif action == "view_users":
-            return jsonify({'users': users})
+            return jsonify({'users': {k: {kk: vv for kk, vv in v.items() if kk != 'password'} for k, v in users.items()}})
         elif action == "send_message" and message:
             notif_id = str(uuid.uuid4())
             user_input = request.form.get('user', 'all')
@@ -365,23 +393,22 @@ def admin_panel():
                 if user_input in users:
                     notifications.setdefault(user_input, []).append({'id': notif_id, 'message': message, 'timestamp': datetime.now().isoformat()})
                 else:
-                    return jsonify({'message': 'Usuário não encontrado.', 'category': 'error'})
+                    return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
             save_data(notifications, 'notifications.json')
             return jsonify({'message': 'Mensagem enviada com sucesso!', 'category': 'success'})
-        elif action == "reset_device" and user_input and password:
-            if user_input in users and users[user_input]['password'] == password:
-                if 'devices' in users[user_input]:
-                    users[user_input]['devices'] = []
+        elif action == "reset_device" and user_input:
+            if user_input in users:
+                users[user_input]['devices'] = []
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Dispositivos resetados com sucesso!', 'category': 'success'})
-            return jsonify({'message': 'Usuário ou senha incorretos.', 'category': 'error'})
+            return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
         elif action == "toggle_module" and module and status:
             if module in module_status:
                 module_status[module] = status
                 return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
-            return jsonify({'success': False, 'message': 'Módulo não encontrado'})
+            return jsonify({'success': False, 'message': 'Algo deu errado. Tente novamente.'})
         elif action == 'create_gift':
-            modules = request.form.get('modules') # comma separated or 'all'
+            modules = request.form.get('modules')
             expiration_days = int(request.form.get('expiration_days', 30))
             uses = int(request.form.get('uses', 1))
             code = secrets.token_urlsafe(12)
@@ -405,10 +432,9 @@ def admin_panel():
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                 for file_name in json_files:
-                    file_path = file_name # assuming in current dir
+                    file_path = file_name
                     if os.path.exists(file_path):
                         zip_file.write(file_path, arcname=file_name)
-                # Include images from novidades folder
                 upload_folder = app.config['UPLOAD_FOLDER']
                 for filename in os.listdir(upload_folder):
                     file_path = os.path.join(upload_folder, filename)
@@ -419,12 +445,12 @@ def admin_panel():
             return send_file(zip_buffer, as_attachment=True, download_name='system_backup.zip', mimetype='application/zip')
         elif action == 'restore':
             if 'zip_file' not in request.files:
-                return jsonify({'message': 'Nenhum arquivo enviado.', 'category': 'error'})
+                return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
             zip_file = request.files['zip_file']
             if zip_file.filename == '':
-                return jsonify({'message': 'Nenhum arquivo selecionado.', 'category': 'error'})
+                return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
             if not zip_file.filename.endswith('.zip'):
-                return jsonify({'message': 'Arquivo inválido. Deve ser .zip.', 'category': 'error'})
+                return jsonify({'message': 'Arquivo inválido.', 'category': 'error'})
             import zipfile
             import shutil
             temp_dir = 'temp_restore'
@@ -437,7 +463,6 @@ def admin_panel():
                     extracted_path = os.path.join(temp_dir, file_name)
                     if os.path.exists(extracted_path):
                         shutil.copy(extracted_path, file_name)
-                # Restore images
                 nov_temp_dir = os.path.join(temp_dir, 'novidades')
                 if os.path.exists(nov_temp_dir):
                     upload_folder = app.config['UPLOAD_FOLDER']
@@ -450,9 +475,9 @@ def admin_panel():
                 return jsonify({'message': 'Restauração concluída com sucesso!', 'category': 'success'})
             except Exception as e:
                 shutil.rmtree(temp_dir)
-                return jsonify({'message': f'Erro na restauração: {str(e)}', 'category': 'error'})
+                return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
-# Notifications Page
+
 @app.route('/notifications', methods=['GET', 'POST'])
 def notifications_page():
     users = load_data('users.json')
@@ -471,7 +496,7 @@ def notifications_page():
             save_data(users, 'users.json')
         return jsonify({'success': True})
     return render_template('notifications.html', unread=unread, read=read, users=users)
-# Novidades Page
+
 @app.route('/novidades', methods=['GET'])
 def novidades():
     users = load_data('users.json')
@@ -479,7 +504,7 @@ def novidades():
         abort(403)
     news = load_data('news.json')
     return render_template('novidades.html', news=news, users=users)
-# Create Novidade
+
 @app.route('/novidades/new', methods=['GET', 'POST'])
 def new_novidade():
     users = load_data('users.json')
@@ -512,7 +537,7 @@ def new_novidade():
         flash('Novidade enviada com sucesso!', 'success')
         return redirect('/novidades')
     return render_template('new_novidade.html', users=users)
-# Edit Novidade
+
 @app.route('/novidades/edit/<news_id>', methods=['GET', 'POST'])
 def edit_novidade(news_id):
     users = load_data('users.json')
@@ -537,7 +562,7 @@ def edit_novidade(news_id):
         flash('Novidade editada com sucesso!', 'success')
         return redirect('/novidades')
     return render_template('edit_novidade.html', item=item, users=users)
-# Delete Novidade
+
 @app.route('/novidades/delete/<news_id>', methods=['POST'])
 def delete_novidade(news_id):
     users = load_data('users.json')
@@ -557,7 +582,7 @@ def delete_novidade(news_id):
     save_data(news, 'news.json')
     flash('Novidade excluída com sucesso!', 'success')
     return redirect('/novidades')
-# Module Routes
+
 @app.route('/modulos/mae', methods=['GET', 'POST'])
 def mae():
     users = load_data('users.json')
@@ -570,7 +595,7 @@ def mae():
     if request.method == 'POST':
         nome = request.form.get('nome')
         if not nome:
-            flash('NOME não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
@@ -583,22 +608,15 @@ def mae():
                         if manage_module_usage(g.user_id, 'mae'):
                             result = valid_results
                         else:
-                            flash('Limite de uso atingido para MÃE.', 'error')
+                            flash('Algo deu errado. Tente novamente.', 'error')
                     else:
-                        flash('Nenhum resultado válido encontrado.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para o nome informado.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
             except Exception as e:
-                flash(f'Erro inesperado: {str(e)}', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
+
 @app.route('/modulos/pai', methods=['GET', 'POST'])
 def pai():
     users = load_data('users.json')
@@ -611,7 +629,7 @@ def pai():
     if request.method == 'POST':
         nome = request.form.get('nome')
         if not nome:
-            flash('NOME não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
@@ -624,22 +642,15 @@ def pai():
                         if manage_module_usage(g.user_id, 'pai'):
                             result = valid_results
                         else:
-                            flash('Limite de uso atingido para PAI.', 'error')
+                            flash('Algo deu errado. Tente novamente.', 'error')
                     else:
-                        flash('Nenhum resultado válido encontrado.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para o nome do pai informado.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
             except Exception as e:
-                flash(f'Erro inesperado: {str(e)}', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
+
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 def cnpjcompleto():
     users = load_data('users.json')
@@ -652,7 +663,7 @@ def cnpjcompleto():
     if request.method == 'POST':
         cnpj_input = request.form.get('cnpj', '').strip()
         if len(cnpj_input) != 14:
-            flash('CNPJ inválido. Digite 14 números.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
@@ -693,19 +704,12 @@ def cnpjcompleto():
                 if manage_module_usage(g.user_id, 'cnpjcompleto'):
                     pass
                 else:
-                    flash('Limite de uso atingido para CNPJ Completo.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     result = None
-            except requests.Timeout:
-                flash('Tempo de requisição esgotado.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro de conexão: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta inválida da API.', 'error')
             except Exception as e:
-                flash(f'Erro inesperado: {str(e)}', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
+
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 def cpf():
     users = load_data('users.json')
@@ -718,7 +722,7 @@ def cpf():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
-            flash('CPF não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
@@ -729,18 +733,13 @@ def cpf():
                     if manage_module_usage(g.user_id, 'cpf'):
                         result = data
                     else:
-                        flash('Limite de uso atingido para CPF.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
 def cpf2():
     users = load_data('users.json')
@@ -753,7 +752,7 @@ def cpf2():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
-            flash('CPF não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=cpf1&query={cpf}"
@@ -764,18 +763,13 @@ def cpf2():
                     if manage_module_usage(g.user_id, 'cpf2'):
                         result = data['resultado']
                     else:
-                        flash('Limite de uso atingido para CPF2.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido. Resposta: {data}', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 def cpfdata():
     users = load_data('users.json')
@@ -788,7 +782,7 @@ def cpfdata():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
-            flash('CPF não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
@@ -820,7 +814,6 @@ def cpfdata():
                             'tipo_sanguineo': raw_result.get('tipo_sanguineo', 'SEM INFORMAÇÃO'),
                             'nome_social': raw_result.get('nome_social', None) or 'Não possui'
                         }
-                        # Parse nascimento
                         nasc = raw_result.get('nascimento', 'SEM INFORMAÇÃO')
                         if ' (' in nasc and ' anos)' in nasc:
                             date_str = nasc.split(' (')[0]
@@ -830,7 +823,6 @@ def cpfdata():
                                 'idade': age_str,
                                 'signo': 'SEM INFORMAÇÃO'
                             }
-                            # Calculate signo
                             try:
                                 birth_date = datetime.strptime(date_str, '%d/%m/%Y')
                                 month = birth_date.month
@@ -868,7 +860,6 @@ def cpfdata():
                                 'idade': 'SEM INFORMAÇÃO',
                                 'signo': 'SEM INFORMAÇÃO'
                             }
-                        # Telefone
                         telefones = raw_result.get('contatos', {}).get('telefones', [])
                         processed_result['telefone'] = [
                             {
@@ -880,7 +871,6 @@ def cpfdata():
                         ]
                         if not processed_result['telefone']:
                             processed_result['telefone'] = [{'ddi': '', 'ddd': '', 'numero': ''}]
-                        # Enderecos
                         endereco = raw_result.get('endereco', {})
                         if endereco:
                             if 'municipio_residencia' in endereco:
@@ -892,18 +882,13 @@ def cpfdata():
                             processed_result['enderecos'] = [endereco]
                         result = processed_result
                     else:
-                        flash('Limite de uso atingido para CPFDATA.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
 def cpf3():
     users = load_data('users.json')
@@ -916,7 +901,7 @@ def cpf3():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
-            flash('CPF não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
@@ -927,18 +912,13 @@ def cpf3():
                     if manage_module_usage(g.user_id, 'cpf3'):
                         result = data
                     else:
-                        flash('Limite de uso atingido para CPF3.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
 def cpflv():
     users = load_data('users.json')
@@ -951,7 +931,7 @@ def cpflv():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
-            flash('CPF não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
@@ -967,18 +947,13 @@ def cpflv():
                     if manage_module_usage(g.user_id, 'cpflv'):
                         result = data['resultado']
                     else:
-                        flash('Limite de uso atingido para CPFLV.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o CPF fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 def vacinas():
     users = load_data('users.json')
@@ -991,7 +966,7 @@ def vacinas():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip().replace('.', '').replace('-', '')
         if not cpf or len(cpf) != 11 or not cpf.isdigit():
-            flash('Por favor, insira um CPF válido com 11 dígitos.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
@@ -1008,19 +983,14 @@ def vacinas():
                     if manage_module_usage(g.user_id, 'vacinas'):
                         results = imunizacoes
                     else:
-                        flash('Limite de uso atingido para VACINAS.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                         results = []
                 else:
-                    flash('Nenhum registro de vacinação encontrado para este CPF.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
+
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 def datanome():
     users = load_data('users.json')
@@ -1035,7 +1005,7 @@ def datanome():
         nome = request.form.get('nome', '').strip()
         datanasc = request.form.get('datanasc', '').strip()
         if not nome or not datanasc:
-            flash('Nome e data de nascimento são obrigatórios.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
@@ -1050,7 +1020,7 @@ def datanome():
                 try:
                     user_date = datetime.strptime(datanasc, '%Y-%m-%d').date()
                 except ValueError:
-                    flash('Formato de data inválido. Use o seletor de data.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count,
                                            results=results, nome=nome, datanasc=datanasc)
                 for item in raw_results:
@@ -1066,22 +1036,15 @@ def datanome():
                     if manage_module_usage(g.user_id, 'datanome'):
                         pass
                     else:
-                        flash('Limite de uso atingido para DATANOME.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                         results = []
                 else:
-                    flash('Nenhum resultado encontrado com essa data de nascimento.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
             except Exception as e:
-                flash(f'Erro inesperado: {str(e)}', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count,
                            results=results, nome=nome, datanasc=datanasc)
+
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
 def placalv():
     users = load_data('users.json')
@@ -1094,7 +1057,7 @@ def placalv():
     if request.method == 'POST':
         placa = request.form.get('placa', '').strip().upper().replace(' ', '')
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
-            flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
@@ -1107,22 +1070,17 @@ def placalv():
                         if manage_module_usage(g.user_id, 'placalv'):
                             result = data['response']['dados']
                         else:
-                            flash('Limite de uso atingido para PLACALV.', 'error')
+                            flash('Algo deu errado. Tente novamente.', 'error')
                             result = None
                     else:
-                        flash('Nenhum veículo encontrado para esta placa.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para a placa informada.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
+
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
 def telLv():
     users = load_data('users.json')
@@ -1135,7 +1093,7 @@ def telLv():
     if request.method == 'POST':
         telefone = ''.join(c for c in request.form.get('telefone', '').strip() if c.isdigit())
         if not telefone or len(telefone) < 10 or len(telefone) > 11:
-            flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
@@ -1148,22 +1106,17 @@ def telLv():
                         if manage_module_usage(g.user_id, 'telLv'):
                             result = response_data
                         else:
-                            flash('Limite de uso atingido para TELLV.', 'error')
+                            flash('Algo deu errado. Tente novamente.', 'error')
                             result = None
                     else:
-                        flash('Nenhum registro encontrado para este telefone.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para o telefone fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, telefone=telefone)
+
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
 def teldual():
     users = load_data('users.json')
@@ -1176,7 +1129,7 @@ def teldual():
     if request.method == 'POST':
         telefone = request.form.get('telefone', '').strip()
         if not telefone:
-            flash('Telefone não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=teldual&query={telefone}"
@@ -1187,18 +1140,13 @@ def teldual():
                     if manage_module_usage(g.user_id, 'teldual'):
                         results = data['resultado']
                     else:
-                        flash('Limite de uso atingido para TELDUAL.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o telefone fornecido. Resposta: {data}', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
+
 @app.route('/modulos/tel', methods=['GET', 'POST'])
 def tel():
     users = load_data('users.json')
@@ -1211,7 +1159,7 @@ def tel():
     if request.method == 'POST':
         tel_input = request.form.get('tel', '').strip()
         if not tel_input:
-            flash('Telefone não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=telefone&query={tel_input}"
@@ -1222,18 +1170,13 @@ def tel():
                     if manage_module_usage(g.user_id, 'tel'):
                         results = data['resultado']['msg']
                     else:
-                        flash('Limite de uso atingido para TEL.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o telefone fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
+
 @app.route('/modulos/placa', methods=['GET', 'POST'])
 def placa():
     users = load_data('users.json')
@@ -1246,7 +1189,7 @@ def placa():
     if request.method == 'POST':
         placa = request.form.get('placa', '').strip().upper().replace(' ', '')
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
-            flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
@@ -1257,20 +1200,15 @@ def placa():
                     if manage_module_usage(g.user_id, 'placa'):
                         result = data
                     else:
-                        flash('Limite de uso atingido para PLACA.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                         result = None
                 else:
-                    flash('Nenhum veículo encontrado para esta placa.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('placa.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
+
 @app.route('/modulos/placaestadual', methods=['GET', 'POST'])
 def placaestadual():
     users = load_data('users.json')
@@ -1283,7 +1221,7 @@ def placaestadual():
     if request.method == 'POST':
         placa = request.form.get('placa', '').strip().upper()
         if not placa:
-            flash('Placa não fornecida.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=placaestadual&query={placa}"
@@ -1294,18 +1232,13 @@ def placaestadual():
                     if manage_module_usage(g.user_id, 'placaestadual'):
                         results = data['resultado']
                     else:
-                        flash('Limite de uso atingido para PLACAESTADUAL.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para a placa fornecida. Resposta: {data}', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
+
 @app.route('/modulos/pix', methods=['GET', 'POST'])
 def pix():
     users = load_data('users.json')
@@ -1318,7 +1251,7 @@ def pix():
     if request.method == 'POST':
         chave = request.form.get('chave', '').strip()
         if not chave or len(chave) < 11:
-            flash('Por favor, insira uma chave válida (CPF, telefone ou e-mail).', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
@@ -1329,20 +1262,15 @@ def pix():
                     if manage_module_usage(g.user_id, 'pix'):
                         result = data
                     else:
-                        flash('Limite de uso atingido para PIX.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                         result = None
                 else:
-                    flash('Nenhum registro encontrado para esta chave Pix.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com a API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash('Resposta da API inválida (JSON malformado).', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('pix.html', is_admin=is_admin, notifications=unread_count,
                            result=result, chave=chave)
+
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 def fotor():
     users = load_data('users.json')
@@ -1357,7 +1285,7 @@ def fotor():
         documento = request.form.get('documento', '').strip()
         selected_option = request.form.get('estado', '')
         if not documento:
-            flash('Documento não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 base_url = "https://br1.stormhost.online:10004/api/token=@signficativo/consulta"
@@ -1371,7 +1299,7 @@ def fotor():
                 }
                 tipo = tipo_map.get(selected_option)
                 if not tipo:
-                    flash('Estado inválido.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     return render_template(
                         'fotor.html',
                         is_admin=is_admin,
@@ -1387,7 +1315,7 @@ def fotor():
                 data = json.loads(raw.lstrip('\ufeff'))
                 inner = data.get("response", {}).get("response", [])
                 if not inner or not isinstance(inner, list) or not inner[0].get("fotob64"):
-                    flash('Nenhum resultado encontrado para o documento fornecido.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                 else:
                     foto_b64 = inner[0]["fotob64"]
                     cpf_ret = inner[0].get("cpf", "")
@@ -1398,18 +1326,10 @@ def fotor():
                     if manage_module_usage(g.user_id, 'fotor'):
                         pass
                     else:
-                        flash('Limite de uso atingido para FOTOR.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                         results = None
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text[:200]}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida (JSON malformado).', 'error')
             except Exception as e:
-                flash(f'Erro inesperado: {str(e)}', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template(
         'fotor.html',
         is_admin=is_admin,
@@ -1418,6 +1338,7 @@ def fotor():
         documento=documento,
         selected_option=selected_option
     )
+
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 def nomelv():
     users = load_data('users.json')
@@ -1430,7 +1351,7 @@ def nomelv():
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
         if not nome:
-            flash('Nome não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
@@ -1443,24 +1364,19 @@ def nomelv():
                 elif isinstance(data, dict) and 'resultado' in data and isinstance(data['resultado'], list):
                     results_list = data['resultado']
                 else:
-                    flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     results_list = []
                 if results_list:
                     if manage_module_usage(g.user_id, 'nomelv'):
                         results = results_list
                     else:
-                        flash('Limite de uso atingido para NOMELV.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash('Nenhum resultado encontrado para o nome fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
+
 @app.route('/modulos/nome', methods=['GET', 'POST'])
 def nome():
     users = load_data('users.json')
@@ -1473,7 +1389,7 @@ def nome():
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
         if not nome:
-            flash('Nome não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
@@ -1484,18 +1400,13 @@ def nome():
                     if manage_module_usage(g.user_id, 'nome'):
                         results = data['resultado']
                     else:
-                        flash('Limite de uso atingido para NOME.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o nome fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
+
 @app.route('/modulos/ip', methods=['GET', 'POST'])
 def ip():
     users = load_data('users.json')
@@ -1508,7 +1419,7 @@ def ip():
     if request.method == 'POST':
         ip_address = request.form.get('ip', '').strip()
         if not ip_address:
-            flash('IP não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://ipwho.is/{ip_address}"
@@ -1528,18 +1439,13 @@ def ip():
                             'provider': data.get('connection', {}).get('isp', 'Não disponível')
                         }
                     else:
-                        flash('Limite de uso atingido para IP.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'IP não encontrado ou inválido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
+
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
 def nome2():
     users = load_data('users.json')
@@ -1552,7 +1458,7 @@ def nome2():
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
         if not nome:
-            flash('Nome não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=nomeData&query={nome}"
@@ -1563,18 +1469,13 @@ def nome2():
                     if manage_module_usage(g.user_id, 'nome2'):
                         results = data['resultado']['itens']
                     else:
-                        flash('Limite de uso atingido para NOME2.', 'error')
+                        flash('Algo deu errado. Tente novamente.', 'error')
                 else:
-                    flash(f'Nenhum resultado encontrado para o nome fornecido.', 'error')
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida: {response.text}', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
+
 @app.route('/modulos/likeff', methods=['GET', 'POST'])
 def likeff():
     users = load_data('users.json')
@@ -1588,7 +1489,7 @@ def likeff():
         uid = request.form.get('uid', '').strip()
         server_name = 'br'
         if not uid:
-            flash('UID não fornecido.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
         else:
             try:
                 token_url = "http://teamxcutehack.serv00.net/like/token_ind.json"
@@ -1598,25 +1499,25 @@ def likeff():
                 ffinfo_response.raise_for_status()
                 ffinfo_data = json.loads(ffinfo_response.text.lstrip('\ufeff'))
                 if not ffinfo_data:
-                    flash('Resposta vazia da API ffinfo.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
                                         notifications=unread_count,
                                         result=result, uid=uid)
                 if "account_info" not in ffinfo_data or "├ Likes" not in ffinfo_data["account_info"]:
-                    flash('Chave de likes ausente na resposta da API ffinfo.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
                                         notifications=unread_count,
                                         result=result, uid=uid)
                 likes_before = int(str(ffinfo_data["account_info"]["├ Likes"]).replace(',', ''))
                 like_response = requests.get(like_api_url, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 if like_response.status_code != 200:
-                    flash(f'Falha na API de likes com código {like_response.status_code}.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
                                         notifications=unread_count,
                                         result=result, uid=uid)
                 like_data = json.loads(like_response.text.lstrip('\ufeff'))
                 if not like_data or "LikesafterCommand" not in like_data:
-                    flash('JSON inválido da API de likes.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
                                         notifications=unread_count,
                                         result=result, uid=uid)
@@ -1636,20 +1537,14 @@ def likeff():
                 if manage_module_usage(g.user_id, 'likeff'):
                     pass
                 else:
-                    flash('Limite de uso atingido para LIKEFF.', 'error')
+                    flash('Algo deu errado. Tente novamente.', 'error')
                     result = None
-            except requests.Timeout:
-                flash('A requisição excedeu o tempo limite.', 'error')
-            except requests.HTTPError as e:
-                flash(f'Erro na resposta da API: {e.response.status_code} - {e.response.text}', 'error')
-            except requests.RequestException as e:
-                flash(f'Erro ao conectar com o servidor da API: {str(e)}', 'error')
-            except json.JSONDecodeError:
-                flash(f'Resposta da API inválida.', 'error')
+            except Exception as e:
+                flash('Algo deu errado. Tente novamente.', 'error')
     return render_template('likeff.html', is_admin=is_admin,
                          notifications=unread_count,
                          result=result, uid=uid)
-# New Module: Atestado - Edit existing PDF
+
 @app.route('/modulos/atestado', methods=['GET', 'POST'])
 def atestado():
     users = load_data('users.json')
@@ -1659,18 +1554,14 @@ def atestado():
     if not is_admin and role not in ['user_mensal', 'user_anual']:
         flash('Acesso negado. Este módulo é apenas para usuários mensais, anuais ou admins.', 'error')
         return redirect('/dashboard')
-
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     pdf_preview = None
     edited_pdf_path = None
-
     if request.method == 'POST':
         if not manage_module_usage(g.user_id, 'atestado'):
-            flash('Limite de uso diário atingido para o módulo Atestado.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
             return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
-
-        # === DADOS DO FORMULÁRIO ===
         nome_paciente = request.form.get('nome_paciente', 'ERICK GABRIEL COTA').strip().upper()
         cpf = request.form.get('cpf', '413.759.068-01').strip()
         profissional = request.form.get('profissional', 'CAROLINA SAAD HASSEM').strip().upper()
@@ -1683,56 +1574,36 @@ def atestado():
         dias_afastamento = request.form.get('dias_afastamento', '01 (UM)').strip().upper()
         n_atend = request.form.get('n_atend', '4532519').strip()
         n_pront = request.form.get('n_pront', '0009372517').strip()
-
-        # === CAMINHOS ===
         original_pdf = 'atestado.pdf'
         if not os.path.exists(original_pdf):
-            flash('Template atestado.pdf não encontrado.', 'error')
+            flash('Algo deu errado. Tente novamente.', 'error')
             return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
-
         edited_pdf = f'static/edited_atestado_{uuid.uuid4().hex}.pdf'
         preview_img = f'static/preview_{uuid.uuid4().hex}.png'
-
         try:
-            # === ABRIR PDF ===
             doc = fitz.open(original_pdf)
             page = doc[0]
-
-            # === CARREGAR FONTES LOCAIS (com fallback seguro) ===
             font_normal_path = 'fonts/DejaVuSans.ttf'
             font_bold_path = 'fonts/DejaVuSans-Bold.ttf'
-
-            font_normal = fitz.Font(fontfile=font_normal_path) if os.path.exists(font_normal_path) else None
-            font_bold = fitz.Font(fontfile=font_bold_path) if os.path.exists(font_bold_path) else None
-
-            # === FUNÇÃO PARA INSERIR TEXTO COM FONTE PERSONALIZADA ===
+            if os.path.exists(font_normal_path):
+                fontname_normal = page.insert_font(fontfile=font_normal_path)
+            else:
+                fontname_normal = "helv"
+            if os.path.exists(font_bold_path):
+                fontname_bold = page.insert_font(fontfile=font_bold_path)
+            else:
+                fontname_bold = "hebo"
             def insert_text(text, point, font_size=10, bold=False):
-                font = font_bold if bold and font_bold else (font_normal if not bold and font_normal else None)
-                if font:
-                    page.insert_text(
-                        point,
-                        text,
-                        fontsize=font_size,
-                        fontname="DejaVu",  # Nome interno (pode ser qualquer, mas precisa ser registrado)
-                        fontfile=None,
-                        font=font,
-                        color=(0, 0, 0)
-                    )
-                else:
-                    # Fallback: usar fonte padrão do PDF
-                    page.insert_text(
-                        point,
-                        text,
-                        fontsize=font_size,
-                        fontname="helv" if not bold else "hebo",
-                        color=(0, 0, 0)
-                    )
-
-            # === LIMPAR ÁREAS ===
+                fontname = fontname_bold if bold else fontname_normal
+                page.insert_text(
+                    point,
+                    text,
+                    fontsize=font_size,
+                    fontname=fontname,
+                    color=(0, 0, 0)
+                )
             def clear_area(rect):
                 page.draw_rect(rect, color=(1,1,1), fill=(1,1,1))
-
-            # === POSIÇÕES (ajustadas para seu PDF) ===
             positions = {
                 "nome_paciente": (70, 105),
                 "cpf": (70, 120),
@@ -1746,8 +1617,6 @@ def atestado():
                 "profissional_assinatura": (300, 460),
                 "crm_assinatura": (300, 475),
             }
-
-            # === LIMPAR CAMPOS ===
             for rect in [
                 fitz.Rect(65, 100, 300, 115),
                 fitz.Rect(65, 115, 300, 130),
@@ -1760,50 +1629,38 @@ def atestado():
                 fitz.Rect(65, 405, 250, 420),
                 fitz.Rect(295, 455, 520, 470),
                 fitz.Rect(295, 470, 520, 485),
-                fitz.Rect(65, 300, 520, 350),  # corpo do texto
+                fitz.Rect(65, 300, 520, 350),
             ]:
                 clear_area(rect)
-
-            # === INSERIR TEXTOS ===
-            insert_text(nome_paciente, positions["nome_paciente"], font_size=10, bold=True)
-            insert_text(cpf, positions["cpf"], font_size=10)
-            insert_text(profissional, positions["profissional"], font_size=10)
-            insert_text(n_atend, positions["n_atend"], font_size=10)
-            insert_text(n_pront, positions["n_pront"], font_size=10)
-            insert_text(data_assinatura, positions["data_assinatura"], font_size=10)
-            insert_text(f"{cidade}, {uf} - {data_atendimento}", positions["cidade_data"], font_size=10)
-            insert_text(cid, positions["cid"], font_size=10, bold=True)
-            insert_text(dias_afastamento, positions["dias_afastamento"], font_size=10, bold=True)
-            insert_text(f"Dr(a). {profissional}", positions["profissional_assinatura"], font_size=10)
-            insert_text(f"{crm} CRM", positions["crm_assinatura"], font_size=10)
-
-            # === CORPO DO ATESTADO ===
+            insert_text(nome_paciente, positions["nome_paciente"], bold=True)
+            insert_text(cpf, positions["cpf"])
+            insert_text(profissional, positions["profissional"])
+            insert_text(n_atend, positions["n_atend"])
+            insert_text(n_pront, positions["n_pront"])
+            insert_text(data_assinatura, positions["data_assinatura"])
+            insert_text(f"{cidade}, {uf} - {data_atendimento}", positions["cidade_data"])
+            insert_text(cid, positions["cid"], bold=True)
+            insert_text(dias_afastamento, positions["dias_afastamento"], bold=True)
+            insert_text(f"Dr(a). {profissional}", positions["profissional_assinatura"])
+            insert_text(f"{crm} CRM", positions["crm_assinatura"])
             corpo = f"Atesto para os devidos fins que {nome_paciente} foi atendido(a) neste serviço, necessitando de afastamento por {dias_afastamento} dia(s) das suas atividades profissionais."
             page.insert_textbox(
                 fitz.Rect(65, 300, 520, 350),
                 corpo,
                 fontsize=11,
-                fontname="helv",
+                fontname=fontname_normal,
                 align=fitz.TEXT_ALIGN_JUSTIFY
             )
-
-            # === SALVAR PDF ===
             doc.save(edited_pdf, garbage=4, deflate=True, clean=True)
             doc.close()
-
-            # === GERAR PRÉ-VISUALIZAÇÃO ===
             doc_prev = fitz.open(edited_pdf)
             pix = doc_prev[0].get_pixmap(dpi=150)
             pix.save(preview_img)
             doc_prev.close()
-
             pdf_preview = preview_img
             edited_pdf_path = edited_pdf
-
         except Exception as e:
-            flash(f'Erro ao gerar atestado: {str(e)}', 'error')
-            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
-
+            flash('Algo deu errado. Tente novamente.', 'error')
     return render_template(
         'atestado_c.html',
         is_admin=is_admin,
@@ -1811,23 +1668,24 @@ def atestado():
         pdf_preview=pdf_preview,
         edited_pdf=edited_pdf_path
     )
-   
+
 @app.route('/download_edited/<path:filename>')
 def download_edited(filename):
     return send_from_directory(app.root_path, filename, as_attachment=True)
-# Logout
+
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
-# Credits
+
 @app.route('/@A30')
 def creditos():
     return "@enfurecido - {'0x106a90000'}"
-# Preview Image
+
 @app.route('/preview.jpg')
 def preview():
     return send_from_directory(app.root_path, 'preview.jpg', mimetype='image/jpeg')
+
 if __name__ == '__main__':
     initialize_json('users.json')
     initialize_json('notifications.json', default_data={})
