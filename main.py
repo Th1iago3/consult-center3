@@ -53,7 +53,9 @@ module_status = {
     'mae': 'ON',
     'pai': 'ON',
     'cnpjcompleto': 'ON',
-    'atestado': 'ON'
+    'atestado': 'ON',
+    'cpf5': 'OFF',
+    'visitas': 'OFF'
 }
 chave = "vmb1" # API key
 # JSON File Management (with locking for concurrency)
@@ -198,7 +200,7 @@ def security_check():
     if 'bot' in user_agent or 'spider' in user_agent:
         abort(403)
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
-        pass  # Additional checks can be added here
+        pass # Additional checks can be added here
 # Login/Register (with hashed passwords, UA limit)
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
@@ -224,8 +226,9 @@ def login_or_register():
                     if datetime.now() > expiration_date:
                         flash('Conta expirada. Contate o suporte.', 'error')
                         return render_template('login.html')
-                # Device management
-                if 'devices' in user and user_agent not in user['devices']:
+                # Device management - Allow if no devices or empty list
+                deny_device = 'devices' in user and user['devices'] and user_agent not in user['devices']
+                if deny_device:
                     flash('Dispositivo não autorizado.', 'error')
                     return render_template('login.html')
                 user['devices'] = list(set(user.get('devices', []) + [user_agent]))[:5] # Limit to 5 devices
@@ -244,10 +247,10 @@ def login_or_register():
             if username in users:
                 flash('Usuário já existe.', 'error')
                 return render_template('login.html')
-            # Check UA uniqueness
+            # Check UA uniqueness - prevents multiple registrations from same device
             ua_exists = any(user_agent in u.get('devices', []) for u in users.values())
             if ua_exists:
-                flash('Este dispositivo já registrou uma conta.', 'error')
+                flash('Este dispositivo já registrou uma conta. Use login em contas existentes.', 'error')
                 return render_template('login.html')
             aff_code = request.args.get('aff')
             referred_by = next((u for u, d in users.items() if d.get('affiliate_code') == aff_code), None)
@@ -383,6 +386,11 @@ def admin_panel():
                 if user_input in users and check_password_hash(users[user_input]['password'], password):
                     users[user_input]['devices'] = []
                     save_data(users, 'users.json')
+                    if user_input == g.user_id:
+                        # Force logout if resetting own devices
+                        resp = make_response(jsonify({'message': 'Dispositivos resetados! Você foi deslogado.', 'category': 'success'}))
+                        resp.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Strict')
+                        return resp
                     return jsonify({'message': 'Dispositivos resetados!', 'category': 'success'})
                 return jsonify({'message': 'Credenciais inválidas.', 'category': 'error'})
             elif action == "toggle_module":
