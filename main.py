@@ -366,7 +366,8 @@ def admin_panel():
                     return jsonify({'message': 'Usuário excluído!', 'category': 'success'})
                 return jsonify({'message': 'Credenciais inválidas.', 'category': 'error'})
             elif action == "view_users":
-                return jsonify({'users': {k: {kk: vv for kk, vv in v.items() if kk != 'password'} for k, v in users.items()}})
+                # Inclui o campo 'password' (hash) para evitar 'undefined' no admin.html
+                return jsonify({'users': {k: {kk: vv for kk, vv in v.items() if kk != 'devices'} for k, v in users.items()}})
             elif action == "send_message":
                 message = request.form.get('message')
                 user_input = request.form.get('user', 'all')
@@ -460,6 +461,7 @@ def admin_panel():
         except Exception as e:
             return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
+    
 # Notifications
 @app.route('/notifications', methods=['GET', 'POST'])
 @jwt_required
