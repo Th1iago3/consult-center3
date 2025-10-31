@@ -17,7 +17,6 @@ import fitz # PyMuPDF for PDF editing
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_wtf.csrf import CSRFProtect
 import threading
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -32,8 +31,6 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
-
-csrf = CSRFProtect(app)
 
 limiter = Limiter(
     get_remote_address,
@@ -186,9 +183,11 @@ def security_check():
                 flash('Sua conta expirou. Contate o suporte.', 'error')
                 session.clear()
                 return redirect('/')
+        if user['role'] == 'guest' and request.path.startswith('/modulos/'):
+            flash('Acesso negado para guests.', 'error')
+            return redirect('/dashboard')
 
 @app.route('/', methods=['GET', 'POST'])
-@csrf.exempt
 @limiter.limit("10/minute")
 def login_or_register():
     if request.method == 'POST':
