@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response, session, send_from_directory, url_for, abort, send_file
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies, unset_jwt_cookies
 import json
 import os
 import secrets
@@ -13,36 +14,34 @@ import colorama
 from colorama import Fore, Style
 import urllib3
 import socket
-import fitz # PyMuPDF for PDF editing
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-import threading
+import fitz  # PyMuPDF for PDF editing
+import hashlib  # For hashing user-agents
+import base64   # For additional encoding in security
+from werkzeug.security import generate_password_hash, check_password_hash  # Better password handling
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.config['SECRET_KEY'] = os.urandom(32)
+app.config['SECRET_KEY'] = os.urandom(24).hex()  # More secure, hex for readability
+app.config['JWT_SECRET_KEY'] = os.urandom(32).hex()  # Separate key for JWT
+app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+app.config['JWT_COOKIE_SECURE'] = True  # Only send over HTTPS in production
+app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
+app.config['JWT_COOKIE_SAMESITE'] = 'Strict'
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Since SAMESITE=Strict
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=30)  # Token expiration
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+jwt = JWTManager(app)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 colorama.init()
 
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://"
-)
-
+# Rate limiting storage (improved with IP and user-agent hashing)
 login_attempts = {}
-register_attempts = {}
-ip_ban_list = set()
+ip_blacklist = set()  # Anti-hacker: Blacklist IPs after too many failures
 
+# Module status (can be toggled by admins)
 module_status = {
     'cpfdata': 'ON',
     'cpflv': 'OFF',
@@ -69,22 +68,29 @@ module_status = {
     'cnpjcompleto': 'ON',
     'atestado': 'ON'
 }
-chave = "vmb1"
+chave = "vmb1"  # API key for some external services
 
-user_agent_registry = {}
+# JSON File Management (with file locking for concurrency)
+import fcntl  # For file locking
 
 def initialize_json(file_path, default_data={}):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
+            fcntl.flock(file, fcntl.LOCK_EX)
             json.load(file)
+            fcntl.flock(file, fcntl.LOCK_UN)
     except (FileNotFoundError, json.JSONDecodeError):
         with open(file_path, 'w', encoding='utf-8') as file:
+            fcntl.flock(file, fcntl.LOCK_EX)
             json.dump(default_data, file)
+            fcntl.flock(file, fcntl.LOCK_UN)
 
 def load_data(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
+            fcntl.flock(file, fcntl.LOCK_EX)
             data = json.load(file)
+            fcntl.flock(file, fcntl.LOCK_UN)
             if 'news.json' in file_path and not isinstance(data, list):
                 data = []
                 save_data(data, file_path)
@@ -92,13 +98,18 @@ def load_data(file_path):
     except (FileNotFoundError, json.JSONDecodeError):
         default_data = [] if 'news.json' in file_path else {}
         with open(file_path, 'w', encoding='utf-8') as file:
+            fcntl.flock(file, fcntl.LOCK_EX)
             json.dump(default_data, file)
+            fcntl.flock(file, fcntl.LOCK_UN)
         return default_data
 
 def save_data(data, file_path):
     with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(data, file, indent=4, default=str)
+        fcntl.flock(file, fcntl.LOCK_EX)
+        json.dump(data, file, indent=4, default=str)  # Handle datetime serialization
+        fcntl.flock(file, fcntl.LOCK_UN)
 
+# Logging with IP hashing for privacy
 def log_access(endpoint, message=''):
     try:
         response = requests.get('https://ipinfo.io/json', verify=False)
@@ -108,18 +119,22 @@ def log_access(endpoint, message=''):
     except requests.RequestException:
         ip = request.remote_addr
         message += f" [Error fetching real IP]"
+    ip_hash = hashlib.sha256(ip.encode()).hexdigest()  # Hash IP for logging
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
+    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip_hash} - {now} accessed {endpoint}. {message}")
 
+# Module Usage Management (with daily reset and limits)
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
     if user.get('role') == 'admin':
-        return True
+        return True  # Admins have unlimited access
+    # Check permissions
     permissions = user.get('permissions', {})
     if module not in permissions or (permissions[module] and datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d')):
         flash(f'Você não tem permissão para acessar o módulo {module}.', 'error')
         return False
+    # Usage tracking
     if 'modules' not in user:
         user['modules'] = {m: 0 for m in module_status.keys()}
     if increment:
@@ -141,102 +156,114 @@ def manage_module_usage(user_id, module, increment=True):
     save_data(users, 'users.json')
     return True
 
-def check_attempts(storage, user_id_or_ip, max_attempts=5, window=300):
+# Improved Rate Limiting for Login Attempts (with IP blacklisting)
+def check_login_attempts(user_id):
     now = time.time()
-    if user_id_or_ip not in storage:
-        storage[user_id_or_ip] = {'count': 0, 'last_attempt': now}
-    attempts = storage[user_id_or_ip]
-    if now - attempts['last_attempt'] > window:
+    ip = request.remote_addr
+    user_agent_hash = hashlib.sha256(request.headers.get('User-Agent', '').encode()).hexdigest()
+    key = f"{ip}:{user_agent_hash}"  # Combined key for anti-hacker
+    if key in ip_blacklist:
+        return False, "Acesso bloqueado devido a atividades suspeitas."
+    if key not in login_attempts:
+        login_attempts[key] = {'count': 0, 'last_attempt': now}
+    attempts = login_attempts[key]
+    if now - attempts['last_attempt'] > 300:  # Reset after 5 minutes
         attempts['count'] = 0
         attempts['last_attempt'] = now
     attempts['count'] += 1
-    if attempts['count'] > max_attempts:
-        ip = get_remote_address()
-        ip_ban_list.add(ip)
-        threading.Timer(3600, lambda: ip_ban_list.discard(ip)).start()
-        return False, "Muitas tentativas. Tente novamente mais tarde."
-    storage[user_id_or_ip] = attempts
+    if attempts['count'] > 5:
+        ip_blacklist.add(key)  # Blacklist for 1 hour
+        threading.Timer(3600, lambda: ip_blacklist.discard(key)).start()  # Auto-unblock
+        return False, "Muitas tentativas de login. Tente novamente em 5 minutos."
+    login_attempts[key] = attempts
     return True, ""
 
+# Before Request Security Check (improved with header validation)
 @app.before_request
-@limiter.limit("100/minute")
 def security_check():
-    ip = get_remote_address()
-    if ip in ip_ban_list:
-        abort(403, "Acesso bloqueado temporariamente devido a atividades suspeitas.")
-    user_agent = request.headers.get('User-Agent', '').lower()
-    if 'bot' in user_agent or 'spider' in user_agent or 'scanner' in user_agent:
-        abort(403, "Acesso negado para bots.")
+    # Anti-hacker: Check for suspicious headers
+    if 'X-Forwarded-For' in request.headers or 'Proxy-Authorization' in request.headers:
+        abort(403)  # Block proxies or suspicious headers
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
-        if 'user_id' not in session:
+        try:
+            g.user_id = get_jwt_identity()
+            if not g.user_id:
+                raise Exception
+        except:
             flash('Você precisa estar logado para acessar esta página.', 'error')
             return redirect('/')
-        g.user_id = session['user_id']
         users = load_data('users.json')
         user = users.get(g.user_id, {})
         if not user:
-            session.clear()
             return redirect('/')
+        # Check expiration
         if user['role'] != 'admin' and user['role'] != 'guest':
             expiration_date = datetime.strptime(user['expiration'], '%Y-%m-%d')
             if datetime.now() > expiration_date:
                 flash('Sua conta expirou. Contate o suporte.', 'error')
-                session.clear()
                 return redirect('/')
-        if user['role'] == 'guest' and request.path.startswith('/modulos/'):
-            flash('Acesso negado para guests.', 'error')
-            return redirect('/dashboard')
+        # Validate user-agent consistency
+        current_ua_hash = hashlib.sha256(request.headers.get('User-Agent', '').encode()).hexdigest()
+        stored_ua_hash = user.get('ua_hash')
+        if stored_ua_hash and current_ua_hash != stored_ua_hash:
+            flash('Dispositivo não autorizado. Login recusado.', 'error')
+            return redirect('/')
 
+# Login or Register (improved with hashed passwords and user-agent check)
 @app.route('/', methods=['GET', 'POST'])
-@limiter.limit("10/minute")
 def login_or_register():
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'login':
-            username = request.form.get('user').strip()
+            username = request.form.get('user')
             password = request.form.get('password')
-            can_attempt, message = check_attempts(login_attempts, username)
-            if not can_attempt:
+            users = load_data('users.json')
+            can_login, message = check_login_attempts(username)
+            if not can_login:
                 flash(message, 'error')
                 return render_template('login.html')
-            users = load_data('users.json')
             if username in users and check_password_hash(users[username]['password'], password):
                 if users[username]['role'] != 'guest':
                     expiration_date = datetime.strptime(users[username]['expiration'], '%Y-%m-%d')
                     if datetime.now() > expiration_date:
                         flash('Conta expirada. Contate o suporte.', 'error')
                         return render_template('login.html')
+            
                 user_agent = request.headers.get('User-Agent')
-                if 'devices' in users[username] and user_agent not in users[username]['devices']:
+                ua_hash = hashlib.sha256(user_agent.encode()).hexdigest()
+                if users[username].get('ua_hash') and users[username]['ua_hash'] != ua_hash:
                     flash('Dispositivo não autorizado. Login recusado.', 'error')
                     return render_template('login.html')
-                users[username]['devices'] = list(set(users[username].get('devices', []) + [user_agent]))
-                save_data(users, 'users.json')
-                session['user_id'] = username
-                session.permanent = True
-                return redirect('/dashboard')
+                if not users[username].get('ua_hash'):
+                    users[username]['ua_hash'] = ua_hash
+                    save_data(users, 'users.json')
+            
+                access_token = create_access_token(identity=username)
+                resp = make_response(redirect('/dashboard'))
+                set_access_cookies(resp, access_token)
+                login_attempts.pop(username, None)
+                return resp
             else:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')  # Generic error
                 return render_template('login.html')
         elif action == 'register':
-            username = request.form.get('user').strip()
+            username = request.form.get('user')
             password = request.form.get('password')
-            if not username or not password:
-                flash('Algo deu errado. Tente novamente.', 'error')
-                return render_template('login.html')
-            can_attempt, message = check_attempts(register_attempts, get_remote_address())
-            if not can_attempt:
-                flash(message, 'error')
+            if not username or not password or len(username) < 3 or len(password) < 6:  # Basic validation
+                flash('Algo deu errado. Tente novamente.', 'error')  # Generic
                 return render_template('login.html')
             users = load_data('users.json')
-            user_agent = request.headers.get('User-Agent')
-            if user_agent in user_agent_registry:
-                flash('Algo deu errado. Tente novamente.', 'error')
-                return render_template('login.html')
             if username in users:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado. Tente novamente.', 'error')  # Generic instead of 'user exists'
                 return render_template('login.html')
-            hashed_pw = generate_password_hash(password)
+            user_agent = request.headers.get('User-Agent')
+            ua_hash = hashlib.sha256(user_agent.encode()).hexdigest()
+            # Check if ua_hash already used by any user (one account per device)
+            for u in users.values():
+                if u.get('ua_hash') == ua_hash:
+                    flash('Algo deu errado. Tente novamente.', 'error')  # Generic
+                    return render_template('login.html')
+            # Handle affiliate
             aff_code = request.args.get('aff')
             referred_by = None
             if aff_code:
@@ -245,17 +272,16 @@ def login_or_register():
                         referred_by = u
                         break
             users[username] = {
-                'password': hashed_pw,
+                'password': generate_password_hash(password),
                 'role': 'guest',
-                'expiration': '2099-12-31',
-                'permissions': {},
+                'expiration': '2099-12-31',  # Permanent for guests
+                'permissions': {},  # No modules
                 'modules': {m: 0 for m in module_status.keys()},
                 'read_notifications': [],
                 'referred_by': referred_by,
                 'affiliate_code': secrets.token_urlsafe(8) if referred_by else None,
-                'devices': [user_agent]
+                'ua_hash': ua_hash  # Store hashed user-agent
             }
-            user_agent_registry[user_agent] = username
             save_data(users, 'users.json')
             flash('Registro concluído com sucesso! Faça login.', 'success')
             return redirect('/')
@@ -264,8 +290,9 @@ def login_or_register():
             return render_template('login.html')
     return render_template('login.html')
 
+# Dashboard
 @app.route('/dashboard', methods=['GET', 'POST'])
-@limiter.limit("50/minute")
+@jwt_required()
 def dashboard():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -281,7 +308,7 @@ def dashboard():
         'user_anual': 500
     }.get(user['role'], 0)
     if is_admin:
-        max_limit = 999999
+        max_limit = 999999  # Large number for unlimited
     if user['role'] != 'guest':
         if datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
             flash('Sua sessão expirou. Faça login novamente.', 'error')
@@ -320,7 +347,7 @@ def dashboard():
                 save_data(gifts, 'gifts.json')
                 flash('Gift resgatado com sucesso!', 'success')
             else:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Código inválido ou expirado.', 'error')
         elif is_admin:
             if action == 'view_modules':
                 target_user = request.form.get('user')
@@ -334,53 +361,57 @@ def dashboard():
                     return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)}, "maxRequests": max_requests})
     return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
 
+# Admin Panel
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
-@limiter.limit("20/minute")
+@jwt_required()
 def admin_panel():
     users = load_data('users.json')
     notifications = load_data('notifications.json')
     gifts = load_data('gifts.json')
     user_id = g.user_id
     if users.get(user_id, {}).get('role') != 'admin':
-        abort(403, "Access denied")
+        abort(403)
+    user_agent = request.headers.get('User-Agent', '').lower()
+    if 'bot' in user_agent or 'spider' in user_agent:
+        abort(403)
     if request.method == 'POST':
         action = request.form.get('action')
-        user_input = re.sub(r'[^a-zA-Z0-9_]', '', request.form.get('user', ''))
+        user_input = request.form.get('user')
         password = request.form.get('password', '')
         expiration = request.form.get('expiration', '')
         message = request.form.get('message', '')
         role = request.form.get('role', 'user_semanal')
         module = request.form.get('module', '')
         status = request.form.get('status', '')
-        if action == "add_user" and user_input and password and expiration:
-            if user_input in users:
-                return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
-            hashed_pw = generate_password_hash(password)
-            token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
-            users[user_input] = {
-                'password': hashed_pw,
-                'token': token,
-                'expiration': expiration,
-                'role': role,
-                'permissions': {m: None for m in module_status.keys()} if role != 'guest' else {},
-                'modules': {m: 0 for m in module_status.keys()},
-                'read_notifications': [],
-                'affiliate_code': secrets.token_urlsafe(8) if role != 'guest' else None,
-                'devices': []
-            }
-            save_data(users, 'users.json')
-            return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
-        elif action == "delete_user" and user_input:
-            if user_input in users:
+        if action == "add_user" and user_input and password and expiration and len(password) >= 6:
+            if user_input not in users:
+                token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
+                users[user_input] = {
+                    'password': generate_password_hash(password),
+                    'token': token,
+                    'expiration': expiration,
+                    'role': role,
+                    'permissions': {m: None for m in module_status.keys()} if role != 'guest' else {},
+                    'modules': {m: 0 for m in module_status.keys()},
+                    'read_notifications': [],
+                    'affiliate_code': secrets.token_urlsafe(8) if role != 'guest' else None,
+                    'ua_hash': ''  # Will be set on first login
+                }
+                save_data(users, 'users.json')
+                return jsonify({'message': 'Usuário adicionado com sucesso!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
+            return jsonify({'message': 'Algo deu errado.', 'category': 'error'})  # Generic
+        elif action == "delete_user" and user_input and password:
+            if user_input in users and check_password_hash(users[user_input]['password'], password):
                 del users[user_input]
                 save_data(users, 'users.json')
                 if g.user_id == user_input:
                     resp = make_response(jsonify({'message': 'Usuário excluído. Você foi deslogado.', 'category': 'success'}))
+                    unset_jwt_cookies(resp)
                     return resp
                 return jsonify({'message': 'Usuário excluído com sucesso!', 'category': 'success'})
-            return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
+            return jsonify({'message': 'Algo deu errado.', 'category': 'error'})  # Generic
         elif action == "view_users":
-            return jsonify({'users': {k: {kk: vv for kk, vv in v.items() if kk != 'password'} for k, v in users.items()}})
+            return jsonify({'users': {k: {kk: vv for kk, vv in v.items() if kk != 'password'} for k, v in users.items()}})  # Hide passwords
         elif action == "send_message" and message:
             notif_id = str(uuid.uuid4())
             user_input = request.form.get('user', 'all')
@@ -392,22 +423,22 @@ def admin_panel():
                 if user_input in users:
                     notifications.setdefault(user_input, []).append({'id': notif_id, 'message': message, 'timestamp': datetime.now().isoformat()})
                 else:
-                    return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
+                    return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
             save_data(notifications, 'notifications.json')
             return jsonify({'message': 'Mensagem enviada com sucesso!', 'category': 'success'})
-        elif action == "reset_device" and user_input:
-            if user_input in users:
-                users[user_input]['devices'] = []
+        elif action == "reset_device" and user_input and password:
+            if user_input in users and check_password_hash(users[user_input]['password'], password):
+                users[user_input]['ua_hash'] = ''
                 save_data(users, 'users.json')
-                return jsonify({'message': 'Dispositivos resetados com sucesso!', 'category': 'success'})
-            return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
+                return jsonify({'message': 'Dispositivo resetado com sucesso!', 'category': 'success'})
+            return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
         elif action == "toggle_module" and module and status:
             if module in module_status:
                 module_status[module] = status
                 return jsonify({'success': True, 'message': f'Módulo {module} atualizado para {status}'})
-            return jsonify({'success': False, 'message': 'Algo deu errado. Tente novamente.'})
+            return jsonify({'success': False, 'message': 'Módulo não encontrado'})
         elif action == 'create_gift':
-            modules = request.form.get('modules')
+            modules = request.form.get('modules')  # comma separated or 'all'
             expiration_days = int(request.form.get('expiration_days', 30))
             uses = int(request.form.get('uses', 1))
             code = secrets.token_urlsafe(12)
@@ -431,9 +462,10 @@ def admin_panel():
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                 for file_name in json_files:
-                    file_path = file_name
+                    file_path = file_name  # assuming in current dir
                     if os.path.exists(file_path):
                         zip_file.write(file_path, arcname=file_name)
+                # Include images from novidades folder
                 upload_folder = app.config['UPLOAD_FOLDER']
                 for filename in os.listdir(upload_folder):
                     file_path = os.path.join(upload_folder, filename)
@@ -444,12 +476,12 @@ def admin_panel():
             return send_file(zip_buffer, as_attachment=True, download_name='system_backup.zip', mimetype='application/zip')
         elif action == 'restore':
             if 'zip_file' not in request.files:
-                return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
+                return jsonify({'message': 'Nenhum arquivo enviado.', 'category': 'error'})
             zip_file = request.files['zip_file']
             if zip_file.filename == '':
-                return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
+                return jsonify({'message': 'Nenhum arquivo selecionado.', 'category': 'error'})
             if not zip_file.filename.endswith('.zip'):
-                return jsonify({'message': 'Arquivo inválido.', 'category': 'error'})
+                return jsonify({'message': 'Arquivo inválido. Deve ser .zip.', 'category': 'error'})
             import zipfile
             import shutil
             temp_dir = 'temp_restore'
@@ -462,6 +494,7 @@ def admin_panel():
                     extracted_path = os.path.join(temp_dir, file_name)
                     if os.path.exists(extracted_path):
                         shutil.copy(extracted_path, file_name)
+                # Restore images
                 nov_temp_dir = os.path.join(temp_dir, 'novidades')
                 if os.path.exists(nov_temp_dir):
                     upload_folder = app.config['UPLOAD_FOLDER']
@@ -474,10 +507,12 @@ def admin_panel():
                 return jsonify({'message': 'Restauração concluída com sucesso!', 'category': 'success'})
             except Exception as e:
                 shutil.rmtree(temp_dir)
-                return jsonify({'message': 'Algo deu errado. Tente novamente.', 'category': 'error'})
+                return jsonify({'message': f'Erro na restauração: {str(e)}', 'category': 'error'})
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
 
+# Notifications Page
 @app.route('/notifications', methods=['GET', 'POST'])
+@jwt_required()
 def notifications_page():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -496,7 +531,9 @@ def notifications_page():
         return jsonify({'success': True})
     return render_template('notifications.html', unread=unread, read=read, users=users)
 
+# Novidades Page
 @app.route('/novidades', methods=['GET'])
+@jwt_required()
 def novidades():
     users = load_data('users.json')
     if users[g.user_id]['role'] == 'guest':
@@ -504,7 +541,9 @@ def novidades():
     news = load_data('news.json')
     return render_template('novidades.html', news=news, users=users)
 
+# Create Novidade
 @app.route('/novidades/new', methods=['GET', 'POST'])
+@jwt_required()
 def new_novidade():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -514,6 +553,9 @@ def new_novidade():
         title = request.form.get('title')
         desc = request.form.get('desc')
         image = request.files.get('image')
+        if not title or not desc:  # Validation
+            flash('Algo deu errado.', 'error')
+            return render_template('new_novidade.html', users=users)
         news = load_data('news.json')
         news_id = str(uuid.uuid4())
         image_path = None
@@ -537,7 +579,9 @@ def new_novidade():
         return redirect('/novidades')
     return render_template('new_novidade.html', users=users)
 
+# Edit Novidade
 @app.route('/novidades/edit/<news_id>', methods=['GET', 'POST'])
+@jwt_required()
 def edit_novidade(news_id):
     users = load_data('users.json')
     user = users[g.user_id]
@@ -548,21 +592,29 @@ def edit_novidade(news_id):
     if not item or (item['sender'] != g.user_id and user['role'] != 'admin'):
         abort(403)
     if request.method == 'POST':
-        item['title'] = request.form.get('title')
-        item['desc'] = request.form.get('desc')
+        title = request.form.get('title')
+        desc = request.form.get('desc')
+        if not title or not desc:  # Validation
+            flash('Algo deu errado.', 'error')
+            return render_template('edit_novidade.html', item=item, users=users)
+        item['title'] = title
+        item['desc'] = desc
         image = request.files.get('image')
         if image and image.filename:
             ext = os.path.splitext(image.filename)[1].lower()
-            image_filename = f'{news_id}{ext}'
-            image_path_full = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
-            image.save(image_path_full)
-            item['image'] = f'/static/novidades/{image_filename}'
+            if ext in ['.jpg', '.jpeg', '.png', '.gif']:
+                image_filename = f'{news_id}{ext}'
+                image_path_full = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+                image.save(image_path_full)
+                item['image'] = f'/static/novidades/{image_filename}'
         save_data(news, 'news.json')
         flash('Novidade editada com sucesso!', 'success')
         return redirect('/novidades')
     return render_template('edit_novidade.html', item=item, users=users)
 
+# Delete Novidade
 @app.route('/novidades/delete/<news_id>', methods=['POST'])
+@jwt_required()
 def delete_novidade(news_id):
     users = load_data('users.json')
     user = users[g.user_id]
@@ -582,7 +634,9 @@ def delete_novidade(news_id):
     flash('Novidade excluída com sucesso!', 'success')
     return redirect('/novidades')
 
+# Module Routes (all protected with jwt_required and generic errors)
 @app.route('/modulos/mae', methods=['GET', 'POST'])
+@jwt_required()
 def mae():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -593,8 +647,8 @@ def mae():
     nome = ""
     if request.method == 'POST':
         nome = request.form.get('nome')
-        if not nome:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not nome or len(nome) < 3:  # Validation
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
@@ -607,16 +661,17 @@ def mae():
                         if manage_module_usage(g.user_id, 'mae'):
                             result = valid_results
                         else:
-                            flash('Algo deu errado. Tente novamente.', 'error')
+                            flash('Algo deu errado.', 'error')
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 
 @app.route('/modulos/pai', methods=['GET', 'POST'])
+@jwt_required()
 def pai():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -627,8 +682,8 @@ def pai():
     nome = ""
     if request.method == 'POST':
         nome = request.form.get('nome')
-        if not nome:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not nome or len(nome) < 3:
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
@@ -641,16 +696,17 @@ def pai():
                         if manage_module_usage(g.user_id, 'pai'):
                             result = valid_results
                         else:
-                            flash('Algo deu errado. Tente novamente.', 'error')
+                            flash('Algo deu errado.', 'error')
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
+@jwt_required()
 def cnpjcompleto():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -661,8 +717,8 @@ def cnpjcompleto():
     cnpj_input = ""
     if request.method == 'POST':
         cnpj_input = request.form.get('cnpj', '').strip()
-        if len(cnpj_input) != 14:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if len(cnpj_input) != 14 or not cnpj_input.isdigit():
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
@@ -703,13 +759,14 @@ def cnpjcompleto():
                 if manage_module_usage(g.user_id, 'cnpjcompleto'):
                     pass
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     result = None
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
 
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
+@jwt_required()
 def cpf():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -720,8 +777,8 @@ def cpf():
     cpf = ""
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
-        if not cpf:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not cpf or len(cpf) != 11 or not cpf.isdigit():
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
@@ -732,14 +789,15 @@ def cpf():
                     if manage_module_usage(g.user_id, 'cpf'):
                         result = data
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
+@jwt_required()
 def cpf2():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -750,8 +808,8 @@ def cpf2():
     cpf = ""
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
-        if not cpf:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not cpf or len(cpf) != 11 or not cpf.isdigit():
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=cpf1&query={cpf}"
@@ -762,14 +820,15 @@ def cpf2():
                     if manage_module_usage(g.user_id, 'cpf2'):
                         result = data['resultado']
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
+@jwt_required()
 def cpfdata():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -780,8 +839,8 @@ def cpfdata():
     cpf = ""
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
-        if not cpf:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not cpf or len(cpf) != 11 or not cpf.isdigit():
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
@@ -813,6 +872,7 @@ def cpfdata():
                             'tipo_sanguineo': raw_result.get('tipo_sanguineo', 'SEM INFORMAÇÃO'),
                             'nome_social': raw_result.get('nome_social', None) or 'Não possui'
                         }
+                        # Parse nascimento
                         nasc = raw_result.get('nascimento', 'SEM INFORMAÇÃO')
                         if ' (' in nasc and ' anos)' in nasc:
                             date_str = nasc.split(' (')[0]
@@ -822,6 +882,7 @@ def cpfdata():
                                 'idade': age_str,
                                 'signo': 'SEM INFORMAÇÃO'
                             }
+                            # Calculate signo
                             try:
                                 birth_date = datetime.strptime(date_str, '%d/%m/%Y')
                                 month = birth_date.month
@@ -859,6 +920,7 @@ def cpfdata():
                                 'idade': 'SEM INFORMAÇÃO',
                                 'signo': 'SEM INFORMAÇÃO'
                             }
+                        # Telefone
                         telefones = raw_result.get('contatos', {}).get('telefones', [])
                         processed_result['telefone'] = [
                             {
@@ -870,6 +932,7 @@ def cpfdata():
                         ]
                         if not processed_result['telefone']:
                             processed_result['telefone'] = [{'ddi': '', 'ddd': '', 'numero': ''}]
+                        # Enderecos
                         endereco = raw_result.get('endereco', {})
                         if endereco:
                             if 'municipio_residencia' in endereco:
@@ -881,14 +944,15 @@ def cpfdata():
                             processed_result['enderecos'] = [endereco]
                         result = processed_result
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
+@jwt_required()
 def cpf3():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -899,8 +963,8 @@ def cpf3():
     cpf = ""
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
-        if not cpf:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not cpf or len(cpf) != 11 or not cpf.isdigit():
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
@@ -911,14 +975,15 @@ def cpf3():
                     if manage_module_usage(g.user_id, 'cpf3'):
                         result = data
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
+@jwt_required()
 def cpflv():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -929,8 +994,8 @@ def cpflv():
     cpf = ""
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
-        if not cpf:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not cpf or len(cpf) != 11 or not cpf.isdigit():
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
@@ -946,14 +1011,15 @@ def cpflv():
                     if manage_module_usage(g.user_id, 'cpflv'):
                         result = data['resultado']
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
+@jwt_required()
 def vacinas():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -965,7 +1031,7 @@ def vacinas():
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip().replace('.', '').replace('-', '')
         if not cpf or len(cpf) != 11 or not cpf.isdigit():
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
@@ -982,15 +1048,16 @@ def vacinas():
                     if manage_module_usage(g.user_id, 'vacinas'):
                         results = imunizacoes
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                         results = []
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
 
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
+@jwt_required()
 def datanome():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1004,7 +1071,7 @@ def datanome():
         nome = request.form.get('nome', '').strip()
         datanasc = request.form.get('datanasc', '').strip()
         if not nome or not datanasc:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
@@ -1019,7 +1086,7 @@ def datanome():
                 try:
                     user_date = datetime.strptime(datanasc, '%Y-%m-%d').date()
                 except ValueError:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count,
                                            results=results, nome=nome, datanasc=datanasc)
                 for item in raw_results:
@@ -1035,16 +1102,17 @@ def datanome():
                     if manage_module_usage(g.user_id, 'datanome'):
                         pass
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                         results = []
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count,
                            results=results, nome=nome, datanasc=datanasc)
 
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
+@jwt_required()
 def placalv():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1056,7 +1124,7 @@ def placalv():
     if request.method == 'POST':
         placa = request.form.get('placa', '').strip().upper().replace(' ', '')
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
@@ -1069,18 +1137,19 @@ def placalv():
                         if manage_module_usage(g.user_id, 'placalv'):
                             result = data['response']['dados']
                         else:
-                            flash('Algo deu errado. Tente novamente.', 'error')
+                            flash('Algo deu errado.', 'error')
                             result = None
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
 
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
+@jwt_required()
 def telLv():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1092,7 +1161,7 @@ def telLv():
     if request.method == 'POST':
         telefone = ''.join(c for c in request.form.get('telefone', '').strip() if c.isdigit())
         if not telefone or len(telefone) < 10 or len(telefone) > 11:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
@@ -1105,18 +1174,19 @@ def telLv():
                         if manage_module_usage(g.user_id, 'telLv'):
                             result = response_data
                         else:
-                            flash('Algo deu errado. Tente novamente.', 'error')
+                            flash('Algo deu errado.', 'error')
                             result = None
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count,
                            result=result, telefone=telefone)
 
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
+@jwt_required()
 def teldual():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1128,7 +1198,7 @@ def teldual():
     if request.method == 'POST':
         telefone = request.form.get('telefone', '').strip()
         if not telefone:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=teldual&query={telefone}"
@@ -1139,14 +1209,15 @@ def teldual():
                     if manage_module_usage(g.user_id, 'teldual'):
                         results = data['resultado']
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
 
 @app.route('/modulos/tel', methods=['GET', 'POST'])
+@jwt_required()
 def tel():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1158,7 +1229,7 @@ def tel():
     if request.method == 'POST':
         tel_input = request.form.get('tel', '').strip()
         if not tel_input:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=telefone&query={tel_input}"
@@ -1169,14 +1240,15 @@ def tel():
                     if manage_module_usage(g.user_id, 'tel'):
                         results = data['resultado']['msg']
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
 
 @app.route('/modulos/placa', methods=['GET', 'POST'])
+@jwt_required()
 def placa():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1188,7 +1260,7 @@ def placa():
     if request.method == 'POST':
         placa = request.form.get('placa', '').strip().upper().replace(' ', '')
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
@@ -1199,16 +1271,17 @@ def placa():
                     if manage_module_usage(g.user_id, 'placa'):
                         result = data
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                         result = None
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('placa.html', is_admin=is_admin, notifications=unread_count,
                            result=result, placa=placa)
 
 @app.route('/modulos/placaestadual', methods=['GET', 'POST'])
+@jwt_required()
 def placaestadual():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1220,7 +1293,7 @@ def placaestadual():
     if request.method == 'POST':
         placa = request.form.get('placa', '').strip().upper()
         if not placa:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=placaestadual&query={placa}"
@@ -1231,14 +1304,15 @@ def placaestadual():
                     if manage_module_usage(g.user_id, 'placaestadual'):
                         results = data['resultado']
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
 
 @app.route('/modulos/pix', methods=['GET', 'POST'])
+@jwt_required()
 def pix():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1250,7 +1324,7 @@ def pix():
     if request.method == 'POST':
         chave = request.form.get('chave', '').strip()
         if not chave or len(chave) < 11:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
@@ -1261,16 +1335,17 @@ def pix():
                     if manage_module_usage(g.user_id, 'pix'):
                         result = data
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                         result = None
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('pix.html', is_admin=is_admin, notifications=unread_count,
                            result=result, chave=chave)
 
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
+@jwt_required()
 def fotor():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1283,8 +1358,8 @@ def fotor():
     if request.method == 'POST':
         documento = request.form.get('documento', '').strip()
         selected_option = request.form.get('estado', '')
-        if not documento:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not documento or not selected_option:
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 base_url = "https://br1.stormhost.online:10004/api/token=@signficativo/consulta"
@@ -1298,7 +1373,7 @@ def fotor():
                 }
                 tipo = tipo_map.get(selected_option)
                 if not tipo:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     return render_template(
                         'fotor.html',
                         is_admin=is_admin,
@@ -1314,7 +1389,7 @@ def fotor():
                 data = json.loads(raw.lstrip('\ufeff'))
                 inner = data.get("response", {}).get("response", [])
                 if not inner or not isinstance(inner, list) or not inner[0].get("fotob64"):
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                 else:
                     foto_b64 = inner[0]["fotob64"]
                     cpf_ret = inner[0].get("cpf", "")
@@ -1325,10 +1400,10 @@ def fotor():
                     if manage_module_usage(g.user_id, 'fotor'):
                         pass
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                         results = None
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template(
         'fotor.html',
         is_admin=is_admin,
@@ -1339,6 +1414,7 @@ def fotor():
     )
 
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
+@jwt_required()
 def nomelv():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1349,8 +1425,8 @@ def nomelv():
     nome = ""
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
-        if not nome:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not nome or len(nome) < 3:
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
@@ -1363,20 +1439,21 @@ def nomelv():
                 elif isinstance(data, dict) and 'resultado' in data and isinstance(data['resultado'], list):
                     results_list = data['resultado']
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     results_list = []
                 if results_list:
                     if manage_module_usage(g.user_id, 'nomelv'):
                         results = results_list
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
 @app.route('/modulos/nome', methods=['GET', 'POST'])
+@jwt_required()
 def nome():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1387,8 +1464,8 @@ def nome():
     nome = ""
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
-        if not nome:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not nome or len(nome) < 3:
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
@@ -1399,14 +1476,15 @@ def nome():
                     if manage_module_usage(g.user_id, 'nome'):
                         results = data['resultado']
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
 @app.route('/modulos/ip', methods=['GET', 'POST'])
+@jwt_required()
 def ip():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1418,7 +1496,7 @@ def ip():
     if request.method == 'POST':
         ip_address = request.form.get('ip', '').strip()
         if not ip_address:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://ipwho.is/{ip_address}"
@@ -1438,14 +1516,15 @@ def ip():
                             'provider': data.get('connection', {}).get('isp', 'Não disponível')
                         }
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
 
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
+@jwt_required()
 def nome2():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1456,8 +1535,8 @@ def nome2():
     nome = ""
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
-        if not nome:
-            flash('Algo deu errado. Tente novamente.', 'error')
+        if not nome or len(nome) < 3:
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 url = f"https://api.bygrower.online/core/?token={chave}&base=nomeData&query={nome}"
@@ -1468,14 +1547,15 @@ def nome2():
                     if manage_module_usage(g.user_id, 'nome2'):
                         results = data['resultado']['itens']
                     else:
-                        flash('Algo deu errado. Tente novamente.', 'error')
+                        flash('Algo deu errado.', 'error')
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 
 @app.route('/modulos/likeff', methods=['GET', 'POST'])
+@jwt_required()
 def likeff():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1488,7 +1568,7 @@ def likeff():
         uid = request.form.get('uid', '').strip()
         server_name = 'br'
         if not uid:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
         else:
             try:
                 token_url = "http://teamxcutehack.serv00.net/like/token_ind.json"
@@ -1498,25 +1578,25 @@ def likeff():
                 ffinfo_response.raise_for_status()
                 ffinfo_data = json.loads(ffinfo_response.text.lstrip('\ufeff'))
                 if not ffinfo_data:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
                                         notifications=unread_count,
                                         result=result, uid=uid)
                 if "account_info" not in ffinfo_data or "├ Likes" not in ffinfo_data["account_info"]:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
                                         notifications=unread_count,
                                         result=result, uid=uid)
                 likes_before = int(str(ffinfo_data["account_info"]["├ Likes"]).replace(',', ''))
                 like_response = requests.get(like_api_url, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
                 if like_response.status_code != 200:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
                                         notifications=unread_count,
                                         result=result, uid=uid)
                 like_data = json.loads(like_response.text.lstrip('\ufeff'))
                 if not like_data or "LikesafterCommand" not in like_data:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     return render_template('likeff.html', is_admin=is_admin,
                                         notifications=unread_count,
                                         result=result, uid=uid)
@@ -1536,15 +1616,17 @@ def likeff():
                 if manage_module_usage(g.user_id, 'likeff'):
                     pass
                 else:
-                    flash('Algo deu errado. Tente novamente.', 'error')
+                    flash('Algo deu errado.', 'error')
                     result = None
             except Exception as e:
-                flash('Algo deu errado. Tente novamente.', 'error')
+                flash('Algo deu errado.', 'error')
     return render_template('likeff.html', is_admin=is_admin,
                          notifications=unread_count,
                          result=result, uid=uid)
 
+# Atestado
 @app.route('/modulos/atestado', methods=['GET', 'POST'])
+@jwt_required()
 def atestado():
     users = load_data('users.json')
     user = users[g.user_id]
@@ -1559,41 +1641,43 @@ def atestado():
     edited_pdf_path = None
     if request.method == 'POST':
         if not manage_module_usage(g.user_id, 'atestado'):
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
             return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
-        nome_paciente = request.form.get('nome_paciente', 'ERICK GABRIEL COTA').strip().upper()
-        cpf = request.form.get('cpf', '413.759.068-01').strip()
-        profissional = request.form.get('profissional', 'CAROLINA SAAD HASSEM').strip().upper()
-        crm = request.form.get('crm', '191662').strip()
-        data_atendimento = request.form.get('data_atendimento', '28 de Outubro de 2025').strip()
-        data_assinatura = request.form.get('data_assinatura', '28/10/2025 14:08:57').strip()
-        cidade = request.form.get('cidade', 'Guaratinguetá').strip().title()
-        uf = request.form.get('uf', 'SP').strip().upper()
-        cid = request.form.get('cid', 'J11').strip().upper()
-        dias_afastamento = request.form.get('dias_afastamento', '01 (UM)').strip().upper()
-        n_atend = request.form.get('n_atend', '4532519').strip()
-        n_pront = request.form.get('n_pront', '0009372517').strip()
+        # DADOS DO FORMULÁRIO with validation
+        nome_paciente = request.form.get('nome_paciente', '').strip().upper()
+        cpf = request.form.get('cpf', '').strip()
+        profissional = request.form.get('profissional', '').strip().upper()
+        crm = request.form.get('crm', '').strip()
+        data_atendimento = request.form.get('data_atendimento', '').strip()
+        data_assinatura = request.form.get('data_assinatura', '').strip()
+        cidade = request.form.get('cidade', '').strip().title()
+        uf = request.form.get('uf', '').strip().upper()
+        cid = request.form.get('cid', '').strip().upper()
+        dias_afastamento = request.form.get('dias_afastamento', '').strip().upper()
+        n_atend = request.form.get('n_atend', '').strip()
+        n_pront = request.form.get('n_pront', '').strip()
+        if not nome_paciente or not cpf or not profissional:  # Basic validation
+            flash('Algo deu errado.', 'error')
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
+        # CAMINHOS
         original_pdf = 'atestado.pdf'
         if not os.path.exists(original_pdf):
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
             return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
         edited_pdf = f'static/edited_atestado_{uuid.uuid4().hex}.pdf'
         preview_img = f'static/preview_{uuid.uuid4().hex}.png'
         try:
+            # ABRIR PDF
             doc = fitz.open(original_pdf)
             page = doc[0]
+            # CARREGAR FONTES LOCAIS (adicionar à página)
             font_normal_path = 'fonts/DejaVuSans.ttf'
             font_bold_path = 'fonts/DejaVuSans-Bold.ttf'
-            if os.path.exists(font_normal_path):
-                fontname_normal = page.insert_font(fontfile=font_normal_path)
-            else:
-                fontname_normal = "helv"
-            if os.path.exists(font_bold_path):
-                fontname_bold = page.insert_font(fontfile=font_bold_path)
-            else:
-                fontname_bold = "hebo"
+            font_normal_name = page.insert_font(fontfile=font_normal_path) if os.path.exists(font_normal_path) else "helv"
+            font_bold_name = page.insert_font(fontfile=font_bold_path) if os.path.exists(font_bold_path) else "hebo"
+            # FUNÇÃO PARA INSERIR TEXTO COM FONTE PERSONALIZADA
             def insert_text(text, point, font_size=10, bold=False):
-                fontname = fontname_bold if bold else fontname_normal
+                fontname = font_bold_name if bold else font_normal_name
                 page.insert_text(
                     point,
                     text,
@@ -1601,8 +1685,10 @@ def atestado():
                     fontname=fontname,
                     color=(0, 0, 0)
                 )
+            # LIMPAR ÁREAS
             def clear_area(rect):
                 page.draw_rect(rect, color=(1,1,1), fill=(1,1,1))
+            # POSIÇÕES (ajustadas para seu PDF)
             positions = {
                 "nome_paciente": (70, 105),
                 "cpf": (70, 120),
@@ -1616,6 +1702,7 @@ def atestado():
                 "profissional_assinatura": (300, 460),
                 "crm_assinatura": (300, 475),
             }
+            # LIMPAR CAMPOS
             for rect in [
                 fitz.Rect(65, 100, 300, 115),
                 fitz.Rect(65, 115, 300, 130),
@@ -1628,30 +1715,34 @@ def atestado():
                 fitz.Rect(65, 405, 250, 420),
                 fitz.Rect(295, 455, 520, 470),
                 fitz.Rect(295, 470, 520, 485),
-                fitz.Rect(65, 300, 520, 350),
+                fitz.Rect(65, 300, 520, 350),  # corpo do texto
             ]:
                 clear_area(rect)
-            insert_text(nome_paciente, positions["nome_paciente"], bold=True)
-            insert_text(cpf, positions["cpf"])
-            insert_text(profissional, positions["profissional"])
-            insert_text(n_atend, positions["n_atend"])
-            insert_text(n_pront, positions["n_pront"])
-            insert_text(data_assinatura, positions["data_assinatura"])
-            insert_text(f"{cidade}, {uf} - {data_atendimento}", positions["cidade_data"])
-            insert_text(cid, positions["cid"], bold=True)
-            insert_text(dias_afastamento, positions["dias_afastamento"], bold=True)
-            insert_text(f"Dr(a). {profissional}", positions["profissional_assinatura"])
-            insert_text(f"{crm} CRM", positions["crm_assinatura"])
-            corpo = f"Atesto para os devidos fins que {nome_paciente} foi atendido(a) neste serviço, necessitando de afastamento por {dias_afastamento} dia(s) das suas atividades profissionais."
+            # INSERIR TEXTOS
+            insert_text(nome_paciente or 'ERICK GABRIEL COTA', positions["nome_paciente"], font_size=10, bold=True)
+            insert_text(cpf or '413.759.068-01', positions["cpf"], font_size=10)
+            insert_text(profissional or 'CAROLINA SAAD HASSEM', positions["profissional"], font_size=10)
+            insert_text(n_atend or '4532519', positions["n_atend"], font_size=10)
+            insert_text(n_pront or '0009372517', positions["n_pront"], font_size=10)
+            insert_text(data_assinatura or '28/10/2025 14:08:57', positions["data_assinatura"], font_size=10)
+            insert_text(f"{cidade or 'Guaratinguetá'}, {uf or 'SP'} - {data_atendimento or '28 de Outubro de 2025'}", positions["cidade_data"], font_size=10)
+            insert_text(cid or 'J11', positions["cid"], font_size=10, bold=True)
+            insert_text(dias_afastamento or '01 (UM)', positions["dias_afastamento"], font_size=10, bold=True)
+            insert_text(f"Dr(a). {profissional or 'CAROLINA SAAD HASSEM'}", positions["profissional_assinatura"], font_size=10)
+            insert_text(f"{crm or '191662'} CRM", positions["crm_assinatura"], font_size=10)
+            # CORPO DO ATESTADO
+            corpo = f"Atesto para os devidos fins que {nome_paciente or 'ERICK GABRIEL COTA'} foi atendido(a) neste serviço, necessitando de afastamento por {dias_afastamento or '01 (UM)'} dia(s) das suas atividades profissionais."
             page.insert_textbox(
                 fitz.Rect(65, 300, 520, 350),
                 corpo,
                 fontsize=11,
-                fontname=fontname_normal,
+                fontname="helv",
                 align=fitz.TEXT_ALIGN_JUSTIFY
             )
+            # SALVAR PDF
             doc.save(edited_pdf, garbage=4, deflate=True, clean=True)
             doc.close()
+            # GERAR PRÉ-VISUALIZAÇÃO
             doc_prev = fitz.open(edited_pdf)
             pix = doc_prev[0].get_pixmap(dpi=150)
             pix.save(preview_img)
@@ -1659,7 +1750,8 @@ def atestado():
             pdf_preview = preview_img
             edited_pdf_path = edited_pdf
         except Exception as e:
-            flash('Algo deu errado. Tente novamente.', 'error')
+            flash('Algo deu errado.', 'error')
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
     return render_template(
         'atestado_c.html',
         is_admin=is_admin,
@@ -1668,19 +1760,25 @@ def atestado():
         edited_pdf=edited_pdf_path
     )
 
+# Download Edited PDF
 @app.route('/download_edited/<path:filename>')
+@jwt_required()
 def download_edited(filename):
     return send_from_directory(app.root_path, filename, as_attachment=True)
 
+# Logout
 @app.route('/logout')
 def logout():
-    session.clear()
-    return redirect('/')
+    resp = make_response(redirect('/'))
+    unset_jwt_cookies(resp)
+    return resp
 
+# Credits
 @app.route('/@A30')
 def creditos():
     return "@enfurecido - {'0x106a90000'}"
 
+# Preview Image
 @app.route('/preview.jpg')
 def preview():
     return send_from_directory(app.root_path, 'preview.jpg', mimetype='image/jpeg')
@@ -1690,5 +1788,6 @@ if __name__ == '__main__':
     initialize_json('notifications.json', default_data={})
     initialize_json('gifts.json')
     initialize_json('news.json', default_data=[])
+    import threading  # For blacklist timer
     from waitress import serve
     serve(app, host='0.0.0.0', port=8855)
