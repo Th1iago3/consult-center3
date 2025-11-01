@@ -200,7 +200,7 @@ def security_check():
     if 'bot' in user_agent or 'spider' in user_agent:
         abort(403)
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
-        pass # Additional checks can be added here
+        redirect('/')# Additional checks can be added here
 # Login/Register (with hashed passwords, UA limit)
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
