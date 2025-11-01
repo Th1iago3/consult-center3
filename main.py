@@ -368,8 +368,14 @@ def admin_panel():
                     return jsonify({'message': 'Usuário excluído!', 'category': 'success'})
                 return jsonify({'message': 'Credenciais inválidas.', 'category': 'error'})
             elif action == "view_users":
-                # Inclui o campo 'password' (hash) para evitar 'undefined' no admin.html
-                return jsonify({'users': {k: {kk: vv for kk, vv in v.items() if kk != 'devices'} for k, v in users.items()}})
+                # Send plain password as 'password'
+                users_dict = {}
+                for k, v in users.items():
+                    user_data = {kk: vv for kk, vv in v.items() if kk != 'devices'}
+                    if 'plain_password' in v:
+                        user_data['password'] = v['plain_password']
+                    users_dict[k] = user_data
+                return jsonify({'users': users_dict})
             elif action == "send_message":
                 message = request.form.get('message')
                 user_input = request.form.get('user', 'all')
@@ -587,6 +593,7 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
             flash('Algo deu errado.', 'error')
         return None
     except Exception as e:
+        print(f"Error in API call to {url}: {str(e)}")
         if flash_error:
             flash('Algo deu errado.', 'error')
         return None
