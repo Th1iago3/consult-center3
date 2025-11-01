@@ -312,9 +312,8 @@ def dashboard():
                 users[g.user_id] = user
                 save_data(users, 'users.json')
                 save_data(gifts, 'gifts.json')
-                flash('Gift resgatado!', 'success')
             else:
-                flash('Código inválido.', 'error')
+                pass
         elif is_admin and action == 'view_modules':
             target_user = request.form.get('user')
             module = request.form.get('module')
@@ -530,7 +529,6 @@ def new_novidade():
             'sender': g.user_id
         })
         save_data(news, 'news.json')
-        flash('Novidade enviada!', 'success')
         return redirect('/novidades')
     return render_template('new_novidade.html', users=users)
 # Edit Novidade
@@ -555,7 +553,6 @@ def edit_novidade(news_id):
             image.save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
             item['image'] = f'/static/novidades/{image_filename}'
         save_data(news, 'news.json')
-        flash('Novidade editada!', 'success')
         return redirect('/novidades')
     return render_template('edit_novidade.html', item=item, users=users)
 # Delete Novidade
@@ -590,7 +587,7 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
         if data and manage_module_usage(g.user_id, module):
             return data
         if flash_error:
-            flash('Algo deu errado.', 'error')
+            flash('Algo deu errado. Ou, nenhum resultado foi encontrado.', 'error')
         return None
     except Exception as e:
         print(f"Error in API call to {url}: {str(e)}")
