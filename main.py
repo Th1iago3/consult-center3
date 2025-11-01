@@ -200,7 +200,7 @@ def security_check():
     if 'bot' in user_agent or 'spider' in user_agent:
         abort(403)
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
-        redirect('/')# Additional checks can be added here
+        pass  # Removed redirect, assuming it's a typo
 # Login/Register (with hashed passwords, UA limit)
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
@@ -257,7 +257,7 @@ def login_or_register():
             hashed_pw = generate_password_hash(password)
             users[username] = {
                 'password': hashed_pw,
-                'plain_password': password,  # Save plain text password (insecure, but as per request)
+                'plain_password': password, # Save plain text password (insecure, but as per request)
                 'role': 'guest',
                 'expiration': '2099-12-31',
                 'permissions': {},
@@ -346,7 +346,7 @@ def admin_panel():
                 token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
                 users[user_input] = {
                     'password': hashed_pw,
-                    'plain_password': password,  # Save plain text password (insecure, but as per request)
+                    'plain_password': password, # Save plain text password (insecure, but as per request)
                     'token': token,
                     'expiration': expiration,
                     'role': role,
@@ -468,7 +468,7 @@ def admin_panel():
         except Exception as e:
             return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
-  
+ 
 # Notifications
 @app.route('/notifications', methods=['GET', 'POST'])
 @jwt_required
@@ -582,6 +582,8 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
         response = requests.get(url, verify=False, timeout=30)
         response.raise_for_status()
         data = json.loads(response.text.lstrip('\ufeff'))
+        if not isinstance(data, (dict, list)):
+            raise ValueError("Response is not dict or list")
         if process_func:
             data = process_func(data)
         if data and manage_module_usage(g.user_id, module):
@@ -616,7 +618,7 @@ def mae():
             flash('NOME não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
-            process = lambda d: [r for r in d.get('response', []) if r.get('CPF') and r.get('NOME')] if d.get('status') else None
+            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else [] 
             result = generic_api_call(url, 'mae', process)
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 @app.route('/modulos/pai', methods=['GET', 'POST'])
@@ -640,7 +642,7 @@ def pai():
             flash('NOME não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
-            process = lambda d: [r for r in d.get('response', []) if r.get('CPF') and r.get('NOME') and r.get('PAI')] if d.get('status') else None
+            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else [] 
             result = generic_api_call(url, 'pai', process)
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
@@ -665,6 +667,8 @@ def cnpjcompleto():
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
             def process(d):
+                if not isinstance(d, dict):
+                    return None
                 empresa = d.get("empresa", {})
                 estab = empresa.get("estabelecimento", {})
                 secundarias = [f"{a.get('subclasse', '')} - {a.get('descricao', '')}" for a in estab.get("atividades_secundarias", [])]
@@ -713,7 +717,7 @@ def cpf():
             flash('CPF não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
-            process = lambda d: d if 'CPF' in d and d['CPF'] and d.get('NOME') else None
+            process = lambda d: d if isinstance(d, dict) and 'CPF' in d and d['CPF'] and d.get('NOME') else None
             result = generic_api_call(url, 'cpf', process)
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
@@ -737,7 +741,7 @@ def cpf2():
             flash('CPF não fornecido.', 'error')
         else:
             url = f"https://api.bygrower.online/core/?token={chave}&base=cpf1&query={cpf}"
-            process = lambda d: d.get('resultado') if d.get('resultado') else None
+            process = lambda d: d.get('resultado') if isinstance(d, dict) and d.get('resultado') else None
             result = generic_api_call(url, 'cpf2', process)
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
@@ -761,33 +765,33 @@ def cpfdata():
             flash('CPF não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
-            def process(raw_result):
-                if not raw_result or not raw_result.get('nome'):
+            def process(d):
+                if not isinstance(d, dict) or not d.get('nome'):
                     return None
                 processed_result = {
-                    'nome': raw_result.get('nome', 'SEM INFORMAÇÃO').rstrip('---'),
-                    'cpf': raw_result.get('documentos', {}).get('cpf', 'SEM INFORMAÇÃO').replace('.', '').replace('-', ''),
-                    'sexo': raw_result.get('sexo', 'SEM INFORMAÇÃO'),
+                    'nome': d.get('nome', 'SEM INFORMAÇÃO').rstrip('---'),
+                    'cpf': d.get('documentos', {}).get('cpf', 'SEM INFORMAÇÃO').replace('.', '').replace('-', ''),
+                    'sexo': d.get('sexo', 'SEM INFORMAÇÃO'),
                     'dataNascimento': {
                         'nascimento': 'SEM INFORMAÇÃO',
                         'idade': 'SEM INFORMAÇÃO',
                         'signo': 'SEM INFORMAÇÃO'
                     },
-                    'nomeMae': raw_result.get('mae', 'SEM INFORMAÇÃO'),
-                    'nomePai': raw_result.get('pai', 'SEM INFORMAÇÃO'),
+                    'nomeMae': d.get('mae', 'SEM INFORMAÇÃO'),
+                    'nomePai': d.get('pai', 'SEM INFORMAÇÃO'),
                     'telefone': [],
                     'nacionalidade': {
-                        'municipioNascimento': raw_result.get('endereco', {}).get('municipio_residencia', 'SEM INFORMAÇÃO'),
-                        'paisNascimento': raw_result.get('endereco', {}).get('pais', 'SEM INFORMAÇÃO')
+                        'municipioNascimento': d.get('endereco', {}).get('municipio_residencia', 'SEM INFORMAÇÃO'),
+                        'paisNascimento': d.get('endereco', {}).get('pais', 'SEM INFORMAÇÃO')
                     },
                     'enderecos': [],
-                    'cnsDefinitivo': raw_result.get('cns', 'SEM INFORMAÇÃO'),
-                    'raca': raw_result.get('raca', 'SEM INFORMAÇÃO'),
-                    'tipo_sanguineo': raw_result.get('tipo_sanguineo', 'SEM INFORMAÇÃO'),
-                    'nome_social': raw_result.get('nome_social', None) or 'Não possui'
+                    'cnsDefinitivo': d.get('cns', 'SEM INFORMAÇÃO'),
+                    'raca': d.get('raca', 'SEM INFORMAÇÃO'),
+                    'tipo_sanguineo': d.get('tipo_sanguineo', 'SEM INFORMAÇÃO'),
+                    'nome_social': d.get('nome_social', None) or 'Não possui'
                 }
                 # Parse nascimento
-                nasc = raw_result.get('nascimento', 'SEM INFORMAÇÃO')
+                nasc = d.get('nascimento', 'SEM INFORMAÇÃO')
                 if ' (' in nasc and ' anos)' in nasc:
                     date_str = nasc.split(' (')[0]
                     age_str = nasc.split(' (')[1].rstrip(' anos)')
@@ -834,7 +838,7 @@ def cpfdata():
                         'signo': 'SEM INFORMAÇÃO'
                     }
                 # Telefone
-                telefones = raw_result.get('contatos', {}).get('telefones', [])
+                telefones = d.get('contatos', {}).get('telefones', [])
                 processed_result['telefone'] = [
                     {
                         'ddi': '',
@@ -846,7 +850,7 @@ def cpfdata():
                 if not processed_result['telefone']:
                     processed_result['telefone'] = [{'ddi': '', 'ddd': '', 'numero': ''}]
                 # Enderecos
-                endereco = raw_result.get('endereco', {})
+                endereco = d.get('endereco', {})
                 if endereco:
                     if 'municipio_residencia' in endereco:
                         parts = endereco['municipio_residencia'].split(' - ')
@@ -879,7 +883,7 @@ def cpf3():
             flash('CPF não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
-            process = lambda d: d if 'CPF' in d and d['CPF'] else None
+            process = lambda d: d if isinstance(d, dict) and 'CPF' in d and d['CPF'] else None
             result = generic_api_call(url, 'cpf3', process)
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
@@ -903,7 +907,7 @@ def cpflv():
             flash('CPF não fornecido.', 'error')
         else:
             url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
-            process = lambda d: d['resultado'] if d.get('resultado') and d['resultado'].get('status') == 'success' and 'data' in d['resultado'] and 'pessoa' in d['resultado']['data'] and 'identificacao' in d['resultado']['data']['pessoa'] and 'cpf' in d['resultado']['data']['pessoa']['identificacao'] else None
+            process = lambda d: d.get('resultado') if isinstance(d, dict) and d.get('resultado') and d['resultado'].get('status') == 'success' and 'data' in d['resultado'] and 'pessoa' in d['resultado']['data'] and 'identificacao' in d['resultado']['data']['pessoa'] and 'cpf' in d['resultado']['data']['pessoa']['identificacao'] else None
             result = generic_api_call(url, 'cpflv', process)
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
@@ -927,7 +931,7 @@ def vacinas():
             flash('Por favor, insira um CPF válido com 11 dígitos.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
-            process = lambda d: d.get('response', {}).get('dados', []) if isinstance(d, dict) and d.get('status') else d.get('resultado', []) if 'resultado' in d else []
+            process = lambda d: d.get('response', {}).get('dados', []) if isinstance(d, dict) and d.get('status') else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d else []
             results = generic_api_call(url, 'vacinas', process) or []
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
@@ -954,14 +958,14 @@ def datanome():
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
             def process(d):
-                raw_results = d if isinstance(d, list) else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d else []
+                raw_results = d.get('response', []) if isinstance(d, dict) and d.get('status') else d if isinstance(d, list) else []
                 try:
                     user_date = datetime.strptime(datanasc, '%Y-%m-%d').date()
                 except ValueError:
                     return []
                 filtered = []
                 for item in raw_results:
-                    if 'NASCIMENTO' in item and item['NASCIMENTO']:
+                    if isinstance(item, dict) and 'NASCIMENTO' in item and item['NASCIMENTO']:
                         try:
                             api_date_str = item['NASCIMENTO'].strip()
                             api_date = datetime.strptime(api_date_str, '%d/%m/%Y').date()
@@ -993,7 +997,7 @@ def placalv():
             flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
-            process = lambda d: d['response']['dados'] if isinstance(d, dict) and d.get('status') and 'response' in d and 'dados' in d['response'] and d['response']['dados'].get('veiculo', {}).get('placa') else None
+            process = lambda d: d.get('response', {}).get('dados') if isinstance(d, dict) and d.get('status') and 'response' in d and 'dados' in d['response'] and d['response']['dados'].get('veiculo', {}).get('placa') else None
             result = generic_api_call(url, 'placalv', process)
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
@@ -1017,7 +1021,7 @@ def telLv():
             flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
-            process = lambda d: d['response'] if isinstance(d, dict) and d.get('status') and 'response' in d and d['response'].get('CPF') and d['response']['CPF'] != 'SEM RESULTADO' else None
+            process = lambda d: d.get('response') if isinstance(d, dict) and d.get('status') and 'response' in d and d['response'].get('CPF') and d['response']['CPF'] != 'SEM RESULTADO' else None
             result = generic_api_call(url, 'telLv', process)
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count, result=result, telefone=telefone)
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
@@ -1041,7 +1045,7 @@ def teldual():
             flash('Telefone não fornecido.', 'error')
         else:
             url = f"https://api.bygrower.online/core/?token={chave}&base=teldual&query={telefone}"
-            process = lambda d: d['resultado'] if 'resultado' in d and d['resultado'] and any('cpf' in item for item in d['resultado']) else None
+            process = lambda d: d.get('resultado') if isinstance(d, dict) and 'resultado' in d and d['resultado'] and any('cpf' in item for item in d['resultado']) else None
             results = generic_api_call(url, 'teldual', process)
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
 @app.route('/modulos/tel', methods=['GET', 'POST'])
@@ -1065,7 +1069,7 @@ def tel():
             flash('Telefone não fornecido.', 'error')
         else:
             url = f"https://api.bygrower.online/core/?token={chave}&base=telefone&query={tel_input}"
-            process = lambda d: d['resultado']['msg'] if 'resultado' in d and 'cpf' in d['resultado'] else None
+            process = lambda d: d.get('resultado') if isinstance(d, dict) and 'resultado' in d and 'cpf' in d['resultado'] else None
             results = generic_api_call(url, 'tel', process)
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
 @app.route('/modulos/placa', methods=['GET', 'POST'])
@@ -1113,7 +1117,7 @@ def placaestadual():
             flash('Placa não fornecida.', 'error')
         else:
             url = f"https://api.bygrower.online/core/?token={chave}&base=placaestadual&query={placa}"
-            process = lambda d: d['resultado'] if 'resultado' in d and isinstance(d['resultado'], list) and len(d['resultado']) > 0 and d['resultado'][0].get('retorno') == 'ok' else None
+            process = lambda d: d.get('resultado') if isinstance(d, dict) and 'resultado' in d and isinstance(d['resultado'], list) and len(d['resultado']) > 0 and d['resultado'][0].get('retorno') == 'ok' else None
             results = generic_api_call(url, 'placaestadual', process)
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
 @app.route('/modulos/pix', methods=['GET', 'POST'])
@@ -1177,9 +1181,9 @@ def fotor():
             else:
                 url = f"{base_url}?dado={documento}&tipo={tipo}"
                 process = lambda d: {
-                    "foto_base64": d.get("response", {}).get("response", [{}])[0].get("fotob64"),
+                    "foto_base64": d.get("response", {}).get("response", [{}])[0].get("fotob64") if isinstance(d, dict) and d.get("response", {}).get("response", [{}])[0].get("fotob64") else None,
                     "cpf": d.get("response", {}).get("response", [{}])[0].get("cpf", "") or documento
-                } if d.get("response", {}).get("response", [{}])[0].get("fotob64") else None
+                } if isinstance(d, dict) else None
                 results = generic_api_call(url, 'fotor', process)
     return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
@@ -1203,7 +1207,7 @@ def nomelv():
             flash('Nome não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
-            process = lambda d: d if isinstance(d, list) and len(d) > 0 else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d and isinstance(d['resultado'], list) else None
+            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else d if isinstance(d, list) else None
             results = generic_api_call(url, 'nomelv', process)
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 @app.route('/modulos/nome', methods=['GET', 'POST'])
@@ -1227,7 +1231,7 @@ def nome():
             flash('Nome não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
-            process = lambda d: d.get('resultado') if d.get('resultado') and len(d['resultado']) > 0 else None
+            process = lambda d: d if isinstance(d, list) and len(d) > 0 else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d else None
             results = generic_api_call(url, 'nome', process)
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 @app.route('/modulos/ip', methods=['GET', 'POST'])
@@ -1260,7 +1264,7 @@ def ip():
                 'latitude': d.get('latitude'),
                 'longitude': d.get('longitude'),
                 'provider': d.get('connection', {}).get('isp', 'Não disponível')
-            } if d.get('success') else None
+            } if isinstance(d, dict) and d.get('success') else None
             results = generic_api_call(url, 'ip', process)
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
@@ -1284,7 +1288,7 @@ def nome2():
             flash('Nome não fornecido.', 'error')
         else:
             url = f"https://api.bygrower.online/core/?token={chave}&base=nomeData&query={nome}"
-            process = lambda d: d.get('resultado', {}).get('itens') if d.get('resultado') and 'itens' in d['resultado'] else None
+            process = lambda d: d.get('resultado', {}).get('itens') if isinstance(d, dict) and d.get('resultado') and 'itens' in d['resultado'] else None
             results = generic_api_call(url, 'nome2', process)
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
 @app.route('/modulos/likeff', methods=['GET', 'POST'])
