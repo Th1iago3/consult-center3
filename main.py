@@ -618,7 +618,7 @@ def mae():
         if not nome:
             flash('NOME não fornecido.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
             process = lambda d: [r for r in d.get('response', []) if r.get('CPF') and r.get('NOME')] if d.get('status') else None
             result = generic_api_call(url, 'mae', process)
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
@@ -642,7 +642,7 @@ def pai():
         if not nome:
             flash('NOME não fornecido.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
             process = lambda d: [r for r in d.get('response', []) if r.get('CPF') and r.get('NOME') and r.get('PAI')] if d.get('status') else None
             result = generic_api_call(url, 'pai', process)
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
@@ -666,7 +666,7 @@ def cnpjcompleto():
         if len(cnpj_input) != 14:
             flash('CNPJ inválido. Digite 14 números.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cnpj_input}&tipo=cnpjcompleto"
             def process(d):
                 empresa = d.get("empresa", {})
                 estab = empresa.get("estabelecimento", {})
@@ -715,7 +715,7 @@ def cpf():
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
             process = lambda d: d if 'CPF' in d and d['CPF'] and d.get('NOME') else None
             result = generic_api_call(url, 'cpf', process)
     return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
@@ -763,7 +763,7 @@ def cpfdata():
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
             def process(raw_result):
                 if not raw_result or not raw_result.get('nome'):
                     return None
@@ -881,7 +881,7 @@ def cpf3():
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
             process = lambda d: d if 'CPF' in d and d['CPF'] else None
             result = generic_api_call(url, 'cpf3', process)
     return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
@@ -929,7 +929,7 @@ def vacinas():
         if not cpf or len(cpf) != 11 or not cpf.isdigit():
             flash('Por favor, insira um CPF válido com 11 dígitos.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
             process = lambda d: d.get('response', {}).get('dados', []) if isinstance(d, dict) and d.get('status') else d.get('resultado', []) if 'resultado' in d else []
             results = generic_api_call(url, 'vacinas', process) or []
     return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
@@ -955,7 +955,7 @@ def datanome():
         if not nome or not datanasc:
             flash('Nome e data de nascimento são obrigatórios.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
             def process(d):
                 raw_results = d if isinstance(d, list) else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d else []
                 try:
@@ -995,7 +995,7 @@ def placalv():
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
             flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
             process = lambda d: d['response']['dados'] if isinstance(d, dict) and d.get('status') and 'response' in d and 'dados' in d['response'] and d['response']['dados'].get('veiculo', {}).get('placa') else None
             result = generic_api_call(url, 'placalv', process)
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
@@ -1019,7 +1019,7 @@ def telLv():
         if not telefone or len(telefone) < 10 or len(telefone) > 11:
             flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
             process = lambda d: d['response'] if isinstance(d, dict) and d.get('status') and 'response' in d and d['response'].get('CPF') and d['response']['CPF'] != 'SEM RESULTADO' else None
             result = generic_api_call(url, 'telLv', process)
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count, result=result, telefone=telefone)
@@ -1091,7 +1091,7 @@ def placa():
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
             flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
             process = lambda d: d if isinstance(d, dict) and d.get('PLACA') == placa else None
             result = generic_api_call(url, 'placa', process)
     return render_template('placa.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
@@ -1139,7 +1139,7 @@ def pix():
         if not chave or len(chave) < 11:
             flash('Por favor, insira uma chave válida (CPF, telefone ou e-mail).', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
             process = lambda d: d if isinstance(d, dict) and d.get('Status') == 'Sucesso' and 'nome' in d else None
             result = generic_api_call(url, 'pix', process)
     return render_template('pix.html', is_admin=is_admin, notifications=unread_count, result=result, chave=chave)
@@ -1165,7 +1165,7 @@ def fotor():
         if not documento:
             flash('Documento não fornecido.', 'error')
         else:
-            base_url = "https://br1.stormhost.online:10004/api/token=@signficativo/consulta"
+            base_url = "http://br1.stormhost.online:10004/api/token=@signficativo/consulta"
             tipo_map = {
                 "fotorj": "fotorj",
                 "fotoce": "fotoce",
@@ -1205,7 +1205,7 @@ def nomelv():
         if not nome:
             flash('Nome não fornecido.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
             process = lambda d: d if isinstance(d, list) and len(d) > 0 else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d and isinstance(d['resultado'], list) else None
             results = generic_api_call(url, 'nomelv', process)
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
@@ -1229,7 +1229,7 @@ def nome():
         if not nome:
             flash('Nome não fornecido.', 'error')
         else:
-            url = f"https://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev1"
             process = lambda d: d.get('resultado') if d.get('resultado') and len(d['resultado']) > 0 else None
             results = generic_api_call(url, 'nome', process)
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
