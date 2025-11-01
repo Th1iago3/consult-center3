@@ -1181,11 +1181,12 @@ def fotor():
             else:
                 url = f"{base_url}?dado={documento}&tipo={tipo}"
                 process = lambda d: {
-                    "foto_base64": d.get("response", {}).get("response", [{}])[0].get("fotob64") if isinstance(d, dict) and d.get("response", {}).get("response", [{}])[0].get("fotob64") else None,
-                    "cpf": d.get("response", {}).get("response", [{}])[0].get("cpf", "") or documento
-                } if isinstance(d, dict) else None
+                    "foto_base64": d.get("response", {}).get("response", [{}])[0].get("fotob64") if isinstance(d, dict) else None,
+                    "cpf": d.get("response", {}).get("response", [{}])[0].get("cpf", "") or documento if isinstance(d, dict) else documento
+                } if isinstance(d, dict) and d.get("response", {}).get("response", [{}])[0].get("fotob64") else None
                 results = generic_api_call(url, 'fotor', process)
     return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
+    
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 @jwt_required
 def nomelv():
@@ -1361,35 +1362,51 @@ def atestado():
         return redirect('/dashboard')
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
-    pdf_preview = None
     edited_pdf_path = None
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
+                return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
         if not manage_module_usage(g.user_id, 'atestado'):
             flash('Limite atingido.', 'error')
-            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
         nome_paciente = request.form.get('nome_paciente', 'ERICK GABRIEL COTA').strip().upper()
         cpf = request.form.get('cpf', '413.759.068-01').strip()
         profissional = request.form.get('profissional', 'CAROLINA SAAD HASSEM').strip().upper()
         crm = request.form.get('crm', '191662').strip()
-        data_atendimento = request.form.get('data_atendimento', '28 de Outubro de 2025').strip()
-        data_assinatura = request.form.get('data_assinatura', '28/10/2025 14:08:57').strip()
+        data_atendimento_input = request.form.get('data_atendimento', '').strip()
         cidade = request.form.get('cidade', 'Guaratinguetá').strip().title()
         uf = request.form.get('uf', 'SP').strip().upper()
         cid = request.form.get('cid', 'J11').strip().upper()
         dias_afastamento = request.form.get('dias_afastamento', '01 (UM)').strip().upper()
-        n_atend = request.form.get('n_atend', '4532519').strip()
-        n_pront = request.form.get('n_pront', '0009372517').strip()
+        
+        # Generate automatic numbers
+        import random
+        n_atend = str(random.randint(1000000, 9999999))  # 7 digits
+        n_pront = f"{random.randint(0, 9999999999):010d}"  # 10 digits with leading zeros
+        
+        # Generate data_assinatura
+        data_assinatura = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        
+        # Generate data_atendimento if not provided
+        if not data_atendimento_input:
+            months = {
+                1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+                5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+                9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+            }
+            month_name = months[datetime.now().month]
+            data_atendimento = f"{datetime.now().day} de {month_name} de {datetime.now().year}"
+        else:
+            data_atendimento = data_atendimento_input
+        
         original_pdf = 'atestado.pdf'
         if not os.path.exists(original_pdf):
             flash('Template não encontrado.', 'error')
-            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
+            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
         edited_pdf = f'static/edited_atestado_{uuid.uuid4().hex}.pdf'
-        preview_img = f'static/preview_{uuid.uuid4().hex}.png'
         try:
             doc = fitz.open(original_pdf)
             page = doc[0]
@@ -1404,8 +1421,8 @@ def atestado():
                     fontname='DejaBold' if bold else 'DejaNormal',
                     color=(0, 0, 0)
                 )
-            def clear_area(rect):
-                page.draw_rect(rect, color=(1,1,1), fill=(1,1,1))
+            # Do not clear areas to avoid white blocks
+            # for rect in [...]: clear_area(rect)  # Removed
             positions = {
                 "nome_paciente": (70, 105),
                 "cpf": (70, 120),
@@ -1419,21 +1436,6 @@ def atestado():
                 "profissional_assinatura": (300, 460),
                 "crm_assinatura": (300, 475),
             }
-            for rect in [
-                fitz.Rect(65, 100, 300, 115),
-                fitz.Rect(65, 115, 300, 130),
-                fitz.Rect(65, 130, 300, 145),
-                fitz.Rect(375, 100, 520, 115),
-                fitz.Rect(375, 115, 520, 130),
-                fitz.Rect(375, 130, 520, 145),
-                fitz.Rect(175, 255, 420, 270),
-                fitz.Rect(65, 355, 150, 370),
-                fitz.Rect(65, 405, 250, 420),
-                fitz.Rect(295, 455, 520, 470),
-                fitz.Rect(295, 470, 520, 485),
-                fitz.Rect(65, 300, 520, 350),
-            ]:
-                clear_area(rect)
             insert_text(nome_paciente, positions["nome_paciente"], bold=True)
             insert_text(cpf, positions["cpf"])
             insert_text(profissional, positions["profissional"])
@@ -1455,15 +1457,12 @@ def atestado():
             )
             doc.save(edited_pdf, garbage=4, deflate=True, clean=True)
             doc.close()
-            doc_prev = fitz.open(edited_pdf)
-            pix = doc_prev[0].get_pixmap(dpi=150)
-            pix.save(preview_img)
-            doc_prev.close()
-            pdf_preview = preview_img
             edited_pdf_path = edited_pdf
-        except Exception:
+        except Exception as e:
+            print(f"Error generating atestado: {e}")
             flash('Algo deu errado ao gerar atestado.', 'error')
-    return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=pdf_preview, edited_pdf=edited_pdf_path)
+    return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
+    
 @app.route('/download_edited/<path:filename>')
 @jwt_required
 def download_edited(filename):
