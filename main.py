@@ -257,6 +257,7 @@ def login_or_register():
             hashed_pw = generate_password_hash(password)
             users[username] = {
                 'password': hashed_pw,
+                'plain_password': password,  # Save plain text password (insecure, but as per request)
                 'role': 'guest',
                 'expiration': '2099-12-31',
                 'permissions': {},
@@ -346,6 +347,7 @@ def admin_panel():
                 token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
                 users[user_input] = {
                     'password': hashed_pw,
+                    'plain_password': password,  # Save plain text password (insecure, but as per request)
                     'token': token,
                     'expiration': expiration,
                     'role': role,
@@ -461,7 +463,7 @@ def admin_panel():
         except Exception as e:
             return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
-    
+  
 # Notifications
 @app.route('/notifications', methods=['GET', 'POST'])
 @jwt_required
@@ -600,6 +602,11 @@ def mae():
     result = None
     nome = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
         nome = request.form.get('nome')
         if not nome:
             flash('NOME não fornecido.', 'error')
@@ -619,6 +626,11 @@ def pai():
     result = None
     nome = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
         nome = request.form.get('nome')
         if not nome:
             flash('NOME não fornecido.', 'error')
@@ -638,6 +650,11 @@ def cnpjcompleto():
     result = None
     cnpj_input = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
         cnpj_input = request.form.get('cnpj', '').strip()
         if len(cnpj_input) != 14:
             flash('CNPJ inválido. Digite 14 números.', 'error')
@@ -682,6 +699,11 @@ def cpf():
     result = None
     cpf = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
@@ -701,6 +723,11 @@ def cpf2():
     result = None
     cpf = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
@@ -720,6 +747,11 @@ def cpfdata():
     result = None
     cpf = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
@@ -833,6 +865,11 @@ def cpf3():
     result = None
     cpf = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
@@ -852,6 +889,11 @@ def cpflv():
     result = None
     cpf = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
@@ -871,6 +913,11 @@ def vacinas():
     results = []
     cpf = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
         cpf = request.form.get('cpf', '').strip().replace('.', '').replace('-', '')
         if not cpf or len(cpf) != 11 or not cpf.isdigit():
             flash('Por favor, insira um CPF válido com 11 dígitos.', 'error')
@@ -891,6 +938,11 @@ def datanome():
     nome = ""
     datanasc = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('datanome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome, datanasc=datanasc)
         nome = request.form.get('nome', '').strip()
         datanasc = request.form.get('datanasc', '').strip()
         if not nome or not datanasc:
@@ -927,6 +979,11 @@ def placalv():
     result = None
     placa = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('placalv.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
         placa = request.form.get('placa', '').strip().upper().replace(' ', '')
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
             flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
@@ -946,6 +1003,11 @@ def telLv():
     result = None
     telefone = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('tellv.html', is_admin=is_admin, notifications=unread_count, result=result, telefone=telefone)
         telefone = ''.join(c for c in request.form.get('telefone', '').strip() if c.isdigit())
         if not telefone or len(telefone) < 10 or len(telefone) > 11:
             flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
@@ -965,6 +1027,11 @@ def teldual():
     results = None
     telefone = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
         telefone = request.form.get('telefone', '').strip()
         if not telefone:
             flash('Telefone não fornecido.', 'error')
@@ -984,6 +1051,11 @@ def tel():
     results = None
     tel_input = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
         tel_input = request.form.get('tel', '').strip()
         if not tel_input:
             flash('Telefone não fornecido.', 'error')
@@ -1003,6 +1075,11 @@ def placa():
     result = None
     placa = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('placa.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
         placa = request.form.get('placa', '').strip().upper().replace(' ', '')
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
             flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
@@ -1022,6 +1099,11 @@ def placaestadual():
     results = None
     placa = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
         placa = request.form.get('placa', '').strip().upper()
         if not placa:
             flash('Placa não fornecida.', 'error')
@@ -1041,6 +1123,11 @@ def pix():
     result = None
     chave = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('pix.html', is_admin=is_admin, notifications=unread_count, result=result, chave=chave)
         chave = request.form.get('chave', '').strip()
         if not chave or len(chave) < 11:
             flash('Por favor, insira uma chave válida (CPF, telefone ou e-mail).', 'error')
@@ -1061,6 +1148,11 @@ def fotor():
     documento = ""
     selected_option = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
         documento = request.form.get('documento', '').strip()
         selected_option = request.form.get('estado', '')
         if not documento:
@@ -1097,6 +1189,11 @@ def nomelv():
     results = None
     nome = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
         nome = request.form.get('nome', '').strip()
         if not nome:
             flash('Nome não fornecido.', 'error')
@@ -1116,6 +1213,11 @@ def nome():
     results = None
     nome = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
         nome = request.form.get('nome', '').strip()
         if not nome:
             flash('Nome não fornecido.', 'error')
@@ -1135,6 +1237,11 @@ def ip():
     results = None
     ip_address = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
         ip_address = request.form.get('ip', '').strip()
         if not ip_address:
             flash('IP não fornecido.', 'error')
@@ -1163,6 +1270,11 @@ def nome2():
     results = None
     nome = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
         nome = request.form.get('nome', '').strip()
         if not nome:
             flash('Nome não fornecido.', 'error')
@@ -1182,6 +1294,11 @@ def likeff():
     result = None
     uid = ""
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
         uid = request.form.get('uid', '').strip()
         server_name = 'br'
         if not uid:
@@ -1239,6 +1356,11 @@ def atestado():
     pdf_preview = None
     edited_pdf_path = None
     if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
         if not manage_module_usage(g.user_id, 'atestado'):
             flash('Limite atingido.', 'error')
             return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, pdf_preview=None)
