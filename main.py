@@ -581,21 +581,54 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
     try:
         response = requests.get(url, verify=False, timeout=30)
         response.raise_for_status()
-        data = json.loads(response.text.lstrip('\ufeff'))
+        raw_text = response.text.lstrip('\ufeff')
+        data = json.loads(raw_text)
+        
+        # Validação robusta: Deve ser dict ou list, senão erro
         if not isinstance(data, (dict, list)):
-            raise ValueError("Response is not dict or list")
+            print(f"[ERROR] Resposta inválida de {url}: tipo {type(data)} - Conteúdo: {str(data)[:200]}...")
+            if flash_error:
+                flash('Resposta da API inválida (não é JSON válido).', 'error')
+            return None
+        
+        # Se process_func, aplica só se tipo válido
         if process_func:
-            data = process_func(data)
-        if data and manage_module_usage(g.user_id, module):
+            # Chama process_func com guard extra
+            try:
+                processed = process_func(data)
+                if processed is not None and isinstance(processed, (dict, list)):
+                    data = processed
+                else:
+                    print(f"[WARN] process_func retornou inválido para {url}: {type(processed)}")
+                    data = None
+            except Exception as proc_e:
+                print(f"[ERROR] Erro no process_func para {url}: {str(proc_e)}")
+                data = None
+        
+        # Se data final é válida e uso permitido
+        if data and (isinstance(data, dict) or isinstance(data, list)) and manage_module_usage(g.user_id, module):
             return data
+        
         if flash_error:
             flash('Algo deu errado. Ou, nenhum resultado foi encontrado.', 'error')
         return None
-    except Exception as e:
-        print(f"Error in API call to {url}: {str(e)}")
+        
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] JSON inválido em {url}: {str(e)} - Raw preview: {response.text[:200]}...")
         if flash_error:
-            flash('Algo deu errado.', 'error')
+            flash('Erro ao processar resposta da API (JSON malformado).', 'error')
         return None
+    except requests.exceptions.RequestException as req_e:
+        print(f"[ERROR] Requisição falhou para {url}: {str(req_e)}")
+        if flash_error:
+            flash('Erro de conexão com a API.', 'error')
+        return None
+    except Exception as e:
+        print(f"[ERROR] Erro geral na API {url}: {str(e)}")
+        if flash_error:
+            flash('Algo deu errado na consulta.', 'error')
+        return None
+        
 # Module Routes
 @app.route('/modulos/mae', methods=['GET', 'POST'])
 @jwt_required
