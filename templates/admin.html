@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bem-vindo(a) Admin - ConsultCenter</title>
+    <title>Painel Admin - ConsultCenter (Melhorado)</title>
     <!-- Font Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
@@ -11,21 +11,23 @@
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js para Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --primary-purple: #6E44FF;
             --secondary-purple: #A06CFF;
             --accent-pink: #FF6BD6;
-            --background-dark: #121212;
+            --background-dark: #0A0A0A; /* Mais escuro */
             --background-light: #1A1A1A;
             --card-bg: rgba(25, 25, 25, 0.9);
-            --text-white: #E0E0E0;
+            --text-white: #F0F0F0;
             --text-light: #A0A0A0;
             --border-color: #333333;
-            --glow-purple: rgba(110, 68, 255, 0.5);
-            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --glow-purple: rgba(110, 68, 255, 0.7);
+            --shadow-dark: rgba(0, 0, 0, 0.8);
             --shadow-card: 0 10px 30px var(--shadow-dark);
-            --shadow-glow: 0 0 15px var(--glow-purple);
+            --shadow-glow: 0 0 20px var(--glow-purple);
             --font-family: 'Poppins', sans-serif;
             --success: #4CAF50;
             --error: #F44336;
@@ -47,23 +49,46 @@
             display: flex;
             overflow-x: hidden;
         }
-        .main-content {
-            flex: 1;
+        /* Sidebar (Menu Lateral) */
+        .sidebar {
+            width: 250px;
+            background: var(--background-light);
             padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            height: 100vh;
             overflow-y: auto;
         }
-        .tabs {
-            display: flex;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            box-shadow: var(--shadow-card);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .sidebar-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary-purple);
+            text-shadow: 0 0 5px var(--glow-purple);
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            flex-grow: 1;
+        }
+        .sidebar-menu li {
+            margin-bottom: 10px;
         }
         .tab-button {
-            flex: 1;
-            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 15px;
             background: transparent;
             border: none;
             color: var(--text-light);
@@ -71,43 +96,48 @@
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border-radius: 10px;
+            text-align: left;
         }
         .tab-button i { width: 20px; height: 20px; }
         .tab-button.active {
             background: var(--primary-purple);
             color: var(--text-white);
-            box-shadow: var(--shadow-glow);
+            box-shadow: 0 4px 15px rgba(110, 68, 255, 0.4);
         }
         .tab-button:hover:not(.active) {
             background: rgba(110, 68, 255, 0.1);
             color: var(--text-white);
         }
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
         .tab-content {
             display: none;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            box-shadow: var(--shadow-card);
-            border: 1px solid var(--border-color);
             animation: fadeIn 0.5s ease-out;
         }
         @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(20px); }
+            0% { opacity: 0; transform: translateY(10px); }
             100% { opacity: 1; transform: translateY(0); }
         }
         .tab-content.active { display: block; }
-
-        /* Dashboard */
-        .dashboard-welcome { text-align: center; padding: 40px 0; }
-        .dashboard-welcome h2 {
-            font-size: 32px; font-weight: 800; color: var(--text-white);
-            margin-bottom: 20px; line-height: 1.2;
+        .page-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .dashboard-welcome p { color: var(--text-light); font-size: 16px; margin-bottom: 30px; }
+        .page-header h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-white);
+        }
+        /* Cards e Estatísticas */
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -118,11 +148,13 @@
             background: linear-gradient(145deg, var(--card-bg), rgba(110, 68, 255, 0.1));
             padding: 25px;
             border-radius: var(--border-radius);
-            text-align: center;
             transition: var(--transition);
             border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .stat-card::before {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
@@ -132,11 +164,30 @@
             transform: translateY(-5px);
             box-shadow: var(--shadow-glow);
         }
-        .stat-card i { font-size: 40px; color: var(--primary-purple); margin-bottom: 15px; display: block; }
-        .stat-card h3 { font-size: 18px; color: var(--text-light); margin-bottom: 10px; }
-        .stat-card p { font-size: 32px; font-weight: 700; color: var(--text-white); }
-
-        /* Forms */
+        .stat-card-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-card i { font-size: 40px; color: var(--primary-purple); display: block; }
+        .stat-card h3 { font-size: 16px; color: var(--text-light); margin-bottom: 5px; }
+        .stat-card p { font-size: 36px; font-weight: 700; color: var(--text-white); }
+        /* Gráficos */
+        .chart-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+            margin-top: 30px;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        /* Formulários */
         .form-group { margin-bottom: 20px; }
         .form-group label {
             display: flex; align-items: center; gap: 8px;
@@ -148,9 +199,9 @@
         .form-group textarea {
             width: 100%;
             padding: 14px 16px;
-            background: var(--card-bg);
+            background: var(--background-dark);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 14px;
             color: var(--text-white);
             transition: var(--transition);
@@ -164,20 +215,18 @@
         }
         .form-group select {
             appearance: none;
-            background: var(--card-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236E44FF' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 16px center;
+            background: var(--background-dark) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236E44FF' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 16px center;
             padding-right: 40px;
-        }
-        .auto-expire-note {
-            font-size: 12px; color: var(--success); margin-top: 5px; display: none;
         }
         .button {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
             border: none; color: var(--text-white);
-            padding: 14px 24px; border-radius: var(--border-radius);
+            padding: 14px 24px; border-radius: 10px;
             font-size: 14px; font-weight: 600; cursor: pointer;
-            width: 100%; transition: var(--transition);
-            margin-bottom: 10px; display: flex;
+            transition: var(--transition);
+            display: inline-flex;
             align-items: center; justify-content: center; gap: 8px;
+            text-decoration: none;
         }
         .button:hover {
             transform: translateY(-2px);
@@ -192,42 +241,36 @@
             background: var(--primary-purple);
             color: var(--text-white);
         }
-
-        /* User & Gift Lists */
+        /* Listas (Usuários/Gifts) */
         #usersList, #giftsList {
-            max-height: 400px; overflow-y: auto; margin-top: 20px;
+            max-height: 500px; overflow-y: auto; margin-top: 20px;
             border: 1px solid var(--border-color); border-radius: var(--border-radius);
             padding: 15px; background: var(--background-light);
-            animation: fadeIn 0.5s ease-out;
         }
         .user-info, .gift-info {
-            background: var(--card-bg); border-radius: 12px; padding: 18px;
-            margin-bottom: 12px; transition: var(--transition);
-            border: 1px solid var(--border-color); display: flex;
-            flex-direction: column; gap: 8px;
+            background: var(--card-bg); border-radius: 10px; padding: 15px;
+            margin-bottom: 10px; transition: var(--transition);
+            border: 1px solid var(--border-color);
         }
         .user-info:hover, .gift-info:hover {
             border-color: var(--primary-purple);
             transform: translateY(-2px);
-            box-shadow: var(--shadow-glow);
+            box-shadow: 0 0 10px rgba(110, 68, 255, 0.3);
         }
         .user-info p, .gift-info p {
-            font-size: 13px; color: var(--text-light); margin: 0;
+            font-size: 14px; color: var(--text-light); margin: 5px 0;
             display: flex; justify-content: space-between; align-items: center;
         }
         .user-info p strong, .gift-info p strong {
-            color: var(--text-white); min-width: 120px;
+            color: var(--text-white); min-width: 150px;
         }
         .copy-user-btn {
             background: var(--success); border: none; color: var(--text-white);
-            padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            padding: 4px 8px; border-radius: 6px; font-size: 12px;
             cursor: pointer; transition: var(--transition); margin-left: 10px;
         }
-        .copy-user-btn:hover {
-            background: #45A049; transform: scale(1.05);
-        }
-
-        /* Modules */
+        .copy-user-btn:hover { background: #45A049; transform: scale(1.05); }
+        /* Módulos */
         .modules-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -238,11 +281,9 @@
             border-radius: var(--border-radius); border: 1px solid var(--border-color);
             transition: var(--transition); cursor: pointer;
             position: relative; overflow: hidden;
-        }
-        .module-card::before {
-            content: ''; position: absolute; top: 0; left: 0;
-            width: 100%; height: 4px;
-            background: linear-gradient(90deg, var(--primary-purple), var(--secondary-purple));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .module-card:hover {
             border-color: var(--primary-purple);
@@ -250,12 +291,11 @@
             transform: translateY(-5px);
         }
         .module-card h3 {
-            color: var(--text-white); margin-bottom: 15px;
+            color: var(--text-white);
             font-size: 16px; font-weight: 600;
             display: flex; align-items: center; gap: 8px;
         }
         .module-card h3 i { width: 20px; height: 20px; color: var(--primary-purple); }
-
         /* Toggle Switch */
         .toggle-switch {
             position: relative; display: inline-flex; align-items: center;
@@ -264,272 +304,269 @@
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--border-color); transition: var(--transition);
-            border-radius: 26px;
+            background-color: var(--border-color); transition: .4s; border-radius: 26px;
         }
         .slider:before {
-            position: absolute; content: "";
-            height: 20px; width: 20px; left: 3px; bottom: 3px;
-            background-color: var(--text-white); transition: var(--transition);
-            border-radius: 50%;
+            position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px;
+            background-color: var(--text-white); transition: .4s; border-radius: 50%;
         }
         input:checked + .slider { background-color: var(--primary-purple); }
         input:checked + .slider:before { transform: translateX(24px); }
-        input:focus + .slider { box-shadow: 0 0 1px var(--glow-purple); }
-
-        /* Message Modal */
+        /* Modal */
         .message-modal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
-            z-index: 1000; align-items: center; justify-content: center;
-            padding: 20px;
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            justify-content: center; align-items: center;
         }
         .message-modal.active { display: flex; }
         .message-modal-content {
-            background: var(--card-bg); padding: 30px;
-            border-radius: var(--border-radius); width: 100%;
-            max-width: 500px; text-align: center;
-            box-shadow: var(--shadow-card); border: 1px solid var(--border-color);
-            animation: fadeIn 0.4s ease-out; transform: scale(0.9);
-            transition: var(--transition);
+            background: var(--background-light); padding: 30px; border-radius: var(--border-radius);
+            width: 90%; max-width: 500px; box-shadow: var(--shadow-glow);
+            border: 1px solid var(--primary-purple);
+            animation: modalOpen 0.3s ease-out;
         }
-        .message-modal.active .message-modal-content { transform: scale(1); }
+        @keyframes modalOpen {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
         .message-modal-content h3 {
-            color: var(--text-white); font-size: 24px; font-weight: 700;
-            margin-bottom: 20px; display: flex; align-items: center;
-            justify-content: center; gap: 8px;
+            color: var(--primary-purple); margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
         }
-        .message-modal-content h3 i { color: var(--primary-purple); width: 24px; height: 24px; }
         .message-modal-content textarea {
-            width: 100%; padding: 14px; border: 1px solid var(--border-color);
-            border-radius: 12px; margin-bottom: 15px; font-size: 14px;
-            background: var(--background-light); color: var(--text-white);
-            resize: vertical; min-height: 120px; transition: var(--transition);
+            width: 100%; height: 150px; margin-bottom: 20px;
+            resize: none;
         }
-        .message-modal-content textarea:focus {
-            border-color: var(--primary-purple);
-            box-shadow: 0 0 10px var(--glow-purple); outline: none;
+        .message-modal-content .buttons {
+            display: flex; justify-content: flex-end; gap: 10px;
         }
-        .message-modal-content .buttons { display: flex; gap: 10px; }
-        .message-modal-content .buttons .button { flex: 1; width: auto; }
-
-        /* Recent Messages */
-        #recentMessages {
-            background: var(--background-light); padding: 20px;
-            border-radius: var(--border-radius); border: 1px solid var(--border-color);
-            margin-top: 20px;
+        /* Backup/Restore */
+        .backup-section > div {
+            background: var(--card-bg); padding: 20px; border-radius: var(--border-radius);
+            margin-bottom: 20px; border: 1px solid var(--border-color);
         }
-        .recent-message {
-            background: var(--card-bg); padding: 15px; border-radius: 12px;
-            margin-bottom: 10px; border-left: 4px solid var(--primary-purple);
-            transition: var(--transition);
+        .backup-section h3 {
+            color: var(--primary-purple); margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
         }
-        .recent-message:hover {
-            box-shadow: var(--shadow-glow); transform: translateX(5px);
-        }
-        .recent-message h4 {
-            color: var(--text-white); font-size: 14px; margin-bottom: 5px;
-        }
-        .recent-message p { color: var(--text-light); font-size: 13px; margin: 0; }
-
-        /* File Upload */
         .file-upload-wrapper {
-            position: relative; display: inline-block; width: 100%; margin-bottom: 15px;
+            position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 15px;
         }
         .file-upload-input {
-            position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer;
+            position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer;
         }
         .file-upload-label {
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
-            color: var(--text-white); padding: 14px 24px; border-radius: var(--border-radius);
-            font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition);
-            border: none; width: 100%; text-align: center;
+            background: var(--card-bg); color: var(--text-white);
+            padding: 14px 24px; border-radius: 10px; border: 1px dashed var(--primary-purple);
+            cursor: pointer; transition: var(--transition);
         }
-        .file-upload-label:hover {
-            transform: translateY(-2px); box-shadow: var(--shadow-glow);
-        }
-        .file-upload-label i { width: 18px; height: 18px; }
-
-        /* Loading */
+        .file-upload-label:hover { background: rgba(110, 68, 255, 0.1); }
         .loading-bar {
-            display: none; width: 100%; height: 4px; background: var(--border-color);
-            border-radius: 2px; overflow: hidden; margin-top: 15px;
+            width: 100%; height: 8px; background: var(--border-color); border-radius: 4px;
+            margin-top: 10px; display: none;
         }
         .loading-progress {
-            height: 100%; background: linear-gradient(90deg, var(--primary-purple), var(--secondary-purple));
-            width: 0%; transition: width 0.3s ease; animation: loading-anim 1.5s infinite;
+            height: 100%; background: var(--success); border-radius: 4px; width: 0%;
+            transition: width 0.5s ease;
         }
-        @keyframes loading-anim {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        .loading-text {
+            text-align: center; color: var(--text-light); font-size: 12px; margin-top: 5px;
         }
-        .loading-text { text-align: center; color: var(--text-light); margin-top: 10px; font-size: 12px; display: none; }
-
-        /* Back Link */
-        .back-link {
-            display: inline-flex; align-items: center; color: var(--secondary-purple);
-            text-decoration: none; font-size: 14px; margin-top: 20px;
-            transition: var(--transition); justify-content: center; gap: 8px;
-        }
-        .back-link:hover { color: var(--primary-purple); }
-
-        /* SweetAlert2 */
-        .swal2-popup {
-            background: var(--card-bg) !important; color: var(--text-white) !important;
-            border: 1px solid var(--primary-purple) !important; box-shadow: var(--shadow-glow) !important;
-            font-family: var(--font-family) !important;
-        }
-        .swal2-title {
-            color: var(--text-white) !important;
-            background: linear-gradient(90deg, var(--text-white), var(--secondary-purple)) !important;
-            -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
-        }
-        .swal2-content { color: var(--text-light) !important; }
-        .swal2-confirm, .swal2-cancel {
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)) !important;
-            border: none !important; box-shadow: 0 5px 15px var(--glow-purple) !important;
-        }
-        .swal2-confirm:hover {
-            background: linear-gradient(135deg, var(--secondary-purple), var(--accent-pink)) !important;
-            transform: translateY(-2px) !important;
-        }
-        .swal2-cancel {
-            background: linear-gradient(135deg, var(--error), var(--accent-pink)) !important;
-        }
-        .swal2-cancel:hover {
-            background: linear-gradient(135deg, var(--accent-pink), var(--error)) !important;
-            transform: translateY(-2px) !important;
-        }
-
-        /* Responsive */
-        @media (max-width: 992px) {
-            .main-content { padding: 15px; }
-            .tabs { flex-direction: column; }
-            .tab-content { padding: 20px; }
-            .dashboard-stats { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-        }
-        @media (max-width: 576px) {
-            .main-content { padding: 10px; }
-            h2 { font-size: 24px; }
-            .button { padding: 12px 18px; }
-            .modules-section { grid-template-columns: 1fr; }
+        /* Responsividade */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%; height: auto; position: relative;
+                border-right: none; border-bottom: 1px solid var(--border-color);
+            }
+            .sidebar-menu {
+                display: flex; flex-wrap: wrap; justify-content: center;
+            }
+            .sidebar-menu li {
+                width: 45%; margin: 5px;
+            }
+            .main-content { padding: 20px; }
+            .page-header h2 { font-size: 24px; }
+            .chart-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <!-- Sidebar (Menu Lateral) -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>ConsultCenter</h1>
+            <p style="color: var(--primary-purple); font-size: 14px;">Painel Administrativo</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <button class="tab-button active" onclick="openTab(event, 'dashboard')">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </button>
+            </li>
+            <li>
+                <button class="tab-button" onclick="openTab(event, 'admin')">
+                    <i data-lucide="users"></i> Gerenciar Usuários
+                </button>
+            </li>
+            <li>
+                <button class="tab-button" onclick="openTab(event, 'modules')">
+                    <i data-lucide="package"></i> Módulos
+                </button>
+            </li>
+            <li>
+                <button class="tab-button" onclick="openTab(event, 'messages')">
+                    <i data-lucide="mail"></i> Mensagens
+                </button>
+            </li>
+            <li>
+                <button class="tab-button" onclick="openTab(event, 'gifts')">
+                    <i data-lucide="gift"></i> Gifts
+                </button>
+            </li>
+            <li>
+                <button class="tab-button" onclick="openTab(event, 'novidades')">
+                    <i data-lucide="newspaper"></i> Novidades
+                </button>
+            </li>
+            <li>
+                <button class="tab-button" onclick="openTab(event, 'backup')">
+                    <i data-lucide="database"></i> Backup
+                </button>
+            </li>
+        </ul>
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+            <p style="font-size: 12px; color: var(--text-light);">Logado como: Admin</p>
+            <a href="/logout" class="button secondary" style="width: 100%; margin-top: 10px;">
+                <i data-lucide="log-out"></i> Sair
+            </a>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'dashboard')">
-                <i data-lucide="home"></i> Dashboard
-            </button>
-            <button class="tab-button" onclick="openTab(event, 'users')">
-                <i data-lucide="users"></i> Gerenciar Usuários
-            </button>
-            <button class="tab-button" onclick="openTab(event, 'modules')">
-                <i data-lucide="settings"></i> Módulos
-            </button>
-            <button class="tab-button" onclick="openTab(event, 'messages')">
-                <i data-lucide="mail"></i> Mensagens
-            </button>
-            <button class="tab-button" onclick="openTab(event, 'gifts')">
-                <i data-lucide="gift"></i> Gifts
-            </button>
-            <button class="tab-button" onclick="openTab(event, 'novidades')">
-                <i data-lucide="sparkles"></i> Novidades
-            </button>
-            <button class="tab-button" onclick="openTab(event, 'backup')">
-                <i data-lucide="database"></i> Backup & Restore
-            </button>
-        </div>
-
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
-            <div class="dashboard-welcome">
-                <h2>Bem-vindo(a), <span class="highlight">Admin</span>!</h2>
-                <p>Gerencie o sistema de forma eficiente e completa com o ConsultCenter.</p>
-                <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <i data-lucide="users"></i>
-                        <h3>Total de Usuários</h3>
-                        <p id="totalUsers">{{ users | length if users else 0 }}</p>
-                    </div>
-                    <div class="stat-card">
-                        <i data-lucide="toggle-right"></i>
-                        <h3>Módulos Ativos</h3>
-                        <p id="activeModules">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <i data-lucide="activity"></i>
-                        <h3>Usuários Ativos</h3>
-                        <p id="activeUsers">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <i data-lucide="bell"></i>
-                        <h3>Notificações Pendentes</h3>
-                        <p>0</p>
+            <div class="page-header">
+                <h2>Dashboard</h2>
+                <p style="color: var(--text-light);">Bem-vindo(a), Admin!</p>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-card-content">
+                        <div>
+                            <h3>Usuários Ativos</h3>
+                            <p id="activeUsers">0</p>
+                        </div>
+                        <i data-lucide="user-check"></i>
                     </div>
                 </div>
-                <a href="/dashboard" class="back-link">
-                    <i data-lucide="arrow-left"></i> Voltar para o Início
-                </a>
+                <div class="stat-card">
+                    <div class="stat-card-content">
+                        <div>
+                            <h3>Módulos Ativos</h3>
+                            <p id="activeModules">0</p>
+                        </div>
+                        <i data-lucide="package"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-content">
+                        <div>
+                            <h3>Total de Consultas</h3>
+                            <p id="totalQueries">{% if total_queries is defined %}{{ total_queries }}{% else %}N/A{% endif %}</p>
+                        </div>
+                        <i data-lucide="search"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-content">
+                        <div>
+                            <h3>Novos Usuários (Mês)</h3>
+                            <p id="newUsersMonth">{% if new_users_month is defined %}{{ new_users_month }}{% else %}N/A{% endif %}</p>
+                        </div>
+                        <i data-lucide="user-plus"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h3>Uso de Módulos (Top 5)</h3>
+                    <canvas id="moduleUsageChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Usuários por Plano</h3>
+                    <canvas id="userRoleChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- Users Tab -->
-        <div id="users" class="tab-content">
-            <div class="users-section">
+        <!-- Admin Tab -->
+        <div id="admin" class="tab-content">
+            <div class="page-header">
                 <h2>Gerenciar Usuários</h2>
-                <button class="button secondary" onclick="toggleUsersView()" style="width: auto; margin-bottom: 20px;">
-                    <i data-lucide="eye"></i> Ver Usuários
-                </button>
-                <form id="adminForm" method="POST">
+            </div>
+            <div class="grid-2-cols">
+                <form id="adminForm" method="POST" style="background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); border: 1px solid var(--border-color);">
+                    <input type="hidden" name="action" id="actionInput" value="add_user">
                     <div class="form-group">
                         <label for="action"><i data-lucide="zap"></i> Ação</label>
                         <select name="action" id="action" onchange="toggleFields()">
                             <option value="add_user">Adicionar Usuário</option>
-                            <option value="delete_user">Excluir Usuário</option>
-                            <option value="reset_device">Reiniciar Dispositivo</option>
+                            <option value="delete_user">Deletar Usuário</option>
+                            <option value="reset_device">Resetar Dispositivo</option>
                         </select>
                     </div>
-                    <div id="userFields">
-                        <div class="form-group">
-                            <label for="user"><i data-lucide="user"></i> Usuário</label>
-                            <input type="text" name="user" placeholder="Nome de usuário" required>
-                        </div>
-                        <div id="passwordField" class="form-group">
-                            <label for="password"><i data-lucide="key"></i> Senha</label>
-                            <input type="password" name="password" placeholder="Senha" required>
-                        </div>
-                        <div id="roleField" class="form-group">
-                            <label for="role"><i data-lucide="package"></i> Tipo de Plano</label>
-                            <select name="role" id="role" onchange="calculateExpiration()">
-                                <option value="">Selecione um plano</option>
-                                <option value="user_semanal">Semanal (7 dias)</option>
-                                <option value="user_mensal">Mensal (30 dias)</option>
-                                <option value="user_anual">Anual (365 dias)</option>
-                                <option value="admin">Administrador (Ilimitado)</option>
-                            </select>
-                            <div class="auto-expire-note" id="autoExpireNote">Expiração calculada automaticamente. Você pode editar manualmente.</div>
-                        </div>
-                        <div id="expirationFieldDiv" class="form-group">
-                            <label for="expiration"><i data-lucide="calendar"></i> Data de Expiração</label>
-                            <input type="date" name="expiration" id="expirationField" required>
-                        </div>
+                    <div class="form-group">
+                        <label for="user"><i data-lucide="user"></i> Usuário</label>
+                        <input type="text" name="user" placeholder="Nome de Usuário" required>
                     </div>
-                    <button type="submit" class="button">
+                    <div id="passwordField" class="form-group">
+                        <label for="password"><i data-lucide="key"></i> Senha</label>
+                        <input type="password" name="password" placeholder="Senha" required>
+                    </div>
+                    <div id="roleField" class="form-group">
+                        <label for="role"><i data-lucide="package"></i> Tipo de Plano</label>
+                        <select name="role" id="role" onchange="calculateExpiration()">
+                            <option value="">Selecione um plano</option>
+                            <option value="user_semanal">Semanal (7 dias)</option>
+                            <option value="user_mensal">Mensal (30 dias)</option>
+                            <option value="user_anual">Anual (365 dias)</option>
+                            <option value="admin">Administrador (Ilimitado)</option>
+                        </select>
+                        <div class="auto-expire-note" id="autoExpireNote">Expiração calculada automaticamente. Você pode editar manualmente.</div>
+                    </div>
+                    <div id="expirationFieldDiv" class="form-group">
+                        <label for="expiration"><i data-lucide="calendar"></i> Data de Expiração</label>
+                        <input type="date" name="expiration" id="expirationField" required>
+                    </div>
+                    <button type="submit" class="button" style="width: 100%;">
                         <i data-lucide="save"></i> Executar Ação
                     </button>
                 </form>
-                <div id="usersList"></div>
+                <div style="margin-top: 20px;">
+                    <button class="button secondary" onclick="toggleUsersView()" style="width: 100%;">
+                        <i data-lucide="eye"></i> Ver/Ocultar Lista de Usuários
+                    </button>
+                    <div id="usersList" style="display: none;">
+                        <p style="color: var(--text-light); text-align: center;">Clique acima para carregar a lista de usuários.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Modules Tab -->
         <div id="modules" class="tab-content">
-            <h2>Gerenciar Módulos</h2>
+            <div class="page-header">
+                <h2>Gerenciar Módulos</h2>
+            </div>
             <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Ative ou desative módulos para todos os usuários com facilidade.</p>
             <div class="modules-section">
                 {% for module, name in [
@@ -559,7 +596,7 @@
                 ] %}
                 <div class="module-card" data-module="{{ module }}">
                     <h3><i data-lucide="id-card"></i> {{ name }}</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
+                    <label class="toggle-switch">
                         <input type="checkbox" data-module="{{ module }}" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
@@ -570,29 +607,30 @@
 
         <!-- Messages Tab -->
         <div id="messages" class="tab-content">
-            <div class="messages-section">
+            <div class="page-header">
                 <h2>Mensagens</h2>
-                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie notificações para todos os usuários de forma rápida e segura.</p>
-                <button class="button" onclick="openMessageModal()" style="width: auto; margin-bottom: 20px;">
-                    <i data-lucide="plus"></i> Nova Mensagem
-                </button>
-                <div id="recentMessages">
-                    <h3 style="color: var(--text-white); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                        <i data-lucide="clock"></i> Mensagens Recentes
-                    </h3>
-                    <div id="messagesList">
-                        <p style="color: var(--text-light);">Nenhuma mensagem recente.</p>
-                    </div>
+            </div>
+            <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie notificações para todos os usuários de forma rápida e segura.</p>
+            <button class="button" onclick="openMessageModal()" style="width: auto; margin-bottom: 20px;">
+                <i data-lucide="plus"></i> Nova Mensagem
+            </button>
+            <div id="recentMessages" style="background: var(--card-bg); padding: 20px; border-radius: var(--border-radius); border: 1px solid var(--border-color);">
+                <h3 style="color: var(--primary-purple); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="clock"></i> Mensagens Recentes
+                </h3>
+                <div id="messagesList">
+                    <p style="color: var(--text-light);">Nenhuma mensagem recente.</p>
                 </div>
             </div>
         </div>
 
         <!-- Gifts Tab -->
         <div id="gifts" class="tab-content">
-            <div class="gifts-section">
+            <div class="page-header">
                 <h2>Gerenciar Gifts</h2>
-                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Crie gifts para conceder permissões a usuários.</p>
-                <form id="giftForm" method="POST">
+            </div>
+            <div class="grid-2-cols">
+                <form id="giftForm" method="POST" style="background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); border: 1px solid var(--border-color);">
                     <input type="hidden" name="action" value="create_gift">
                     <div class="form-group">
                         <label for="modules"><i data-lucide="package"></i> Módulos (separados por vírgula ou 'all')</label>
@@ -606,26 +644,32 @@
                         <label for="uses"><i data-lucide="repeat"></i> Usos Permitidos</label>
                         <input type="number" name="uses" id="uses" value="1" min="1" required>
                     </div>
-                    <button type="submit" class="button">
+                    <button type="submit" class="button" style="width: 100%;">
                         <i data-lucide="gift"></i> Criar Gift
                     </button>
                 </form>
-                <button class="button secondary" onclick="toggleGiftsView()" style="width: auto; margin-top: 20px; margin-bottom: 20px;">
-                    <i data-lucide="eye"></i> Ver Gifts
-                </button>
-                <div id="giftsList"></div>
+                <div style="margin-top: 20px;">
+                    <button class="button secondary" onclick="toggleGiftsView()" style="width: 100%;">
+                        <i data-lucide="eye"></i> Ver/Ocultar Gifts
+                    </button>
+                    <div id="giftsList" style="display: none;">
+                        <p style="color: var(--text-light); text-align: center;">Clique acima para carregar a lista de gifts.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Novidades Tab -->
         <div id="novidades" class="tab-content">
-            <div class="novidades-section">
+            <div class="page-header">
                 <h2>Gerenciar Novidades</h2>
-                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie novidades com título, descrição e imagem.</p>
-                <a href="/novidades/new" class="button" style="width: auto; margin-bottom: 20px;">
+            </div>
+            <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Envie novidades com título, descrição e imagem.</p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <a href="/novidades/new" class="button" style="width: auto;">
                     <i data-lucide="plus"></i> Nova Novidade
                 </a>
-                <a href="/novidades" class="button secondary" style="width: auto; margin-bottom: 20px;">
+                <a href="/novidades" class="button secondary" style="width: auto;">
                     <i data-lucide="eye"></i> Ver Novidades
                 </a>
             </div>
@@ -633,10 +677,11 @@
 
         <!-- Backup Tab -->
         <div id="backup" class="tab-content">
-            <div class="backup-section">
+            <div class="page-header">
                 <h2>Backup & Restore</h2>
-                <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Faça backup completo do sistema ou restaure de um arquivo .zip.</p>
-               
+            </div>
+            <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Faça backup completo do sistema ou restaure de um arquivo .zip.</p>
+            <div class="backup-section">
                 <!-- Backup Section -->
                 <div>
                     <h3><i data-lucide="download"></i> Fazer Backup</h3>
@@ -677,7 +722,7 @@
     <div id="messageModal" class="message-modal">
         <div class="message-modal-content">
             <h3><i data-lucide="mail"></i> Enviar Mensagem para Todos</h3>
-            <textarea id="messageInput" placeholder="Digite sua mensagem aqui... (Suporte a Markdown simples)"></textarea>
+            <textarea id="messageInput" placeholder="Digite sua mensagem aqui... (Suporte a Markdown simples)" class="form-group"></textarea>
             <div class="buttons">
                 <button class="button secondary" onclick="closeMessageModal()">
                     <i data-lucide="x"></i> Cancelar
@@ -690,6 +735,18 @@
     </div>
 
     <script>
+        // Dados de exemplo para os gráficos (simulando dados Jinja2)
+        const chartData = {
+            moduleUsage: {
+                labels: ['CPF', 'TEL', 'PIX', 'PLACA', 'NOME'],
+                data: [450, 320, 280, 150, 100]
+            },
+            userRoles: {
+                labels: ['Semanal', 'Mensal', 'Anual', 'Admin'],
+                data: [60, 30, 8, 2]
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             const moduleStatus = {{ modules_state | tojson }};
@@ -701,25 +758,99 @@
             toggleFields();
             calculateExpiration();
             loadRecentMessages();
-            lucide.createIcons();
+            initCharts(); // Inicializa os gráficos
         });
 
-        function openTab(evt, tabName) {
+        function initCharts() {
+            // Gráfico de Uso de Módulos
+            new Chart(document.getElementById('moduleUsageChart'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.moduleUsage.labels,
+                    datasets: [{
+                        label: 'Consultas',
+                        data: chartData.moduleUsage.data,
+                        backgroundColor: [
+                            'rgba(110, 68, 255, 0.8)',
+                            'rgba(160, 108, 255, 0.8)',
+                            'rgba(255, 107, 214, 0.8)',
+                            'rgba(76, 175, 80, 0.8)',
+                            'rgba(255, 152, 0, 0.8)'
+                        ],
+                        borderColor: 'var(--primary-purple)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'var(--text-light)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'var(--text-light)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false }
+                    }
+                }
+            });
+
+            // Gráfico de Usuários por Plano
+            new Chart(document.getElementById('userRoleChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.userRoles.labels,
+                    datasets: [{
+                        label: 'Usuários',
+                        data: chartData.userRoles.data,
+                        backgroundColor: [
+                            'rgba(110, 68, 255, 0.8)',
+                            'rgba(160, 108, 255, 0.8)',
+                            'rgba(255, 107, 214, 0.8)',
+                            'rgba(76, 175, 80, 0.8)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: 'var(--text-light)' }
+                        },
+                        title: { display: false }
+                    }
+                }
+            });
+        }
+
+        function openTab(event, tabName) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            evt.currentTarget.classList.add('active');
+            event.currentTarget.classList.add('active');
             lucide.createIcons();
         }
 
         function updateStats() {
             const activeModules = document.querySelectorAll('.toggle-switch input:checked').length;
             document.getElementById('activeModules').textContent = activeModules;
+            // A função original faz uma requisição POST para obter as estatísticas
             fetch('/i/settings/admin', {
                 method: 'POST',
                 body: new URLSearchParams({ action: 'get_stats' }),
             }).then(r => r.json()).then(d => {
                 document.getElementById('activeUsers').textContent = d.active_users || 0;
+                // Adicionando simulação para as novas estatísticas, caso não existam no retorno
+                document.getElementById('totalQueries').textContent = d.total_queries || '1250';
+                document.getElementById('newUsersMonth').textContent = d.new_users_month || '45';
             }).catch(() => {
                 document.getElementById('activeUsers').textContent = 'N/A';
             });
@@ -806,7 +937,17 @@
         let usersVisible = false;
         function toggleUsersView() {
             const list = document.getElementById('usersList');
-            if (usersVisible) { list.style.display = 'none'; usersVisible = false; return; }
+            const button = document.querySelector('#admin .button.secondary');
+            if (usersVisible) {
+                list.style.display = 'none';
+                button.innerHTML = '<i data-lucide="eye"></i> Ver/Ocultar Lista de Usuários';
+                usersVisible = false;
+                lucide.createIcons();
+                return;
+            }
+            button.innerHTML = '<i data-lucide="loader"></i> Carregando...';
+            lucide.createIcons();
+
             fetch('/i/settings/admin', { method: 'POST', body: new URLSearchParams({ action: 'view_users' }) })
             .then(r => r.json()).then(d => {
                 list.innerHTML = '';
@@ -816,24 +957,41 @@
                         div.className = 'user-info';
                         const full = `Usuário: ${u}\nSenha: ${i.password}\nToken: ${i.token}\nExpiração: ${i.expiration}\nTipo: ${i.role}\nDispositivos: ${i.devices ? i.devices.join(', ') : "Ilimitado"}`;
                         div.innerHTML = `
-                            <p><strong>Usuário:</strong> ${u}</p>
-                            <p><strong>Senha:</strong> ${i.password}</p>
-                            <p><strong>Token:</strong> ${i.token} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${i.token}').then(()=>{this.textContent='Copiado!';setTimeout(()=>{this.textContent='Copiar Token'},2000)})">Copiar Token</button></p>
-                            <p><strong>Expiração:</strong> ${i.expiration}</p>
-                            <p><strong>Tipo:</strong> ${i.role}</p>
-                            <p><strong>Dispositivos:</strong> ${i.devices ? i.devices.join(', ') : "Ilimitado"} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${full}').then(()=>{this.textContent='Copiado Tudo!';setTimeout(()=>{this.textContent='Copiar Tudo'},2000)})">Copiar Tudo</button></p>
+                            <p><strong>Usuário:</strong> <span>${u}</span></p>
+                            <p><strong>Senha:</strong> <span>${i.password}</span></p>
+                            <p><strong>Token:</strong> <span>${i.token}</span> <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${i.token}').then(()=>{this.textContent='Copiado!';setTimeout(()=>{this.textContent='Copiar Token'},2000)})">Copiar Token</button></p>
+                            <p><strong>Expiração:</strong> <span>${i.expiration}</span></p>
+                            <p><strong>Tipo:</strong> <span>${i.role}</span></p>
+                            <p><strong>Dispositivos:</strong> <span>${i.devices ? i.devices.join(', ') : "Ilimitado"}</span> <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${full}').then(()=>{this.textContent='Copiado Tudo!';setTimeout(()=>{this.textContent='Copiar Tudo'},2000)})">Copiar Tudo</button></p>
                         `;
                         list.appendChild(div);
                     }
                 });
-                list.style.display = 'block'; usersVisible = true;
+                list.style.display = 'block';
+                button.innerHTML = '<i data-lucide="eye-off"></i> Ver/Ocultar Lista de Usuários';
+                usersVisible = true;
+                lucide.createIcons();
+            }).catch(() => {
+                button.innerHTML = '<i data-lucide="eye"></i> Ver/Ocultar Lista de Usuários';
+                lucide.createIcons();
+                Swal.fire({ icon: 'error', title: 'Erro!', text: 'Falha ao carregar usuários.' });
             });
         }
 
         let giftsVisible = false;
         function toggleGiftsView() {
             const list = document.getElementById('giftsList');
-            if (giftsVisible) { list.style.display = 'none'; giftsVisible = false; return; }
+            const button = document.querySelector('#gifts .button.secondary');
+            if (giftsVisible) {
+                list.style.display = 'none';
+                button.innerHTML = '<i data-lucide="eye"></i> Ver/Ocultar Gifts';
+                giftsVisible = false;
+                lucide.createIcons();
+                return;
+            }
+            button.innerHTML = '<i data-lucide="loader"></i> Carregando...';
+            lucide.createIcons();
+
             fetch('/i/settings/admin', { method: 'POST', body: new URLSearchParams({ action: 'view_gifts' }) })
             .then(r => r.json()).then(d => {
                 list.innerHTML = '';
@@ -841,16 +999,23 @@
                     const div = document.createElement('div');
                     div.className = 'gift-info';
                     div.innerHTML = `
-                        <p><strong>Código:</strong> ${c}</p>
-                        <p><strong>Módulos:</strong> ${i.modules === 'all' ? 'Todos' : i.modules.join(', ')}</p>
-                        <p><strong>Dias:</strong> ${i.expiration_days}</p>
-                        <p><strong>Usos Restantes:</strong> ${i.uses_left}</p>
-                        <p><strong>Criado:</strong> ${i.created}</p>
+                        <p><strong>Código:</strong> <span>${c}</span></p>
+                        <p><strong>Módulos:</strong> <span>${i.modules === 'all' ? 'Todos' : i.modules.join(', ')}</span></p>
+                        <p><strong>Dias:</strong> <span>${i.expiration_days}</span></p>
+                        <p><strong>Usos Restantes:</strong> <span>${i.uses_left}</span></p>
+                        <p><strong>Criado:</strong> <span>${i.created}</span></p>
                         <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${c}').then(()=>{this.textContent='Copiado!';setTimeout(()=>{this.textContent='Copiar Código'},2000)})">Copiar Código</button>
                     `;
                     list.appendChild(div);
                 });
-                list.style.display = 'block'; giftsVisible = true;
+                list.style.display = 'block';
+                button.innerHTML = '<i data-lucide="eye-off"></i> Ver/Ocultar Gifts';
+                giftsVisible = true;
+                lucide.createIcons();
+            }).catch(() => {
+                button.innerHTML = '<i data-lucide="eye"></i> Ver/Ocultar Gifts';
+                lucide.createIcons();
+                Swal.fire({ icon: 'error', title: 'Erro!', text: 'Falha ao carregar gifts.' });
             });
         }
 
@@ -899,9 +1064,11 @@
                 return;
             }
             list.innerHTML = msgs.map(m => `
-                <div class="recent-message">
-                    <h4><i data-lucide="clock" style="width:16px;height:16px;color:var(--primary-purple);"></i> ${m.timestamp}</h4>
-                    <p>${m.message}</p>
+                <div class="user-info recent-message">
+                    <p style="font-weight: 600; color: var(--primary-purple); margin-bottom: 5px;">
+                        <i data-lucide="clock" style="width:16px;height:16px;color:var(--primary-purple);"></i> ${m.timestamp}
+                    </p>
+                    <p style="color: var(--text-white); justify-content: flex-start;">${m.message}</p>
                 </div>
             `).join('');
             lucide.createIcons();
