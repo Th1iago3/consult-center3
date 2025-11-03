@@ -10,45 +10,36 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
-            /* Cores Primárias (Roxo como no original) */
-            --primary-purple: #6E44FF; /* Roxo principal */
-            --secondary-purple: #A06CFF; /* Roxo secundário */
-            --accent-pink: #FF6BD6; /* Destaque (opcional) */
-        
-            /* Cores de Fundo e Texto */
-            --background-dark: #121212; /* Fundo principal muito escuro */
-            --background-light: #1A1A1A; /* Fundo secundário/card */
-            --card-bg: rgba(25, 25, 25, 0.9); /* Fundo do card com transparência */
-            --text-white: #E0E0E0; /* Texto principal claro */
-            --text-light: #A0A0A0; /* Texto secundário/sutil */
-            --border-color: #333333; /* Cor da borda sutil */
-            /* Efeitos de Sombra e Brilho */
-            --glow-purple: rgba(110, 68, 255, 0.5); /* Brilho do roxo */
+            --primary-purple: #6E44FF;
+            --secondary-purple: #A06CFF;
+            --accent-pink: #FF6BD6;
+            --background-dark: #121212;
+            --background-light: #1A1A1A;
+            --card-bg: rgba(25, 25, 25, 0.9);
+            --text-white: #E0E0E0;
+            --text-light: #A0A0A0;
+            --border-color: #333333;
+            --glow-purple: rgba(110, 68, 255, 0.5);
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
             --shadow-glow: 0 0 15px var(--glow-purple);
-        
-            /* Tipografia */
             --font-family: 'Poppins', sans-serif;
-            /* Adicionais para Admin */
             --success: #4CAF50;
             --error: #F44336;
             --warning: #FF9800;
             --border-radius: 15px;
             --transition: all 0.3s ease;
         }
-        /* Base e Reset */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: var(--font-family);
         }
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
         body {
             background: linear-gradient(135deg, var(--background-dark) 0%, var(--background-light) 100%);
             color: var(--text-white);
@@ -56,7 +47,6 @@
             display: flex;
             overflow-x: hidden;
         }
-        /* Main Content with Tabs */
         .main-content {
             flex: 1;
             padding: 20px;
@@ -86,10 +76,7 @@
             align-items: center;
             gap: 8px;
         }
-        .tab-button i {
-            width: 20px;
-            height: 20px;
-        }
+        .tab-button i { width: 20px; height: 20px; }
         .tab-button.active {
             background: var(--primary-purple);
             color: var(--text-white);
@@ -112,26 +99,15 @@
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-        .tab-content.active {
-            display: block;
-        }
-        /* Dashboard Tab */
-        .dashboard-welcome {
-            text-align: center;
-            padding: 40px 0;
-        }
+        .tab-content.active { display: block; }
+
+        /* Dashboard */
+        .dashboard-welcome { text-align: center; padding: 40px 0; }
         .dashboard-welcome h2 {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--text-white);
-            margin-bottom: 20px;
-            line-height: 1.2;
+            font-size: 32px; font-weight: 800; color: var(--text-white);
+            margin-bottom: 20px; line-height: 1.2;
         }
-        .dashboard-welcome p {
-            color: var(--text-light);
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
+        .dashboard-welcome p { color: var(--text-light); font-size: 16px; margin-bottom: 30px; }
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -149,56 +125,27 @@
             overflow: hidden;
         }
         .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
             background: var(--primary-purple);
         }
         .stat-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-glow);
         }
-        .stat-card i {
-            font-size: 40px;
-            color: var(--primary-purple);
-            margin-bottom: 15px;
-            display: block;
-        }
-        .stat-card h3 {
-            font-size: 18px;
-            color: var(--text-light);
-            margin-bottom: 10px;
-        }
-        .stat-card p {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text-white);
-        }
-        /* Users Tab */
-        .users-section {
-            position: relative;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .stat-card i { font-size: 40px; color: var(--primary-purple); margin-bottom: 15px; display: block; }
+        .stat-card h3 { font-size: 18px; color: var(--text-light); margin-bottom: 10px; }
+        .stat-card p { font-size: 32px; font-weight: 700; color: var(--text-white); }
+
+        /* Forms */
+        .form-group { margin-bottom: 20px; }
         .form-group label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: var(--text-white);
-            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 600; color: var(--text-white); margin-bottom: 8px;
         }
-        .form-group label i {
-            color: var(--primary-purple);
-            width: 18px;
-            height: 18px;
-        }
+        .form-group label i { color: var(--primary-purple); width: 18px; height: 18px; }
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 14px 16px;
             background: var(--card-bg);
@@ -209,7 +156,8 @@
             transition: var(--transition);
         }
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-purple);
             box-shadow: 0 0 10px var(--glow-purple);
@@ -220,27 +168,16 @@
             padding-right: 40px;
         }
         .auto-expire-note {
-            font-size: 12px;
-            color: var(--success);
-            margin-top: 5px;
-            display: none;
+            font-size: 12px; color: var(--success); margin-top: 5px; display: none;
         }
         .button {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
-            border: none;
-            color: var(--text-white);
-            padding: 14px 24px;
-            border-radius: var(--border-radius);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: var(--transition);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            border: none; color: var(--text-white);
+            padding: 14px 24px; border-radius: var(--border-radius);
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            width: 100%; transition: var(--transition);
+            margin-bottom: 10px; display: flex;
+            align-items: center; justify-content: center; gap: 8px;
         }
         .button:hover {
             transform: translateY(-2px);
@@ -255,82 +192,56 @@
             background: var(--primary-purple);
             color: var(--text-white);
         }
-        #usersList {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-top: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            background: var(--background-light);
+
+        /* User & Gift Lists */
+        #usersList, #giftsList {
+            max-height: 400px; overflow-y: auto; margin-top: 20px;
+            border: 1px solid var(--border-color); border-radius: var(--border-radius);
+            padding: 15px; background: var(--background-light);
             animation: fadeIn 0.5s ease-out;
         }
-        .user-info {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 12px;
-            transition: var(--transition);
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .user-info, .gift-info {
+            background: var(--card-bg); border-radius: 12px; padding: 18px;
+            margin-bottom: 12px; transition: var(--transition);
+            border: 1px solid var(--border-color); display: flex;
+            flex-direction: column; gap: 8px;
         }
-        .user-info:hover {
+        .user-info:hover, .gift-info:hover {
             border-color: var(--primary-purple);
             transform: translateY(-2px);
             box-shadow: var(--shadow-glow);
         }
-        .user-info p {
-            font-size: 13px;
-            color: var(--text-light);
-            margin: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .user-info p, .gift-info p {
+            font-size: 13px; color: var(--text-light); margin: 0;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .user-info p strong {
-            color: var(--text-white);
-            min-width: 120px;
+        .user-info p strong, .gift-info p strong {
+            color: var(--text-white); min-width: 120px;
         }
         .copy-user-btn {
-            background: var(--success);
-            border: none;
-            color: var(--text-white);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-left: 10px;
+            background: var(--success); border: none; color: var(--text-white);
+            padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            cursor: pointer; transition: var(--transition); margin-left: 10px;
         }
         .copy-user-btn:hover {
-            background: #45A049;
-            transform: scale(1.05);
+            background: #45A049; transform: scale(1.05);
         }
-        /* Modules Tab */
+
+        /* Modules */
         .modules-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
         }
         .module-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            background: var(--card-bg); padding: 25px;
+            border-radius: var(--border-radius); border: 1px solid var(--border-color);
+            transition: var(--transition); cursor: pointer;
+            position: relative; overflow: hidden;
         }
         .module-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 100%; height: 4px;
             background: linear-gradient(90deg, var(--primary-purple), var(--secondary-purple));
         }
         .module-card:hover {
@@ -339,355 +250,145 @@
             transform: translateY(-5px);
         }
         .module-card h3 {
-            color: var(--text-white);
-            margin-bottom: 15px;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: var(--text-white); margin-bottom: 15px;
+            font-size: 16px; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
         }
-        .module-card h3 i {
-            width: 20px;
-            height: 20px;
-            color: var(--primary-purple);
-        }
-        .module-card .toggle-switch {
-            justify-content: flex-end;
-        }
-        /* Toggle Switch CSS */
+        .module-card h3 i { width: 20px; height: 20px; color: var(--primary-purple); }
+
+        /* Toggle Switch */
         .toggle-switch {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            width: 50px;
-            height: 26px;
+            position: relative; display: inline-flex; align-items: center;
+            width: 50px; height: 26px;
         }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--border-color);
-            transition: var(--transition);
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--border-color); transition: var(--transition);
             border-radius: 26px;
         }
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: var(--text-white);
-            transition: var(--transition);
+            position: absolute; content: "";
+            height: 20px; width: 20px; left: 3px; bottom: 3px;
+            background-color: var(--text-white); transition: var(--transition);
             border-radius: 50%;
         }
-        input:checked + .slider {
-            background-color: var(--primary-purple);
-        }
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-        input:focus + .slider {
-            box-shadow: 0 0 1px var(--glow-purple);
-        }
-        /* Messages Tab */
-        .messages-section {
-            text-align: center;
-        }
+        input:checked + .slider { background-color: var(--primary-purple); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--glow-purple); }
+
+        /* Message Modal */
         .message-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
+            display: none; position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
+            z-index: 1000; align-items: center; justify-content: center;
             padding: 20px;
         }
-        .message-modal.active {
-            display: flex;
-        }
+        .message-modal.active { display: flex; }
         .message-modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-            box-shadow: var(--shadow-card);
-            border: 1px solid var(--border-color);
-            animation: fadeIn 0.4s ease-out;
-            transform: scale(0.9);
+            background: var(--card-bg); padding: 30px;
+            border-radius: var(--border-radius); width: 100%;
+            max-width: 500px; text-align: center;
+            box-shadow: var(--shadow-card); border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease-out; transform: scale(0.9);
             transition: var(--transition);
         }
-        .message-modal.active .message-modal-content {
-            transform: scale(1);
-        }
+        .message-modal.active .message-modal-content { transform: scale(1); }
         .message-modal-content h3 {
-            color: var(--text-white);
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            color: var(--text-white); font-size: 24px; font-weight: 700;
+            margin-bottom: 20px; display: flex; align-items: center;
+            justify-content: center; gap: 8px;
         }
-        .message-modal-content h3 i {
-            color: var(--primary-purple);
-            width: 24px;
-            height: 24px;
-        }
+        .message-modal-content h3 i { color: var(--primary-purple); width: 24px; height: 24px; }
         .message-modal-content textarea {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            background: var(--background-light);
-            color: var(--text-white);
-            resize: vertical;
-            min-height: 120px;
-            transition: var(--transition);
+            width: 100%; padding: 14px; border: 1px solid var(--border-color);
+            border-radius: 12px; margin-bottom: 15px; font-size: 14px;
+            background: var(--background-light); color: var(--text-white);
+            resize: vertical; min-height: 120px; transition: var(--transition);
         }
         .message-modal-content textarea:focus {
             border-color: var(--primary-purple);
-            box-shadow: 0 0 10px var(--glow-purple);
-            outline: none;
+            box-shadow: 0 0 10px var(--glow-purple); outline: none;
         }
-        .message-modal-content .buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .message-modal-content .buttons .button {
-            flex: 1;
-            width: auto;
-        }
+        .message-modal-content .buttons { display: flex; gap: 10px; }
+        .message-modal-content .buttons .button { flex: 1; width: auto; }
+
+        /* Recent Messages */
         #recentMessages {
-            background: var(--background-light);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
+            background: var(--background-light); padding: 20px;
+            border-radius: var(--border-radius); border: 1px solid var(--border-color);
             margin-top: 20px;
         }
         .recent-message {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--primary-purple);
+            background: var(--card-bg); padding: 15px; border-radius: 12px;
+            margin-bottom: 10px; border-left: 4px solid var(--primary-purple);
             transition: var(--transition);
         }
         .recent-message:hover {
-            box-shadow: var(--shadow-glow);
-            transform: translateX(5px);
+            box-shadow: var(--shadow-glow); transform: translateX(5px);
         }
         .recent-message h4 {
-            color: var(--text-white);
-            font-size: 14px;
-            margin-bottom: 5px;
+            color: var(--text-white); font-size: 14px; margin-bottom: 5px;
         }
-        .recent-message p {
-            color: var(--text-light);
-            font-size: 13px;
-            margin: 0;
-        }
-        /* Gifts Tab */
-        .gifts-section {
-            text-align: center;
-        }
-        #giftsList {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-top: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            background: var(--background-light);
-            animation: fadeIn 0.5s ease-out;
-        }
-        .gift-info {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 12px;
-            transition: var(--transition);
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .gift-info:hover {
-            border-color: var(--primary-purple);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-glow);
-        }
-        .gift-info p {
-            font-size: 13px;
-            color: var(--text-light);
-            margin: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .gift-info p strong {
-            color: var(--text-white);
-            min-width: 120px;
-        }
-        /* Novidades Tab */
-        .novidades-section {
-            text-align: center;
-        }
-        .novidade-form {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .form-group input[type="file"] {
-            padding: 0;
-            background: transparent;
-            border: none;
-        }
-        /* Backup Tab */
-        .backup-section {
-            text-align: center;
-        }
-        .backup-form {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .backup-section > div {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: var(--background-light);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-        }
-        .backup-section h3 {
-            color: var(--text-white);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .backup-section h3 i {
-            color: var(--primary-purple);
-            width: 20px;
-            height: 20px;
-        }
-        /* Custom File Upload Button */
+        .recent-message p { color: var(--text-light); font-size: 13px; margin: 0; }
+
+        /* File Upload */
         .file-upload-wrapper {
-            position: relative;
-            display: inline-block;
-            width: 100%;
-            margin-bottom: 15px;
+            position: relative; display: inline-block; width: 100%; margin-bottom: 15px;
         }
         .file-upload-input {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
+            position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer;
         }
         .file-upload-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
-            color: var(--text-white);
-            padding: 14px 24px;
-            border-radius: var(--border-radius);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-            width: 100%;
-            text-align: center;
+            color: var(--text-white); padding: 14px 24px; border-radius: var(--border-radius);
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition);
+            border: none; width: 100%; text-align: center;
         }
         .file-upload-label:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-glow);
+            transform: translateY(-2px); box-shadow: var(--shadow-glow);
         }
-        .file-upload-label i {
-            width: 18px;
-            height: 18px;
-        }
-        /* Loading Bar */
+        .file-upload-label i { width: 18px; height: 18px; }
+
+        /* Loading */
         .loading-bar {
-            display: none;
-            width: 100%;
-            height: 4px;
-            background: var(--border-color);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 15px;
+            display: none; width: 100%; height: 4px; background: var(--border-color);
+            border-radius: 2px; overflow: hidden; margin-top: 15px;
         }
         .loading-progress {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-purple), var(--secondary-purple));
-            width: 0%;
-            transition: width 0.3s ease;
-            animation: loading-anim 1.5s infinite;
+            height: 100%; background: linear-gradient(90deg, var(--primary-purple), var(--secondary-purple));
+            width: 0%; transition: width 0.3s ease; animation: loading-anim 1.5s infinite;
         }
         @keyframes loading-anim {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
-        .loading-text {
-            text-align: center;
-            color: var(--text-light);
-            margin-top: 10px;
-            font-size: 12px;
-        }
+        .loading-text { text-align: center; color: var(--text-light); margin-top: 10px; font-size: 12px; display: none; }
+
         /* Back Link */
         .back-link {
-            display: inline-flex;
-            align-items: center;
-            color: var(--secondary-purple);
-            text-decoration: none;
-            font-size: 14px;
-            margin-top: 20px;
-            transition: var(--transition);
-            justify-content: center;
-            gap: 8px;
+            display: inline-flex; align-items: center; color: var(--secondary-purple);
+            text-decoration: none; font-size: 14px; margin-top: 20px;
+            transition: var(--transition); justify-content: center; gap: 8px;
         }
-        .back-link:hover {
-            color: var(--primary-purple);
-        }
-        /* SweetAlert2 Enhanced */
+        .back-link:hover { color: var(--primary-purple); }
+
+        /* SweetAlert2 */
         .swal2-popup {
-            background: var(--card-bg) !important;
-            color: var(--text-white) !important;
-            border: 1px solid var(--primary-purple) !important;
-            box-shadow: var(--shadow-glow) !important;
+            background: var(--card-bg) !important; color: var(--text-white) !important;
+            border: 1px solid var(--primary-purple) !important; box-shadow: var(--shadow-glow) !important;
             font-family: var(--font-family) !important;
         }
         .swal2-title {
             color: var(--text-white) !important;
             background: linear-gradient(90deg, var(--text-white), var(--secondary-purple)) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
+            -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
         }
-        .swal2-content {
-            color: var(--text-light) !important;
-        }
+        .swal2-content { color: var(--text-light) !important; }
         .swal2-confirm, .swal2-cancel {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)) !important;
-            border: none !important;
-            box-shadow: 0 5px 15px var(--glow-purple) !important;
+            border: none !important; box-shadow: 0 5px 15px var(--glow-purple) !important;
         }
         .swal2-confirm:hover {
             background: linear-gradient(135deg, var(--secondary-purple), var(--accent-pink)) !important;
@@ -700,34 +401,19 @@
             background: linear-gradient(135deg, var(--accent-pink), var(--error)) !important;
             transform: translateY(-2px) !important;
         }
-        /* Responsivity */
+
+        /* Responsive */
         @media (max-width: 992px) {
-            .main-content {
-                padding: 15px;
-            }
-            .tabs {
-                flex-direction: column;
-            }
-            .tab-content {
-                padding: 20px;
-            }
-            .dashboard-stats {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
+            .main-content { padding: 15px; }
+            .tabs { flex-direction: column; }
+            .tab-content { padding: 20px; }
+            .dashboard-stats { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
         }
         @media (max-width: 576px) {
-            .main-content {
-                padding: 10px;
-            }
-            h2 {
-                font-size: 24px;
-            }
-            .button {
-                padding: 12px 18px;
-            }
-            .modules-section {
-                grid-template-columns: 1fr;
-            }
+            .main-content { padding: 10px; }
+            h2 { font-size: 24px; }
+            .button { padding: 12px 18px; }
+            .modules-section { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -758,6 +444,7 @@
                 <i data-lucide="database"></i> Backup & Restore
             </button>
         </div>
+
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
             <div class="dashboard-welcome">
@@ -790,6 +477,7 @@
                 </a>
             </div>
         </div>
+
         <!-- Users Tab -->
         <div id="users" class="tab-content">
             <div class="users-section">
@@ -838,174 +526,48 @@
                 <div id="usersList"></div>
             </div>
         </div>
+
         <!-- Modules Tab -->
         <div id="modules" class="tab-content">
             <h2>Gerenciar Módulos</h2>
             <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Ative ou desative módulos para todos os usuários com facilidade.</p>
             <div class="modules-section">
-                <div class="module-card" data-module="cpfdata">
-                    <h3><i data-lucide="id-card"></i> Localizar CPF (DATASUS)</h3>
+                {% for module, name in [
+                    ('cpfdata', 'Localizar CPF (DATASUS)'),
+                    ('cpflv', 'Localizar CPF (C&C Plus)'),
+                    ('cpf', 'Localizar CPF (DATA)'),
+                    ('cpf2', 'Localizar CPF (DATAPRIME)'),
+                    ('cpf3', 'Localizar CPF (SISREGII)'),
+                    ('vacinas', 'Consulta Vacina (SIPNI)'),
+                    ('nomelv', 'Localizar Nome (C&C Plus)'),
+                    ('nome', 'Localizar Nome (DATA)'),
+                    ('nome2', 'Localizar Nome (DATAPRIME)'),
+                    ('tel', 'Consulta TELEFONE (DATA)'),
+                    ('telLv', 'Consulta TELEFONE (C&C Plus)'),
+                    ('teldual', 'Consulta TELEFONE (NACIONAL)'),
+                    ('datanome', 'Localizar DATA de NASCIMENTO'),
+                    ('placa', 'Consulta Veicular (NACIONAL)'),
+                    ('placaestadual', 'Consulta Veicular (ESTADUAL)'),
+                    ('placalv', 'Consulta Veicular (C&C Plus)'),
+                    ('fotor', 'Consulta Foto (C&C Plus)'),
+                    ('pix', 'Consulta PIX (NACIONAL)'),
+                    ('ip', 'Localizar IP (C&C Plus)'),
+                    ('mae', 'Consultar Mae'),
+                    ('pai', 'Consultar Pai'),
+                    ('cnpjcompleto', 'Consultar CNPJ'),
+                    ('atestado', 'Gerador de atestado médico')
+                ] %}
+                <div class="module-card" data-module="{{ module }}">
+                    <h3><i data-lucide="id-card"></i> {{ name }}</h3>
                     <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="cpfdata" onchange="toggleModule(this)">
+                        <input type="checkbox" data-module="{{ module }}" onchange="toggleModule(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
-                <div class="module-card" data-module="cpflv">
-                    <h3><i data-lucide="id-card"></i> Localizar CPF (C&C Plus)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="cpflv" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="cpf">
-                    <h3><i data-lucide="id-card"></i> Localizar CPF (DATA)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="cpf" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="cpf2">
-                    <h3><i data-lucide="id-card"></i> Localizar CPF (DATAPRIME)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="cpf2" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="cpf3">
-                    <h3><i data-lucide="id-card"></i> Localizar CPF (SISREGII)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="cpf3" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="vacinas">
-                    <h3><i data-lucide="shield-check"></i> Consulta Vacina (SIPNI)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="vacinas" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="nomelv">
-                    <h3><i data-lucide="user"></i> Localizar Nome (C&C Plus)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="nomelv" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="nome">
-                    <h3><i data-lucide="user"></i> Localizar Nome (DATA)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="nome" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="nome2">
-                    <h3><i data-lucide="user"></i> Localizar Nome (DATAPRIME)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="nome2" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="tel">
-                    <h3><i data-lucide="phone"></i> Consulta TELEFONE (DATA)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="tel" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="telLv">
-                    <h3><i data-lucide="phone"></i> Consulta TELEFONE (C&C Plus)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="telLv" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="teldual">
-                    <h3><i data-lucide="phone"></i> Consulta TELEFONE (NACIONAL)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="teldual" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="datanome">
-                    <h3><i data-lucide="calendar"></i> Localizar DATA de NASCIMENTO</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="datanome" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="placa">
-                    <h3><i data-lucide="car"></i> Consulta Veicular (NACIONAL)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="placa" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="placaestadual">
-                    <h3><i data-lucide="car"></i> Consulta Veicular (ESTADUAL)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="placaestadual" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="placalv">
-                    <h3><i data-lucide="car"></i> Consulta Veicular (C&C Plus)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="placalv" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="fotor">
-                    <h3><i data-lucide="camera"></i> Consulta Foto (C&C Plus)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="fotor" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="pix">
-                    <h3><i data-lucide="qr-code"></i> Consulta PIX (NACIONAL)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="pix" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="ip">
-                    <h3><i data-lucide="globe"></i> Localizar IP (C&C Plus)</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="ip" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="mae">
-                    <h3><i data-lucide="id-card"></i>Consultar Mae</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="mae" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="pai">
-                    <h3><i data-lucide="id-card"></i>Consultar Pai</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="pai" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="cnpjcompleto">
-                    <h3><i data-lucide="building-2"></i>Consultar CNPJ</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="cnpjcompleto" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="module-card" data-module="atestado">
-                    <h3><i data-lucide="id-card"></i>Gerador de atestado médico</h3>
-                    <label class="toggle-switch" style="justify-content: flex-end;">
-                        <input type="checkbox" data-module="atestado" onchange="toggleModule(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+                {% endfor %}
             </div>
         </div>
+
         <!-- Messages Tab -->
         <div id="messages" class="tab-content">
             <div class="messages-section">
@@ -1024,6 +586,7 @@
                 </div>
             </div>
         </div>
+
         <!-- Gifts Tab -->
         <div id="gifts" class="tab-content">
             <div class="gifts-section">
@@ -1053,6 +616,7 @@
                 <div id="giftsList"></div>
             </div>
         </div>
+
         <!-- Novidades Tab -->
         <div id="novidades" class="tab-content">
             <div class="novidades-section">
@@ -1066,12 +630,13 @@
                 </a>
             </div>
         </div>
+
         <!-- Backup Tab -->
         <div id="backup" class="tab-content">
             <div class="backup-section">
                 <h2>Backup & Restore</h2>
                 <p style="color: var(--text-light); text-align: center; margin-bottom: 30px;">Faça backup completo do sistema ou restaure de um arquivo .zip.</p>
-                
+               
                 <!-- Backup Section -->
                 <div>
                     <h3><i data-lucide="download"></i> Fazer Backup</h3>
@@ -1083,7 +648,6 @@
                         </button>
                     </form>
                 </div>
-
                 <!-- Restore Section -->
                 <div>
                     <h3><i data-lucide="upload"></i> Restaurar Sistema</h3>
@@ -1108,6 +672,7 @@
             </div>
         </div>
     </div>
+
     <!-- Message Modal -->
     <div id="messageModal" class="message-modal">
         <div class="message-modal-content">
@@ -1123,9 +688,8 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             const moduleStatus = {{ modules_state | tojson }};
@@ -1137,530 +701,236 @@
             toggleFields();
             calculateExpiration();
             loadRecentMessages();
-            lucide.createIcons(); // Recriar ícones após DOM
+            lucide.createIcons();
         });
-        // Funções de Tab
+
         function openTab(evt, tabName) {
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => content.classList.remove('active'));
-            const tabButtons = document.querySelectorAll('.tab-button');
-            tabButtons.forEach(button => button.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             evt.currentTarget.classList.add('active');
             lucide.createIcons();
         }
-        // Atualizar Stats
+
         function updateStats() {
             const activeModules = document.querySelectorAll('.toggle-switch input:checked').length;
             document.getElementById('activeModules').textContent = activeModules;
             fetch('/i/settings/admin', {
                 method: 'POST',
                 body: new URLSearchParams({ action: 'get_stats' }),
-            }).then(response => response.json()).then(data => {
-                document.getElementById('activeUsers').textContent = data.active_users || 0;
+            }).then(r => r.json()).then(d => {
+                document.getElementById('activeUsers').textContent = d.active_users || 0;
             }).catch(() => {
                 document.getElementById('activeUsers').textContent = 'N/A';
             });
         }
-        // Cálculo Automático de Expiração
+
         function calculateExpiration() {
             const role = document.getElementById('role').value;
-            const expirationField = document.getElementById('expirationField');
+            const field = document.getElementById('expirationField');
             const note = document.getElementById('autoExpireNote');
             if (!role || role === 'admin') {
-                expirationField.value = '';
+                field.value = '';
                 note.style.display = 'none';
                 return;
             }
             const today = new Date();
-            let days = 0;
-            if (role === 'user_semanal') days = 7;
-            else if (role === 'user_mensal') days = 30;
-            else if (role === 'user_anual') days = 365;
-            const expireDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
-            expirationField.value = expireDate.toISOString().split('T')[0];
+            let days = { user_semanal: 7, user_mensal: 30, user_anual: 365 }[role];
+            const expire = new Date(today.getTime() + days * 86400000);
+            field.value = expire.toISOString().split('T')[0];
             note.style.display = 'block';
-            note.textContent = `Expiração calculada automaticamente para ${days} dias. Edite se necessário.`;
+            note.textContent = `Expiração calculada para ${days} dias.`;
         }
-        // Toggle Módulo
+
         function toggleModule(checkbox) {
-            const moduleId = checkbox.getAttribute('data-module');
-            const isEnabled = checkbox.checked;
+            const moduleId = checkbox.dataset.module;
+            const status = checkbox.checked ? 'ON' : 'OFF';
             fetch('/i/settings/admin', {
                 method: 'POST',
-                body: new URLSearchParams({
-                    action: 'toggle_module',
-                    module: moduleId,
-                    status: isEnabled ? 'ON' : 'OFF'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sucesso!',
-                        text: `Módulo ${moduleId} ${isEnabled ? 'ativado' : 'desativado'} com sucesso!`,
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                        timer: 2000,
-                        timerProgressBar: true,
-                    });
+                body: new URLSearchParams({ action: 'toggle_module', module: moduleId, status })
+            }).then(r => r.json()).then(d => {
+                if (d.success) {
+                    Swal.fire({ icon: 'success', title: 'Sucesso!', text: d.message, timer: 2000, timerProgressBar: true });
                     updateStats();
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro!',
-                        text: data.message || 'Erro ao atualizar o módulo.',
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                    });
-                    checkbox.checked = !isEnabled;
+                    Swal.fire({ icon: 'error', title: 'Erro!', text: d.message });
+                    checkbox.checked = !checkbox.checked;
                 }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: 'Erro ao atualizar o módulo: ' + error.message,
-                    background: 'var(--background-light)',
-                    color: 'var(--text-white)',
-                    confirmButtonColor: 'var(--primary-purple)',
-                });
-                checkbox.checked = !isEnabled;
+            }).catch(() => {
+                Swal.fire({ icon: 'error', title: 'Erro!', text: 'Falha na comunicação.' });
+                checkbox.checked = !checkbox.checked;
             });
         }
-        // Toggle Fields
+
         function toggleFields() {
             const action = document.getElementById('action').value;
-            const passwordField = document.getElementById('passwordField');
-            const roleField = document.getElementById('roleField');
-            const expirationFieldDiv = document.getElementById('expirationFieldDiv');
+            const pwd = document.getElementById('passwordField');
+            const role = document.getElementById('roleField');
+            const exp = document.getElementById('expirationFieldDiv');
             if (action === 'delete_user' || action === 'reset_device') {
-                passwordField.style.display = 'block';
-                roleField.style.display = 'none';
-                expirationFieldDiv.style.display = 'none';
+                pwd.style.display = 'block'; role.style.display = 'none'; exp.style.display = 'none';
                 document.getElementById('role').removeAttribute('required');
                 document.getElementById('expirationField').removeAttribute('required');
-            } else if (action === 'add_user') {
-                passwordField.style.display = 'block';
-                roleField.style.display = 'block';
-                expirationFieldDiv.style.display = 'block';
+            } else {
+                pwd.style.display = 'block'; role.style.display = 'block'; exp.style.display = 'block';
                 document.getElementById('role').setAttribute('required', 'required');
                 document.getElementById('expirationField').setAttribute('required', 'required');
             }
         }
-        // Submissão do Form
-        document.getElementById('adminForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            fetch('/i/settings/admin', {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    Swal.fire({
-                        icon: data.category === 'success' ? 'success' : 'error',
-                        title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
-                        text: data.message,
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                        timer: 3000,
-                        timerProgressBar: true,
-                    });
-                    if (data.category === 'success' && formData.get('action') === 'add_user') {
-                        showEnhancedSuccessModal(data);
-                    }
-                    event.target.reset();
-                    toggleFields();
-                    calculateExpiration();
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: 'Erro ao processar o pedido: ' + error.message,
-                    background: 'var(--background-light)',
-                    color: 'var(--text-white)',
-                    confirmButtonColor: 'var(--primary-purple)',
-                });
+
+        document.getElementById('adminForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fd = new FormData(this);
+            fetch('/i/settings/admin', { method: 'POST', body: fd })
+            .then(r => r.json()).then(d => {
+                Swal.fire({ icon: d.category === 'success' ? 'success' : 'error', title: d.category === 'success' ? 'Sucesso!' : 'Erro!', text: d.message, timer: 3000, timerProgressBar: true });
+                if (d.category === 'success' && fd.get('action') === 'add_user') showEnhancedSuccessModal(d);
+                this.reset(); toggleFields(); calculateExpiration();
             });
         });
-        // Modal de Sucesso Aprimorado
-        function showEnhancedSuccessModal(data) {
-            const userDetails = `Usuário: ${data.user}\nSenha: ${data.password}\nToken: ${data.token}\nExpiração: ${data.expiration}\nTipo: ${data.role === 'user_semanal' ? 'Semanal' : data.role === 'user_mensal' ? 'Mensal' : data.role === 'user_anual' ? 'Anual' : data.role === 'admin' ? 'Administrador' : data.role}`;
+
+        function showEnhancedSuccessModal(d) {
+            const details = `Usuário: ${d.user}\nSenha: ${d.password}\nToken: ${d.token}\nExpiração: ${d.expiration}\nTipo: ${d.role}`;
             Swal.fire({
-                title: 'Usuário Adicionado com Sucesso!',
-                html: `
-                    <div style="text-align: left; font-size: 14px; color: var(--text-light);">
-                        <p><strong>Usuário:</strong> ${data.user}</p>
-                        <p><strong>Senha:</strong> ${data.password}</p>
-                        <p><strong>Token:</strong> ${data.token}</p>
-                        <p><strong>Expiração:</strong> ${data.expiration}</p>
-                        <p><strong>Tipo:</strong> ${data.role === 'user_semanal' ? 'Semanal' : data.role === 'user_mensal' ? 'Mensal' : data.role === 'user_anual' ? 'Anual' : data.role === 'admin' ? 'Administrador' : data.role}</p>
-                    </div>
-                    <button id="copyBtn" class="swal2-confirm swal2-styled" style="background: var(--success); margin-top: 15px;">Copiar Detalhes</button>
-                `,
-                icon: 'success',
-                showConfirmButton: false,
-                showCancelButton: true,
-                cancelButtonText: 'Fechar',
-                allowOutsideClick: true,
-                allowEscapeKey: true,
-                background: 'var(--background-light)',
-                color: 'var(--text-white)',
-                confirmButtonColor: 'var(--primary-purple)',
+                title: 'Usuário Adicionado!',
+                html: `<div style="text-align:left;"><p><strong>Usuário:</strong> ${d.user}</p><p><strong>Senha:</strong> ${d.password}</p><p><strong>Token:</strong> ${d.token}</p><p><strong>Expiração:</strong> ${d.expiration}</p><p><strong>Tipo:</strong> ${d.role}</p></div><button id="copyBtn" class="swal2-confirm swal2-styled" style="background:var(--success);margin-top:15px;">Copiar</button>`,
+                showCancelButton: true, cancelButtonText: 'Fechar'
             });
             document.getElementById('copyBtn').onclick = () => {
-                navigator.clipboard.writeText(userDetails).then(() => {
-                    Swal.fire({
-                        title: 'Copiado!',
-                        text: 'Detalhes do usuário copiados para a área de transferência.',
-                        icon: 'success',
-                        timer: 2000,
-                        timerProgressBar: true,
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                    });
-                }).catch(() => {
-                    Swal.fire({
-                        title: 'Erro!',
-                        text: 'Falha ao copiar. Tente novamente.',
-                        icon: 'error',
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                    });
+                navigator.clipboard.writeText(details).then(() => {
+                    Swal.fire({ title: 'Copiado!', icon: 'success', timer: 2000 });
                 });
             };
         }
-        // Toggle Users View
+
         let usersVisible = false;
         function toggleUsersView() {
-            const usersList = document.getElementById('usersList');
-            if (usersVisible) {
-                usersList.style.display = 'none';
-                usersVisible = false;
-            } else {
-                fetch('/i/settings/admin', {
-                    method: 'POST',
-                    body: new URLSearchParams({ action: 'view_users' }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    usersList.innerHTML = '';
-                    Object.entries(data.users).forEach(([user, info]) => {
-                        if (user !== 'admin7k') {
-                            const userInfo = document.createElement('div');
-                            userInfo.className = 'user-info';
-                            const userDetails = `Usuário: ${user}\nSenha: ${info.password}\nToken: ${info.token}\nExpiração: ${info.expiration}\nTipo: ${info.role === 'user_semanal' ? 'Semanal' : info.role === 'user_mensal' ? 'Mensal' : info.role === 'user_anual' ? 'Anual' : info.role === 'admin' ? 'Administrador' : info.role}\nDispositivos: ${info.devices ? info.devices.join(', ') : "Ilimitado"}`;
-                            userInfo.innerHTML = `
-                                <p><strong>Usuário:</strong> ${user}</p>
-                                <p><strong>Senha:</strong> ${info.password}</p>
-                                <p><strong>Token:</strong> ${info.token} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${info.token}').then(() => { this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar Token';, 2000); })">Copiar Token</button></p>
-                                <p><strong>Expiração:</strong> ${info.expiration}</p>
-                                <p><strong>Tipo:</strong> ${info.role === 'user_semanal' ? 'Semanal' : info.role === 'user_mensal' ? 'Mensal' : info.role === 'user_anual' ? 'Anual' : info.role === 'admin' ? 'Administrador' : info.role}</p>
-                                <p><strong>Dispositivos:</strong> ${info.devices ? info.devices.join(', ') : "Ilimitado"} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${userDetails}').then(() => { this.textContent = 'Copiado Tudo!'; setTimeout(() => this.textContent = 'Copiar Tudo';, 2000); })">Copiar Tudo</button></p>
-                            `;
-                            usersList.appendChild(userInfo);
-                        }
-                    });
-                    usersList.style.display = 'block';
-                    usersVisible = true;
-                })
-                .catch(error => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro!',
-                        text: 'Erro ao carregar usuários: ' + error.message,
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                    });
+            const list = document.getElementById('usersList');
+            if (usersVisible) { list.style.display = 'none'; usersVisible = false; return; }
+            fetch('/i/settings/admin', { method: 'POST', body: new URLSearchParams({ action: 'view_users' }) })
+            .then(r => r.json()).then(d => {
+                list.innerHTML = '';
+                Object.entries(d.users).forEach(([u, i]) => {
+                    if (u !== 'admin7k') {
+                        const div = document.createElement('div');
+                        div.className = 'user-info';
+                        const full = `Usuário: ${u}\nSenha: ${i.password}\nToken: ${i.token}\nExpiração: ${i.expiration}\nTipo: ${i.role}\nDispositivos: ${i.devices ? i.devices.join(', ') : "Ilimitado"}`;
+                        div.innerHTML = `
+                            <p><strong>Usuário:</strong> ${u}</p>
+                            <p><strong>Senha:</strong> ${i.password}</p>
+                            <p><strong>Token:</strong> ${i.token} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${i.token}').then(()=>{this.textContent='Copiado!';setTimeout(()=>{this.textContent='Copiar Token'},2000)})">Copiar Token</button></p>
+                            <p><strong>Expiração:</strong> ${i.expiration}</p>
+                            <p><strong>Tipo:</strong> ${i.role}</p>
+                            <p><strong>Dispositivos:</strong> ${i.devices ? i.devices.join(', ') : "Ilimitado"} <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${full}').then(()=>{this.textContent='Copiado Tudo!';setTimeout(()=>{this.textContent='Copiar Tudo'},2000)})">Copiar Tudo</button></p>
+                        `;
+                        list.appendChild(div);
+                    }
                 });
-            }
+                list.style.display = 'block'; usersVisible = true;
+            });
         }
-        // Toggle Gifts View
+
         let giftsVisible = false;
         function toggleGiftsView() {
-            const giftsList = document.getElementById('giftsList');
-            if (giftsVisible) {
-                giftsList.style.display = 'none';
-                giftsVisible = false;
-            } else {
-                // Fetch gifts
-                // Assuming backend returns {gifts: {...}}
-                fetch('/i/settings/admin', {
-                    method: 'POST',
-                    body: new URLSearchParams({ action: 'view_gifts' }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    giftsList.innerHTML = '';
-                    Object.entries(data.gifts || {}).forEach(([code, info]) => {
-                        const giftInfo = document.createElement('div');
-                        giftInfo.className = 'gift-info';
-                        giftInfo.innerHTML = `
-                            <p><strong>Código:</strong> ${code}</p>
-                            <p><strong>Módulos:</strong> ${info.modules === 'all' ? 'Todos' : info.modules.join(', ')}</p>
-                            <p><strong>Dias de Expiração:</strong> ${info.expiration_days}</p>
-                            <p><strong>Usos Restantes:</strong> ${info.uses_left}</p>
-                            <p><strong>Criado em:</strong> ${info.created}</p>
-                            <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${code}').then(() => { this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar Código';, 2000); })">Copiar Código</button>
-                        `;
-                        giftsList.appendChild(giftInfo);
-                    });
-                    giftsList.style.display = 'block';
-                    giftsVisible = true;
-                })
-                .catch(error => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro!',
-                        text: 'Erro ao carregar gifts: ' + error.message,
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                    });
+            const list = document.getElementById('giftsList');
+            if (giftsVisible) { list.style.display = 'none'; giftsVisible = false; return; }
+            fetch('/i/settings/admin', { method: 'POST', body: new URLSearchParams({ action: 'view_gifts' }) })
+            .then(r => r.json()).then(d => {
+                list.innerHTML = '';
+                Object.entries(d.gifts || {}).forEach(([c, i]) => {
+                    const div = document.createElement('div');
+                    div.className = 'gift-info';
+                    div.innerHTML = `
+                        <p><strong>Código:</strong> ${c}</p>
+                        <p><strong>Módulos:</strong> ${i.modules === 'all' ? 'Todos' : i.modules.join(', ')}</p>
+                        <p><strong>Dias:</strong> ${i.expiration_days}</p>
+                        <p><strong>Usos Restantes:</strong> ${i.uses_left}</p>
+                        <p><strong>Criado:</strong> ${i.created}</p>
+                        <button class="copy-user-btn" onclick="navigator.clipboard.writeText('${c}').then(()=>{this.textContent='Copiado!';setTimeout(()=>{this.textContent='Copiar Código'},2000)})">Copiar Código</button>
+                    `;
+                    list.appendChild(div);
                 });
-            }
+                list.style.display = 'block'; giftsVisible = true;
+            });
         }
-        // Submissão do Gift Form
-        document.getElementById('giftForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            fetch('/i/settings/admin', {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    Swal.fire({
-                        icon: data.category === 'success' ? 'success' : 'error',
-                        title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
-                        text: data.message,
-                        html: data.category === 'success' ? `<p>Código: ${data.code}</p>` : '',
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                        timer: 3000,
-                        timerProgressBar: true,
-                    });
-                    event.target.reset();
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: 'Erro ao criar gift: ' + error.message,
-                    background: 'var(--background-light)',
-                    color: 'var(--text-white)',
-                    confirmButtonColor: 'var(--primary-purple)',
-                });
+
+        document.getElementById('giftForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fd = new FormData(this);
+            fetch('/i/settings/admin', { method: 'POST', body: fd })
+            .then(r => r.json()).then(d => {
+                Swal.fire({ icon: d.category === 'success' ? 'success' : 'error', title: d.category === 'success' ? 'Sucesso!' : 'Erro!', text: d.message, html: d.category === 'success' ? `<p>Código: ${d.code}</p>` : '' });
+                this.reset();
             });
         });
-        // Mensagens - Modal
+
         function openMessageModal() {
             document.getElementById('messageModal').classList.add('active');
             document.getElementById('messageInput').focus();
-            lucide.createIcons();
         }
         function closeMessageModal() {
             document.getElementById('messageModal').classList.remove('active');
             document.getElementById('messageInput').value = '';
         }
         function sendMessage() {
-            const message = document.getElementById('messageInput').value.trim();
-            if (!message) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: 'Por favor, insira uma mensagem.',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-white)',
-                    confirmButtonColor: 'var(--primary-purple)',
-                });
-                return;
-            }
+            const msg = document.getElementById('messageInput').value.trim();
+            if (!msg) return Swal.fire({ icon: 'error', title: 'Erro!', text: 'Mensagem vazia.' });
             fetch('/i/settings/admin', {
                 method: 'POST',
-                body: new URLSearchParams({
-                    action: 'send_message',
-                    user: 'all',
-                    message: message
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    Swal.fire({
-                        icon: data.category === 'success' ? 'success' : 'error',
-                        title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
-                        text: data.message,
-                        background: 'var(--background-light)',
-                        color: 'var(--text-white)',
-                        confirmButtonColor: 'var(--primary-purple)',
-                        timer: 3000,
-                        timerProgressBar: true,
-                    });
-                    if (data.category === 'success') {
-                        document.getElementById('messageInput').value = '';
-                        closeMessageModal();
-                        addRecentMessage(message);
-                    }
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: 'Erro ao enviar mensagem: ' + error.message,
-                    background: 'var(--background-light)',
-                    color: 'var(--text-white)',
-                    confirmButtonColor: 'var(--primary-purple)',
-                });
+                body: new URLSearchParams({ action: 'send_message', user: 'all', message: msg })
+            }).then(r => r.json()).then(d => {
+                Swal.fire({ icon: d.category === 'success' ? 'success' : 'error', title: d.category === 'success' ? 'Sucesso!' : 'Erro!', text: d.message });
+                if (d.category === 'success') { closeMessageModal(); addRecentMessage(msg); }
             });
         }
-        // LocalStorage e SessionStorage para Mensagens Recentes
-        function addRecentMessage(message) {
+        function addRecentMessage(msg) {
             const now = new Date().toLocaleString('pt-BR');
-            const recentMessage = { message, timestamp: now };
-            // SessionStorage para sessão atual
-            let sessionMessages = JSON.parse(sessionStorage.getItem('recentMessages') || '[]');
-            sessionMessages.unshift(recentMessage);
-            sessionMessages = sessionMessages.slice(0, 5); // Manter apenas 5
-            sessionStorage.setItem('recentMessages', JSON.stringify(sessionMessages));
-            // LocalStorage para persistência
-            let localMessages = JSON.parse(localStorage.getItem('persistentMessages') || '[]');
-            localMessages.unshift(recentMessage);
-            localMessages = localMessages.slice(0, 10); // Manter apenas 10
-            localStorage.setItem('persistentMessages', JSON.stringify(localMessages));
+            let msgs = JSON.parse(sessionStorage.getItem('recentMessages') || '[]');
+            msgs.unshift({ message: msg, timestamp: now });
+            msgs = msgs.slice(0, 5);
+            sessionStorage.setItem('recentMessages', JSON.stringify(msgs));
             loadRecentMessages();
         }
         function loadRecentMessages() {
-            const messagesList = document.getElementById('messagesList');
-            // Priorizar sessionStorage, fallback para localStorage
-            let messages = JSON.parse(sessionStorage.getItem('recentMessages') || '[]');
-            if (messages.length === 0) {
-                messages = JSON.parse(localStorage.getItem('persistentMessages') || '[]').slice(0, 5);
-            }
-            if (messages.length === 0) {
-                messagesList.innerHTML = '<p style="color: var(--text-light);">Nenhuma mensagem recente.</p>';
+            const list = document.getElementById('messagesList');
+            let msgs = JSON.parse(sessionStorage.getItem('recentMessages') || '[]');
+            if (msgs.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-light);">Nenhuma mensagem recente.</p>';
                 return;
             }
-            messagesList.innerHTML = messages.map(msg => `
+            list.innerHTML = msgs.map(m => `
                 <div class="recent-message">
-                    <h4><i data-lucide="clock" style="width: 16px; height: 16px; color: var(--primary-purple); vertical-align: middle;"></i> ${msg.timestamp}</h4>
-                    <p>${msg.message}</p>
+                    <h4><i data-lucide="clock" style="width:16px;height:16px;color:var(--primary-purple);"></i> ${m.timestamp}</h4>
+                    <p>${m.message}</p>
                 </div>
             `).join('');
             lucide.createIcons();
         }
-        // Fechar modal ao clicar fora
-        document.getElementById('messageModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeMessageModal();
-        });
-        // Submissão do Restore Form (com Swal para confirmação e loading bar)
-        document.getElementById('restoreForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            if (!document.getElementById('zip_file').files.length) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: 'Por favor, selecione um arquivo .zip.',
-                    background: 'var(--background-light)',
-                    color: 'var(--text-white)',
-                    confirmButtonColor: 'var(--primary-purple)',
-                });
-                return;
-            }
+        document.getElementById('messageModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeMessageModal(); });
+
+        document.getElementById('restoreForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!document.getElementById('zip_file').files.length) return Swal.fire({ icon: 'error', title: 'Erro!', text: 'Selecione um .zip.' });
             Swal.fire({
-                title: 'Confirmar Restauração?',
-                text: 'Isso substituirá os dados atuais. Certifique-se de ter um backup recente!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: 'var(--primary-purple)',
-                cancelButtonColor: 'var(--error)',
-                confirmButtonText: 'Sim, restaurar!',
-                cancelButtonText: 'Cancelar',
-                background: 'var(--background-light)',
-                color: 'var(--text-white)',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Show loading bar
-                    const loadingBar = document.getElementById('loadingBar');
-                    const loadingProgress = document.getElementById('loadingProgress');
-                    const loadingText = document.getElementById('loadingText');
-                    const restoreBtn = document.getElementById('restoreBtn');
-                    loadingBar.style.display = 'block';
-                    loadingText.style.display = 'block';
-                    restoreBtn.disabled = true;
-                    restoreBtn.innerHTML = '<i data-lucide="loader"></i> Processando...';
-
-                    const formData = new FormData(event.target);
-                    fetch('/i/settings/admin', {
-                        method: 'POST',
-                        body: formData,
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Hide loading
-                        loadingBar.style.display = 'none';
-                        loadingText.style.display = 'none';
-                        restoreBtn.disabled = false;
-                        restoreBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Restaurar';
-                        lucide.createIcons();
-
-                        Swal.fire({
-                            icon: data.category === 'success' ? 'success' : 'error',
-                            title: data.category === 'success' ? 'Sucesso!' : 'Erro!',
-                            text: data.message,
-                            background: 'var(--background-light)',
-                            color: 'var(--text-white)',
-                            confirmButtonColor: 'var(--primary-purple)',
-                            timer: 3000,
-                            timerProgressBar: true,
-                        });
-                        if (data.category === 'success') {
-                            location.reload(); // Recarregar para atualizar dados
-                        }
-                    })
-                    .catch(error => {
-                        // Hide loading
-                        loadingBar.style.display = 'none';
-                        loadingText.style.display = 'none';
-                        restoreBtn.disabled = false;
-                        restoreBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Restaurar';
-                        lucide.createIcons();
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro!',
-                            text: 'Erro ao restaurar: ' + error.message,
-                            background: 'var(--background-light)',
-                            color: 'var(--text-white)',
-                            confirmButtonColor: 'var(--primary-purple)',
-                        });
-                    });
-
-                    // Simulate progress (since no real progress event, animate to 100%)
-                    let progress = 0;
-                    const interval = setInterval(() => {
-                        progress += Math.random() * 15;
-                        if (progress > 100) progress = 100;
-                        loadingProgress.style.width = progress + '%';
-                        if (progress >= 100) clearInterval(interval);
-                    }, 200);
-                }
+                title: 'Confirmar?', text: 'Isso substituirá todos os dados!', icon: 'warning',
+                showCancelButton: true, confirmButtonText: 'Sim', cancelButtonText: 'Não'
+            }).then(res => {
+                if (!res.isConfirmed) return;
+                const bar = document.getElementById('loadingBar');
+                const prog = document.getElementById('loadingProgress');
+                const txt = document.getElementById('loadingText');
+                const btn = document.getElementById('restoreBtn');
+                bar.style.display = 'block'; txt.style.display = 'block'; btn.disabled = true;
+                btn.innerHTML = '<i data-lucide="loader"></i> Processando...'; lucide.createIcons();
+                const fd = new FormData(this);
+                fetch('/i/settings/admin', { method: 'POST', body: fd })
+                .then(r => r.json()).then(d => {
+                    bar.style.display = 'none'; txt.style.display = 'none'; btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="refresh-cw"></i> Restaurar'; lucide.createIcons();
+                    Swal.fire({ icon: d.category === 'success' ? 'success' : 'error', title: d.category === 'success' ? 'Sucesso!' : 'Erro!', text: d.message });
+                    if (d.category === 'success') location.reload();
+                });
+                let p = 0; const int = setInterval(() => { p += Math.random()*15; if (p > 100) p = 100; prog.style.width = p + '%'; if (p >= 100) clearInterval(int); }, 200);
             });
         });
     </script>
