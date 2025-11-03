@@ -706,7 +706,7 @@ def crash_ios():
                 flash('Limite diário excedido.', 'error')
             else:
                 bot_url = "https://rocket-client-dwsw.onrender.com"
-                api_token = token_input or "@inconfundivel"
+                api_token = "018732f0686ae22863afe127848014c2"
                 url = f"{bot_url}/crash-ios?token={api_token}&query={numero}"
                 try:
                     resp = requests.get(url, timeout=15)
