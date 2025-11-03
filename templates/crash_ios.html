@@ -45,6 +45,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            will-change: background;
         }
         body::after {
             content: '';
@@ -281,9 +282,9 @@
             justify-content: center;
         }
         .button:hover:not(:disabled) {
-            background: #FF1E56;
+            background: #FF1F57;
             transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 61, 113, 0.7);
+            box-shadow: 0 0 15px rgba(255, 61, 113, 0.6);
         }
         .button:disabled {
             background: var(--text-light);
@@ -348,11 +349,11 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 6px 20px var(--shadow-dark);
-            border: 2px solid rgba(110, 68, 255, 0.3);
+            border: 2px solid rgba(255, 61, 113, 0.3);
         }
         .profile-info:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 35px var(--shadow-dark), var(--shadow-glow);
+            box-shadow: 0 12px 35px var(--shadow-dark), 0 0 15px rgba(255, 61, 113, 0.5);
         }
         .profile-info p {
             color: var(--text-light);
@@ -363,12 +364,17 @@
             color: var(--text-white);
             font-weight: 600;
             display: inline-block;
-            width: 140px;
+            width: 150px;
         }
-        .profile-info .status {
-            color: #00D68F;
-            font-weight: 700;
-            font-size: 14px;
+        .crash-status {
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 61, 113, 0.1);
+            border: 1px solid rgba(255, 61, 113, 0.3);
+            margin-top: 15px;
+            font-size: 13px;
+            color: var(--error);
+            text-align: center;
         }
         /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -403,7 +409,10 @@
         </button>
         <div class="nav-links" id="navLinks">
             <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Página Principal</span></a>
-            <a href="/i/settings"><svg data-lucide="settings"></svg><span>Gerenciar Tokens</span></a>
+            <a href="#" onclick="toggleDropdown(event)"><svg data-lucide="chevron-down"></svg><span>Informações Adicionais</span></a>
+            <div class="sub-navbar" id="subNavbar">
+                <a href="#">Base: Crash iOS</a>
+            </div>
         </div>
         <div class="user-profile">
             <button class="user-icon"><svg data-lucide="user"></svg></button>
@@ -425,7 +434,7 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" id="searchForm">
+        <form method="POST" id="crashForm">
             <div class="form-group">
                 <svg data-lucide="smartphone"></svg>
                 <input type="text" name="numero" id="numero" placeholder="5582993708218" value="{{ numero }}" required>
@@ -433,7 +442,7 @@
             {% if not is_admin %}
                 <div class="form-group">
                     <svg data-lucide="key"></svg>
-                    <input type="text" name="token" id="token" placeholder="Seu token de acesso..." required>
+                    <input type="text" name="token" id="token" placeholder="Seu token..." required>
                 </div>
             {% endif %}
             <button type="submit" class="button" id="submitBtn">
@@ -452,11 +461,13 @@
             </div>
             <div class="profile-info">
                 <p><strong>Alvo:</strong> {{ result.alvo.nome }} ({{ result.alvo.jid }})</p>
+                <p><strong>Token:</strong> {{ result.token.id }}</p>
                 <p><strong>Requests Restantes:</strong> {{ result.token.requests_restantes }} / {{ result.token.max_diario }}</p>
                 <p><strong>Expira em:</strong> {{ result.token.expira_em }}</p>
-                <p><strong>Status:</strong> <span class="status">{{ result.message }}</span></p>
-                <p><strong>Autor:</strong> {{ result.autor }}</p>
-                <p><strong>Timestamp:</strong> {{ result.timestamp }}</p>
+                <p><strong>Status:</strong> <span style="color:var(--success)">Ponto enviado com sucesso</span></p>
+                <div class="crash-status">
+                    {{ result.message }}
+                </div>
             </div>
         {% endif %}
     </div>
@@ -465,33 +476,45 @@
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
 
-            // Navbar Toggle
-            window.toggleNavbar = function() {
+            // Navbar
+            function toggleNavbar() {
                 const navLinks = document.getElementById('navLinks');
                 const toggleBtn = document.querySelector('.navbar-toggle');
                 navLinks.classList.toggle('active');
                 toggleBtn.classList.toggle('active');
-            };
+            }
+            window.toggleNavbar = toggleNavbar;
 
-            // Close on outside click
+            function toggleDropdown(event) {
+                event.preventDefault();
+                const subNavbar = document.getElementById('subNavbar');
+                subNavbar.classList.toggle('active');
+            }
+            window.toggleDropdown = toggleDropdown;
+
             document.addEventListener('click', (e) => {
+                const subNavbar = document.getElementById('subNavbar');
                 const navLinks = document.getElementById('navLinks');
+                if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
+                    subNavbar.classList.remove('active');
+                }
                 if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
                     toggleNavbar();
                 }
             });
 
-            // Form Submission
-            const form = document.getElementById('searchForm');
+            // Form
+            const crashForm = document.getElementById('crashForm');
             const submitBtn = document.getElementById('submitBtn');
-            form.addEventListener('submit', function(e) {
+
+            crashForm.addEventListener('submit', function(event) {
                 const numero = this.numero.value.replace(/\D/g, '');
                 if (numero.length < 10) {
-                    e.preventDefault();
+                    event.preventDefault();
                     Swal.fire({
                         icon: 'error',
-                        title: 'Número inválido',
-                        text: 'Insira um número válido com DDD (ex: 5582993708218)',
+                        title: 'Número Inválido',
+                        text: 'Digite um número válido (ex: 5582993708218)',
                         confirmButtonColor: '#6E44FF'
                     });
                     return;
@@ -503,39 +526,41 @@
                 lucide.createIcons();
             });
 
-            // Copy Result
-            window.copyResult = function(btn) {
+            // Copy
+            function copyResult(button) {
                 const info = document.querySelector('.profile-info');
                 if (!info) return;
-                const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
+                const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n') + '\n\n' + document.querySelector('.crash-status').textContent;
                 navigator.clipboard.writeText(text).then(() => {
-                    btn.classList.add('copied');
-                    btn.innerHTML = '<svg data-lucide="check"></svg>';
+                    button.classList.add('copied');
+                    button.innerHTML = '<svg data-lucide="check"></svg>';
                     lucide.createIcons();
                     setTimeout(() => {
-                        btn.classList.remove('copied');
-                        btn.innerHTML = '<svg data-lucide="copy"></svg>';
+                        button.classList.remove('copied');
+                        button.innerHTML = '<svg data-lucide="copy"></svg>';
                         lucide.createIcons();
                     }, 2000);
                 });
-            };
+            }
+            window.copyResult = copyResult;
 
-            // Download Result
-            window.downloadResult = function() {
+            // Download
+            function downloadResult() {
                 const info = document.querySelector('.profile-info');
                 if (!info) return;
-                const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
-                const now = new Date().toLocaleString('pt-BR').replace(/[^\d]/g, '-');
+                const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n') + '\n\n' + document.querySelector('.crash-status').textContent;
+                const date = new Date().toLocaleString('pt-BR').replace(/[^\d]/g, '-');
                 const blob = new Blob([text], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${now}-CRASH-IOS-CONSULT-CENTER.txt`;
+                a.download = `${date}-CRASH-IOS.txt`;
                 a.click();
                 setTimeout(() => URL.revokeObjectURL(url), 100);
-            };
+            }
+            window.downloadResult = downloadResult;
 
-            // Reset button if result exists
+            // Reset button
             if (document.querySelector('.profile-info')) {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
