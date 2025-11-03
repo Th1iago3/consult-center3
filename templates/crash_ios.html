@@ -241,7 +241,7 @@
         }
         .form-group input {
             width: 100%;
-            padding: 12px 15px 12px 40px;
+            padding:564 12px 15px 12px 40px;
             border-radius: 20px;
             border: 1px solid var(--border-color);
             background: var(--background-dark);
@@ -266,7 +266,7 @@
             color: var(--text-light);
         }
         .button {
-            background: #FF3D71;
+            background: var(--primary-purple);
             border: none;
             padding: 12px 25px;
             border-radius: 20px;
@@ -277,14 +277,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 0 12px rgba(255, 61, 113, 0.5);
+            box-shadow: 0 0 12px var(--glowximity);
             width: 100%;
             justify-content: center;
         }
         .button:hover:not(:disabled) {
-            background: #FF1F57;
+            background: var(--secondary-purple);
             transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 61, 113, 0.6);
+            box-shadow: 0 0 15px var(--glowximity);
         }
         .button:disabled {
             background: var(--text-light);
@@ -349,11 +349,11 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 6px 20px var(--shadow-dark);
-            border: 2px solid rgba(255, 61, 113, 0.3);
+            border: 2px solid rgba(110, 68, 255, 0.3);
         }
         .profile-info:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 35px var(--shadow-dark), 0 0 15px rgba(255, 61, 113, 0.5);
+            box-shadow: 0 12px 35px var(--shadow-dark), var(--shadow-glow);
         }
         .profile-info p {
             color: var(--text-light);
@@ -364,17 +364,7 @@
             color: var(--text-white);
             font-weight: 600;
             display: inline-block;
-            width: 150px;
-        }
-        .crash-status {
-            padding: 10px;
-            border-radius: 10px;
-            background: rgba(255, 61, 113, 0.1);
-            border: 1px solid rgba(255, 61, 113, 0.3);
-            margin-top: 15px;
-            font-size: 13px;
-            color: var(--error);
-            text-align: center;
+            width: 140px;
         }
         /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -411,7 +401,7 @@
             <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Página Principal</span></a>
             <a href="#" onclick="toggleDropdown(event)"><svg data-lucide="chevron-down"></svg><span>Informações Adicionais</span></a>
             <div class="sub-navbar" id="subNavbar">
-                <a href="#">Base: Crash iOS</a>
+                <a href="#">Base: CRASH iOS</a>
             </div>
         </div>
         <div class="user-profile">
@@ -434,15 +424,15 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" id="crashForm">
+        <form method="POST" id="searchForm">
             <div class="form-group">
-                <svg data-lucide="smartphone"></svg>
+                <svg data-lucide="phone"></svg>
                 <input type="text" name="numero" id="numero" placeholder="5582993708218" value="{{ numero }}" required>
             </div>
             {% if not is_admin %}
                 <div class="form-group">
                     <svg data-lucide="key"></svg>
-                    <input type="text" name="token" id="token" placeholder="Seu token..." required>
+                    <input type="text" name="token" id="token" placeholder="Digite seu token..." required>
                 </div>
             {% endif %}
             <button type="submit" class="button" id="submitBtn">
@@ -460,10 +450,10 @@
                 </button>
             </div>
             <div class="profile-info">
-                <p><strong>Alvo:</strong> {{ result.alvo.jid }}</p>
-                <div class="crash-status">
-                    {{ result.message }}
-                </div>
+                <p><strong>Alvo (JID):</strong> {{ result.alvo.jid }}</p>
+                <p><strong>Nome:</strong> {{ result.alvo.nome if result.alvo.nome and result.alvo.nome.strip() else 'Não encontrado' }}</p>
+                <p><strong>Mensagem:</strong> {{ result.message }}</p>
+                <p><strong>Data & Hora:</strong> {{ result.timestamp }}</p>
             </div>
         {% endif %}
     </div>
@@ -472,7 +462,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
 
-            // Navbar
+            // Navbar Toggle
             function toggleNavbar() {
                 const navLinks = document.getElementById('navLinks');
                 const toggleBtn = document.querySelector('.navbar-toggle');
@@ -481,6 +471,7 @@
             }
             window.toggleNavbar = toggleNavbar;
 
+            // Dropdown Toggle
             function toggleDropdown(event) {
                 event.preventDefault();
                 const subNavbar = document.getElementById('subNavbar');
@@ -488,6 +479,7 @@
             }
             window.toggleDropdown = toggleDropdown;
 
+            // Close on outside click
             document.addEventListener('click', (e) => {
                 const subNavbar = document.getElementById('subNavbar');
                 const navLinks = document.getElementById('navLinks');
@@ -499,34 +491,34 @@
                 }
             });
 
-            // Form
-            const crashForm = document.getElementById('crashForm');
+            // Form + Loading
+            const searchForm = document.getElementById('searchForm');
             const submitBtn = document.getElementById('submitBtn');
-
-            crashForm.addEventListener('submit', function(event) {
+            searchForm.addEventListener('submit', function(event) {
                 const numero = this.numero.value.replace(/\D/g, '');
                 if (numero.length < 10) {
                     event.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Número Inválido',
-                        text: 'Digite um número válido (ex: 5582993708218)',
-                        confirmButtonColor: '#6E44FF'
-                    });
+                    const alert = document.createElement('div');
+                    alert.className = 'alert';
+                    alert.textContent = 'Por favor, insira um número válido.';
+                    this.insertBefore(alert, this.firstChild);
+                    setTimeout(() => alert.remove(), 3000);
                     return;
                 }
-
                 submitBtn.disabled = true;
                 submitBtn.classList.add('loading');
                 submitBtn.innerHTML = '<svg data-lucide="loader-circle"></svg> Enviando...';
                 lucide.createIcons();
             });
 
-            // Copy
+            // Copy Result
             function copyResult(button) {
-                const info = document.querySelector('.profile-info');
-                if (!info) return;
-                const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n') + '\n\n' + document.querySelector('.crash-status').textContent;
+                const profileInfo = document.querySelector('.profile-info');
+                if (!profileInfo) {
+                    Swal.fire({ icon: 'error', title: 'Erro', text: 'Nenhum resultado para copiar.', confirmButtonColor: '#6E44FF' });
+                    return;
+                }
+                const text = Array.from(profileInfo.querySelectorAll('p')).map(p => p.textContent).join('\n');
                 navigator.clipboard.writeText(text).then(() => {
                     button.classList.add('copied');
                     button.innerHTML = '<svg data-lucide="check"></svg>';
@@ -536,27 +528,32 @@
                         button.innerHTML = '<svg data-lucide="copy"></svg>';
                         lucide.createIcons();
                     }, 2000);
+                }).catch(() => {
+                    Swal.fire({ icon: 'error', title: 'Erro', text: 'Falha ao copiar.', confirmButtonColor: '#6E44FF' });
                 });
             }
             window.copyResult = copyResult;
 
-            // Download
+            // Download Result
             function downloadResult() {
-                const info = document.querySelector('.profile-info');
-                if (!info) return;
-                const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n') + '\n\n' + document.querySelector('.crash-status').textContent;
-                const date = new Date().toLocaleString('pt-BR').replace(/[^\d]/g, '-');
+                const profileInfo = document.querySelector('.profile-info');
+                if (!profileInfo) {
+                    Swal.fire({ icon: 'error', title: 'Erro', text: 'Nenhum resultado para baixar.', confirmButtonColor: '#6E44FF' });
+                    return;
+                }
+                const text = Array.from(profileInfo.querySelectorAll('p')).map(p => p.textContent).join('\n');
+                const now = new Date().toLocaleString('pt-BR').replace(/[^\d]/g, '-').replace(/-+/g, '-');
                 const blob = new Blob([text], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${date}-CRASH-IOS.txt`;
+                a.download = `${now}-CRASH-IOS-CONSULT-CENTER.txt`;
                 a.click();
-                setTimeout(() => URL.revokeObjectURL(url), 100);
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
             }
             window.downloadResult = downloadResult;
 
-            // Reset button
+            // Reset button if result exists
             if (document.querySelector('.profile-info')) {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
