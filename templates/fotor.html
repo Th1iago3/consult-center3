@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ConsultCenter - Sistema Integrado de Consultas (Consulta - Foto RG)</title>
+    <title>ConsultCenter - Consulta Foto RG (DATA)</title>
     <!-- Font Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <!-- SweetAlert2 -->
@@ -16,6 +16,7 @@
             --primary-purple: #6E44FF;
             --secondary-purple: #A06CFF;
             --accent-pink: #FF6BD6;
+            --accent-blue: #00D9FF;
             --background-dark: #121212;
             --background-light: #1A1A1A;
             --card-bg: rgba(25, 25, 25, 0.9);
@@ -32,559 +33,377 @@
             --warning: #FFB800;
             --header-height: 70px;
         }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: var(--font-family);
-            transition: all 0.3s ease;
+        *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-family);transition:all .3s ease;}
+        body{background:var(--background-dark);color:var(--text-white);min-height:100vh;overflow-x:hidden;position:relative;}
+        body::after{
+            content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+            background:radial-gradient(circle at 30% 20%,rgba(110,68,255,.15),transparent 60%);
+            z-index:-1;opacity:.3;animation:subtlePulse 12s infinite ease-in-out;
         }
-        body {
-            background: var(--background-dark);
-            color: var(--text-white);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-            will-change: background;
+        @keyframes subtlePulse{0%{opacity:.2}50%{opacity:.4}100%{opacity:.2}}
+        /* ---------- NAVBAR ---------- */
+        .navbar{
+            position:fixed;top:0;left:0;width:100%;height:var(--header-height);
+            background:rgba(18,18,18,.9);backdrop-filter:blur(10px);
+            border-bottom:1px solid var(--border-color);z-index:1000;
+            display:flex;justify-content:center;align-items:center;
+            padding:0 30px;box-shadow:0 5px 20px var(--shadow-dark);
         }
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 30% 20%, rgba(110, 68, 255, 0.15), transparent 60%);
-            z-index: -1;
-            opacity: 0.3;
-            animation: subtlePulse 12s infinite ease-in-out;
+        .nav-links{
+            display:flex;gap:30px;align-items:center;
         }
-        @keyframes subtlePulse {
-            0% { opacity: 0.2; }
-            50% { opacity: 0.4; }
-            100% { opacity: 0.2; }
+        .nav-links a{
+            color:var(--text-light);text-decoration:none;font-weight:500;
+            font-size:14px;display:flex;align-items:center;gap:8px;
+            position:relative;cursor:pointer;transition:all .3s ease;
         }
-        /* Navbar */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--header-height);
-            background: rgba(18, 18, 18, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            box-shadow: 0 5px 20px var(--shadow-dark);
+        .nav-links a::after{
+            content:'';position:absolute;bottom:-5px;left:0;width:0;height:2px;
+            background:linear-gradient(90deg,var(--primary-purple),var(--accent-pink));
+            transition:width .3s ease;
         }
-        .navbar-toggle {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: var(--card-bg);
-            color: var(--text-white);
-            border: 1px solid var(--border-color);
-            cursor: pointer;
+        .nav-links a:hover{color:var(--text-white);}
+        .nav-links a:hover::after{width:100%}
+        .nav-links a svg{width:18px;height:18px;}
+        .user-profile{
+            position:absolute;right:30px;display:flex;gap:20px;align-items:center;
         }
-        .navbar-toggle:hover {
-            background: var(--primary-purple);
-            box-shadow: var(--shadow-glow);
+        .logout-btn{
+            background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            border:none;padding:10px 25px;border-radius:25px;color:var(--text-white);
+            font-size:13px;font-weight:600;cursor:pointer;display:flex;
+            align-items:center;gap:8px;box-shadow:0 0 15px var(--glowximity);
+            transition:all .3s ease;
         }
-        .navbar-toggle svg {
-            width: 24px;
-            height: 24px;
+        .logout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--glowximity);}
+        .logout-btn svg{width:16px;height:16px;}
+        /* ---------- MAIN ---------- */
+        .main-container{
+            margin-top:var(--header-height);min-height:calc(100vh - var(--header-height));
+            display:flex;flex-direction:column;align-items:center;padding:40px 20px;
         }
-        .navbar-toggle.active svg {
-            transform: rotate(180deg);
+        .form-container{
+            background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow-card);
+            padding:40px;width:90%;max-width:500px;border:2px solid rgba(110,68,255,.3);
+            position:relative;overflow:hidden;animation:fadeInUp .8s ease-out;
         }
-        .nav-links {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 250px;
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 8px 25px var(--shadow-dark);
-            backdrop-filter: blur(10px);
-            flex-direction: column;
-            gap: 10px;
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        .form-container h2{
+            font-size:28px;font-weight:800;color:var(--text-white);margin-bottom:25px;
+            text-align:center;position:relative;z-index:1;
         }
-        .nav-links.active {
-            display: flex;
-        }
-        .nav-links a {
-            padding: 12px 15px;
-            border-radius: 10px;
-            color: var(--text-light);
-            text-decoration: none;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-        }
-        .nav-links a:hover {
-            background: rgba(110, 68, 255, 0.2);
-            color: var(--text-white);
-            transform: translateX(5px);
-            box-shadow: 0 0 12px var(--glowximity);
-        }
-        .nav-links a svg {
-            width: 20px;
-            height: 20px;
-            color: var(--primary-purple);
-        }
-        .nav-links a:hover svg {
-            color: var(--accent-pink);
-            transform: scale(1.15);
-        }
-        .sub-navbar {
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-            padding: 10px;
-            background: rgba(110, 68, 255, 0.1);
-            border-radius: 8px;
-            margin-top: 5px;
-        }
-        .sub-navbar.active {
-            display: flex;
-        }
-        .sub-navbar a {
-            font-size: 12px;
-            padding: 8px;
-        }
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .user-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--card-bg);
-            color: var(--text-white);
-            cursor: pointer;
-            border: 1px solid var(--border-color);
-        }
-        .user-icon:hover {
-            background: var(--primary-purple);
-            box-shadow: var(--shadow-glow);
-        }
-        .user-icon svg {
-            width: 24px;
-            height: 24px;
-        }
-        .logout-btn {
-            background: var(--primary-purple);
-            border: none;
-            padding: 10px 25px;
-            border-radius: 20px;
-            color: var(--text-white);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 0 12px var(--glowximity);
-        }
-        .logout-btn:hover {
-            background: var(--secondary-purple);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--glowximity);
-        }
-        .logout-btn svg {
-            width: 18px;
-            height: 18px;
-        }
-        /* Container */
-        .container {
-            background: var(--card-bg);
-            border-radius: 15px;
-            box-shadow: var(--shadow-card);
-            padding: 25px;
-            width: 90%;
-            max-width: 450px;
-            margin: calc(var(--header-height) + 20px) auto 20px;
-            border: 2px solid rgba(110, 68, 255, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        .container:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-card), var(--shadow-glow);
-        }
-        h2 {
-            font-size: 26px;
-            font-weight: 700;
-            color: var(--text-white);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .form-group {
-            margin: 20px 0;
-            position: relative;
+        .form-group{margin:20px 0;position:relative;z-index:1;}
+        .form-group label{
+            display:block;font-size:13px;font-weight:600;color:var(--text-light);
+            margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;
         }
         .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px 15px 12px 40px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            background: var(--background-dark);
-            color: var(--text-white);
-            font-size: 14px;
+        .form-group select{
+            width:100%;padding:14px 15px 14px 45px;border-radius:12px;
+            border:2px solid var(--border-color);background:var(--background-light);
+            color:var(--text-white);font-size:14px;font-weight:500;transition:all .3s ease;
+            appearance:none;
         }
         .form-group input:focus,
-        .form-group select:focus {
-            border-color: var(--primary-purple);
-            outline: none;
-            box-shadow: var(--shadow-glow);
+        .form-group select:focus{
+            border-color:var(--primary-purple);outline:none;
+            box-shadow:0 0 20px rgba(110,68,255,.3);
         }
-        .form-group input::placeholder {
-            color: var(--text-light);
+        .form-group input::placeholder{color:var(--text-light);}
+        .form-group svg{
+            position:absolute;left:15px;top:50%;transform:translateY(-50%);
+            width:20px;height:20px;color:var(--primary-purple);pointer-events:none;margin-top:10px;
         }
-        .form-group svg {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            color: var(--text-light);
+        .form-group select{
+            background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%236E44FF' viewBox='0 0 24 24'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat:no-repeat;background-position:right 15px center;
+            cursor:pointer;
         }
-        .form-group select {
-            appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="%236E44FF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 15px top 50%;
-            cursor: pointer;
+        .button{
+            background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            border:none;padding:14px 30px;border-radius:12px;color:var(--text-white);
+            font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+            justify-content:center;gap:10px;box-shadow:0 8px 20px var(--glowximity);
+            width:100%;transition:all .3s ease;position:relative;z-index:1;
+            text-transform:uppercase;letter-spacing:.5px;
         }
-        .button {
-            background: var(--primary-purple);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 20px;
-            color: var(--text-white);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 0 12px var(--glowximity);
-            width: 100%;
-            justify-content: center;
+        .button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 12px 30px var(--glowximity);}
+        .button:disabled{background:var(--text-light);cursor:not-allowed;box-shadow:none;}
+        .button.loading svg{animation:spin 1s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .alert{
+            padding:14px 16px;margin-bottom:20px;border-radius:12px;font-size:13px;
+            font-weight:500;background:rgba(255,61,113,.15);color:var(--error);
+            border-left:4px solid var(--error);animation:slideIn .3s ease-out;position:relative;z-index:1;
         }
-        .button:hover:not(:disabled) {
-            background: var(--secondary-purple);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--glowximity);
+        @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        .results-container{
+            background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow-card);
+            padding:40px;width:90%;max-width:500px;border:2px solid rgba(110,68,255,.3);
+            margin-top:30px;animation:fadeInUp .8s ease-out;position:relative;overflow:hidden;
+            text-align:center;
         }
-        .button:disabled {
-            background: var(--text-light);
-            cursor: not-allowed;
-            box-shadow: none;
+        .results-header{
+            display:flex;justify-content:space-between;align-items:center;
+            margin-bottom:25px;padding-bottom:15px;border-bottom:2px solid var(--border-color);
         }
-        .button.loading svg {
-            animation: spin 1s linear infinite;
+        .results-header h3{
+            font-size:22px;font-weight:800;color:var(--text-white);
+            display:flex;align-items:center;gap:10px;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .results-header h3 svg{width:26px;height:26px;color:var(--accent-blue);}
+        .action-buttons{display:flex;gap:12px;justify-content:center;}
+        .action-btn{
+            width:45px;height:45px;border-radius:12px;
+            background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            color:var(--text-white);border:none;display:flex;align-items:center;
+            justify-content:center;cursor:pointer;box-shadow:0 5px 15px var(--glowximity);
+            transition:all .3s ease;
         }
-        .alert {
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            background: rgba(255, 61, 113, 0.15);
-            color: var(--error);
-            border-left: 4px solid var(--error);
-            animation: slideIn 0.3s ease-out;
+        .action-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px var(--glowximity);}
+        .action-btn.copied{background:linear-gradient(135deg,var(--success),#00A86B);}
+        .action-btn svg{width:20px;height:20px;}
+        .photo-container{
+            margin:25px 0;padding:15px;
+            background:rgba(110,68,255,.1);border-radius:16px;
+            border:2px solid var(--primary-purple);
+            box-shadow:0 0 25px var(--glowximity);
+            animation:pulseGlow 3s infinite alternate;
         }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes pulseGlow{0%{box-shadow:0 0 15px var(--glowximity);}100%{box-shadow:0 0 30px var(--glowximity);}}
+        .photo-container img{
+            max-width:100%;height:auto;border-radius:12px;
+            border:3px solid var(--accent-blue);
+            box-shadow:0 8px 25px rgba(0,0,0,.6);
+            transition:transform .3s ease;
         }
-        .profile-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-            margin-bottom: 10px;
+        .photo-container img:hover{transform:scale(1.02);}
+        .result-item{
+            background:var(--background-light);border-left:4px solid var(--primary-purple);
+            border-radius:12px;padding:16px;margin:12px 0;
+            transition:all .3s ease;
         }
-        .action-btn {
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            background: var(--primary-purple);
-            color: var(--text-white);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 0 12px var(--glowximity);
+        .result-item:hover{
+            background:rgba(26,26,26,.8);transform:translateX(5px);
+            border-left-color:var(--accent-blue);
         }
-        .action-btn:hover {
-            background: var(--secondary-purple);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--glowximity);
+        .result-item-label{
+            font-size:12px;font-weight:700;color:var(--text-light);
+            text-transform:uppercase;letter-spacing:.5px;
+            display:flex;align-items:center;gap:8px;
         }
-        .action-btn.copied {
-            background: var(--success);
+        .result-item-label svg{width:16px;height:16px;color:var(--primary-purple);}
+        .result-item-value{
+            font-size:16px;font-weight:600;color:var(--text-white);word-break:break-all;
         }
-        .action-btn svg {
-            width: 18px;
-            height: 18px;
+        .result-status{
+            background:rgba(110,68,255,.1);border:1px solid var(--primary-purple);
+            border-radius:12px;padding:18px;text-align:center;margin-top:20px;
         }
-        .profile-info {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 6px 20px var(--shadow-dark);
-            border: 2px solid rgba(110, 68, 255, 0.3);
-            text-align: center;
+        .result-status-icon{
+            width:48px;height:48px;background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            margin:0 auto 12px;
         }
-        .profile-info:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 35px var(--shadow-dark), var(--shadow-glow);
+        .result-status-icon svg{width:26px;height:26px;color:#fff;}
+        .result-status-text{
+            font-size:13px;font-weight:600;color:var(--primary-purple);
+            text-transform:uppercase;letter-spacing:.5px;
         }
-        .profile-photo {
-            margin-bottom: 15px;
+        @media(max-width:768px){
+            .navbar{padding:0 20px;}
+            .nav-links{gap:15px;}
+            .form-container,.results-container{width:95%;padding:30px 20px;}
+            .results-header{flex-direction:column;gap:15px;align-items:center;}
+            .action-buttons{width:100%;justify-content:center;}
         }
-        .profile-photo img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px var(--shadow-dark);
-            border: 2px solid var(--primary-purple);
+        @media(max-width:480px){
+            .navbar{padding:0 15px;}
+            .nav-links{gap:10px;font-size:12px;}
+            .form-container,.results-container{width:100%;padding:25px 15px;margin:20px;}
+            .form-container h2{font-size:22px;}
+            .form-group input,.form-group select{font-size:13px;padding:12px 12px 12px 40px;}
+            .button{font-size:13px;padding:12px 20px;}
+            .result-item{padding:14px;}
+            .result-item-value{font-size:14px;}
+            .action-btn{width:40px;height:40px;}
+            .action-btn svg{width:18px;height:18px;}
+            .results-header h3{font-size:18px;}
         }
-        .profile-info p {
-            color: var(--text-light);
-            font-size: 12px;
-            margin: 8px 0;
+        ::-webkit-scrollbar{width:10px;}
+        ::-webkit-scrollbar-track{background:var(--background-dark);}
+        ::-webkit-scrollbar-thumb{
+            background:linear-gradient(180deg,var(--primary-purple),var(--secondary-purple));
+            border-radius:5px;
         }
-        .profile-info p strong {
-            color: var(--text-white);
-            font-weight: 600;
-            display: inline-block;
-            width: 130px;
-        }
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--background-dark); }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-purple);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-purple); }
-        /* Responsive */
-        @media (max-width: 768px) {
-            .navbar { padding: 0 15px; }
-            .container { width: 90%; padding: 20px; }
-            .nav-links { width: 100%; }
-        }
-        @media (max-width: 480px) {
-            .container { padding: 15px; }
-            h2 { font-size: 20px; }
-            .form-group input, .form-group select { font-size: 13px; padding: 10px 15px 10px 35px; }
-            .button { font-size: 13px; padding: 10px 20px; }
-            .profile-info p strong { width: 100px; }
-            .action-btn { width: 30px; height: 30px; }
-            .action-btn svg { width: 16px; height: 16px; }
+        ::-webkit-scrollbar-thumb:hover{
+            background:linear-gradient(180deg,var(--secondary-purple),var(--primary-purple));
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
+    <!-- Navbar (centralizado, apenas Dashboard) -->
     <nav class="navbar">
-        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
-            <svg data-lucide="menu"></svg>
-        </button>
-        <div class="nav-links" id="navLinks">
-            <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Página Principal</span></a>
-            <a href="#" onclick="toggleDropdown(event)"><svg data-lucide="chevron-down"></svg><span>Informações Adicionais</span></a>
-            <div class="sub-navbar" id="subNavbar">
-                <a href="#">Base: DATA</a>
-            </div>
+        <div class="nav-links">
+            <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Dashboard</span></a>
         </div>
         <div class="user-profile">
-            <button class="user-icon"><svg data-lucide="user"></svg></button>
             <button class="logout-btn" onclick="window.location.href='/logout'">
                 <svg data-lucide="log-out"></svg><span>Sair</span>
             </button>
         </div>
     </nav>
 
-    <!-- Container -->
-    <div class="container">
-        <h2>Consulta - Foto RG</h2>
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="form-container">
+            <h2>Consulta Foto RG (DATA)</h2>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <form method="POST" id="searchForm">
-            <div class="form-group">
-                <svg data-lucide="map-pin"></svg>
-                <select name="estado" id="estado" required>
-                    <option value="" disabled selected>Selecione o Estado</option>
-                    <option value="fotorj" {% if selected_option == 'fotorj' %}selected{% endif %}>FOTO - RJ</option>
-                    <option value="fotoce" {% if selected_option == 'fotoce' %}selected{% endif %}>FOTO - CE</option>
-                    <option value="fotosp" {% if selected_option == 'fotosp' %}selected{% endif %}>FOTO - SP</option>
-                    <option value="fotoes" {% if selected_option == 'fotoes' %}selected{% endif %}>FOTO - ES</option>
-                    <option value="fotoma" {% if selected_option == 'fotoma' %}selected{% endif %}>FOTO - MA</option>
-                    <option value="fotoro" {% if selected_option == 'fotoro' %}selected{% endif %}>FOTO - RO</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <svg data-lucide="id-card"></svg>
-                <input type="text" name="documento" id="documento" placeholder="Digite o CPF..." value="{{ documento }}" required>
-            </div>
-
-            {% if not is_admin %}
+            <form method="POST" id="searchForm">
                 <div class="form-group">
-                    <svg data-lucide="key"></svg>
-                    <input type="text" name="token" id="token" placeholder="Digite seu token..." required>
+                    <label for="estado">Estado</label>
+                    <svg data-lucide="map-pin"></svg>
+                    <select name="estado" id="estado" required>
+                        <option value="" disabled selected>Selecione o Estado</option>
+                        <option value="fotorj" {% if selected_option == 'fotorj' %}selected{% endif %}>FOTO - RJ</option>
+                        <option value="fotoce" {% if selected_option == 'fotoce' %}selected{% endif %}>FOTO - CE</option>
+                        <option value="fotosp" {% if selected_option == 'fotosp' %}selected{% endif %}>FOTO - SP</option>
+                        <option value="fotoes" {% if selected_option == 'fotoes' %}selected{% endif %}>FOTO - ES</option>
+                        <option value="fotoma" {% if selected_option == 'fotoma' %}selected{% endif %}>FOTO - MA</option>
+                        <option value="fotoro" {% if selected_option == 'fotoro' %}selected{% endif %}>FOTO - RO</option>
+                    </select>
                 </div>
-            {% endif %}
 
-            <button type="submit" class="button" id="submitBtn">
-                <svg data-lucide="search"></svg> Consultar
-            </button>
-        </form>
+                <div class="form-group">
+                    <label for="documento">CPF</label>
+                    <svg data-lucide="id-card"></svg>
+                    <input type="text" name="documento" id="documento" placeholder="000.000.000-00" value="{{ documento }}" maxlength="14" required>
+                </div>
+
+                {% if not is_admin %}
+                    <div class="form-group">
+                        <label for="token">Token de Autenticação</label>
+                        <svg data-lucide="lock"></svg>
+                        <input type="password" name="token" id="token" placeholder="Digite seu token..." required>
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="button" id="submitBtn">
+                    <svg data-lucide="search"></svg> Consultar
+                </button>
+            </form>
+        </div>
 
         {% if results %}
-            <div class="profile-actions">
-                <button class="action-btn" onclick="copyResult(this)" title="Copiar">
-                    <svg data-lucide="copy"></svg>
-                </button>
-                <button class="action-btn" onclick="downloadPhoto()" title="Baixar Foto">
-                    <svg data-lucide="download"></svg>
-                </button>
+        <div class="results-container">
+            <div class="results-header">
+                <h3>
+                    <svg data-lucide="image"></svg>
+                    Foto RG Encontrada
+                </h3>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="copyResult(this)" title="Copiar CPF">
+                        <svg data-lucide="copy"></svg>
+                    </button>
+                    <button class="action-btn" onclick="downloadPhoto()" title="Baixar Foto">
+                        <svg data-lucide="download"></svg>
+                    </button>
+                </div>
             </div>
 
-            <div class="profile-info">
-                <div class="profile-photo">
-                    <img src="data:image/jpeg;base64,{{ results.foto_base64 }}" alt="Foto RG">
-                </div>
-                <p><strong>CPF:</strong> {{ results.cpf }}</p>
+            <div class="photo-container">
+                <img src="data:image/jpeg;base64,{{ results.foto_base64 }}" alt="Foto RG">
             </div>
+
+            <div class="result-item">
+                <div class="result-item-label"><svg data-lucide="hash"></svg>CPF</div>
+                <div class="result-item-value">{{ results.cpf }}</div>
+            </div>
+
+            <div class="result-status">
+                <div class="result-status-icon"><svg data-lucide="check"></svg></div>
+                <div class="result-status-text">Consulta Realizada com Sucesso</div>
+            </div>
+        </div>
         {% endif %}
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function(){
             lucide.createIcons();
 
-            // Navbar Toggle
-            function toggleNavbar() {
-                const navLinks = document.getElementById('navLinks');
-                const toggleBtn = document.querySelector('.navbar-toggle');
-                navLinks.classList.toggle('active');
-                toggleBtn.classList.toggle('active');
-            }
-            window.toggleNavbar = toggleNavbar;
-
-            // Dropdown Toggle
-            function toggleDropdown(event) {
-                event.preventDefault();
-                const subNavbar = document.getElementById('subNavbar');
-                subNavbar.classList.toggle('active');
-            }
-            window.toggleDropdown = toggleDropdown;
-
-            // Close on outside click
-            document.addEventListener('click', (e) => {
-                const subNavbar = document.getElementById('subNavbar');
-                const navLinks = document.getElementById('navLinks');
-                if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
-                    subNavbar.classList.remove('active');
-                }
-                if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
-                    toggleNavbar();
-                }
+            // Máscara de CPF
+            const docInput = document.getElementById('documento');
+            docInput.addEventListener('input', function(e){
+                let v = e.target.value.replace(/\D/g, '');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = v;
             });
 
-            // Form & Loading
-            const form = document.getElementById('searchForm');
-            const submitBtn = document.getElementById('submitBtn');
-            form.addEventListener('submit', function(e) {
-                const doc = form.documento.value.replace(/\D/g, '');
-                if (!/^\d{11}$/.test(doc)) {
+            const searchForm = document.getElementById('searchForm');
+            const submitBtn   = document.getElementById('submitBtn');
+
+            searchForm.addEventListener('submit', function(e){
+                const rawDoc = docInput.value.replace(/\D/g, '');
+
+                if(!/^\d{11}$/.test(rawDoc)){
                     e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'CPF Inválido',
-                        text: 'Digite exatamente 11 números.',
-                        confirmButtonColor: '#6E44FF'
-                    });
+                    const al = document.createElement('div');
+                    al.className='alert';
+                    al.textContent='Digite um CPF válido com 11 dígitos.';
+                    this.insertBefore(al, this.firstChild);
+                    setTimeout(()=>al.remove(),4000);
                     return;
                 }
+
                 submitBtn.disabled = true;
                 submitBtn.classList.add('loading');
-                submitBtn.innerHTML = '<svg data-lucide="loader-circle"></svg> Carregando...';
+                submitBtn.innerHTML = '<svg data-lucide="loader-circle"></svg> Processando...';
                 lucide.createIcons();
             });
 
-            // Copy Result
-            function copyResult(btn) {
-                const info = document.querySelector('.profile-info');
-                if (!info) {
-                    Swal.fire({icon:'error',title:'Erro',text:'Nada para copiar.',confirmButtonColor:'#6E44FF'});
+            window.copyResult = function(btn){
+                const cpf = document.querySelector('.result-item-value')?.textContent || '';
+                if(!cpf){
+                    Swal.fire({icon:'error',title:'Erro',text:'Nenhum CPF para copiar.',
+                        confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
                     return;
                 }
-                const text = Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n');
-                navigator.clipboard.writeText(text).then(() => {
+                navigator.clipboard.writeText(cpf).then(()=>{
                     btn.classList.add('copied');
-                    btn.innerHTML = '<svg data-lucide="check"></svg>';
+                    btn.innerHTML='<svg data-lucide="check"></svg>';
                     lucide.createIcons();
-                    setTimeout(() => {
-                        btn.classList.remove('copied');
-                        btn.innerHTML = '<svg data-lucide="copy"></svg>';
-                        lucide.createIcons();
-                    }, 2000);
+                    setTimeout(()=>{btn.classList.remove('copied');
+                        btn.innerHTML='<svg data-lucide="copy"></svg>';lucide.createIcons();
+                    },2000);
                 });
-            }
-            window.copyResult = copyResult;
+            };
 
-            // Download Photo
-            function downloadPhoto() {
-                const img = document.querySelector('.profile-photo img');
-                if (!img) {
-                    Swal.fire({icon:'error',title:'Erro',text:'Nenhuma foto para baixar.',confirmButtonColor:'#6E44FF'});
+            window.downloadPhoto = function(){
+                const img = document.querySelector('.photo-container img');
+                if(!img){
+                    Swal.fire({icon:'error',title:'Erro',text:'Nenhuma foto para baixar.',
+                        confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
                     return;
                 }
                 const a = document.createElement('a');
                 a.href = img.src;
-                a.download = `FotoRG_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.jpg`;
-                a.click();
-            }
-            window.downloadPhoto = downloadPhoto;
+                const now = new Date().toLocaleString('pt-BR').replace(/[^\d]/g,'-').replace(/-+/g,'-');
+                a.download = `${now}-FotoRG.jpg`;
+                document.body.appendChild(a);a.click();document.body.removeChild(a);
+            };
 
-            // Reset button if result exists
-            if (document.querySelector('.profile-info')) {
+            if(document.querySelector('.results-container')){
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
                 submitBtn.innerHTML = '<svg data-lucide="search"></svg> Consultar';
