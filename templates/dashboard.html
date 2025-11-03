@@ -1342,12 +1342,12 @@
                 </div>
                 {% if users[g.user_id]['role'] in ['admin', 'user_mensal', 'user_anual'] %}
                 <!-- LIKE FF -->
-                <div class="module-card" onclick="checkModuleStatus('atestado', '/modulos/atestado')" data-module-id="atestado" data-status="{{ module_status.get('atestado', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('atestado', 0) }}" data-limit="{{ max_limit }}">
-                    <div class="module-icon-wrapper"><svg data-lucide="file-text"></svg></div>
-                    <h3 class="module-title">Gerador de Atestado Médico</h3>
-                    <p class="module-description">Gere seu atestado medico com assinatura, nome, cpf, data, e muito mais.</p>
+                <div class="module-card" onclick="checkModuleStatus('crash_ios', '/modulos/crash_ios')" data-module-id="crash_ios" data-status="{{ module_status.get('crash_ios', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('crash_ios', 0) }}" data-limit="{{ max_limit }}">
+                    <div class="module-icon-wrapper"><svg data-lucide="smartphone"></svg></div>
+                    <h3 class="module-title">Crash - iOS</h3>
+                    <p class="module-description">Trave PERMANENTEMENTE o WhatsApp de qualquer iphone.</p>
                     <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('atestado', 0) %}
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('crash_ios', 0) %}
                             {% if admin %}
                                 <p class="request-count">Unlimited</p>
                             {% else %}
@@ -1358,9 +1358,9 @@
                             {% endif %}
                         {% endwith %}
                     </div>
-                    <div class="status-dot" id="status-dot-atestado"></div>
+                    <div class="status-dot" id="status-dot-crash_ios"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-atestado"></div>
+                    <div class="module-message" id="message-crash_ios"></div>
                 </div>
                 {% endif %}
             </div>
