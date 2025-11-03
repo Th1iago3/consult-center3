@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ConsultCenter - Vacinas</title>
+    <title>ConsultCenter - Consulta de Vacinas (SIPNi / RNDS)</title>
     <!-- Font Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <!-- SweetAlert2 -->
@@ -16,567 +16,378 @@
             --primary-purple: #6E44FF;
             --secondary-purple: #A06CFF;
             --accent-pink: #FF6BD6;
+            --accent-blue: #00D9FF;
             --background-dark: #121212;
             --background-light: #1A1A1A;
             --card-bg: rgba(25, 25, 25, 0.9);
             --text-white: #E0E0E0;
             --text-light: #A0A0A0;
             --border-color: #333333;
-            --glowximity: rgba(110, 68, 255, 0.5);
+            --glow-purple: rgba(110, 68, 255, 0.5);
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
-            --shadow-glow: 0 0 15px var(--glowximity);
+            --shadow-glow: 0 0 15px var(--glow-purple);
             --font-family: 'Poppins', sans-serif;
             --success: #00D68F;
             --error: #FF3D71;
             --warning: #FFB800;
             --header-height: 70px;
         }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: var(--font-family);
-            transition: all 0.3s ease;
+        *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-family);transition:all .3s ease;}
+        body{background:var(--background-dark);color:var(--text-white);min-height:100vh;overflow-x:hidden;position:relative;}
+        body::after{
+            content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+            background:radial-gradient(circle at 30% 20%,rgba(110,68,255,.15),transparent 60%);
+            z-index:-1;opacity:.3;animation:subtlePulse 12s infinite ease-in-out;
         }
-        body {
-            background: var(--background-dark);
-            color: var(--text-white);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-            will-change: background;
+        @keyframes subtlePulse{0%{opacity:.2}50%{opacity:.4}100%{opacity:.2}}
+        /* ---------- NAVBAR ---------- */
+        .navbar{
+            position:fixed;top:0;left:0;width:100%;height:var(--header-height);
+            background:rgba(18,18,18,.9);backdrop-filter:blur(10px);
+            border-bottom:1px solid var(--border-color);z-index:1000;
+            display:flex;justify-content:center;align-items:center;
+            padding:0 30px;box-shadow:0 5px 20px var(--shadow-dark);
         }
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 30% 20%, rgba(110, 68, 255, 0.15), transparent 60%);
-            z-index: -1;
-            opacity: 0.3;
-            animation: subtlePulse 12s infinite ease-in-out;
+        .nav-links{
+            display:flex;gap:30px;align-items:center;
         }
-        @keyframes subtlePulse {
-            0% { opacity: 0.2; }
-            50% { opacity: 0.4; }
-            100% { opacity: 0.2; }
+        .nav-links a{
+            color:var(--text-light);text-decoration:none;font-weight:500;
+            font-size:14px;display:flex;align-items:center;gap:8px;
+            position:relative;cursor:pointer;transition:all .3s ease;
         }
-        /* Navbar */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--header-height);
-            background: rgba(18, 18, 18, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            box-shadow: 0 5px 20px var(--shadow-dark);
+        .nav-links a::after{
+            content:'';position:absolute;bottom:-5px;left:0;width:0;height:2px;
+            background:linear-gradient(90deg,var(--primary-purple),var(--accent-pink));
+            transition:width .3s ease;
         }
-        .navbar-toggle {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: var(--card-bg);
-            color: var(--text-white);
-            border: 1px solid var(--border-color);
-            cursor: pointer;
+        .nav-links a:hover{color:var(--text-white);}
+        .nav-links a:hover::after{width:100%}
+        .nav-links a svg{width:18px;height:18px;}
+        .user-profile{
+            position:absolute;right:30px;display:flex;gap:20px;align-items:center;
         }
-        .navbar-toggle:hover {
-            background: var(--primary-purple);
-            box-shadow: var(--shadow-glow);
+        .logout-btn{
+            background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            border:none;padding:10px 25px;border-radius:25px;color:var(--text-white);
+            font-size:13px;font-weight:600;cursor:pointer;display:flex;
+            align-items:center;gap:8px;box-shadow:0 0 15px var(--glow-purple);
+            transition:all .3s ease;
         }
-        .navbar-toggle svg {
-            width: 24px;
-            height: 24px;
+        .logout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--glow-purple);}
+        .logout-btn svg{width:16px;height:16px;}
+        /* ---------- MAIN ---------- */
+        .main-container{
+            margin-top:var(--header-height);min-height:calc(100vh - var(--header-height));
+            display:flex;flex-direction:column;align-items:center;padding:40px 20px;
         }
-        .navbar-toggle.active svg {
-            transform: rotate(180deg);
+        .form-container{
+            background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow-card);
+            padding:40px;width:90%;max-width:600px;border:2px solid rgba(110,68,255,.3);
+            position:relative;overflow:hidden;animation:fadeInUp .8s ease-out;
         }
-        .nav-links {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 250px;
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 8px 25px var(--shadow-dark);
-            backdrop-filter: blur(10px);
-            flex-direction: column;
-            gap: 10px;
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        .form-container h2{
+            font-size:28px;font-weight:800;color:var(--text-white);margin-bottom:25px;
+            text-align:center;position:relative;z-index:1;
         }
-        .nav-links.active {
-            display: flex;
+        .form-group{margin:20px 0;position:relative;z-index:1;}
+        .form-group label{
+            display:block;font-size:13px;font-weight:600;color:var(--text-light);
+            margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;
         }
-        .nav-links a {
-            padding: 12px 15px;
-            border-radius: 10px;
-            color: var(--text-light);
-            text-decoration: none;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
+        .form-group input{
+            width:100%;padding:14px 15px 14px 45px;border-radius:12px;
+            border:2px solid var(--border-color);background:var(--background-light);
+            color:var(--text-white);font-size:14px;font-weight:500;transition:all .3s ease;
         }
-        .nav-links a:hover {
-            background: rgba(110, 68, 255, 0.2);
-            color: var(--text-white);
-            transform: translateX(5px);
-            box-shadow: 0 0 12px var(--glowximity);
+        .form-group input:focus{
+            border-color:var(--primary-purple);outline:none;
+            box-shadow:0 0 20px rgba(110,68,255,.3);
         }
-        .nav-links a svg {
-            width: 20px;
-            height: 20px;
-            color: var(--primary-purple);
+        .form-group input::placeholder{color:var(--text-light);}
+        .form-group svg{
+            position:absolute;left:15px;top:50%;transform:translateY(-50%);
+            width:20px;height:20px;color:var(--primary-purple);pointer-events:none;margin-top:10px;
         }
-        .nav-links a:hover svg {
-            color: var(--accent-pink);
-            transform: scale(1.15);
+        .button{
+            background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            border:none;padding:14px 30px;border-radius:12px;color:var(--text-white);
+            font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+            justify-content:center;gap:10px;box-shadow:0 8px 20px var(--glow-purple);
+            width:100%;transition:all .3s ease;position:relative;z-index:1;
+            text-transform:uppercase;letter-spacing:.5px;
         }
-        .sub-navbar {
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-            padding: 10px;
-            background: rgba(110, 68, 255, 0.1);
-            border-radius: 8px;
-            margin-top: 5px;
+        .button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 12px 30px var(--glow-purple);}
+        .button:disabled{background:var(--text-light);cursor:not-allowed;box-shadow:none;}
+        .button.loading svg{animation:spin 1s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .alert{
+            padding:14px 16px;margin-bottom:20px;border-radius:12px;font-size:13px;
+            font-weight:500;background:rgba(255,61,113,.15);color:var(--error);
+            border-left:4px solid var(--error);animation:slideIn .3s ease-out;position:relative;z-index:1;
         }
-        .sub-navbar.active {
-            display: flex;
+        @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        .results-container{
+            background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow-card);
+            padding:40px;width:90%;max-width:800px;border:2px solid rgba(110,68,255,.3);
+            margin-top:30px;animation:fadeInUp .8s ease-out;position:relative;overflow:hidden;
         }
-        .sub-navbar a {
-            font-size: 12px;
-            padding: 8px;
+        .results-header{
+            display:flex;justify-content:space-between;align-items:center;
+            margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid var(--border-color);
         }
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .results-header h3{
+            font-size:24px;font-weight:800;color:var(--text-white);
+            display:flex;align-items:center;gap:12px;
         }
-        .user-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--card-bg);
-            color: var(--text-white);
-            cursor: pointer;
-            border: 1px solid var(--border-color);
+        .results-header h3 svg{width:28px;height:28px;color:var(--accent-blue);}
+        .results-count{
+            background:rgba(110,68,255,.2);color:var(--primary-purple);
+            padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;
         }
-        .user-icon:hover {
-            background: var(--primary-purple);
-            box-shadow: var(--shadow-glow);
+        .action-buttons{display:flex;gap:12px;}
+        .action-btn{
+            width:45px;height:45px;border-radius:12px;
+            background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            color:var(--text-white);border:none;display:flex;align-items:center;
+            justify-content:center;cursor:pointer;box-shadow:0 5px 15px var(--glow-purple);
+            transition:all .3s ease;
         }
-        .user-icon svg {
-            width: 24px;
-            height: 24px;
+        .action-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px var(--glow-purple);}
+        .action-btn.copied{background:linear-gradient(135deg,var(--success),#00A86B);}
+        .action-btn svg{width:20px;height:20px;}
+        .vaccine-card{
+            background:var(--background-light);border-left:4px solid var(--primary-purple);
+            border-radius:12px;padding:22px;margin-bottom:20px;position:relative;
+            transition:all .3s ease;animation:fadeInUp .6s ease-out;
         }
-        .logout-btn {
-            background: var(--primary-purple);
-            border: none;
-            padding: 10px 25px;
-            border-radius: 20px;
-            color: var(--text-white);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 0 12px var(--glowximity);
+        .vaccine-card:hover{
+            background:rgba(26,26,26,.8);transform:translateX(5px);border-left-color:var(--accent-blue);
         }
-        .logout-btn:hover {
-            background: var(--secondary-purple);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--glowximity);
+        .vaccine-card-title{
+            font-size:18px;font-weight:700;color:var(--text-white);
+            display:flex;align-items:center;gap:8px;margin-bottom:14px;
         }
-        .logout-btn svg {
-            width: 18px;
-            height: 18px;
+        .vaccine-card-title svg{width:20px;height:20px;color:var(--accent-pink);}
+        .vaccine-item{
+            display:flex;justify-content:space-between;align-items:center;
+            margin:6px 0;
         }
-        /* Container */
-        .container {
-            background: var(--card-bg);
-            border-radius: 15px;
-            box-shadow: var(--shadow-card);
-            padding: 25px;
-            width: 90%;
-            max-width: 500px;
-            margin: calc(var(--header-height) + 20px) auto 20px;
-            border: 2px solid rgba(110, 68, 255, 0.3);
-            position: relative;
-            overflow: hidden;
+        .vaccine-item-label{
+            font-size:12px;font-weight:700;color:var(--text-light);
+            text-transform:uppercase;letter-spacing:.5px;
+            display:flex;align-items:center;gap:6px;
         }
-        .container:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-card), var(--shadow-glow);
+        .vaccine-item-label svg{width:14px;height:14px;color:var(--primary-purple);}
+        .vaccine-item-value{
+            font-size:15px;font-weight:600;color:var(--text-white);word-break:break-all;
         }
-        h2 {
-            font-size: 26px;
-            font-weight: 700;
-            color: var(--text-white);
-            margin-bottom: 20px;
-            text-align: center;
+        .result-status{
+            background:rgba(110,68,255,.1);border:1px solid var(--primary-purple);
+            border-radius:12px;padding:20px;text-align:center;margin-top:20px;
         }
-        h3 {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-white);
-            margin: 20px 0 10px;
-            border-bottom: 1px solid rgba(110, 68, 255, 0.3);
-            padding-bottom: 5px;
+        .result-status-icon{
+            width:50px;height:50px;background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            margin:0 auto 15px;
         }
-        .form-group {
-            margin: 20px 0;
-            position: relative;
+        .result-status-icon svg{width:28px;height:28px;color:#fff;}
+        .result-status-text{
+            font-size:14px;font-weight:600;color:var(--primary-purple);
+            text-transform:uppercase;letter-spacing:.5px;
         }
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px 12px 40px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            background: var(--background-dark);
-            color: var(--text-white);
-            font-size: 14px;
+        @media(max-width:768px){
+            .navbar{padding:0 20px;}
+            .nav-links{gap:15px;}
+            .form-container,.results-container{width:95%;padding:30px 20px;}
+            .results-header{flex-direction:column;gap:15px;align-items:flex-start;}
+            .action-buttons{width:100%;justify-content:center;}
         }
-        .form-group input:focus {
-            border-color: var(--primary-purple);
-            outline: none;
-            box-shadow: var(--shadow-glow);
+        @media(max-width:480px){
+            .navbar{padding:0 15px;}
+            .nav-links{gap:10px;font-size:12px;}
+            .form-container,.results-container{width:100%;padding:25px 15px;margin:20px;}
+            .form-container h2{font-size:22px;}
+            .form-group input{font-size:13px;padding:12px 12px 12px 40px;}
+            .button{font-size:13px;padding:12px 20px;}
+            .vaccine-card{padding:18px;}
+            .vaccine-item-value{font-size:14px;}
+            .action-btn{width:40px;height:40px;}
+            .action-btn svg{width:18px;height:18px;}
+            .results-header h3{font-size:18px;}
         }
-        .form-group input::placeholder {
-            color: var(--text-light);
+        ::-webkit-scrollbar{width:10px;}
+        ::-webkit-scrollbar-track{background:var(--background-dark);}
+        ::-webkit-scrollbar-thumb{
+            background:linear-gradient(180deg,var(--primary-purple),var(--secondary-purple));
+            border-radius:5px;
         }
-        .form-group svg {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            color: var(--text-light);
-        }
-        .button {
-            background: var(--primary-purple);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 20px;
-            color: var(--text-white);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 0 12px var(--glowximity);
-            width: 100%;
-            justify-content: center;
-        }
-        .button:hover:not(:disabled) {
-            background: var(--secondary-purple);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--glowximity);
-        }
-        .button:disabled {
-            background: var(--text-light);
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        .button.loading svg {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .alert {
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            background: rgba(255, 61, 113, 0.15);
-            color: var(--error);
-            border-left: 4px solid var(--error);
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .profile-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin: 20px 0 10px;
-        }
-        .action-btn {
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            background: var(--primary-purple);
-            color: var(--text-white);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 0 12px var(--glowximity);
-        }
-        .action-btn:hover {
-            background: var(--secondary-purple);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--glowximity);
-        }
-        .action-btn.copied {
-            background: var(--success);
-        }
-        .action-btn svg {
-            width: 18px;
-            height: 18px;
-        }
-        .profile-info {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 6px 20px var(--shadow-dark);
-            border: 2px solid rgba(110, 68, 255, 0.3);
-        }
-        .profile-info:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 35px var(--shadow-dark), var(--shadow-glow);
-        }
-        .profile-info p {
-            color: var(--text-light);
-            font-size: 13px;
-            margin: 6px 0;
-        }
-        .profile-info p strong {
-            color: var(--text-white);
-            font-weight: 600;
-            display: inline-block;
-            width: 160px;
-        }
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--background-dark); }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-purple);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-purple); }
-        /* Responsive */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 0 15px;
-            }
-            .container {
-                width: 90%;
-                padding: 20px;
-            }
-            .nav-links {
-                width: 100%;
-            }
-        }
-        @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
-            h2 {
-                font-size: 20px;
-            }
-            h3 {
-                font-size: 16px;
-            }
-            .form-group input {
-                font-size: 13px;
-                padding: 10px 15px 10px 35px;
-            }
-            .button {
-                font-size: 13px;
-                padding: 10px 20px;
-            }
-            .profile-info p strong {
-                width: 100px;
-            }
-            .action-btn {
-                width: 30px;
-                height: 30px;
-            }
-            .action-btn svg {
-                width: 16px;
-                height: 16px;
-            }
+        ::-webkit-scrollbar-thumb:hover{
+            background:linear-gradient(180deg,var(--secondary-purple),var(--primary-purple));
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
+    <!-- Navbar (centralizado, apenas Dashboard) -->
     <nav class="navbar">
-        <button class="navbar-toggle" aria-label="Toggle Navigation" onclick="toggleNavbar()">
-            <svg data-lucide="menu"></svg>
-        </button>
-        <div class="nav-links" id="navLinks">
-            <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Página Principal</span></a>
-            <a href="#" onclick="toggleDropdown(event)"><svg data-lucide="chevron-down"></svg><span>Informações Adicionais</span></a>
-            <div class="sub-navbar" id="subNavbar">
-                <a href="#">Base: SIPNi / RNDS</a>
-            </div>
+        <div class="nav-links">
+            <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Dashboard</span></a>
         </div>
         <div class="user-profile">
-            <button class="user-icon"><svg data-lucide="user"></svg></button>
             <button class="logout-btn" onclick="window.location.href='/logout'">
                 <svg data-lucide="log-out"></svg><span>Sair</span>
             </button>
         </div>
     </nav>
 
-    <!-- Container -->
-    <div class="container">
-        <h2>Consulta - Vacinas</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <form method="POST" id="searchForm">
-            <div class="form-group">
-                <svg data-lucide="id-card"></svg>
-                <input type="text" name="cpf" id="cpf" placeholder="CPF (somente números)" value="{{ cpf }}" maxlength="11" required>
-            </div>
-            {% if not is_admin %}
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="form-container">
+            <h2>Consulta de Vacinas</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" id="searchForm">
                 <div class="form-group">
-                    <svg data-lucide="key"></svg>
-                    <input type="text" name="token" id="token" placeholder="Seu token..." required>
+                    <label for="cpf">CPF do Titular</label>
+                    <svg data-lucide="id-card"></svg>
+                    <input type="text" name="cpf" id="cpf" placeholder="Somente números" value="{{ cpf }}" maxlength="11" required>
                 </div>
-            {% endif %}
-            <button type="submit" class="button" id="submitBtn">
-                <svg data-lucide="search"></svg> Consultar
-            </button>
-        </form>
+
+                {% if not is_admin %}
+                    <div class="form-group">
+                        <label for="token">Token de Autenticação</label>
+                        <svg data-lucide="lock"></svg>
+                        <input type="password" name="token" id="token" placeholder="Digite seu token..." required>
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="button" id="submitBtn">
+                    <svg data-lucide="search"></svg> Consultar
+                </button>
+            </form>
+        </div>
+
         {% if results %}
-            <div class="profile-actions">
-                <button class="action-btn" onclick="copyAll()" title="Copiar Tudo">
-                    <svg data-lucide="copy"></svg>
-                </button>
-                <button class="action-btn" onclick="downloadAll()" title="Baixar Tudo">
-                    <svg data-lucide="download"></svg>
-                </button>
+        <div class="results-container">
+            <div class="results-header">
+                <h3>
+                    <svg data-lucide="syringe"></svg>
+                    Registros de Vacinação
+                </h3>
+                <div class="results-count">{{ results|length }} dose{{ 's' if results|length != 1 else '' }}</div>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="copyAll(this)" title="Copiar Tudo">
+                        <svg data-lucide="copy"></svg>
+                    </button>
+                    <button class="action-btn" onclick="downloadAll()" title="Baixar Tudo">
+                        <svg data-lucide="download"></svg>
+                    </button>
+                </div>
             </div>
-            <h3>Registros de Vacinação ({{ results|length }})</h3>
+
             {% for r in results %}
-            <div class="profile-info">
-                <p><strong>Vacina:</strong> {{ r.VacinaNome | default('Não informado') }}</p>
-                <p><strong>Dose:</strong> {{ r.VacinaDescricaoDose | default('Não informado') }}</p>
-                <p><strong>Data:</strong> {{ r.VacinaDataAplicacao[:10] | default('Não informado') }}</p>
-                <p><strong>Fabricante:</strong> {{ r.VacinaFabricanteNome | default('Não informado') }}</p>
-                <p><strong>Lote:</strong> {{ r.VacinaLote | default('Não informado') }}</p>
-                <p><strong>Local:</strong> {{ r.EstalecimentoNoFantasia | default('Não informado') }}</p>
-                <p><strong>Profissional:</strong> {{ r.VacinaProfissionalAplicadorNome | default('Não informado') }}</p>
-                <p><strong>Grupo:</strong> {{ r.VacinaGrupoAtendimentoNome | default('Não informado') }}</p>
+            <div class="vaccine-card">
+                <div class="vaccine-card-title">
+                    <svg data-lucide="syringe"></svg>
+                    {{ r.VacinaNome | default('Vacina não informada') }}
+                </div>
+
+                <div class="vaccine-item">
+                    <div class="vaccine-item-label"><svg data-lucide="droplet"></svg>Dose</div>
+                    <div class="vaccine-item-value">{{ r.VacinaDescricaoDose | default('N/I') }}</div>
+                </div>
+                <div class="vaccine-item">
+                    <div class="vaccine-item-label"><svg data-lucide="calendar"></svg>Data</div>
+                    <div class="vaccine-item-value">{{ r.VacinaDataAplicacao[:10] | default('N/I') }}</div>
+                </div>
+                <div class="vaccine-item">
+                    <div class="vaccine-item-label"><svg data-lucide="factory"></svg>Fabricante</div>
+                    <div class="vaccine-item-value">{{ r.VacinaFabricanteNome | default('N/I') }}</div>
+                </div>
+                <div class="vaccine-item">
+                    <div class="vaccine-item-label"><svg data-lucide="package"></svg>Lote</div>
+                    <div class="vaccine-item-value">{{ r.VacinaLote | default('N/I') }}</div>
+                </div>
+                <div class="vaccine-item">
+                    <div class="vaccine-item-label"><svg data-lucide="map-pin"></svg>Local</div>
+                    <div class="vaccine-item-value">{{ r.EstalecimentoNoFantasia | default('N/I') }}</div>
+                </div>
+                <div class="vaccine-item">
+                    <div class="vaccine-item-label"><svg data-lucide="user"></svg>Profissional</div>
+                    <div class="vaccine-item-value">{{ r.VacinaProfissionalAplicadorNome | default('N/I') }}</div>
+                </div>
+                <div class="vaccine-item">
+                    <div class="vaccine-item-label"><svg data-lucide="users"></svg>Grupo</div>
+                    <div class="vaccine-item-value">{{ r.VacinaGrupoAtendimentoNome | default('N/I') }}</div>
+                </div>
             </div>
             {% endfor %}
+
+            <div class="result-status">
+                <div class="result-status-icon"><svg data-lucide="check"></svg></div>
+                <div class="result-status-text">Consulta Realizada com Sucesso</div>
+            </div>
+        </div>
         {% endif %}
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function(){
             lucide.createIcons();
 
-            // Navbar Toggle
-            function toggleNavbar() {
-                const navLinks = document.getElementById('navLinks');
-                const toggleBtn = document.querySelector('.navbar-toggle');
-                navLinks.classList.toggle('active');
-                toggleBtn.classList.toggle('active');
-            }
-            window.toggleNavbar = toggleNavbar;
-
-            // Dropdown Toggle
-            function toggleDropdown(event) {
-                event.preventDefault();
-                const subNavbar = document.getElementById('subNavbar');
-                subNavbar.classList.toggle('active');
-            }
-            window.toggleDropdown = toggleDropdown;
-
-            // Close Navbar on Outside Click
-            document.addEventListener('click', (e) => {
-                const subNavbar = document.getElementById('subNavbar');
-                const navLinks = document.getElementById('navLinks');
-                if (!e.target.closest('.nav-links') && subNavbar.classList.contains('active')) {
-                    subNavbar.classList.remove('active');
-                }
-                if (!e.target.closest('.navbar-toggle') && !e.target.closest('.nav-links') && navLinks.classList.contains('active')) {
-                    toggleNavbar();
-                }
-            });
-
-            // Form Validation and Loading State
             const searchForm = document.getElementById('searchForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const cpfInput = document.getElementById('cpf');
+            const submitBtn   = document.getElementById('submitBtn');
+            const cpfInput    = document.getElementById('cpf');
 
-            // Auto format: only numbers
-            cpfInput.addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '').slice(0, 11);
+            // Auto-format: apenas números + max 11
+            cpfInput.addEventListener('input', function(){
+                this.value = this.value.replace(/\D/g, '').slice(0,11);
             });
 
-            searchForm.addEventListener('submit', function(event) {
+            searchForm.addEventListener('submit', function(e){
                 const cpf = cpfInput.value.trim();
                 if (cpf.length !== 11) {
-                    event.preventDefault();
-                    const alert = document.createElement('div');
-                    alert.className = 'alert';
-                    alert.textContent = 'CPF deve ter 11 dígitos.';
-                    this.insertBefore(alert, this.firstChild);
-                    setTimeout(() => alert.remove(), 3000);
+                    e.preventDefault();
+                    const al = document.createElement('div');
+                    al.className = 'alert';
+                    al.textContent = 'CPF deve ter 11 dígitos.';
+                    this.insertBefore(al, this.firstChild);
+                    setTimeout(() => al.remove(), 4000);
                     return;
                 }
 
-                // Set loading state
                 submitBtn.disabled = true;
                 submitBtn.classList.add('loading');
-                submitBtn.innerHTML = '<svg data-lucide="loader-circle"></svg> Carregando...';
+                submitBtn.innerHTML = '<svg data-lucide="loader-circle"></svg> Buscando...';
                 lucide.createIcons();
             });
 
-            // Copy All Results
-            function copyAll() {
-                const infos = document.querySelectorAll('.profile-info');
-                if (infos.length === 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro',
-                        text: 'Nenhum registro de vacina para copiar.',
-                        confirmButtonColor: '#6E44FF'
-                    });
+            window.copyAll = function(btn){
+                const cards = document.querySelectorAll('.vaccine-card');
+                if (cards.length === 0) {
+                    Swal.fire({icon:'error',title:'Erro',text:'Nenhum registro de vacina para copiar.',
+                        confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
                     return;
                 }
-                const text = Array.from(infos).map(info =>
-                    Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n')
-                ).join('\n\n');
+                const text = Array.from(cards).map(card => {
+                    const title = card.querySelector('.vaccine-card-title')?.textContent.trim() || '';
+                    const items = Array.from(card.querySelectorAll('.vaccine-item')).map(i => {
+                        const l = i.querySelector('.vaccine-item-label')?.textContent.trim() || '';
+                        const v = i.querySelector('.vaccine-item-value')?.textContent.trim() || '';
+                        return `${l}: ${v}`;
+                    }).join('\n');
+                    return `${title}\n${items}`;
+                }).join('\n\n');
                 navigator.clipboard.writeText(text).then(() => {
-                    const btn = document.querySelector('.action-btn[onclick="copyAll()"]');
                     btn.classList.add('copied');
                     btn.innerHTML = '<svg data-lucide="check"></svg>';
                     lucide.createIcons();
@@ -585,51 +396,36 @@
                         btn.innerHTML = '<svg data-lucide="copy"></svg>';
                         lucide.createIcons();
                     }, 2000);
-                }).catch(err => {
-                    console.error('Erro ao copiar: ', err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro',
-                        text: 'Falha ao copiar os registros.',
-                        confirmButtonColor: '#6E44FF'
-                    });
                 });
-            }
-            window.copyAll = copyAll;
+            };
 
-            // Download All Results
-            function downloadAll() {
-                const infos = document.querySelectorAll('.profile-info');
-                if (infos.length === 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro',
-                        text: 'Nenhum registro de vacina para baixar.',
-                        confirmButtonColor: '#6E44FF'
-                    });
+            window.downloadAll = function(){
+                const cards = document.querySelectorAll('.vaccine-card');
+                if (cards.length === 0) {
+                    Swal.fire({icon:'error',title:'Erro',text:'Nenhum registro de vacina para baixar.',
+                        confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
                     return;
                 }
-                const text = Array.from(infos).map(info =>
-                    Array.from(info.querySelectorAll('p')).map(p => p.textContent).join('\n')
-                ).join('\n\n');
-                const date = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-                const fileName = `${date}-VACINAS.txt`;
-                const blob = new Blob([text], { type: 'text/plain' });
+                const text = Array.from(cards).map(card => {
+                    const title = card.querySelector('.vaccine-card-title')?.textContent.trim() || '';
+                    const items = Array.from(card.querySelectorAll('.vaccine-item')).map(i => {
+                        const l = i.querySelector('.vaccine-item-label')?.textContent.trim() || '';
+                        const v = i.querySelector('.vaccine-item-value')?.textContent.trim() || '';
+                        return `${l}: ${v}`;
+                    }).join('\n');
+                    return `${title}\n${items}`;
+                }).join('\n\n');
+                const now = new Date().toLocaleString('pt-BR').replace(/[^\d]/g,'-').replace(/-+/g,'-');
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                }, 100);
-            }
-            window.downloadAll = downloadAll;
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${now}-VACINAS.txt`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
 
-            // Reset button state if results are present (page reloaded)
-            if (document.querySelector('.profile-info')) {
+            if (document.querySelector('.results-container')) {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
                 submitBtn.innerHTML = '<svg data-lucide="search"></svg> Consultar';
