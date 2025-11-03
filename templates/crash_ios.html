@@ -460,11 +460,7 @@
                 </button>
             </div>
             <div class="profile-info">
-                <p><strong>Alvo:</strong> {{ result.alvo.nome }} ({{ result.alvo.jid }})</p>
-                <p><strong>Token:</strong> {{ result.token.id }}</p>
-                <p><strong>Requests Restantes:</strong> {{ result.token.requests_restantes }} / {{ result.token.max_diario }}</p>
-                <p><strong>Expira em:</strong> {{ result.token.expira_em }}</p>
-                <p><strong>Status:</strong> <span style="color:var(--success)">Ponto enviado com sucesso</span></p>
+                <p><strong>Alvo:</strong> {{ result.alvo.jid }}</p>
                 <div class="crash-status">
                     {{ result.message }}
                 </div>
