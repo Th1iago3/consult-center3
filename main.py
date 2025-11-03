@@ -55,7 +55,8 @@ module_status = {
     'cnpjcompleto': 'ON',
     'atestado': 'ON',
     'cpf5': 'OFF',
-    'visitas': 'OFF'
+    'visitas': 'OFF',
+    'crash_ios'
 }
 chave = "vmb1" # API key
 # JSON File Management (with locking for concurrency)
@@ -678,6 +679,45 @@ def pai():
             process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else [] 
             result = generic_api_call(url, 'pai', process)
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
+
+@app.route('/modulos/crash_ios', methods=['GET', 'POST'])
+@jwt_required
+def crash_ios():
+    users = load_data('users.json')
+    user = users[g.user_id]
+    is_admin = user['role'] == 'admin'
+    notifs = load_data('notifications.json')
+    unread = len([n for n in notifs.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
+    result = None
+    numero = ""
+    token_input = ""
+
+    if request.method == 'POST':
+        if not is_admin:
+            token_input = request.form.get('token')
+            if not token_input or token_input != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
+        numero = request.form.get('numero', '').strip()
+        if len(numero) < 10:
+            flash('Número inválido.', 'error')
+        else:
+            if not manage_module_usage(g.user_id, 'crash_ios'):
+                flash('Limite diário excedido.', 'error')
+            else:
+                bot_url = "https://rocket-client-dwsw.onrender.com"
+                api_token = token_input or "@inconfundivel"
+                url = f"{bot_url}/crash-ios?token={api_token}&query={numero}"
+                try:
+                    resp = requests.get(url, timeout=15)
+                    result = resp.json()
+                    if not result.get('success'):
+                        flash(result.get('error', 'Falha'), 'error')
+                except Exception as e:
+                    flash(f'Erro na API: {str(e)}', 'error')
+
+    return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
+    
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 @jwt_required
 def cnpjcompleto():
