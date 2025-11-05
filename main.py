@@ -718,8 +718,10 @@ def crash_ios():
                     result = resp.json()
                     if not result.get('success'):
                         flash(result.get('error', 'Falha'), 'error')
+                        result = None  # Set result to None if not success to skip rendering results
                 except Exception as e:
                     flash(f'Erro na API: {str(e)}', 'error')
+                    result = None
     return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
    
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
