@@ -861,7 +861,70 @@ def cpf2():
                 return result
             result = generic_api_call(url, 'cpf2', process)
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-    
+
+@app.route('/modulos/email', methods=['GET', 'POST'])
+@jwt_required
+def email():
+    users = load_data('users.json')
+    user = users[g.user_id]
+    is_admin = user['role'] == 'admin'
+    result = None
+    email_input = ""
+
+    if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('email.html', is_admin=is_admin, result=result, email=email_input)
+
+        email_input = request.form.get('email', '').strip()
+        if not email_input:
+            flash('E-mail não fornecido.', 'error')
+        else:
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={email_input}&tipo=email2"
+
+            def process(data):
+                if not data or not isinstance(data, list) or not data[0].get("DADOS"):
+                    return None
+                d = data[0]["DADOS"][0]
+                email_data = data[0].get("EMAIL", {})
+                enderecos = data[0].get("ENDERECOS", [])
+                parentes = data[0].get("PARENTES", [])
+                telefones = data[0].get("TELEFONE", [])
+
+                result = {
+                    "NOME": d.get("NOME", "Não informado"),
+                    "CPF": d.get("CPF", "Não informado"),
+                    "NOME_MAE": d.get("NOME_MAE", "Não informado"),
+                    "SEXO": d.get("SEXO", "Não informado"),
+                    "DT_NASCIMENTO": d.get("NASC", "Não informado"),
+                    "FLAG_OBITO": d.get("SO", "Não informado"),
+                    "DT_OBITO": d.get("DT_OB", "Não informado"),
+                    "FAIXA_RENDA": data[0]["PODER_AQUISITIVO"][0]["FX_PODER_AQUISITIVO"] if data[0].get("PODER_AQUISITIVO") else "Não informado",
+                    "RENDA_PRESUMIDA": d.get("RENDA", "Não informado"),
+                    "CBO": d.get("CBO", "Não informado"),
+                    "STATUS_RECEITA_FEDERAL": d.get("CD_SIT_CAD", "Não informado"),
+                    "EMAIL_VALIDACAO": {
+                        "EMAIL": email_data.get("EMAIL", "Não informado"),
+                        "SCORE": email_data.get("EMAIL_SCORE", "Não informado"),
+                        "ESTRUTURA": email_data.get("ESTRUTURA", "Não informado"),
+                        "BLACKLIST": email_data.get("BLACKLIST", "Não informado"),
+                        "DOMINIO": email_data.get("DOMINIO", "Não informado"),
+                        "PRIORIDADE": email_data.get("PRIORIDADE", "Não informado")
+                    },
+                    "ENDERECOS": enderecos,
+                    "PARENTES": parentes,
+                    "TELEFONES": ", ".join(
+                        f"({t['DDD']}) {t['TELEFONE']}"
+                        for t in telefones if t.get('DDD') and t.get('TELEFONE')
+                    ) or "SEM RESULTADO"
+                }
+                return result
+
+            result = generic_api_call(url, 'email', process)
+
+    return render_template('email.html', is_admin=is_admin, result=result, email=email_input)
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 @jwt_required
 def cpfdata():
