@@ -122,9 +122,6 @@ def security_check():
     if request.endpoint in ['static', 'preview', 'creditos']:
         return
 
-    if not is_real_browser():
-        abort(403)
-
     fp = hashlib.sha256(f"{request.remote_addr}{request.headers.get('User-Agent')}".encode()).hexdigest()
     if 'device_id' not in session:
         session['device_id'] = fp
