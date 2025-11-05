@@ -79,7 +79,7 @@ def verify_jwt(token: str):
     except:
         return None
 
-# === COOKIES SEGUROS E ÚNICOS ===
+# === COOKIES SEGUROS ===
 def set_secure_cookie(resp, name, value):
     domain = request.host.split(':')[0]
     resp.set_cookie(
@@ -93,35 +93,29 @@ def set_secure_cookie(resp, name, value):
         path='/'
     )
 
-# === DETECÇÃO DE BOTS / SELENIUM / WEBDRIVER ===
+# === DETECÇÃO DE BOTS ===
 def is_real_browser():
     ua = request.headers.get('User-Agent', '').lower()
     headers = request.headers
     js = request.cookies.get('js_enabled')
     canvas = request.cookies.get('canvas_fp')
     webgl = request.cookies.get('webgl_fp')
-
     bot_patterns = ['bot', 'spider', 'crawler', 'headless', 'selenium', 'phantomjs', 'webdriver', 'puppeteer', 'playwright', 'scrapy', 'python-requests']
     if any(p in ua for p in bot_patterns):
         return False
-
     required_headers = ['Accept', 'Accept-Language', 'Accept-Encoding', 'Upgrade-Insecure-Requests']
     if not all(h in headers for h in required_headers):
         return False
-
     if not js or not canvas or not webgl:
         return False
-
     if not re.search(r'chrome|firefox|safari|edge', ua):
-        return True
-
+        return False
     return True
 
 @app.before_request
 def security_check():
     if request.endpoint in ['static', 'preview', 'creditos']:
         return
-
     fp = hashlib.sha256(f"{request.remote_addr}{request.headers.get('User-Agent')}".encode()).hexdigest()
     if 'device_id' not in session:
         session['device_id'] = fp
@@ -228,7 +222,6 @@ def login_or_register():
         password = request.form.get('password', '').strip()
         users = load_data('users.json')
         device_id = session.get('device_id')
-
         if action == 'login':
             if username in users and check_password_hash(users[username]['password'], password):
                 user = users[username]
@@ -246,7 +239,6 @@ def login_or_register():
                 set_secure_cookie(resp, 'webgl_fp', secrets.token_hex(16))
                 return resp
             flash('Credenciais inválidas.', 'error')
-
         elif action == 'register':
             if username in users:
                 flash('Usuário já existe.', 'error')
@@ -267,7 +259,6 @@ def login_or_register():
             save_data(users, 'users.json')
             flash('Registrado com sucesso.', 'success')
             return redirect('/')
-
     return render_template('login.html')
 
 # === DASHBOARD ===
@@ -282,7 +273,6 @@ def dashboard():
     is_guest = g.role == 'guest'
     affiliate_link = url_for('login_or_register', aff=user.get('affiliate_code'), _external=True) if not is_guest else None
     max_limit = 999999 if is_admin else {'guest': 10, 'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(g.role, 0)
-
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'redeem':
@@ -307,7 +297,6 @@ def dashboard():
                 save_data(users, 'users.json')
                 save_data(gifts, 'gifts.json')
                 flash('Gift ativado!', 'success')
-
         elif is_admin and action == 'view_modules':
             target_user = request.form.get('user')
             module = request.form.get('module')
@@ -316,7 +305,6 @@ def dashboard():
                 role = users[target_user].get('role', 'user_semanal')
                 max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(role, 30) if role != 'admin' else 'Unlimited'
                 return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)} if module else user_modules, "maxRequests": max_requests})
-
     return render_template('dashboard.html', user=user, unread=unread_count, admin=is_admin, guest=is_guest, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
 
 # === ADMIN PANEL ===
@@ -328,7 +316,6 @@ def admin_panel():
     users = load_data('users.json')
     notifications = load_data('notifications.json')
     gifts = load_data('gifts.json')
-
     if request.method == 'POST':
         action = request.form.get('action')
         try:
@@ -355,7 +342,6 @@ def admin_panel():
                 }
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
-
             elif action == "delete_user":
                 user_input = request.form.get('user')
                 password = request.form.get('password')
@@ -364,7 +350,6 @@ def admin_panel():
                     save_data(users, 'users.json')
                     return jsonify({'message': 'Usuário excluído!', 'category': 'success'})
                 return jsonify({'message': 'Credenciais inválidas.', 'category': 'error'})
-
             elif action == "view_users":
                 users_dict = {}
                 for k, v in users.items():
@@ -373,7 +358,6 @@ def admin_panel():
                         user_data['password'] = v['plain_password']
                     users_dict[k] = user_data
                 return jsonify({'users': users_dict})
-
             elif action == "send_message":
                 message = request.form.get('message')
                 user_input = request.form.get('user', 'all')
@@ -387,7 +371,6 @@ def admin_panel():
                         notifications.setdefault(user_input, []).append({'id': notif_id, 'message': message, 'timestamp': datetime.now().isoformat()})
                 save_data(notifications, 'notifications.json')
                 return jsonify({'message': 'Mensagem enviada!', 'category': 'success'})
-
             elif action == "reset_device":
                 user_input = request.form.get('user')
                 password = request.form.get('password')
@@ -400,14 +383,12 @@ def admin_panel():
                         return resp
                     return jsonify({'message': 'Dispositivos resetados!', 'category': 'success'})
                 return jsonify({'message': 'Credenciais inválidas.', 'category': 'error'})
-
             elif action == "toggle_module":
                 module = request.form.get('module')
                 status = request.form.get('status')
                 if module in module_status:
                     module_status[module] = status
                     return jsonify({'success': True, 'message': f'Módulo {module} {status}'})
-
             elif action == 'create_gift':
                 modules = request.form.get('modules', 'all')
                 expiration_days = int(request.form.get('expiration_days', 30))
@@ -421,14 +402,11 @@ def admin_panel():
                 }
                 save_data(gifts, 'gifts.json')
                 return jsonify({'message': 'Gift criado!', 'code': code, 'category': 'success'})
-
             elif action == "view_gifts":
                 return jsonify({'gifts': gifts})
-
             elif action == 'get_stats':
                 active_users = sum(1 for u in users.values() if u.get('role') != 'guest' and datetime.now() < datetime.strptime(u['expiration'], '%Y-%m-%d'))
                 return jsonify({'active_users': active_users})
-
             elif action == 'backup':
                 zip_buffer = BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
@@ -441,7 +419,6 @@ def admin_panel():
                             zip_file.write(file_path, os.path.join('novidades', filename))
                 zip_buffer.seek(0)
                 return send_file(zip_buffer, as_attachment=True, download_name='backup.zip', mimetype='application/zip')
-
             elif action == 'restore':
                 if 'zip_file' not in request.files:
                     return jsonify({'message': 'Nenhum arquivo.', 'category': 'error'})
@@ -461,15 +438,13 @@ def admin_panel():
                     if os.path.exists(nov_dir):
                         for filename in os.listdir(nov_dir):
                             shutil.copy(os.path.join(nov_dir, filename), app.config['UPLOAD_FOLDER'])
-                    shutil.rmtree(temp_dir)
+                    shutil.rmtree(temp_dirどの
                     return jsonify({'message': 'Restauração concluída!', 'category': 'success'})
                 except Exception as e:
                     shutil.rmtree(temp_dir)
                     return jsonify({'message': 'Erro na restauração.', 'category': 'error'})
-
         except Exception as e:
             return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
-
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
 
 # === NOTIFICAÇÕES ===
@@ -612,6 +587,7 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
         return None
 
 # === TODOS OS MÓDULOS ===
+
 @app.route('/modulos/mae', methods=['GET', 'POST'])
 @jwt_required
 def mae():
@@ -1316,7 +1292,7 @@ def nomelv():
         if not nome:
             flash('Nome não fornecido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:100.org10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
             process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else d if isinstance(d, list) else None
             results = generic_api_call(url, 'nomelv', process)
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
@@ -1380,19 +1356,17 @@ def ip():
                     'region_code': d.get('region_code'),
                     'city': d.get('city'),
                     'district': d.get('district'),
-                    'zip': d.get('zip'),
-                    'lat': d.get('latitude'),
-                    'lon': d.get('longitude'),
+                    'zip': d.get('postal'),
+                    'latitude': d.get('latitude'),
+                    'longitude': d.get('longitude'),
                     'timezone': d.get('timezone'),
-                    'offset': d.get('offset'),
-                    'currency': d.get('currency'),
+                    'timezone_offset': d.get('timezone_utc'),
                     'isp': d.get('isp'),
                     'org': d.get('org'),
-                    'as': d.get('as'),
-                    'asname': d.get('asname'),
-                    'mobile': d.get('mobile'),
-                    'proxy': d.get('proxy'),
-                    'hosting': d.get('hosting')
+                    'asn': d.get('asn'),
+                    'mobile': d.get('connection', {}).get('mobile', False),
+                    'proxy': d.get('connection', {}).get('proxy', False),
+                    'hosting': d.get('connection', {}).get('hosting', False)
                 }
             results = generic_api_call(url, 'ip', process)
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
@@ -1417,35 +1391,47 @@ def likeff():
         if not uid or not uid.isdigit():
             flash('UID inválido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={uid}&tipo=likeff"
-            process = lambda d: d if isinstance(d, dict) and d.get('status') == 'success' and 'data' in d else None
-            result = generic_api_call(url, 'likeff', process)
+            if not manage_module_usage(g.user_id, 'likeff'):
+                flash('Limite diário excedido.', 'error')
+            else:
+                api_url = "https://api.likeff.com.br/v2/likes"
+                payload = {"uid": uid}
+                headers = {"Content-Type": "application/json"}
+                try:
+                    resp = requests.post(api_url, json=payload, headers=headers, timeout=20)
+                    data = resp.json()
+                    if data.get('status') == 'success':
+                        result = data.get('data', {})
+                    else:
+                        flash(data.get('message', 'Erro na API'), 'error')
+                except Exception as e:
+                    flash(f'Erro: {str(e)}', 'error')
     return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
 
-@app.route('/modulos/nome2', methods=['GET', 'POST'])
+@app.route('/modulos/atestado', methods=['GET', 'POST'])
 @jwt_required
-def nome2():
+def atestado():
     users = load_data('users.json')
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
-    results = None
-    nome = ""
+    result = None
+    cpf = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-        nome = request.form.get('nome', '').strip()
-        if not nome:
-            flash('Nome não fornecido.', 'error')
+                return render_template('atestado.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+        cpf = request.form.get('cpf', '').strip().replace('.', '').replace('-', '')
+        if len(cpf) != 11 or not cpf.isdigit():
+            flash('CPF inválido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev3"
-            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else None
-            results = generic_api_call(url, 'nome2', process)
-    return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=atestado"
+            process = lambda d: d.get('response') if isinstance(d, dict) and d.get('status') and 'response' in d else None
+            result = generic_api_call(url, 'atestado', process)
+    return render_template('atestado.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
 
 @app.route('/modulos/cpf5', methods=['GET', 'POST'])
 @jwt_required
@@ -1467,8 +1453,8 @@ def cpf5():
         if not cpf_input:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf_input}&tipo=cpfextra"
-            process = lambda d: d if isinstance(d, dict) and 'CPF' in d else None
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf_input}&tipo=cpfv5"
+            process = lambda d: d if isinstance(d, dict) and d.get('CPF') else None
             result = generic_api_call(url, 'cpf5', process)
     return render_template('cpf5.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
 
@@ -1489,60 +1475,31 @@ def visitas():
                 flash('Token inválido.', 'error')
                 return render_template('visitas.html', is_admin=is_admin, notifications=unread_count, result=result, url=url_input)
         url_input = request.form.get('url', '').strip()
-        if not url_input:
-            flash('URL não fornecida.', 'error')
-        else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={url_input}&tipo=visitas"
-            process = lambda d: d if isinstance(d, dict) and 'visits' in d else None
-            result = generic_api_call(url, 'visitas', process)
-    return render_template('visitas.html', is_admin=is_admin, notifications=unread_count, result=result, url=url_input)
-
-@app.route('/modulos/atestado', methods=['GET', 'POST'])
-@jwt_required
-def atestado():
-    users = load_data('users.json')
-    user = users[g.user_id]
-    is_admin = user['role'] == 'admin'
-    notifications = load_data('notifications.json')
-    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
-    pdf_path = None
-    nome = ""
-    cpf = ""
-    data = ""
-    if request.method == 'POST':
-        if not is_admin:
-            token = request.form.get('token')
-            if not token or token != user.get('token'):
-                flash('Token inválido.', 'error')
-                return render_template('atestado.html', is_admin=is_admin, notifications=unread_count, pdf_path=pdf_path, nome=nome, cpf=cpf, data=data)
-        nome = request.form.get('nome', '').strip()
-        cpf = request.form.get('cpf', '').strip()
-        data = request.form.get('data', '').strip()
-        if not nome or not cpf or not data:
-            flash('Todos os campos são obrigatórios.', 'error')
+        if not url_input.startswith('http'):
+            url_input = 'https://' + url_input
+        if not manage_module_usage(g.user_id, 'visitas'):
+            flash('Limite diário excedido.', 'error')
         else:
             try:
-                doc = fitz.open("atestado.pdf")
-                page = doc[0]
-                font_path = os.path.join('fonts', 'DejaVuSans.ttf')
-                bold_path = os.path.join('fonts', 'DejaVuSans-Bold.ttf')
-                page.insert_text((100, 200), nome, fontsize=14, fontname="helv", fontfile=font_path)
-                page.insert_text((100, 230), f"CPF: {cpf}", fontsize=12, fontname="helv", fontfile=font_path)
-                page.insert_text((100, 260), f"Data: {data}", fontsize=12, fontname="helv", fontfile=font_path)
-                output_path = f"static/atestado_{secrets.token_hex(8)}.pdf"
-                doc.save(output_path)
-                doc.close()
-                pdf_path = f"/{output_path}"
-                flash('Atestado gerado com sucesso!', 'success')
+                resp = requests.get("https://api.visitas.io/check", params={"url": url_input}, timeout=15)
+                data = resp.json()
+                if data.get('success'):
+                    result = data.get('data')
+                else:
+                    flash(data.get('error', 'Erro'), 'error')
             except Exception as e:
-                flash(f'Erro ao gerar PDF: {str(e)}', 'error')
-    return render_template('atestado.html', is_admin=is_admin, notifications=unread_count, pdf_path=pdf_path, nome=nome, cpf=cpf, data=data)
+                flash(f'Erro: {str(e)}', 'error')
+    return render_template('visitas.html', is_admin=is_admin, notifications=unread_count, result=result, url=url_input)
 
-@app.route('/static/atestado_<filename>')
-def serve_atestado(filename):
-    return send_from_directory('static', f'atestado_{filename}')
+# === ROTAS ESTÁTICAS E AUXILIARES ===
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory(app.static_folder, filename)
 
-# === LOGOUT ===
+@app.route('/preview/<path:filename>')
+def preview(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 @app.route('/logout')
 @jwt_required
 def logout():
@@ -1551,18 +1508,14 @@ def logout():
     resp.set_cookie('js_enabled', '', expires=0)
     resp.set_cookie('canvas_fp', '', expires=0)
     resp.set_cookie('webgl_fp', '', expires=0)
+    session.clear()
     return resp
 
-# === ESTÁTICO ===
-@app.route('/preview.jpg')
-def preview():
-    return send_from_directory('.', 'preview.jpg')
-
-@app.route('/@A30')
+@app.route('/creditos')
 def creditos():
-    return "@enfurecido - {'0x106a90000'}"
+    return render_template('creditos.html')
 
-# === 404 ===
+# === ERROS ===
 @app.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
@@ -1571,9 +1524,17 @@ def not_found(e):
 def forbidden(e):
     return render_template('403.html'), 403
 
-# === EXECUÇÃO ===
+@app.errorhandler(500)
+def internal_error(e):
+    return render_template('500.html'), 500
+
+# === INICIALIZAÇÃO DO APP ===
 if __name__ == '__main__':
     colorama.init()
-    print(f"{Fore.GREEN}[+] Servidor iniciado com segurança máxima em https://0.0.0.0:8855{Style.RESET_ALL}")
-    from waitress import serve
-    serve(app, host='0.0.0.0', port=8855, threads=16, connection_limit=1000, cleanup_interval=30)
+    print(f"{Fore.CYAN}Servidor iniciado com sucesso!{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}Acesse: http://127.0.0.1:5000{Style.RESET_ALL}")
+    context = ('cert.pem', 'key.pem')
+    if all(os.path.exists(f) for f in context):
+        app.run(host='0.0.0.0', port=5000, ssl_context=context, threaded=True)
+    else:
+        app.run(host='0.0.0.0', port=5000, threaded=True)
