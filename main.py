@@ -438,7 +438,7 @@ def admin_panel():
                     if os.path.exists(nov_dir):
                         for filename in os.listdir(nov_dir):
                             shutil.copy(os.path.join(nov_dir, filename), app.config['UPLOAD_FOLDER'])
-                    shutil.rmtree(temp_dirどの
+                    shutil.rmtree(temp_dir)
                     return jsonify({'message': 'Restauração concluída!', 'category': 'success'})
                 except Exception as e:
                     shutil.rmtree(temp_dir)
