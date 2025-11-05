@@ -1139,27 +1139,6 @@
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-nome"></div>
                 </div>
-                <!-- NOME DATAPRIME -->
-                <div class="module-card" onclick="checkModuleStatus('nome2', '/modulos/nome2')" data-module-id="nome2" data-status="{{ module_status.get('nome2', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) }}" data-limit="{{ max_limit }}">
-                    <div class="module-icon-wrapper"><svg data-lucide="user"></svg></div>
-                    <h3 class="module-title">Localizar Nome (DATAPRIME)</h3>
-                    <p class="module-description">Pesquise informações associadas a um nome, incluindo documentos e registros relacionados.</p>
-                    <div class="module-footer">
-                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('nome2', 0) %}
-                            {% if admin %}
-                                <p class="request-count">Unlimited</p>
-                            {% else %}
-                                <div class="request-bar-wrapper">
-                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
-                                </div>
-                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
-                            {% endif %}
-                        {% endwith %}
-                    </div>
-                    <div class="status-dot" id="status-dot-nome2"></div>
-                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
-                    <div class="module-message" id="message-nome2"></div>
-                </div>
             </div>
             <!-- Página 2 -->
             <div class="dashboard-grid" id="page2" style="display: none;">
@@ -1315,6 +1294,26 @@
                     <div class="status-dot" id="status-dot-cnpjcompleto"></div>
                     <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
                     <div class="module-message" id="message-cnpjcompleto"></div>
+                </div>
+                <div class="module-card" onclick="checkModuleStatus('email', '/modulos/email')" data-module-id="email" data-status="{{ module_status.get('email', 'ON') }}" data-usage="{{ users.get(g.user_id, {}).get('modules', {}).get('email', 0) }}" data-limit="{{ max_limit }}">
+                    <div class="module-icon-wrapper"><svg data-lucide="mail"></svg></div>
+                    <h3 class="module-title">Consultar Email (C&C Plus)</h3>
+                    <p class="module-description">Consulte informacoes completas sobre qualquer EMAIL Como: dados cadastrais, cpf do proprietario, etc.</p>
+                    <div class="module-footer">
+                        {% with usage=users.get(g.user_id, {}).get('modules', {}).get('email', 0) %}
+                            {% if admin %}
+                                <p class="request-count">Unlimited</p>
+                            {% else %}
+                                <div class="request-bar-wrapper">
+                                    <div class="request-bar" style="width: {{ (usage / max_limit * 100) | round | int }}%"></div>
+                                </div>
+                                <p class="request-count">{{ usage }}/{{ max_limit }}</p>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="status-dot" id="status-dot-email"></div>
+                    <div class="maintenance-label" style="display: none;">MANUTENÇÃO</div>
+                    <div class="module-message" id="message-email"></div>
                 </div>
             </div>
             <!-- Página 5 -->
