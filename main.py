@@ -1273,53 +1273,75 @@ def fotor():
     results = None
     documento = ""
     selected_option = ""
+
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
-        documento = request.form.get('documento', '').strip()
+                return render_template('fotor.html', is_admin=is_admin, notifications=unread_count,
+                                      results=results, documento=documento, selected_option=selected_option)
+
+        documento = request.form.get('documento', '').strip().replace('.', '').replace('-', '')
         selected_option = request.form.get('estado', '')
+
         if not documento:
             flash('Documento não fornecido.', 'error')
+        elif len(documento) != 11:
+            flash('CPF deve ter 11 dígitos.', 'error')
+        elif selected_option not in ['fotorj', 'fotoce', 'fotosp', 'fotoes', 'fotoma', 'fotoro']:
+            flash('Estado inválido.', 'error')
         else:
             base_url = "http://br1.stormhost.online:10004/api/token=@signficativo/consulta"
-            tipo_map = {
-                "fotorj": "fotorj",
-                "fotoce": "fotoce",
-                "fotosp": "fotosp",
-                "fotoes": "fotoes",
-                "fotoma": "fotoma",
-                "fotoro": "fotoro"
-            }
-            tipo = tipo_map.get(selected_option)
-            if not tipo:
-                flash('Estado inválido.', 'error')
-            else:
-                url = f"{base_url}?dado={documento}&tipo={tipo}"
-                def process(d):
-                    if not isinstance(d, dict):
-                        return None
-                    outer_response = d.get("response")
-                    if not isinstance(outer_response, dict):
-                        return None
-                    inner_response = outer_response.get("response")
-                    if not isinstance(inner_response, list) or not inner_response:
-                        return None
-                    first_item = inner_response[0]
-                    if not isinstance(first_item, dict):
-                        return None
-                    fotob64 = first_item.get("fotob64")
-                    cpf = first_item.get("cpf", "") or documento
-                    if fotob64:
+            tipo = selected_option  # já é o tipo correto
+            url = f"{base_url}?dado={documento}&tipo={tipo}"
+
+            def process(data):
+                try:
+                    # Verifica estrutura mínima
+                    response_outer = data.get("response")
+                    if not isinstance(response_outer, dict):
+                        return {"foto_base64": "", "cpf": documento, "found": False}
+
+                    response_inner = response_outer.get("response")
+                    if not isinstance(response_inner, list) or len(response_inner) == 0:
+                        return {"foto_base64": "", "cpf": documento, "found": False}
+
+                    item = response_inner[0]
+                    if not isinstance(item, dict):
+                        return {"foto_base64": "", "cpf": documento, "found": False}
+
+                    fotob64 = item.get("fotob64", "").strip()
+                    cpf_retornado = item.get("cpf", "").strip()
+
+                    # Usa CPF retornado se válido, senão usa o informado
+                    cpf_final = cpf_retornado if cpf_retornado and len(cpf_retornado) == 11 else documento
+
+                    if fotob64 and fotob64.startswith('/9j/'):
                         return {
                             "foto_base64": fotob64,
-                            "cpf": cpf
+                            "cpf": cpf_final,
+                            "found": True
                         }
-                    return None
-                results = generic_api_call(url, 'fotor', process)
-    return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
+                    else:
+                        return {
+                            "foto_base64": "",
+                            "cpf": cpf_final,
+                            "found": False
+                        }
+
+                except Exception as e:
+                    print(f"[ERRO] Falha no processamento da foto: {e}")
+                    return {"foto_base64": "", "cpf": documento, "found": False}
+
+            results = generic_api_call(url, 'fotor', process)
+
+            # Garante que results nunca seja None
+            if results is None:
+                results = {"foto_base64": "", "cpf": documento, "found": False}
+
+    return render_template('fotor.html', is_admin=is_admin, notifications=unread_count,
+                           results=results, documento=documento, selected_option=selected_option)
    
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 @jwt_required
