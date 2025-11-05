@@ -131,16 +131,19 @@ def initialize_json(file_path, default_data={}):
     if not os.path.exists(file_path):
         save_data(default_data, file_path)
 
-def load_data(file_path):
+def load_data(file_path, default_data=None):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             fcntl.flock(file.fileno(), fcntl.LOCK_SH)
             raw = file.read()
             fcntl.flock(file.fileno(), fcntl.LOCK_UN)
             decrypted = decrypt_data(raw)
-            return json.loads(decrypted) if decrypted else default_data
+            if decrypted:
+                return json.loads(decrypted)
+            else:
+                return default_data if default_data is not None else {}
     except:
-        return default_data
+        return default_data if default_data is not None else {}
 
 def save_data(data, file_path):
     encrypted = encrypt_data(json.dumps(data, default=str))
