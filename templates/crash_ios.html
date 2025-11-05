@@ -62,6 +62,7 @@
             color:var(--text-light);text-decoration:none;font-weight:500;
             font-size:14px;display:flex;align-items:center;gap:8px;
             position:relative;cursor:pointer;transition:all .3s ease;
+ on;
         }
         .nav-links a::after{
             content:'';position:absolute;bottom:-5px;left:0;width:0;height:2px;
@@ -267,7 +268,7 @@
             </form>
         </div>
 
-        {% if result %}
+        {% if result and result.get('success') %}
         <div class="results-container">
             <div class="results-header">
                 <h3>
@@ -283,24 +284,33 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Alvo (JID) -->
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="target"></svg>Alvo (JID)</div>
-                <div class="result-item-value">{{ result.alvo.jid }}</div>
+                <div class="result-item-value">{{ result['alvo']['jid'] }}</div>
             </div>
+
+            <!-- Nome do Dispositivo -->
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="user"></svg>Nome do Dispositivo</div>
-                <div class="result-item-value {% if not result.alvo.nome or not result.alvo.nome.strip() %}not-found{% endif %}">
-                    {{ result.alvo.nome if result.alvo.nome and result.alvo.nome.strip() else 'Não encontrado' }}
+                <div class="result-item-value {% if not result['alvo']['nome'] or not result['alvo']['nome']|trim %}not-found{% endif %}">
+                    {{ result['alvo']['nome']|trim if result['alvo']['nome'] and result['alvo']['nome']|trim else 'Não encontrado' }}
                 </div>
             </div>
+
+            <!-- Mensagem -->
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="message-square"></svg>Mensagem</div>
-                <div class="result-item-value">{{ result.message }}</div>
+                <div class="result-item-value">{{ result['message'] }}</div>
             </div>
+
+            <!-- Timestamp -->
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="clock"></svg>Data & Hora</div>
-                <div class="result-item-value">{{ result.timestamp }}</div>
+                <div class="result-item-value">{{ result['timestamp'] }}</div>
             </div>
+
             <div class="result-status">
                 <div class="result-status-icon"><svg data-lucide="check"></svg></div>
                 <div class="result-status-text">Consulta Realizada com Sucesso</div>
@@ -375,7 +385,7 @@
                 a.download = `${now}-CRASH-IOS-CONSULT-CENTER.txt`;
                 document.body.appendChild(a);a.click();document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-            };
+            });
 
             if(document.querySelector('.results-container')){
                 submitBtn.disabled = false;
