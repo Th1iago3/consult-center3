@@ -53,7 +53,7 @@ module_status = {
     'mae': 'ON',
     'pai': 'ON',
     'cnpjcompleto': 'ON',
-    'atestado': 'ON',
+    'atestado': 'OFF',
     'cpf5': 'OFF',
     'visitas': 'OFF',
     'crash_ios': 'ON',
