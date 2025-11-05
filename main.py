@@ -203,6 +203,13 @@ def security_check():
         abort(403)
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
         pass # Removed redirect, assuming it's a typo
+
+@app.template_filter('format_cpf')
+def format_cpf(cpf):
+    """Formata CPF: 12345678900 → 123.456.789-00"""
+    if isinstance(cpf, str) and len(cpf) == 11 and cpf.isdigit():
+        return f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
+    return cpf  # Retorna original se inválido
 # Login/Register (with hashed passwords, UA limit)
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
