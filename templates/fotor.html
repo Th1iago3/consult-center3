@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ConsultCenter - Consulta Foto RG (DATA)</title>
-    <!-- Font Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -26,11 +23,9 @@
             --glowximity: rgba(110, 68, 255, 0.5);
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
-            --shadow-glow: 0 0 15px var(--glowximity);
             --font-family: 'Poppins', sans-serif;
             --success: #00D68F;
             --error: #FF3D71;
-            --warning: #FFB800;
             --header-height: 70px;
         }
         *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-family);transition:all .3s ease;}
@@ -41,7 +36,8 @@
             z-index:-1;opacity:.3;animation:subtlePulse 12s infinite ease-in-out;
         }
         @keyframes subtlePulse{0%{opacity:.2}50%{opacity:.4}100%{opacity:.2}}
-        /* ---------- NAVBAR ---------- */
+
+        /* NAVBAR */
         .navbar{
             position:fixed;top:0;left:0;width:100%;height:var(--header-height);
             background:rgba(18,18,18,.9);backdrop-filter:blur(10px);
@@ -49,9 +45,7 @@
             display:flex;justify-content:center;align-items:center;
             padding:0 30px;box-shadow:0 5px 20px var(--shadow-dark);
         }
-        .nav-links{
-            display:flex;gap:30px;align-items:center;
-        }
+        .nav-links{display:flex;gap:30px;align-items:center;}
         .nav-links a{
             color:var(--text-light);text-decoration:none;font-weight:500;
             font-size:14px;display:flex;align-items:center;gap:8px;
@@ -65,9 +59,7 @@
         .nav-links a:hover{color:var(--text-white);}
         .nav-links a:hover::after{width:100%}
         .nav-links a svg{width:18px;height:18px;}
-        .user-profile{
-            position:absolute;right:30px;display:flex;gap:20px;align-items:center;
-        }
+        .user-profile{position:absolute;right:30px;display:flex;gap:20px;align-items:center;}
         .logout-btn{
             background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
             border:none;padding:10px 25px;border-radius:25px;color:var(--text-white);
@@ -77,7 +69,8 @@
         }
         .logout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--glowximity);}
         .logout-btn svg{width:16px;height:16px;}
-        /* ---------- MAIN ---------- */
+
+        /* MAIN */
         .main-container{
             margin-top:var(--header-height);min-height:calc(100vh - var(--header-height));
             display:flex;flex-direction:column;align-items:center;padding:40px 20px;
@@ -137,6 +130,8 @@
             border-left:4px solid var(--error);animation:slideIn .3s ease-out;position:relative;z-index:1;
         }
         @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+        /* RESULTADOS */
         .results-container{
             background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow-card);
             padding:40px;width:90%;max-width:500px;border:2px solid rgba(110,68,255,.3);
@@ -163,6 +158,7 @@
         .action-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px var(--glowximity);}
         .action-btn.copied{background:linear-gradient(135deg,var(--success),#00A86B);}
         .action-btn svg{width:20px;height:20px;}
+
         .photo-container{
             margin:25px 0;padding:15px;
             background:rgba(110,68,255,.1);border-radius:16px;
@@ -178,6 +174,7 @@
             transition:transform .3s ease;
         }
         .photo-container img:hover{transform:scale(1.02);}
+
         .result-item{
             background:var(--background-light);border-left:4px solid var(--primary-purple);
             border-radius:12px;padding:16px;margin:12px 0;
@@ -210,6 +207,7 @@
             font-size:13px;font-weight:600;color:var(--primary-purple);
             text-transform:uppercase;letter-spacing:.5px;
         }
+
         @media(max-width:768px){
             .navbar{padding:0 20px;}
             .nav-links{gap:15px;}
@@ -242,7 +240,6 @@
     </style>
 </head>
 <body>
-    <!-- Navbar (centralizado, apenas Dashboard) -->
     <nav class="navbar">
         <div class="nav-links">
             <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Dashboard</span></a>
@@ -254,11 +251,9 @@
         </div>
     </nav>
 
-    <!-- Main Container -->
     <div class="main-container">
         <div class="form-container">
             <h2>Consulta Foto RG (DATA)</h2>
-
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -272,7 +267,7 @@
                     <label for="estado">Estado</label>
                     <svg data-lucide="map-pin"></svg>
                     <select name="estado" id="estado" required>
-                        <option value="" disabled selected>Selecione o Estado</option>
+                        <option value="" disabled {% if not selected_option %}selected{% endif %}>Selecione o Estado</option>
                         <option value="fotorj" {% if selected_option == 'fotorj' %}selected{% endif %}>FOTO - RJ</option>
                         <option value="fotoce" {% if selected_option == 'fotoce' %}selected{% endif %}>FOTO - CE</option>
                         <option value="fotosp" {% if selected_option == 'fotosp' %}selected{% endif %}>FOTO - SP</option>
@@ -281,13 +276,11 @@
                         <option value="fotoro" {% if selected_option == 'fotoro' %}selected{% endif %}>FOTO - RO</option>
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label for="documento">CPF</label>
                     <svg data-lucide="id-card"></svg>
                     <input type="text" name="documento" id="documento" placeholder="000.000.000-00" value="{{ documento }}" maxlength="14" required>
                 </div>
-
                 {% if not is_admin %}
                     <div class="form-group">
                         <label for="token">Token de Autenticação</label>
@@ -295,42 +288,69 @@
                         <input type="password" name="token" id="token" placeholder="Digite seu token..." required>
                     </div>
                 {% endif %}
-
                 <button type="submit" class="button" id="submitBtn">
                     <svg data-lucide="search"></svg> Consultar
                 </button>
             </form>
         </div>
 
+        <!-- RESULTADO -->
         {% if results %}
         <div class="results-container">
             <div class="results-header">
                 <h3>
                     <svg data-lucide="image"></svg>
-                    Foto RG Encontrada
+                    {% if results.found %}
+                        Foto RG Encontrada
+                    {% else %}
+                        Foto Não Encontrada
+                    {% endif %}
                 </h3>
                 <div class="action-buttons">
-                    <button class="action-btn" onclick="copyResult(this)" title="Copiar CPF">
+                    <button class="action-btn" onclick="copyCPF(this)" title="Copiar CPF">
                         <svg data-lucide="copy"></svg>
                     </button>
+                    {% if results.found %}
                     <button class="action-btn" onclick="downloadPhoto()" title="Baixar Foto">
                         <svg data-lucide="download"></svg>
                     </button>
+                    {% endif %}
                 </div>
             </div>
 
+            {% if results.found and results.foto_base64 %}
             <div class="photo-container">
                 <img src="data:image/jpeg;base64,{{ results.foto_base64 }}" alt="Foto RG">
             </div>
+            {% else %}
+            <div class="result-item">
+                <div class="result-item-value not-found">
+                    <svg data-lucide="x-circle" style="width:18px;height:18px;margin-right:8px;"></svg>
+                    Nenhuma foto encontrada para este CPF.
+                </div>
+            </div>
+            {% endif %}
 
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="hash"></svg>CPF</div>
-                <div class="result-item-value">{{ results.cpf }}</div>
+                <div class="result-item-value">{{ results.cpf | format_cpf }}</div>
             </div>
 
             <div class="result-status">
-                <div class="result-status-icon"><svg data-lucide="check"></svg></div>
-                <div class="result-status-text">Consulta Realizada com Sucesso</div>
+                <div class="result-status-icon">
+                    {% if results.found %}
+                        <svg data-lucide="check"></svg>
+                    {% else %}
+                        <svg data-lucide="x"></svg>
+                    {% endif %}
+                </div>
+                <div class="result-status-text">
+                    {% if results.found %}
+                        Foto carregada com sucesso
+                    {% else %}
+                        Consulta realizada, mas sem foto
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% endif %}
@@ -340,7 +360,6 @@
         document.addEventListener('DOMContentLoaded', function(){
             lucide.createIcons();
 
-            // Máscara de CPF
             const docInput = document.getElementById('documento');
             docInput.addEventListener('input', function(e){
                 let v = e.target.value.replace(/\D/g, '');
@@ -351,11 +370,10 @@
             });
 
             const searchForm = document.getElementById('searchForm');
-            const submitBtn   = document.getElementById('submitBtn');
+            const submitBtn = document.getElementById('submitBtn');
 
             searchForm.addEventListener('submit', function(e){
                 const rawDoc = docInput.value.replace(/\D/g, '');
-
                 if(!/^\d{11}$/.test(rawDoc)){
                     e.preventDefault();
                     const al = document.createElement('div');
@@ -365,42 +383,37 @@
                     setTimeout(()=>al.remove(),4000);
                     return;
                 }
-
                 submitBtn.disabled = true;
                 submitBtn.classList.add('loading');
                 submitBtn.innerHTML = '<svg data-lucide="loader-circle"></svg> Processando...';
                 lucide.createIcons();
             });
 
-            window.copyResult = function(btn){
+            window.copyCPF = function(btn){
                 const cpf = document.querySelector('.result-item-value')?.textContent || '';
                 if(!cpf){
-                    Swal.fire({icon:'error',title:'Erro',text:'Nenhum CPF para copiar.',
-                        confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
+                    Swal.fire({icon:'error',title:'Erro',text:'Nenhum CPF para copiar.', confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
                     return;
                 }
                 navigator.clipboard.writeText(cpf).then(()=>{
                     btn.classList.add('copied');
                     btn.innerHTML='<svg data-lucide="check"></svg>';
                     lucide.createIcons();
-                    setTimeout(()=>{btn.classList.remove('copied');
-                        btn.innerHTML='<svg data-lucide="copy"></svg>';lucide.createIcons();
-                    },2000);
+                    setTimeout(()=>{btn.classList.remove('copied'); btn.innerHTML='<svg data-lucide="copy"></svg>'; lucide.createIcons();}, 2000);
                 });
             };
 
             window.downloadPhoto = function(){
                 const img = document.querySelector('.photo-container img');
                 if(!img){
-                    Swal.fire({icon:'error',title:'Erro',text:'Nenhuma foto para baixar.',
-                        confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
+                    Swal.fire({icon:'error',title:'Erro',text:'Nenhuma foto para baixar.', confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
                     return;
                 }
                 const a = document.createElement('a');
                 a.href = img.src;
                 const now = new Date().toLocaleString('pt-BR').replace(/[^\d]/g,'-').replace(/-+/g,'-');
                 a.download = `${now}-FotoRG.jpg`;
-                document.body.appendChild(a);a.click();document.body.removeChild(a);
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
             };
 
             if(document.querySelector('.results-container')){
