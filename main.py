@@ -809,10 +809,58 @@ def cpf2():
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"https://api.bygrower.online/core/?token={chave}&base=cpf1&query={cpf}"
-            process = lambda d: d.get('resultado') if isinstance(d, dict) and d.get('resultado') else None
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpf_serasa"
+            def process(d):
+                if not isinstance(d, dict):
+                    return None
+                dados = d.get("DADOS", {})
+                result = {
+                    "NOME": dados.get("NOME", "Não informado"),
+                    "NOME_MAE": dados.get("NOME_MAE", "Não informado"),
+                    "SEXO": dados.get("SEXO", "Não informado"),
+                    "DT_NASCIMENTO": dados.get("NASC", "Não informado"),
+                    "FLAG_OBITO": dados.get("SO", "Não informado"),
+                    "DT_OBITO": dados.get("DT_OB", "Não informado"),
+                    "FAIXA_RENDA": dados.get("FAIXA_RENDA_ID", "Não informado"),
+                    "RENDA_PRESUMIDA": dados.get("RENDA", "Não informado"),
+                    "CBO": dados.get("CBO", "Não informado"),
+                    "STATUS_RECEITA_FEDERAL": dados.get("CD_SIT_CAD", "Não informado"),
+                    "QT_VEICULOS": dados.get("QT_VEICULOS", "Não informado"),
+                    "EMAIL": ', '.join(d.get("EMAIL", [])) or "Não informado",
+                    "TELEFONES": "SEM RESULTADO"
+                }
+                # Address from first ENDERECOS
+                enderecos = d.get("ENDERECOS", [])
+                if enderecos:
+                    end = enderecos[0]
+                    result["TIPO_ENDERECO"] = end.get("TIPO_ENDERECO_ID", "Não informado")
+                    result["LOGRADOURO"] = end.get("LOGR_NOME", "Não informado")
+                    result["NUMERO"] = end.get("LOGR_NUMERO", "Não informado")
+                    result["COMPLEMENTO"] = end.get("LOGR_COMPLEMENTO", "Não informado")
+                    result["BAIRRO"] = end.get("BAIRRO", "Não informado")
+                    result["CIDADE"] = end.get("CIDADE", "Não informado")
+                    result["ESTADO"] = end.get("UF", "Não informado")
+                    result["UF"] = end.get("UF", "Não informado")
+                    result["CEP"] = end.get("CEP", "Não informado")
+                else:
+                    result["TIPO_ENDERECO"] = "Não informado"
+                    result["LOGRADOURO"] = "Não informado"
+                    result["NUMERO"] = "Não informado"
+                    result["COMPLEMENTO"] = "Não informado"
+                    result["BAIRRO"] = "Não informado"
+                    result["CIDADE"] = "Não informado"
+                    result["ESTADO"] = "Não informado"
+                    result["UF"] = "Não informado"
+                    result["CEP"] = "Não informado"
+                # Telefones
+                tels = d.get("TELEFONE", [])
+                if tels:
+                    phones = [f"({tel.get('DDD', '')}) {tel.get('TELEFONE', '')}" for tel in tels if tel.get('DDD') and tel.get('TELEFONE')]
+                    result["TELEFONES"] = ', '.join(phones) if phones else "SEM RESULTADO"
+                return result
             result = generic_api_call(url, 'cpf2', process)
     return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+    
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 @jwt_required
 def cpfdata():
