@@ -244,13 +244,11 @@
                     <svg data-lucide="smartphone"></svg>
                     <input type="text" name="numero" id="numero" placeholder="5582993708218" value="{{ numero }}" required>
                 </div>
-                {% if not is_admin %}
                     <div class="form-group">
                         <label for="token">Token de Autenticação</label>
                         <svg data-lucide="lock"></svg>
                         <input type="password" name="token" id="token" placeholder="Digite seu token..." required>
                     </div>
-                {% endif %}
                 <button type="submit" class="button" id="submitBtn">
                     <svg data-lucide="send"></svg> Enviar Consulta
                 </button>
