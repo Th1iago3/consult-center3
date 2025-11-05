@@ -204,6 +204,13 @@ def security_check():
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
         pass # Removed redirect, assuming it's a typo
 
+@app.errorhandler(404)
+def page_not_found(e):
+    # URL anterior (referer)
+    previous_url = request.referrer or url_for('dashboard')
+    
+    return render_template('404.html', previous_url=previous_url), 404
+    
 @app.template_filter('format_cpf')
 def format_cpf(cpf):
     """Formata CPF: 12345678900 → 123.456.789-00"""
