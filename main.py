@@ -33,7 +33,7 @@ module_status = {
     'cpfdata': 'ON',
     'cpflv': 'OFF',
     'cpf': 'ON',
-    'cpf2': 'OFF',
+    'cpf2': 'ON',
     'vacinas': 'ON',
     'cpf3': 'ON',
     'nomelv': 'ON',
