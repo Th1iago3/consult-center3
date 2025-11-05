@@ -27,7 +27,8 @@
       "pai": 0,
       "cnpjcompleto": 0,
       "atestado": 0,
-      "crash_ios": 0
+      "crash_ios": 0,
+      "email": 0
     },
     "last_reset": "2025-02-10"
   },
@@ -59,7 +60,8 @@
       "pai": 0,
       "cnpjcompleto": 0,
       "atestado": 0,
-      "crash_ios": 0
+      "crash_ios": 0,
+      "email": 0
     },
     "devices": [
       "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
@@ -93,7 +95,8 @@
       "pai": 0,
       "cnpjcompleto": 0,
       "atestado": 0,
-      "crash_ios": 0
+      "crash_ios": 0,
+      "email": 0
     },
     "devices": []
   },
@@ -125,7 +128,8 @@
       "pai": 0,
       "cnpjcompleto": 0,
       "atestado": 0,
-      "crash_ios": 0
+      "crash_ios": 0,
+      "email": 0
     },
     "devices": []
   }
