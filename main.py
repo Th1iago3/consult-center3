@@ -201,7 +201,7 @@ def security_check():
     if 'bot' in user_agent or 'spider' in user_agent:
         abort(403)
     if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
-        pass  # Removed redirect, assuming it's a typo
+        pass # Removed redirect, assuming it's a typo
 # Login/Register (with hashed passwords, UA limit)
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
@@ -469,7 +469,6 @@ def admin_panel():
         except Exception as e:
             return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
- 
 # Notifications
 @app.route('/notifications', methods=['GET', 'POST'])
 @jwt_required
@@ -584,14 +583,14 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
         response.raise_for_status()
         raw_text = response.text.lstrip('\ufeff')
         data = json.loads(raw_text)
-        
+       
         # Validação robusta: Deve ser dict ou list, senão erro
         if not isinstance(data, (dict, list)):
             print(f"[ERROR] Resposta inválida de {url}: tipo {type(data)} - Conteúdo: {str(data)[:200]}...")
             if flash_error:
                 flash('Resposta da API inválida (não é JSON válido).', 'error')
             return None
-        
+       
         # Se process_func, aplica só se tipo válido
         if process_func:
             # Chama process_func com guard extra
@@ -605,15 +604,15 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
             except Exception as proc_e:
                 print(f"[ERROR] Erro no process_func para {url}: {str(proc_e)}")
                 data = None
-        
+       
         # Se data final é válida e uso permitido
         if data and (isinstance(data, dict) or isinstance(data, list)) and manage_module_usage(g.user_id, module):
             return data
-        
+       
         if flash_error:
             flash('Algo deu errado. Ou, nenhum resultado foi encontrado.', 'error')
         return None
-        
+       
     except json.JSONDecodeError as e:
         print(f"[ERROR] JSON inválido em {url}: {str(e)} - Raw preview: {response.text[:200]}...")
         if flash_error:
@@ -629,7 +628,7 @@ def generic_api_call(url, module, process_func=None, flash_error=True):
         if flash_error:
             flash('Algo deu errado na consulta.', 'error')
         return None
-        
+       
 # Module Routes
 @app.route('/modulos/mae', methods=['GET', 'POST'])
 @jwt_required
@@ -652,7 +651,7 @@ def mae():
             flash('NOME não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=mae"
-            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else [] 
+            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else []
             result = generic_api_call(url, 'mae', process)
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
 @app.route('/modulos/pai', methods=['GET', 'POST'])
@@ -676,10 +675,9 @@ def pai():
             flash('NOME não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=pai"
-            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else [] 
+            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else []
             result = generic_api_call(url, 'pai', process)
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
-
 @app.route('/modulos/crash_ios', methods=['GET', 'POST'])
 @jwt_required
 def crash_ios():
@@ -691,7 +689,6 @@ def crash_ios():
     result = None
     numero = ""
     token_input = ""
-
     if request.method == 'POST':
         if not is_admin:
             token_input = request.form.get('token')
@@ -715,9 +712,8 @@ def crash_ios():
                         flash(result.get('error', 'Falha'), 'error')
                 except Exception as e:
                     flash(f'Erro na API: {str(e)}', 'error')
-
     return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
-    
+   
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 @jwt_required
 def cnpjcompleto():
@@ -1253,13 +1249,29 @@ def fotor():
                 flash('Estado inválido.', 'error')
             else:
                 url = f"{base_url}?dado={documento}&tipo={tipo}"
-                process = lambda d: {
-                    "foto_base64": d.get("response", {}).get("response", [{}])[0].get("fotob64") if isinstance(d, dict) else None,
-                    "cpf": d.get("response", {}).get("response", [{}])[0].get("cpf", "") or documento if isinstance(d, dict) else documento
-                } if isinstance(d, dict) and d.get("response", {}).get("response", [{}])[0].get("fotob64") else None
+                def process(d):
+                    if not isinstance(d, dict):
+                        return None
+                    outer_response = d.get("response")
+                    if not isinstance(outer_response, dict):
+                        return None
+                    inner_response = outer_response.get("response")
+                    if not isinstance(inner_response, list) or not inner_response:
+                        return None
+                    first_item = inner_response[0]
+                    if not isinstance(first_item, dict):
+                        return None
+                    fotob64 = first_item.get("fotob64")
+                    cpf = first_item.get("cpf", "") or documento
+                    if fotob64:
+                        return {
+                            "foto_base64": fotob64,
+                            "cpf": cpf
+                        }
+                    return None
                 results = generic_api_call(url, 'fotor', process)
     return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
-    
+   
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 @jwt_required
 def nomelv():
@@ -1454,15 +1466,15 @@ def atestado():
         uf = request.form.get('uf', 'SP').strip().upper()
         cid = request.form.get('cid', 'J11').strip().upper()
         dias_afastamento = request.form.get('dias_afastamento', '01 (UM)').strip().upper()
-        
+       
         # Generate automatic numbers
         import random
-        n_atend = str(random.randint(1000000, 9999999))  # 7 digits
-        n_pront = f"{random.randint(0, 9999999999):010d}"  # 10 digits with leading zeros
-        
+        n_atend = str(random.randint(1000000, 9999999)) # 7 digits
+        n_pront = f"{random.randint(0, 9999999999):010d}" # 10 digits with leading zeros
+       
         # Generate data_assinatura
         data_assinatura = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-        
+       
         # Generate data_atendimento if not provided
         if not data_atendimento_input:
             months = {
@@ -1474,7 +1486,7 @@ def atestado():
             data_atendimento = f"{datetime.now().day} de {month_name} de {datetime.now().year}"
         else:
             data_atendimento = data_atendimento_input
-        
+       
         original_pdf = 'atestado.pdf'
         if not os.path.exists(original_pdf):
             flash('Template não encontrado.', 'error')
@@ -1495,7 +1507,7 @@ def atestado():
                     color=(0, 0, 0)
                 )
             # Do not clear areas to avoid white blocks
-            # for rect in [...]: clear_area(rect)  # Removed
+            # for rect in [...]: clear_area(rect) # Removed
             positions = {
                 "nome_paciente": (70, 105),
                 "cpf": (70, 120),
@@ -1535,7 +1547,7 @@ def atestado():
             print(f"Error generating atestado: {e}")
             flash('Algo deu errado ao gerar atestado.', 'error')
     return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
-    
+   
 @app.route('/download_edited/<path:filename>')
 @jwt_required
 def download_edited(filename):
