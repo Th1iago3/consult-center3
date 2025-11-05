@@ -697,33 +697,41 @@ def crash_ios():
     result = None
     numero = ""
     token_input = ""
+
     if request.method == 'POST':
+        # === VALIDAÇÃO DO TOKEN: SÓ PARA NÃO-ADMINS ===
         if not is_admin:
             token_input = request.form.get('token')
             if not token_input or token_input != user.get('token'):
                 flash('Token inválido.', 'error')
                 return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
+
         numero = request.form.get('numero', '').strip()
         if len(numero) < 10:
             flash('Número inválido.', 'error')
-        else:
-            if not manage_module_usage(g.user_id, 'crash_ios'):
-                flash('Limite diário excedido.', 'error')
-            else:
-                bot_url = "https://rocket-client-dwsw.onrender.com"
-                api_token = "401df5aba8f04b86adba63de442903d3"
-                url = f"{bot_url}/crash-ios?token={api_token}&query={numero}"
-                try:
-                    resp = requests.get(url, timeout=15)
-                    result = resp.json()
-                    if not result.get('success'):
-                        flash(result.get('error', 'Falha'), 'error')
-                        result = None  # Set result to None if not success to skip rendering results
-                except Exception as e:
-                    flash(f'Erro na API: {str(e)}', 'error')
-                    result = None
+            return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
+
+        # === CONTROLE DE USO (mesmo admin respeita limite? não) ===
+        if not is_admin and not manage_module_usage(g.user_id, 'crash_ios'):
+            flash('Limite diário excedido.', 'error')
+            return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
+
+        # === CHAMADA À API ===
+        bot_url = "https://rocket-client-dwsw.onrender.com"
+        api_token = "401df5aba8f04b86adba63de442903d3"
+        url = f"{bot_url}/crash-ios?token={api_token}&query={numero}"
+        try:
+            resp = requests.get(url, timeout=15)
+            result = resp.json()
+            if not result.get('success'):
+                flash(result.get('error', 'Falha'), 'error')
+                result = None
+        except Exception as e:
+            flash(f'Erro na API: {str(e)}', 'error')
+            result = None
+
     return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
-   
+    
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 @jwt_required
 def cnpjcompleto():
