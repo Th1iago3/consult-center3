@@ -2,68 +2,184 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Não Encontrada - Consult Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ConsultCenter - Página Não Encontrada</title>
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F0F2FF;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            color: #333;
+        :root {
+            --primary-purple: #6E44FF;
+            --secondary-purple: #A06CFF;
+            --accent-pink: #FF6BD6;
+            --accent-blue: #00D9FF;
+            --background-dark: #121212;
+            --background-light: #1A1A1A;
+            --card-bg: rgba(25, 25, 25, 0.9);
+            --text-white: #E0E0E0;
+            --text-light: #A0A0A0;
+            --border-color: #333333;
+            --glow-purple: rgba(110, 68, 255, 0.5);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 10px 30px var(--shadow-dark);
+            --font-family: 'Poppins', sans-serif;
+            --success: #00D68F;
+            --error: #FF3D71;
+            --header-height: 70px;
         }
-
-        .error-container {
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            padding: 40px;
-            text-align: center;
-            max-width: 600px;
-            width: 90%;
-            position: relative;
+        *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-family);transition:all .3s ease;}
+        body{background:var(--background-dark);color:var(--text-white);min-height:100vh;overflow-x:hidden;position:relative;}
+        body::after{
+            content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+            background:radial-gradient(circle at 30% 20%,rgba(110,68,255,.15),transparent 60%);
+            z-index:-1;opacity:.3;animation:subtlePulse 12s infinite ease-in-out;
         }
+        @keyframes subtlePulse{0%{opacity:.2}50%{opacity:.4}100%{opacity:.2}}
 
-        h1 {
-            color: #6C63FF;
-            font-size: 3em;
-            margin-bottom: 20px;
+        /* NAVBAR */
+        .navbar{
+            position:fixed;top:0;left:0;width:100%;height:var(--header-height);
+            background:rgba(18,18,18,.9);backdrop-filter:blur(10px);
+            border-bottom:1px solid var(--border-color);z-index:1000;
+            display:flex;justify-content:center;align-items:center;
+            padding:0 30px;box-shadow:0 5px 20px var(--shadow-dark);
         }
-
-        p {
-            font-size: 1.2em;
-            margin-bottom: 30px;
+        .nav-links{display:flex;gap:30px;align-items:center;}
+        .nav-links a{
+            color:var(--text-light);text-decoration:none;font-weight:500;
+            font-size:14px;display:flex;align-items:center;gap:8px;
+            position:relative;cursor:pointer;transition:all .3s ease;
         }
+        .nav-links a::after{
+            content:'';position:absolute;bottom:-5px;left:0;width:0;height:2px;
+            background:linear-gradient(90deg,var(--primary-purple),var(--accent-pink));
+            transition:width .3s ease;
+        }
+        .nav-links a:hover{color:var(--text-white);}
+        .nav-links a:hover::after{width:100%}
+        .nav-links a svg{width:18px;height:18px;}
+        .user-profile{position:absolute;right:30px;display:flex;gap:20px;align-items:center;}
+        .logout-btn{
+            background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            border:none;padding:10px 25px;border-radius:25px;color:var(--text-white);
+            font-size:13px;font-weight:600;cursor:pointer;display:flex;
+            align-items:center;gap:8px;box-shadow:0 0 15px var(--glow-purple);
+            transition:all .3s ease;
+        }
+        .logout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--glow-purple);}
+        .logout-btn svg{width:16px;height:16px;}
 
-        .redirect-message {
-            font-size: 1em;
-            color: #666;
+        /* MAIN */
+        .main-container{
+            margin-top:var(--header-height);min-height:calc(100vh - var(--header-height));
+            display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;
+        }
+        .error-container{
+            background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow-card);
+            padding:50px;width:90%;max-width:600px;border:2px solid rgba(110,68,255,.3);
+            position:relative;overflow:hidden;animation:fadeInUp .8s ease-out;
+            text-align:center;
+        }
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        .error-icon{
+            width:80px;height:80px;background:linear-gradient(135deg,var(--error),#CC3363);
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            margin:0 auto 20px;
+        }
+        .error-icon svg{width:45px;height:45px;color:#fff;}
+        .error-title{
+            font-size:32px;font-weight:800;color:var(--text-white);margin-bottom:15px;
+        }
+        .error-message{
+            font-size:16px;color:var(--text-light);margin-bottom:30px;
+        }
+        .error-redirect{
+            font-size:14px;color:var(--text-light);margin-bottom:20px;
+        }
+        .button{
+            background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
+            border:none;padding:14px 30px;border-radius:12px;color:var(--text-white);
+            font-size:15px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;
+            justify-content:center;gap:10px;box-shadow:0 8px 20px var(--glow-purple);
+            transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px;
+        }
+        .button:hover{transform:translateY(-3px);box-shadow:0 12px 30px var(--glow-purple);}
+
+        @media(max-width:768px){
+            .navbar{padding:0 20px;}
+            .nav-links{gap:15px;}
+            .error-container{width:95%;padding:40px 20px;}
+        }
+        @media(max-width:480px){
+            .navbar{padding:0 15px;}
+            .nav-links{gap:10px;font-size:12px;}
+            .error-container{width:100%;padding:30px 15px;}
+            .error-title{font-size:26px;}
+            .error-message{font-size:14px;}
+            .button{font-size:13px;padding:12px 20px;}
+        }
+        ::-webkit-scrollbar{width:10px;}
+        ::-webkit-scrollbar-track{background:var(--background-dark);}
+        ::-webkit-scrollbar-thumb{
+            background:linear-gradient(180deg,var(--primary-purple),var(--secondary-purple));
+            border-radius:5px;
+        }
+        ::-webkit-scrollbar-thumb:hover{
+            background:linear-gradient(180deg,var(--secondary-purple),var(--primary-purple));
         }
     </style>
 </head>
 <body>
-    <div class="error-container">
-        <h1>404</h1>
-        <p>Página Não Encontrada</p>
-        <p class="redirect-message">Você será redirecionado para a página anterior em <span id="countdown">4</span> segundos...</p>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-links">
+            <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Dashboard</span></a>
+        </div>
+        <div class="user-profile">
+            <button class="logout-btn" onclick="window.location.href='/logout'">
+                <svg data-lucide="log-out"></svg><span>Sair</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="error-container">
+            <div class="error-icon">
+                <svg data-lucide="alert-triangle"></svg>
+            </div>
+            <h1 class="error-title">404 - Página Não Encontrada</h1>
+            <p class="error-message">Desculpe, a página que você está procurando não existe ou foi movida.</p>
+            <p class="error-redirect">Você será redirecionado para a página anterior em <span id="countdown">5</span> segundos...</p>
+            <a href="{{ previous_url }}" class="button">
+                <svg data-lucide="arrow-left"></svg> Voltar Agora
+            </a>
+        </div>
     </div>
 
     <script>
-        let countdown = 4;
-        const countdownElement = document.getElementById('countdown');
-        const countdownInterval = setInterval(() => {
-            countdown--;
-            countdownElement.textContent = countdown;
-            if (countdown <= 0) {
-                clearInterval(countdownInterval);
-                window.history.back();
-            }
-        }, 1000);
+        document.addEventListener('DOMContentLoaded', function(){
+            lucide.createIcons();
+
+            let countdown = 5;
+            const countdownElement = document.getElementById('countdown');
+            const previousUrl = '{{ previous_url }}';
+
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdownElement) {
+                    countdownElement.textContent = countdown;
+                }
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    window.location.href = previousUrl;
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>
