@@ -26,7 +26,7 @@
             --glowximity: rgba(110, 68, 255, 0.5);
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
-            --shadow-glow: 0 0 15px var(--glowximity);
+            --shadow-glow: 0 0 15px var(--glow-purple);
             --font-family: 'Poppins', sans-serif;
             --success: #00D68F;
             --error: #FF3D71;
@@ -72,10 +72,10 @@
             background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
             border:none;padding:10px 25px;border-radius:25px;color:var(--text-white);
             font-size:13px;font-weight:600;cursor:pointer;display:flex;
-            align-items:center;gap:8px;box-shadow:0 0 15px var(--glowximity);
+            align-items:center;gap:8px;box-shadow:0 0 15px var(--glow-purple);
             transition:all .3s ease;
         }
-        .logout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--glowximity);}
+        .logout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--glow-purple);}
         .logout-btn svg{width:16px;height:16px;}
         /* ---------- MAIN ---------- */
         .main-container{
@@ -115,11 +115,11 @@
             background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
             border:none;padding:14px 30px;border-radius:12px;color:var(--text-white);
             font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;
-            justify-content:center;gap:10px;box-shadow:0 8px 20px var(--glowximity);
+            justify-content:center;gap:10px;box-shadow:0 8px 20px var(--glow-purple);
             width:100%;transition:all .3s ease;position:relative;z-index:1;
             text-transform:uppercase;letter-spacing:.5px;
         }
-        .button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 12px 30px var(--glowximity);}
+        .button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 12px 30px var(--glow-purple);}
         .button:disabled{background:var(--text-light);cursor:not-allowed;box-shadow:none;}
         .button.loading svg{animation:spin 1s linear infinite;}
         @keyframes spin{to{transform:rotate(360deg)}}
@@ -149,10 +149,10 @@
             width:45px;height:45px;border-radius:12px;
             background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
             color:var(--text-white);border:none;display:flex;align-items:center;
-            justify-content:center;cursor:pointer;box-shadow:0 5px 15px var(--glowximity);
+            justify-content:center;cursor:pointer;box-shadow:0 5px 15px var(--glow-purple);
             transition:all .3s ease;
         }
-        .action-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px var(--glowximity);}
+        .action-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px var(--glow-purple);}
         .action-btn.copied{background:linear-gradient(135deg,var(--success),#00A86B);}
         .action-btn svg{width:20px;height:20px;}
         .section{
@@ -245,12 +245,10 @@
             </button>
         </div>
     </nav>
-
     <!-- Main Container -->
     <div class="main-container">
         <div class="form-container">
             <h2>Consulta - CPF (DATAPRIME)</h2>
-
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -258,14 +256,12 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-
             <form method="POST" id="searchForm">
                 <div class="form-group">
                     <label for="cpf">CPF</label>
                     <svg data-lucide="id-card"></svg>
                     <input type="text" name="cpf" id="cpf" placeholder="000.000.000-00" value="{{ cpf }}" maxlength="14" required>
                 </div>
-
                 {% if not is_admin %}
                     <div class="form-group">
                         <label for="token">Token de Autenticação</label>
@@ -273,13 +269,11 @@
                         <input type="password" name="token" id="token" placeholder="Digite seu token..." required>
                     </div>
                 {% endif %}
-
                 <button type="submit" class="button" id="submitBtn">
                     <svg data-lucide="search"></svg> Consultar
                 </button>
             </form>
         </div>
-
         {% if result %}
         <div class="results-container">
             <div class="results-header">
@@ -296,7 +290,6 @@
                     </button>
                 </div>
             </div>
-
             <!-- Dados Básicos -->
             <div class="section">
                 <div class="section-title"><svg data-lucide="user"></svg>Dados Básicos</div>
@@ -329,7 +322,6 @@
                     <div class="result-item-value">{{ result.DT_OBITO | default('Não informado') }}</div>
                 </div>
             </div>
-
             <!-- Dados Econômicos -->
             <div class="section">
                 <div class="section-title"><svg data-lucide="dollar-sign"></svg>Dados Econômicos</div>
@@ -342,7 +334,6 @@
                     <div class="result-item-value">R$ {{ result.RENDA_PRESUMIDA | default('Não informado') }}</div>
                 </div>
             </div>
-
             <!-- Dados Profissionais -->
             <div class="section">
                 <div class="section-title"><svg data-lucide="briefcase"></svg>Dados Profissionais</div>
@@ -351,7 +342,6 @@
                     <div class="result-item-value">{{ result.CBO | default('Não informado') }}</div>
                 </div>
             </div>
-
             <!-- Endereço -->
             <div class="section">
                 <div class="section-title"><svg data-lucide="map-pin"></svg>Endereço</div>
@@ -392,7 +382,6 @@
                     <div class="result-item-value">{{ result.CEP | default('Não informado') }}</div>
                 </div>
             </div>
-
             <!-- Telefones -->
             <div class="section">
                 <div class="section-title"><svg data-lucide="phone"></svg>Telefones</div>
@@ -410,7 +399,6 @@
                     </div>
                 {% endif %}
             </div>
-
             <!-- E-mails -->
             <div class="section">
                 <div class="section-title"><svg data-lucide="mail"></svg>E-mails</div>
@@ -419,7 +407,6 @@
                     <div class="result-item-value">{{ result.EMAIL | default('Não informado') }}</div>
                 </div>
             </div>
-
             <!-- Outros -->
             <div class="section">
                 <div class="section-title"><svg data-lucide="info"></svg>Outros</div>
@@ -432,7 +419,6 @@
                     <div class="result-item-value">{{ result.QT_VEICULOS | default('Não informado') }}</div>
                 </div>
             </div>
-
             <div class="result-status">
                 <div class="result-status-icon"><svg data-lucide="check"></svg></div>
                 <div class="result-status-text">Consulta DATAPRIME Realizada com Sucesso</div>
@@ -440,11 +426,9 @@
         </div>
         {% endif %}
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function(){
             lucide.createIcons();
-
             // Máscara de CPF
             const cpfInput = document.getElementById('cpf');
             cpfInput.addEventListener('input', function(e){
@@ -454,13 +438,10 @@
                 v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
                 e.target.value = v;
             });
-
             const searchForm = document.getElementById('searchForm');
-            const submitBtn   = document.getElementById('submitBtn');
-
+            const submitBtn = document.getElementById('submitBtn');
             searchForm.addEventListener('submit', function(e){
                 const rawCpf = cpfInput.value.replace(/\D/g, '');
-
                 if(!/^\d{11}$/.test(rawCpf)){
                     e.preventDefault();
                     const al = document.createElement('div');
@@ -470,13 +451,11 @@
                     setTimeout(()=>al.remove(),4000);
                     return;
                 }
-
                 submitBtn.disabled = true;
                 submitBtn.classList.add('loading');
                 submitBtn.innerHTML = '<svg data-lucide="loader-circle"></svg> Processando...';
                 lucide.createIcons();
             });
-
             window.copyResult = function(btn){
                 const container = document.querySelector('.results-container');
                 if(!container){
@@ -498,7 +477,6 @@
                     },2000);
                 });
             };
-
             window.downloadResult = function(){
                 const container = document.querySelector('.results-container');
                 if(!container){
@@ -520,7 +498,6 @@
                 document.body.appendChild(a);a.click();document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             };
-
             if(document.querySelector('.results-container')){
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
