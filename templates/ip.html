@@ -237,7 +237,7 @@
     </style>
 </head>
 <body>
-    <!-- Navbar (centralizado, apenas Dashboard) -->
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-links">
             <a href="/dashboard"><svg data-lucide="layout-dashboard"></svg><span>Dashboard</span></a>
@@ -249,11 +249,10 @@
         </div>
     </nav>
 
-    <!-- Main Container -->
+    <!-- Main -->
     <div class="main-container">
         <div class="form-container">
             <h2>Consulta IP (IPFY)</h2>
-
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -261,14 +260,12 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-
             <form method="POST" id="searchForm">
                 <div class="form-group">
                     <label for="ip">Endereço IP</label>
                     <svg data-lucide="globe"></svg>
                     <input type="text" name="ip" id="ip" placeholder="192.168.0.1" value="{{ ip_address }}" required>
                 </div>
-
                 {% if not is_admin %}
                     <div class="form-group">
                         <label for="token">Token de Autenticação</label>
@@ -276,7 +273,6 @@
                         <input type="password" name="token" id="token" placeholder="Digite seu token..." required>
                     </div>
                 {% endif %}
-
                 <button type="submit" class="button" id="submitBtn">
                     <svg data-lucide="search"></svg> Consultar
                 </button>
@@ -302,44 +298,84 @@
 
             <!-- Informações Básicas -->
             <div class="section">
-                <div class="section-title"><svg data-lucide="info"></svg>Informações Básicas</div>
+                <div class="section-title"><svg data-lucide="info"></svg> Informações Básicas</div>
                 <div class="result-item">
-                    <div class="result-item-label"><svg data-lucide="hash"></svg>IP</div>
+                    <div class="result-item-label"><svg data-lucide="hash"></svg> IP</div>
                     <div class="result-item-value">{{ results.ip | default('Não disponível') }}</div>
                 </div>
                 <div class="result-item">
-                    <div class="result-item-label"><svg data-lucide="globe"></svg>Continente</div>
+                    <div class="result-item-label"><svg data-lucide="globe"></svg> Continente</div>
                     <div class="result-item-value">{{ results.continent | default('Não disponível') }}</div>
                 </div>
                 <div class="result-item">
-                    <div class="result-item-label"><svg data-lucide="flag"></svg>País</div>
+                    <div class="result-item-label"><svg data-lucide="globe"></svg> Código do Continente</div>
+                    <div class="result-item-value">{{ results.continent_code | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="flag"></svg> País</div>
                     <div class="result-item-value">{{ results.country | default('Não disponível') }}</div>
                 </div>
                 <div class="result-item">
-                    <div class="result-item-label"><svg data-lucide="map"></svg>Região</div>
+                    <div class="result-item-label"><svg data-lucide="flag"></svg> Código do País</div>
+                    <div class="result-item-value">{{ results.country_code | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="map"></svg> Região</div>
                     <div class="result-item-value">{{ results.region | default('Não disponível') }}</div>
                 </div>
                 <div class="result-item">
-                    <div class="result-item-label"><svg data-lucide="home"></svg>Cidade</div>
+                    <div class="result-item-label"><svg data-lucide="map"></svg> Código da Região</div>
+                    <div class="result-item-value">{{ results.region_code | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="home"></svg> Cidade</div>
                     <div class="result-item-value">{{ results.city | default('Não disponível') }}</div>
                 </div>
                 <div class="result-item">
-                    <div class="result-item-label"><svg data-lucide="navigation"></svg>Latitude</div>
-                    <div class="result-item-value">{{ results.latitude | default('Não disponível') }}</div>
+                    <div class="result-item-label"><svg data-lucide="map-pin"></svg> Distrito</div>
+                    <div class="result-item-value">{{ results.district | default('Não disponível') }}</div>
                 </div>
                 <div class="result-item">
-                    <div class="result-item-label"><svg data-lucide="navigation"></svg>Longitude</div>
-                    <div class="result-item-value">{{ results.longitude | default('Não disponível') }}</div>
+                    <div class="result-item-label"><svg data-lucide="mail"></svg> CEP</div>
+                    <div class="result-item-value">{{ results.zip | default('Não disponível') }}</div>
                 </div>
                 <div class="result-item">
-                    <div class="result-item-label"><svg data-lucide="wifi"></svg>Provedor</div>
-                    <div class="result-item-value">{{ results.provider | default('Não disponível') }}</div>
+                    <div class="result-item-label"><svg data-lucide="navigation"></svg> Latitude</div>
+                    <div class="result-item-value">{{ results.lat | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="navigation"></svg> Longitude</div>
+                    <div class="result-item-value">{{ results.lon | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="clock"></svg> Fuso Horário</div>
+                    <div class="result-item-value">{{ results.timezone | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="dollar-sign"></svg> Moeda</div>
+                    <div class="result-item-value">{{ results.currency | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="wifi"></svg> ISP</div>
+                    <div class="result-item-value">{{ results.isp | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="server"></svg> Organização</div>
+                    <div class="result-item-value">{{ results.org | default('Não disponível') }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="shield"></svg> Proxy / VPN</div>
+                    <div class="result-item-value">{{ 'Sim' if results.proxy else 'Não' }}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label"><svg data-lucide="cloud"></svg> Hospedagem</div>
+                    <div class="result-item-value">{{ 'Sim' if results.hosting else 'Não' }}</div>
                 </div>
             </div>
 
             <!-- Mapa -->
-            {% if results.latitude and results.longitude %}
-            <a href="https://www.google.com/maps?q={{ results.latitude }},{{ results.longitude }}" target="_blank" class="map-link">
+            {% if results.lat and results.lon %}
+            <a href="https://www.google.com/maps?q={{ results.lat }},{{ results.lon }}" target="_blank" class="map-link">
                 <svg data-lucide="map-pin"></svg> Abrir no Google Maps
             </a>
             {% endif %}
@@ -355,16 +391,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', function(){
             lucide.createIcons();
-
             const searchForm = document.getElementById('searchForm');
-            const submitBtn   = document.getElementById('submitBtn');
-            const ipInput     = document.getElementById('ip');
+            const submitBtn = document.getElementById('submitBtn');
+            const ipInput = document.getElementById('ip');
 
-            // Validação de IP
             searchForm.addEventListener('submit', function(e){
                 const ip = ipInput.value.trim();
                 const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
                 if(!ipRegex.test(ip)){
                     e.preventDefault();
                     const al = document.createElement('div');
@@ -374,7 +407,6 @@
                     setTimeout(()=>al.remove(),4000);
                     return;
                 }
-
                 submitBtn.disabled = true;
                 submitBtn.classList.add('loading');
                 submitBtn.innerHTML = '<svg data-lucide="loader-circle"></svg> Localizando...';
@@ -383,11 +415,7 @@
 
             window.copyResult = function(btn){
                 const container = document.querySelector('.results-container');
-                if(!container){
-                    Swal.fire({icon:'error',title:'Erro',text:'Nenhum resultado para copiar.',
-                        confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
-                    return;
-                }
+                if(!container) return Swal.fire({icon:'error',title:'Erro',text:'Nenhum resultado para copiar.', confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
                 const text = Array.from(container.querySelectorAll('.result-item')).map(i=>{
                     const l = i.querySelector('.result-item-label')?.textContent.trim() || '';
                     const v = i.querySelector('.result-item-value')?.textContent.trim() || '';
@@ -397,19 +425,13 @@
                     btn.classList.add('copied');
                     btn.innerHTML='<svg data-lucide="check"></svg>';
                     lucide.createIcons();
-                    setTimeout(()=>{btn.classList.remove('copied');
-                        btn.innerHTML='<svg data-lucide="copy"></svg>';lucide.createIcons();
-                    },2000);
+                    setTimeout(()=>{btn.classList.remove('copied'); btn.innerHTML='<svg data-lucide="copy"></svg>'; lucide.createIcons();},2000);
                 });
             };
 
             window.downloadResult = function(){
                 const container = document.querySelector('.results-container');
-                if(!container){
-                    Swal.fire({icon:'error',title:'Erro',text:'Nenhum resultado para baixar.',
-                        confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
-                    return;
-                }
+                if(!container) return Swal.fire({icon:'error',title:'Erro',text:'Nenhum resultado para baixar.', confirmButtonColor:'#6E44FF',background:'#1A1A1A',color:'#E0E0E0'});
                 const text = Array.from(container.querySelectorAll('.result-item')).map(i=>{
                     const l = i.querySelector('.result-item-label')?.textContent.trim() || '';
                     const v = i.querySelector('.result-item-value')?.textContent.trim() || '';
