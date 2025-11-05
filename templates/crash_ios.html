@@ -23,31 +23,24 @@
             --text-white: #E0E0E0;
             --text-light: #A0A0A0;
             --border-color: #333333;
-            --glowximity: rgba(110, 68, 255, 0.5);
+            --glow-purple: rgba(110, 68, 255, 0.5);
             --shadow-dark: rgba(0, 0, 0, 0.6);
             --shadow-card: 0 10px 30px var(--shadow-dark);
-            --shadow-glow: 0 0 15px var(--glowximity);
             --font-family: 'Poppins', sans-serif;
             --success: #00D68F;
             --error: #FF3D71;
-            --warning: #FFB800;
             --header-height: 70px;
         }
-        *{
-            box-sizing:border-box;margin:0;padding:0;
-            font-family:var(--font-family);transition:all .3s ease;
-        }
-        body{
-            background:var(--background-dark);color:var(--text-white);
-            min-height:100vh;overflow-x:hidden;position:relative;
-        }
+        *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-family);transition:all .3s ease;}
+        body{background:var(--background-dark);color:var(--text-white);min-height:100vh;overflow-x:hidden;position:relative;}
         body::after{
             content:'';position:fixed;top:0;left:0;width:100%;height:100%;
             background:radial-gradient(circle at 30% 20%,rgba(110,68,255,.15),transparent 60%);
             z-index:-1;opacity:.3;animation:subtlePulse 12s infinite ease-in-out;
         }
         @keyframes subtlePulse{0%{opacity:.2}50%{opacity:.4}100%{opacity:.2}}
-        /* ---------- NAVBAR ---------- */
+
+        /* NAVBAR */
         .navbar{
             position:fixed;top:0;left:0;width:100%;height:var(--header-height);
             background:rgba(18,18,18,.9);backdrop-filter:blur(10px);
@@ -55,14 +48,11 @@
             display:flex;justify-content:center;align-items:center;
             padding:0 30px;box-shadow:0 5px 20px var(--shadow-dark);
         }
-        .nav-links{
-            display:flex;gap:30px;align-items:center;
-        }
+        .nav-links{display:flex;gap:30px;align-items:center;}
         .nav-links a{
             color:var(--text-light);text-decoration:none;font-weight:500;
             font-size:14px;display:flex;align-items:center;gap:8px;
             position:relative;cursor:pointer;transition:all .3s ease;
- on;
         }
         .nav-links a::after{
             content:'';position:absolute;bottom:-5px;left:0;width:0;height:2px;
@@ -72,19 +62,18 @@
         .nav-links a:hover{color:var(--text-white);}
         .nav-links a:hover::after{width:100%}
         .nav-links a svg{width:18px;height:18px;}
-        .user-profile{
-            position:absolute;right:30px;display:flex;gap:20px;align-items:center;
-        }
+        .user-profile{position:absolute;right:30px;display:flex;gap:20px;align-items:center;}
         .logout-btn{
             background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
             border:none;padding:10px 25px;border-radius:25px;color:var(--text-white);
             font-size:13px;font-weight:600;cursor:pointer;display:flex;
-            align-items:center;gap:8px;box-shadow:0 0 15px var(--glowximity);
+            align-items:center;gap:8px;box-shadow:0 0 15px var(--glow-purple);
             transition:all .3s ease;
         }
-        .logout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--glowximity);}
+        .logout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--glow-purple);}
         .logout-btn svg{width:16px;height:16px;}
-        /* ---------- MAIN ---------- */
+
+        /* MAIN */
         .main-container{
             margin-top:var(--header-height);min-height:calc(100vh - var(--header-height));
             display:flex;flex-direction:column;align-items:center;padding:40px 20px;
@@ -122,11 +111,11 @@
             background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
             border:none;padding:14px 30px;border-radius:12px;color:var(--text-white);
             font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;
-            justify-content:center;gap:10px;box-shadow:0 8px 20px var(--glowximity);
+            justify-content:center;gap:10px;box-shadow:0 8px 20px var(--glow-purple);
             width:100%;transition:all .3s ease;position:relative;z-index:1;
             text-transform:uppercase;letter-spacing:.5px;
         }
-        .button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 12px 30px var(--glowximity);}
+        .button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 12px 30px var(--glow-purple);}
         .button:disabled{background:var(--text-light);cursor:not-allowed;box-shadow:none;}
         .button.loading svg{animation:spin 1s linear infinite;}
         @keyframes spin{to{transform:rotate(360deg)}}
@@ -156,10 +145,10 @@
             width:45px;height:45px;border-radius:12px;
             background:linear-gradient(135deg,var(--primary-purple),var(--secondary-purple));
             color:var(--text-white);border:none;display:flex;align-items:center;
-            justify-content:center;cursor:pointer;box-shadow:0 5px 15px var(--glowximity);
+            justify-content:center;cursor:pointer;box-shadow:0 5px 15px var(--glow-purple);
             transition:all .3s ease;
         }
-        .action-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px var(--glowximity);}
+        .action-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px var(--glow-purple);}
         .action-btn.copied{background:linear-gradient(135deg,var(--success),#00A86B);}
         .action-btn svg{width:20px;height:20px;}
         .result-item{
@@ -268,7 +257,7 @@
             </form>
         </div>
 
-        {% if result and result.get('success') %}
+        {% if result %}
         <div class="results-container">
             <div class="results-header">
                 <h3>
@@ -284,33 +273,24 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Alvo (JID) -->
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="target"></svg>Alvo (JID)</div>
-                <div class="result-item-value">{{ result['alvo']['jid'] }}</div>
+                <div class="result-item-value">{{ result.alvo.jid | default('Não encontrado') }}</div>
             </div>
-
-            <!-- Nome do Dispositivo -->
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="user"></svg>Nome do Dispositivo</div>
-                <div class="result-item-value {% if not result['alvo']['nome'] or not result['alvo']['nome']|trim %}not-found{% endif %}">
-                    {{ result['alvo']['nome']|trim if result['alvo']['nome'] and result['alvo']['nome']|trim else 'Não encontrado' }}
+                <div class="result-item-value {% if not result.alvo.nome or not result.alvo.nome.strip() %}not-found{% endif %}">
+                    {{ result.alvo.nome if result.alvo.nome and result.alvo.nome.strip() else 'Não encontrado' }}
                 </div>
             </div>
-
-            <!-- Mensagem -->
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="message-square"></svg>Mensagem</div>
-                <div class="result-item-value">{{ result['message'] }}</div>
+                <div class="result-item-value">{{ result.message | default('Não foi possivel possivel travar o numero fornecido') }}</div>
             </div>
-
-            <!-- Timestamp -->
             <div class="result-item">
                 <div class="result-item-label"><svg data-lucide="clock"></svg>Data & Hora</div>
-                <div class="result-item-value">{{ result['timestamp'] }}</div>
+                <div class="result-item-value">{{ result.timestamp | default('Não encontrado') }}</div>
             </div>
-
             <div class="result-status">
                 <div class="result-status-icon"><svg data-lucide="check"></svg></div>
                 <div class="result-status-text">Consulta Realizada com Sucesso</div>
@@ -385,7 +365,7 @@
                 a.download = `${now}-CRASH-IOS-CONSULT-CENTER.txt`;
                 document.body.appendChild(a);a.click();document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-            });
+            };
 
             if(document.querySelector('.results-container')){
                 submitBtn.disabled = false;
