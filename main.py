@@ -56,7 +56,8 @@ module_status = {
     'atestado': 'ON',
     'cpf5': 'OFF',
     'visitas': 'OFF',
-    'crash_ios': 'ON'
+    'crash_ios': 'ON',
+    'email': 'ON'
 }
 chave = "vmb1" # API key
 # JSON File Management (with locking for concurrency)
