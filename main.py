@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response, session, send_from_directory, url_for, abort, send_file
+from flask import Flask, jsonify, request, render_template, redirect, flash, g, make_response, send_from_directory, url_for, abort, send_file
 import json
 import os
 import secrets
 import requests
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import logging
 import time
 import re
@@ -12,282 +12,265 @@ from functools import wraps
 import colorama
 from colorama import Fore, Style
 import urllib3
-import socket
-import fitz # PyMuPDF for PDF editing
-import jwt # For JWT handling
+import fitz
+import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
+from cryptography.fernet import Fernet
+import base64
+import hashlib
+import hmac
+import threading
+import fcntl
+import ssl
+import certifi
+import zipfile
+from io import BytesIO
+import shutil
+
+# === INICIALIZAÇÃO ===
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.config['SECRET_KEY'] = os.urandom(24).hex() # More secure secret key
+app.config['SECRET_KEY'] = secrets.token_hex(32)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'novidades')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-colorama.init()
-# JWT Secret (should be env var in production)
-JWT_SECRET = os.urandom(32).hex()
-JWT_EXPIRATION = 3600 # 1 hour
-# Rate limiting storage (improved with expiration)
-login_attempts = {}
-# Module status
-module_status = {
-    'cpfdata': 'ON',
-    'cpflv': 'OFF',
-    'cpf': 'ON',
-    'cpf2': 'ON',
-    'vacinas': 'ON',
-    'cpf3': 'ON',
-    'nomelv': 'ON',
-    'nome': 'ON',
-    'nome2': 'ON',
-    'tel': 'OFF',
-    'telLv': 'ON',
-    'teldual': 'OFF',
-    'datanome': 'ON',
-    'placa': 'ON',
-    'placaestadual': 'OFF',
-    'fotor': 'ON',
-    'pix': 'ON',
-    'placalv': 'ON',
-    'ip': 'ON',
-    'likeff': 'OFF',
-    'mae': 'ON',
-    'pai': 'ON',
-    'cnpjcompleto': 'ON',
-    'atestado': 'OFF',
-    'cpf5': 'OFF',
-    'visitas': 'OFF',
-    'crash_ios': 'ON',
-    'email': 'ON'
-}
-chave = "vmb1" # API key
-# JSON File Management (with locking for concurrency)
-import fcntl
-def initialize_json(file_path, default_data={}):
+os.makedirs('fonts', exist_ok=True)
+
+# === CRIPTOGRAFIA E2E ===
+ENCRYPTION_KEY = Fernet.generate_key()
+cipher = Fernet(ENCRYPTION_KEY)
+
+def encrypt_data(data: str) -> str:
+    return cipher.encrypt(data.encode()).decode()
+
+def decrypt_data(token: str) -> str:
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            fcntl.flock(file, fcntl.LOCK_EX)
-            json.load(file)
-            fcntl.flock(file, fcntl.LOCK_UN)
-    except (FileNotFoundError, json.JSONDecodeError):
-        with open(file_path, 'w', encoding='utf-8') as file:
-            fcntl.flock(file, fcntl.LOCK_EX)
-            json.dump(default_data, file)
-            fcntl.flock(file, fcntl.LOCK_UN)
+        return cipher.decrypt(token.encode()).decode()
+    except:
+        return None
+
+# === JWT SEGURO ===
+JWT_SECRET = hashlib.sha3_512(secrets.token_bytes(64)).hexdigest()
+JWT_ALGORITHM = 'HS512'
+JWT_EXPIRATION = 3600
+
+def generate_jwt(user_id: str, role: str, device_id: str):
+    payload = {
+        'user_id': encrypt_data(user_id),
+        'role': encrypt_data(role),
+        'device_id': encrypt_data(device_id),
+        'exp': datetime.utcnow() + timedelta(seconds=JWT_EXPIRATION),
+        'iat': datetime.utcnow(),
+        'jti': secrets.token_hex(16)
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return encrypt_data(token)
+
+def verify_jwt(token: str):
+    try:
+        decrypted = decrypt_data(token)
+        if not decrypted:
+            return None
+        payload = jwt.decode(decrypted, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return {
+            'user_id': decrypt_data(payload['user_id']),
+            'role': decrypt_data(payload['role']),
+            'device_id': decrypt_data(payload['device_id']),
+            'jti': payload['jti']
+        }
+    except:
+        return None
+
+# === COOKIES SEGUROS E ÚNICOS ===
+def set_secure_cookie(resp, name, value):
+    domain = request.host.split(':')[0]
+    resp.set_cookie(
+        name=name,
+        value=value,
+        max_age=JWT_EXPIRATION,
+        httponly=True,
+        secure=True,
+        samesite='Strict',
+        domain=domain,
+        path='/'
+    )
+
+# === DETECÇÃO DE BOTS / SELENIUM / WEBDRIVER ===
+def is_real_browser():
+    ua = request.headers.get('User-Agent', '').lower()
+    headers = request.headers
+    js = request.cookies.get('js_enabled')
+    canvas = request.cookies.get('canvas_fp')
+    webgl = request.cookies.get('webgl_fp')
+
+    bot_patterns = ['bot', 'spider', 'crawler', 'headless', 'selenium', 'phantomjs', 'webdriver', 'puppeteer', 'playwright', 'scrapy', 'python-requests']
+    if any(p in ua for p in bot_patterns):
+        return False
+
+    required_headers = ['Accept', 'Accept-Language', 'Accept-Encoding', 'Upgrade-Insecure-Requests']
+    if not all(h in headers for h in required_headers):
+        return False
+
+    if not js or not canvas or not webgl:
+        return False
+
+    if not re.search(r'chrome|firefox|safari|edge', ua):
+        return False
+
+    return True
+
+@app.before_request
+def security_check():
+    if request.endpoint in ['static', 'preview', 'creditos']:
+        return
+
+    if not is_real_browser():
+        abort(403)
+
+    fp = hashlib.sha256(f"{request.remote_addr}{request.headers.get('User-Agent')}".encode()).hexdigest()
+    if 'device_id' not in session:
+        session['device_id'] = fp
+
+# === JSON COM LOCK + CRIPTOGRAFIA ===
+def initialize_json(file_path, default_data={}):
+    if not os.path.exists(file_path):
+        save_data(default_data, file_path)
+
 def load_data(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
-            fcntl.flock(file, fcntl.LOCK_SH)
-            data = json.load(file)
-            fcntl.flock(file, fcntl.LOCK_UN)
-            if 'news.json' in file_path and not isinstance(data, list):
-                data = []
-                save_data(data, file_path)
-            return data
-    except (FileNotFoundError, json.JSONDecodeError):
-        default_data = [] if 'news.json' in file_path else {}
-        save_data(default_data, file_path)
-        return default_data
-def save_data(data, file_path):
-    with open(file_path, 'w', encoding='utf-8') as file:
-        fcntl.flock(file, fcntl.LOCK_EX)
-        json.dump(data, file, indent=4, default=str)
-        fcntl.flock(file, fcntl.LOCK_UN)
-# Logging with IP masking for privacy
-def log_access(endpoint, message=''):
-    try:
-        response = requests.get('https://ipinfo.io/json', verify=False)
-        ip_info = response.json()
-        ip = ip_info.get('ip', '')
-        # Mask IP (last octet)
-        ip_parts = ip.split('.')
-        if len(ip_parts) == 4:
-            ip = '.'.join(ip_parts[:3]) + '.xxx'
+            fcntl.flock(file.fileno(), fcntl.LOCK_SH)
+            raw = file.read()
+            fcntl.flock(file.fileno(), fcntl.LOCK_UN)
+            decrypted = decrypt_data(raw)
+            return json.loads(decrypted) if decrypted else default_data
     except:
-        ip = 'unknown'
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"{Fore.CYAN}[ INFO ]{Style.RESET_ALL} {ip} - {now} accessed {endpoint}. {message}")
-# Module Usage Management (with daily reset)
+        return default_data
+
+def save_data(data, file_path):
+    encrypted = encrypt_data(json.dumps(data, default=str))
+    with open(file_path, 'w', encoding='utf-8') as file:
+        fcntl.flock(file.fileno(), fcntl.LOCK_EX)
+        file.write(encrypted)
+        fcntl.flock(file.fileno(), fcntl.LOCK_UN)
+
+# === INICIALIZAÇÃO DE ARQUIVOS ===
+initialize_json('users.json', {})
+initialize_json('notifications.json', {})
+initialize_json('gifts.json', {})
+initialize_json('news.json', [])
+
+# === MÓDULOS ===
+module_status = {
+    'cpfdata': 'ON', 'cpflv': 'OFF', 'cpf': 'ON', 'cpf2': 'ON', 'vacinas': 'ON',
+    'cpf3': 'ON', 'nomelv': 'ON', 'nome': 'ON', 'nome2': 'ON', 'tel': 'OFF',
+    'telLv': 'ON', 'teldual': 'OFF', 'datanome': 'ON', 'placa': 'ON',
+    'placaestadual': 'OFF', 'fotor': 'ON', 'pix': 'ON', 'placalv': 'ON',
+    'ip': 'ON', 'likeff': 'OFF', 'mae': 'ON', 'pai': 'ON', 'cnpjcompleto': 'ON',
+    'atestado': 'OFF', 'cpf5': 'OFF', 'visitas': 'OFF', 'crash_ios': 'ON',
+    'email': 'ON'
+}
+chave = "vmb1"
+
+# === USO DE MÓDULOS ===
 def manage_module_usage(user_id, module, increment=True):
     users = load_data('users.json')
     user = users.get(user_id, {})
     if user.get('role') == 'admin':
         return True
     permissions = user.get('permissions', {})
-    if module not in permissions or (permissions[module] and datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d')):
+    if module not in permissions or datetime.now() > datetime.strptime(permissions[module], '%Y-%m-%d'):
         return False
     if 'modules' not in user:
-        user['modules'] = {m: 0 for m in module_status.keys()}
+        user['modules'] = {m: 0 for m in module_status}
     today = datetime.now().date().isoformat()
-    if 'last_reset' not in user or user['last_reset'] != today:
-        user['modules'] = {m: 0 for m in module_status.keys()}
+    if user.get('last_reset') != today:
+        user['modules'] = {m: 0 for m in module_status}
         user['last_reset'] = today
     if increment:
         user['modules'][module] += 1
-    usage_limit = {
-        'guest': 0,
-        'user_semanal': 30,
-        'user_mensal': 250,
-        'user_anual': 500
-    }.get(user.get('role', 'guest'), 0)
-    if user['modules'][module] > usage_limit:
+    limit = {'guest': 0, 'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(user.get('role'), 0)
+    if user['modules'][module] > limit:
         return False
     users[user_id] = user
     save_data(users, 'users.json')
     return True
-# Rate Limiting for Login (with IP + UA key)
-def check_login_attempts(identifier):
-    now = time.time()
-    if identifier not in login_attempts:
-        login_attempts[identifier] = {'count': 0, 'last_attempt': now}
-    attempts = login_attempts[identifier]
-    if now - attempts['last_attempt'] > 300:
-        attempts['count'] = 0
-    attempts['last_attempt'] = now
-    attempts['count'] += 1
-    if attempts['count'] > 5:
-        return False, "Muitas tentativas. Tente novamente em 5 minutos."
-    login_attempts[identifier] = attempts
-    return True, ""
-# JWT Utilities
-def generate_jwt(user_id):
-    payload = {
-        'user_id': user_id,
-        'exp': datetime.utcnow() + timedelta(seconds=JWT_EXPIRATION),
-        'iat': datetime.utcnow()
-    }
-    return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
-def verify_jwt(token):
-    try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
-        return payload['user_id']
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
-# Auth Decorator (JWT in secure cookie)
+
+# === DECORATOR JWT ===
 def jwt_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.cookies.get('auth_token')
         if not token:
-            flash('Sessão inválida. Faça login.', 'error')
-            return redirect('/')
-        user_id = verify_jwt(token)
-        if not user_id:
-            flash('Sessão expirada. Faça login novamente.', 'error')
             resp = make_response(redirect('/'))
             resp.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Strict')
             return resp
-        g.user_id = user_id
+        payload = verify_jwt(token)
+        if not payload or payload['device_id'] != session.get('device_id'):
+            resp = make_response(redirect('/'))
+            resp.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Strict')
+            return resp
+        g.user_id = payload['user_id']
+        g.role = payload['role']
         users = load_data('users.json')
         user = users.get(g.user_id, {})
-        if not user:
+        if user.get('role') not in ['admin', 'guest'] and datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
             resp = make_response(redirect('/'))
             resp.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Strict')
             return resp
-        # Expiration check
-        if user['role'] != 'admin' and user['role'] != 'guest':
-            expiration_date = datetime.strptime(user['expiration'], '%Y-%m-%d')
-            if datetime.now() > expiration_date:
-                flash('Sua conta expirou. Contate o suporte.', 'error')
-                resp = make_response(redirect('/'))
-                resp.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Strict')
-                return resp
         return f(*args, **kwargs)
     return decorated
-# Before Request (bot detection, UA check)
-@app.before_request
-def security_check():
-    user_agent = request.headers.get('User-Agent', '').lower()
-    if 'bot' in user_agent or 'spider' in user_agent:
-        abort(403)
-    if request.endpoint not in ['login_or_register', 'creditos', 'preview']:
-        pass # Removed redirect, assuming it's a typo
-        
-# Handler for 404 errors
-@app.errorhandler(404)
-def page_not_found(e):
-    # Get the previous page from Referer header (fallback to dashboard if none)
-    previous_url = request.referrer or url_for('dashboard')
-    return render_template('404.html', previous_url=previous_url), 404
-    
-@app.template_filter('format_cpf')
-def format_cpf(cpf):
-    """Formata CPF: 12345678900 → 123.456.789-00"""
-    if isinstance(cpf, str) and len(cpf) == 11 and cpf.isdigit():
-        return f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
-    return cpf  # Retorna original se inválido
-# Login/Register (with hashed passwords, UA limit)
+
+# === LOGIN / REGISTER ===
 @app.route('/', methods=['GET', 'POST'])
 def login_or_register():
     if request.method == 'POST':
         action = request.form.get('action')
         username = request.form.get('user', '').strip()
         password = request.form.get('password', '').strip()
-        user_agent = request.headers.get('User-Agent', '')
-        identifier = f"{request.remote_addr}_{user_agent}" # IP + UA for rate limit
-        can_attempt, msg = check_login_attempts(identifier)
-        if not can_attempt:
-            flash(msg, 'error')
-            return render_template('login.html')
         users = load_data('users.json')
+        device_id = session.get('device_id')
+
         if action == 'login':
-            if not username or not password:
-                flash('Usuário e senha são obrigatórios.', 'error')
-                return render_template('login.html')
             if username in users and check_password_hash(users[username]['password'], password):
                 user = users[username]
-                if user['role'] != 'guest':
-                    expiration_date = datetime.strptime(user['expiration'], '%Y-%m-%d')
-                    if datetime.now() > expiration_date:
-                        flash('Conta expirada. Contate o suporte.', 'error')
-                        return render_template('login.html')
-                # Device management - Allow if no devices or empty list
-                deny_device = 'devices' in user and user['devices'] and user_agent not in user['devices']
-                if deny_device:
-                    flash('Dispositivo não autorizado.', 'error')
+                if user['role'] != 'admin' and datetime.now() > datetime.strptime(user['expiration'], '%Y-%m-%d'):
+                    flash('Conta expirada.', 'error')
                     return render_template('login.html')
-                user['devices'] = list(set(user.get('devices', []) + [user_agent]))[:5] # Limit to 5 devices
-                save_data(users, 'users.json')
-                token = generate_jwt(username)
+                if device_id not in user.get('devices', []):
+                    user['devices'] = (user.get('devices', []) + [device_id])[-5:]
+                    save_data(users, 'users.json')
+                token = generate_jwt(username, user['role'], device_id)
                 resp = make_response(redirect('/dashboard'))
-                resp.set_cookie('auth_token', token, max_age=JWT_EXPIRATION, httponly=True, secure=True, samesite='Strict')
+                set_secure_cookie(resp, 'auth_token', token)
+                set_secure_cookie(resp, 'js_enabled', '1')
+                set_secure_cookie(resp, 'canvas_fp', hashlib.md5(str(time.time()).encode()).hexdigest())
+                set_secure_cookie(resp, 'webgl_fp', secrets.token_hex(16))
                 return resp
-            else:
-                flash('Credenciais inválidas.', 'error')
-                return render_template('login.html')
+            flash('Credenciais inválidas.', 'error')
+
         elif action == 'register':
-            if not username or not password:
-                flash('Usuário e senha são obrigatórios.', 'error')
-                return render_template('login.html')
             if username in users:
                 flash('Usuário já existe.', 'error')
                 return render_template('login.html')
-            # Check UA uniqueness - prevents multiple registrations from same device
-            ua_exists = any(user_agent in u.get('devices', []) for u in users.values())
-            if ua_exists:
-                flash('Este dispositivo já registrou uma conta. Use login em contas existentes.', 'error')
-                return render_template('login.html')
-            aff_code = request.args.get('aff')
-            referred_by = next((u for u, d in users.items() if d.get('affiliate_code') == aff_code), None)
-            hashed_pw = generate_password_hash(password)
+            hashed = generate_password_hash(password)
             users[username] = {
-                'password': hashed_pw,
-                'plain_password': password, # Save plain text password (insecure, but as per request)
+                'password': hashed,
+                'plain_password': password,
                 'role': 'guest',
                 'expiration': '2099-12-31',
                 'permissions': {},
-                'modules': {m: 0 for m in module_status.keys()},
+                'modules': {m: 0 for m in module_status},
                 'read_notifications': [],
-                'referred_by': referred_by,
-                'affiliate_code': secrets.token_urlsafe(8) if referred_by else None,
-                'devices': [user_agent]
+                'affiliate_code': secrets.token_urlsafe(8),
+                'devices': [device_id],
+                'token': f"{username}-KEY{secrets.token_hex(13)}.center"
             }
             save_data(users, 'users.json')
-            flash('Registro concluído. Faça login.', 'success')
+            flash('Registrado com sucesso.', 'success')
             return redirect('/')
+
     return render_template('login.html')
-# Dashboard
+
+# === DASHBOARD ===
 @app.route('/dashboard', methods=['GET', 'POST'])
 @jwt_required
 def dashboard():
@@ -295,15 +278,11 @@ def dashboard():
     user = users[g.user_id]
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
-    is_admin = user['role'] == 'admin'
-    is_guest = user['role'] == 'guest'
-    affiliate_link = None if is_guest else url_for('login_or_register', aff=user.get('affiliate_code'), _external=True)
-    max_limit = {
-        'guest': 10,
-        'user_semanal': 30,
-        'user_mensal': 250,
-        'user_anual': 500
-    }.get(user['role'], 0) if not is_admin else 999999
+    is_admin = g.role == 'admin'
+    is_guest = g.role == 'guest'
+    affiliate_link = url_for('login_or_register', aff=user.get('affiliate_code'), _external=True) if not is_guest else None
+    max_limit = 999999 if is_admin else {'guest': 10, 'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(g.role, 0)
+
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'redeem':
@@ -312,13 +291,12 @@ def dashboard():
             if code in gifts and gifts[code]['uses_left'] > 0:
                 gift = gifts[code]
                 exp_date = (datetime.now() + timedelta(days=gift['expiration_days'])).strftime('%Y-%m-%d')
-                user['permissions'] = user.get('permissions', {})
                 modules = module_status.keys() if gift['modules'] == 'all' else gift['modules']
                 for m in modules:
                     if m in module_status:
                         user['permissions'][m] = exp_date
                 if user['role'] == 'guest':
-                    user['role'] = 'user_semanal' if gift['expiration_days'] <= 7 else 'user_mensal' if gift['expiration_days'] <= 30 else 'user_anual'
+                    user['role'] = 'user_anual' if gift['expiration_days'] > 30 else 'user_mensal' if gift['expiration_days'] > 7 else 'user_semanal'
                     user['expiration'] = exp_date
                 if 'token' not in user:
                     user['token'] = f"{g.user_id}-KEY{secrets.token_hex(13)}.center"
@@ -328,8 +306,8 @@ def dashboard():
                 users[g.user_id] = user
                 save_data(users, 'users.json')
                 save_data(gifts, 'gifts.json')
-            else:
-                pass
+                flash('Gift ativado!', 'success')
+
         elif is_admin and action == 'view_modules':
             target_user = request.form.get('user')
             module = request.form.get('module')
@@ -338,16 +316,19 @@ def dashboard():
                 role = users[target_user].get('role', 'user_semanal')
                 max_requests = {'user_semanal': 30, 'user_mensal': 250, 'user_anual': 500}.get(role, 30) if role != 'admin' else 'Unlimited'
                 return jsonify({"user": target_user, "modules": {module: user_modules.get(module, 0)} if module else user_modules, "maxRequests": max_requests})
-    return render_template('dashboard.html', users=users, admin=is_admin, guest=is_guest, unread_notifications=unread_count, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
-# Admin Panel (with more security checks)
+
+    return render_template('dashboard.html', user=user, unread=unread_count, admin=is_admin, guest=is_guest, affiliate_link=affiliate_link, notifications=notifications, module_status=module_status, max_limit=max_limit)
+
+# === ADMIN PANEL ===
 @app.route('/i/settings/admin', methods=['GET', 'POST'])
 @jwt_required
 def admin_panel():
-    users = load_data('users.json')
-    if users.get(g.user_id, {}).get('role') != 'admin':
+    if g.role != 'admin':
         abort(403)
+    users = load_data('users.json')
     notifications = load_data('notifications.json')
     gifts = load_data('gifts.json')
+
     if request.method == 'POST':
         action = request.form.get('action')
         try:
@@ -362,7 +343,7 @@ def admin_panel():
                 token = f"{user_input}-KEY{secrets.token_hex(13)}.center"
                 users[user_input] = {
                     'password': hashed_pw,
-                    'plain_password': password, # Save plain text password (insecure, but as per request)
+                    'plain_password': password,
                     'token': token,
                     'expiration': expiration,
                     'role': role,
@@ -374,6 +355,7 @@ def admin_panel():
                 }
                 save_data(users, 'users.json')
                 return jsonify({'message': 'Usuário adicionado!', 'category': 'success', 'user': user_input, 'password': password, 'token': token, 'expiration': expiration, 'role': role})
+
             elif action == "delete_user":
                 user_input = request.form.get('user')
                 password = request.form.get('password')
@@ -382,8 +364,8 @@ def admin_panel():
                     save_data(users, 'users.json')
                     return jsonify({'message': 'Usuário excluído!', 'category': 'success'})
                 return jsonify({'message': 'Credenciais inválidas.', 'category': 'error'})
+
             elif action == "view_users":
-                # Send plain password as 'password'
                 users_dict = {}
                 for k, v in users.items():
                     user_data = {kk: vv for kk, vv in v.items() if kk != 'devices'}
@@ -391,6 +373,7 @@ def admin_panel():
                         user_data['password'] = v['plain_password']
                     users_dict[k] = user_data
                 return jsonify({'users': users_dict})
+
             elif action == "send_message":
                 message = request.form.get('message')
                 user_input = request.form.get('user', 'all')
@@ -404,6 +387,7 @@ def admin_panel():
                         notifications.setdefault(user_input, []).append({'id': notif_id, 'message': message, 'timestamp': datetime.now().isoformat()})
                 save_data(notifications, 'notifications.json')
                 return jsonify({'message': 'Mensagem enviada!', 'category': 'success'})
+
             elif action == "reset_device":
                 user_input = request.form.get('user')
                 password = request.form.get('password')
@@ -411,18 +395,19 @@ def admin_panel():
                     users[user_input]['devices'] = []
                     save_data(users, 'users.json')
                     if user_input == g.user_id:
-                        # Force logout if resetting own devices
                         resp = make_response(jsonify({'message': 'Dispositivos resetados! Você foi deslogado.', 'category': 'success'}))
                         resp.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Strict')
                         return resp
                     return jsonify({'message': 'Dispositivos resetados!', 'category': 'success'})
                 return jsonify({'message': 'Credenciais inválidas.', 'category': 'error'})
+
             elif action == "toggle_module":
                 module = request.form.get('module')
                 status = request.form.get('status')
                 if module in module_status:
                     module_status[module] = status
                     return jsonify({'success': True, 'message': f'Módulo {module} {status}'})
+
             elif action == 'create_gift':
                 modules = request.form.get('modules', 'all')
                 expiration_days = int(request.form.get('expiration_days', 30))
@@ -436,14 +421,15 @@ def admin_panel():
                 }
                 save_data(gifts, 'gifts.json')
                 return jsonify({'message': 'Gift criado!', 'code': code, 'category': 'success'})
+
             elif action == "view_gifts":
                 return jsonify({'gifts': gifts})
+
             elif action == 'get_stats':
                 active_users = sum(1 for u in users.values() if u.get('role') != 'guest' and datetime.now() < datetime.strptime(u['expiration'], '%Y-%m-%d'))
                 return jsonify({'active_users': active_users})
+
             elif action == 'backup':
-                import zipfile
-                from io import BytesIO
                 zip_buffer = BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for file_name in ['users.json', 'notifications.json', 'gifts.json', 'news.json']:
@@ -455,14 +441,13 @@ def admin_panel():
                             zip_file.write(file_path, os.path.join('novidades', filename))
                 zip_buffer.seek(0)
                 return send_file(zip_buffer, as_attachment=True, download_name='backup.zip', mimetype='application/zip')
+
             elif action == 'restore':
                 if 'zip_file' not in request.files:
                     return jsonify({'message': 'Nenhum arquivo.', 'category': 'error'})
                 zip_file = request.files['zip_file']
                 if not zip_file.filename.endswith('.zip'):
                     return jsonify({'message': 'Arquivo inválido.', 'category': 'error'})
-                import zipfile
-                import shutil
                 temp_dir = 'temp_restore'
                 os.makedirs(temp_dir, exist_ok=True)
                 try:
@@ -481,10 +466,13 @@ def admin_panel():
                 except Exception as e:
                     shutil.rmtree(temp_dir)
                     return jsonify({'message': 'Erro na restauração.', 'category': 'error'})
+
         except Exception as e:
             return jsonify({'message': 'Algo deu errado.', 'category': 'error'})
+
     return render_template('admin.html', users=users, gifts=gifts, modules_state=module_status)
-# Notifications
+
+# === NOTIFICAÇÕES ===
 @app.route('/notifications', methods=['GET', 'POST'])
 @jwt_required
 def notifications_page():
@@ -505,7 +493,8 @@ def notifications_page():
             save_data(users, 'users.json')
         return jsonify({'success': True})
     return render_template('notifications.html', unread=unread, read=read, users=users)
-# Novidades
+
+# === NOVIDADES ===
 @app.route('/novidades', methods=['GET'])
 @jwt_required
 def novidades():
@@ -514,7 +503,7 @@ def novidades():
         abort(403)
     news = load_data('news.json')
     return render_template('novidades.html', news=news, users=users)
-# New Novidade
+
 @app.route('/novidades/new', methods=['GET', 'POST'])
 @jwt_required
 def new_novidade():
@@ -546,7 +535,7 @@ def new_novidade():
         save_data(news, 'news.json')
         return redirect('/novidades')
     return render_template('new_novidade.html', users=users)
-# Edit Novidade
+
 @app.route('/novidades/edit/<news_id>', methods=['GET', 'POST'])
 @jwt_required
 def edit_novidade(news_id):
@@ -570,7 +559,7 @@ def edit_novidade(news_id):
         save_data(news, 'news.json')
         return redirect('/novidades')
     return render_template('edit_novidade.html', item=item, users=users)
-# Delete Novidade
+
 @app.route('/novidades/delete/<news_id>', methods=['POST'])
 @jwt_required
 def delete_novidade(news_id):
@@ -591,60 +580,38 @@ def delete_novidade(news_id):
     save_data(news, 'news.json')
     flash('Novidade excluída!', 'success')
     return redirect('/novidades')
-# Generic API Call
+
+# === API GENÉRICA ===
 def generic_api_call(url, module, process_func=None, flash_error=True):
     try:
-        response = requests.get(url, verify=False, timeout=30)
+        response = requests.get(url, verify=certifi.where(), timeout=30)
         response.raise_for_status()
         raw_text = response.text.lstrip('\ufeff')
         data = json.loads(raw_text)
-       
-        # Validação robusta: Deve ser dict ou list, senão erro
         if not isinstance(data, (dict, list)):
-            print(f"[ERROR] Resposta inválida de {url}: tipo {type(data)} - Conteúdo: {str(data)[:200]}...")
             if flash_error:
-                flash('Resposta da API inválida (não é JSON válido).', 'error')
+                flash('Resposta da API inválida.', 'error')
             return None
-       
-        # Se process_func, aplica só se tipo válido
         if process_func:
-            # Chama process_func com guard extra
             try:
                 processed = process_func(data)
                 if processed is not None and isinstance(processed, (dict, list)):
                     data = processed
                 else:
-                    print(f"[WARN] process_func retornou inválido para {url}: {type(processed)}")
                     data = None
-            except Exception as proc_e:
-                print(f"[ERROR] Erro no process_func para {url}: {str(proc_e)}")
+            except:
                 data = None
-       
-        # Se data final é válida e uso permitido
-        if data and (isinstance(data, dict) or isinstance(data, list)) and manage_module_usage(g.user_id, module):
+        if data and manage_module_usage(g.user_id, module):
             return data
-       
         if flash_error:
-            flash('Algo deu errado. Ou, nenhum resultado foi encontrado.', 'error')
+            flash('Sem resultado ou limite excedido.', 'error')
         return None
-       
-    except json.JSONDecodeError as e:
-        print(f"[ERROR] JSON inválido em {url}: {str(e)} - Raw preview: {response.text[:200]}...")
+    except:
         if flash_error:
-            flash('Erro ao processar resposta da API (JSON malformado).', 'error')
+            flash('Erro de conexão.', 'error')
         return None
-    except requests.exceptions.RequestException as req_e:
-        print(f"[ERROR] Requisição falhou para {url}: {str(req_e)}")
-        if flash_error:
-            flash('Erro de conexão com a API.', 'error')
-        return None
-    except Exception as e:
-        print(f"[ERROR] Erro geral na API {url}: {str(e)}")
-        if flash_error:
-            flash('Algo deu errado na consulta.', 'error')
-        return None
-       
-# Module Routes
+
+# === TODOS OS MÓDULOS ===
 @app.route('/modulos/mae', methods=['GET', 'POST'])
 @jwt_required
 def mae():
@@ -669,6 +636,7 @@ def mae():
             process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else []
             result = generic_api_call(url, 'mae', process)
     return render_template('mae.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
+
 @app.route('/modulos/pai', methods=['GET', 'POST'])
 @jwt_required
 def pai():
@@ -693,6 +661,7 @@ def pai():
             process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else []
             result = generic_api_call(url, 'pai', process)
     return render_template('pai.html', is_admin=is_admin, notifications=unread_count, result=result, nome=nome)
+
 @app.route('/modulos/crash_ios', methods=['GET', 'POST'])
 @jwt_required
 def crash_ios():
@@ -703,7 +672,6 @@ def crash_ios():
     unread = len([n for n in notifs.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     numero = ""
-    token_input = ""
     if request.method == 'POST':
         if not is_admin:
             token_input = request.form.get('token')
@@ -725,12 +693,12 @@ def crash_ios():
                     result = resp.json()
                     if not result.get('success'):
                         flash(result.get('error', 'Falha'), 'error')
-                        result = None  # Set result to None if not success to skip rendering results
+                        result = None
                 except Exception as e:
                     flash(f'Erro na API: {str(e)}', 'error')
                     result = None
     return render_template('crash_ios.html', is_admin=is_admin, notifications=unread, result=result, numero=numero)
-   
+
 @app.route('/modulos/cnpjcompleto', methods=['GET', 'POST'])
 @jwt_required
 def cnpjcompleto():
@@ -782,6 +750,7 @@ def cnpjcompleto():
                 }
             result = generic_api_call(url, 'cnpjcompleto', process)
     return render_template('cnpjcompleto.html', is_admin=is_admin, notifications=unread_count, result=result, cnpj_input=cnpj_input)
+
 @app.route('/modulos/cpf', methods=['GET', 'POST'])
 @jwt_required
 def cpf():
@@ -791,21 +760,22 @@ def cpf():
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
-    cpf = ""
+    cpf_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-        cpf = request.form.get('cpf', '').strip()
-        if not cpf:
+                return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+        cpf_input = request.form.get('cpf', '').strip()
+        if not cpf_input:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv1"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf_input}&tipo=cpfv1"
             process = lambda d: d if isinstance(d, dict) and 'CPF' in d and d['CPF'] and d.get('NOME') else None
             result = generic_api_call(url, 'cpf', process)
-    return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+    return render_template('cpf.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+
 @app.route('/modulos/cpf2', methods=['GET', 'POST'])
 @jwt_required
 def cpf2():
@@ -815,18 +785,18 @@ def cpf2():
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
-    cpf = ""
+    cpf_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-        cpf = request.form.get('cpf', '').strip()
-        if not cpf:
+                return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+        cpf_input = request.form.get('cpf', '').strip()
+        if not cpf_input:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpf_serasa"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf_input}&tipo=cpf_serasa"
             def process(d):
                 if not isinstance(d, dict):
                     return None
@@ -846,37 +816,26 @@ def cpf2():
                     "EMAIL": ', '.join(d.get("EMAIL", [])) or "Não informado",
                     "TELEFONES": "SEM RESULTADO"
                 }
-                # Address from first ENDERECOS
                 enderecos = d.get("ENDERECOS", [])
                 if enderecos:
                     end = enderecos[0]
-                    result["TIPO_ENDERECO"] = end.get("TIPO_ENDERECO_ID", "Não informado")
-                    result["LOGRADOURO"] = end.get("LOGR_NOME", "Não informado")
-                    result["NUMERO"] = end.get("LOGR_NUMERO", "Não informado")
-                    result["COMPLEMENTO"] = end.get("LOGR_COMPLEMENTO", "Não informado")
-                    result["BAIRRO"] = end.get("BAIRRO", "Não informado")
-                    result["CIDADE"] = end.get("CIDADE", "Não informado")
-                    result["ESTADO"] = end.get("UF", "Não informado")
-                    result["UF"] = end.get("UF", "Não informado")
-                    result["CEP"] = end.get("CEP", "Não informado")
-                else:
-                    result["TIPO_ENDERECO"] = "Não informado"
-                    result["LOGRADOURO"] = "Não informado"
-                    result["NUMERO"] = "Não informado"
-                    result["COMPLEMENTO"] = "Não informado"
-                    result["BAIRRO"] = "Não informado"
-                    result["CIDADE"] = "Não informado"
-                    result["ESTADO"] = "Não informado"
-                    result["UF"] = "Não informado"
-                    result["CEP"] = "Não informado"
-                # Telefones
+                    result.update({
+                        "TIPO_ENDERECO": end.get("TIPO_ENDERECO_ID", "Não informado"),
+                        "LOGRADOURO": end.get("LOGR_NOME", "Não informado"),
+                        "NUMERO": end.get("LOGR_NUMERO", "Não informado"),
+                        "COMPLEMENTO": end.get("LOGR_COMPLEMENTO", "Não informado"),
+                        "BAIRRO": end.get("BAIRRO", "Não informado"),
+                        "CIDADE": end.get("CIDADE", "Não informado"),
+                        "ESTADO": end.get("UF", "Não informado"),
+                        "CEP": end.get("CEP", "Não informado")
+                    })
                 tels = d.get("TELEFONE", [])
                 if tels:
                     phones = [f"({tel.get('DDD', '')}) {tel.get('TELEFONE', '')}" for tel in tels if tel.get('DDD') and tel.get('TELEFONE')]
                     result["TELEFONES"] = ', '.join(phones) if phones else "SEM RESULTADO"
                 return result
             result = generic_api_call(url, 'cpf2', process)
-    return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+    return render_template('cpf2.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
 
 @app.route('/modulos/email', methods=['GET', 'POST'])
 @jwt_required
@@ -886,20 +845,17 @@ def email():
     is_admin = user['role'] == 'admin'
     result = None
     email_input = ""
-
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
                 return render_template('email.html', is_admin=is_admin, result=result, email=email_input)
-
         email_input = request.form.get('email', '').strip()
         if not email_input:
             flash('E-mail não fornecido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={email_input}&tipo=email2"
-
             def process(data):
                 if not data or not isinstance(data, list) or not data[0].get("DADOS"):
                     return None
@@ -908,8 +864,7 @@ def email():
                 enderecos = data[0].get("ENDERECOS", [])
                 parentes = data[0].get("PARENTES", [])
                 telefones = data[0].get("TELEFONE", [])
-
-                result = {
+                return {
                     "NOME": d.get("NOME", "Não informado"),
                     "CPF": d.get("CPF", "Não informado"),
                     "NOME_MAE": d.get("NOME_MAE", "Não informado"),
@@ -931,16 +886,11 @@ def email():
                     },
                     "ENDERECOS": enderecos,
                     "PARENTES": parentes,
-                    "TELEFONES": ", ".join(
-                        f"({t['DDD']}) {t['TELEFONE']}"
-                        for t in telefones if t.get('DDD') and t.get('TELEFONE')
-                    ) or "SEM RESULTADO"
+                    "TELEFONES": ", ".join(f"({t['DDD']}) {t['TELEFONE']}" for t in telefones if t.get('DDD') and t.get('TELEFONE')) or "SEM RESULTADO"
                 }
-                return result
-
             result = generic_api_call(url, 'email', process)
-
     return render_template('email.html', is_admin=is_admin, result=result, email=email_input)
+
 @app.route('/modulos/cpfdata', methods=['GET', 'POST'])
 @jwt_required
 def cpfdata():
@@ -950,18 +900,18 @@ def cpfdata():
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
-    cpf = ""
+    cpf_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-        cpf = request.form.get('cpf', '').strip()
-        if not cpf:
+                return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+        cpf_input = request.form.get('cpf', '').strip()
+        if not cpf_input:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpfv3"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf_input}&tipo=cpfv3"
             def process(d):
                 if not isinstance(d, dict) or not d.get('nome'):
                     return None
@@ -969,11 +919,7 @@ def cpfdata():
                     'nome': d.get('nome', 'SEM INFORMAÇÃO').rstrip('---'),
                     'cpf': d.get('documentos', {}).get('cpf', 'SEM INFORMAÇÃO').replace('.', '').replace('-', ''),
                     'sexo': d.get('sexo', 'SEM INFORMAÇÃO'),
-                    'dataNascimento': {
-                        'nascimento': 'SEM INFORMAÇÃO',
-                        'idade': 'SEM INFORMAÇÃO',
-                        'signo': 'SEM INFORMAÇÃO'
-                    },
+                    'dataNascimento': {'nascimento': 'SEM INFORMAÇÃO', 'idade': 'SEM INFORMAÇÃO', 'signo': 'SEM INFORMAÇÃO'},
                     'nomeMae': d.get('mae', 'SEM INFORMAÇÃO'),
                     'nomePai': d.get('pai', 'SEM INFORMAÇÃO'),
                     'telefone': [],
@@ -987,78 +933,30 @@ def cpfdata():
                     'tipo_sanguineo': d.get('tipo_sanguineo', 'SEM INFORMAÇÃO'),
                     'nome_social': d.get('nome_social', None) or 'Não possui'
                 }
-                # Parse nascimento
                 nasc = d.get('nascimento', 'SEM INFORMAÇÃO')
                 if ' (' in nasc and ' anos)' in nasc:
                     date_str = nasc.split(' (')[0]
                     age_str = nasc.split(' (')[1].rstrip(' anos)')
-                    processed_result['dataNascimento'] = {
-                        'nascimento': date_str,
-                        'idade': age_str,
-                        'signo': 'SEM INFORMAÇÃO'
-                    }
+                    processed_result['dataNascimento'] = {'nascimento': date_str, 'idade': age_str, 'signo': 'SEM INFORMAÇÃO'}
                     try:
                         birth_date = datetime.strptime(date_str, '%d/%m/%Y')
-                        month = birth_date.month
-                        day = birth_date.day
-                        if (month == 1 and day >= 20) or (month == 2 and day <= 18):
-                            signo = 'Aquário'
-                        elif (month == 2 and day >= 19) or (month == 3 and day <= 20):
-                            signo = 'Peixes'
-                        elif (month == 3 and day >= 21) or (month == 4 and day <= 19):
-                            signo = 'Áries'
-                        elif (month == 4 and day >= 20) or (month == 5 and day <= 20):
-                            signo = 'Touro'
-                        elif (month == 5 and day >= 21) or (month == 6 and day <= 20):
-                            signo = 'Gêmeos'
-                        elif (month == 6 and day >= 21) or (month == 7 and day <= 22):
-                            signo = 'Câncer'
-                        elif (month == 7 and day >= 23) or (month == 8 and day <= 22):
-                            signo = 'Leão'
-                        elif (month == 8 and day >= 23) or (month == 9 and day <= 22):
-                            signo = 'Virgem'
-                        elif (month == 9 and day >= 23) or (month == 10 and day <= 22):
-                            signo = 'Libra'
-                        elif (month == 10 and day >= 23) or (month == 11 and day <= 21):
-                            signo = 'Escorpião'
-                        elif (month == 11 and day >= 22) or (month == 12 and day <= 21):
-                            signo = 'Sagitário'
-                        else:
-                            signo = 'Capricórnio'
+                        month, day = birth_date.month, birth_date.day
+                        signos = [(1,20,'Aquário'), (2,19,'Peixes'), (3,21,'Áries'), (4,20,'Touro'), (5,21,'Gêmeos'), (6,21,'Câncer'), (7,23,'Leão'), (8,23,'Virgem'), (9,23,'Libra'), (10,23,'Escorpião'), (11,22,'Sagitário'), (12,22,'Capricórnio')]
+                        signo = next((s for m,d,s in signos if (month > m or (month == m and day >= d))), 'Capricórnio')
                         processed_result['dataNascimento']['signo'] = signo
-                    except:
-                        pass
-                else:
-                    processed_result['dataNascimento'] = {
-                        'nascimento': nasc,
-                        'idade': 'SEM INFORMAÇÃO',
-                        'signo': 'SEM INFORMAÇÃO'
-                    }
-                # Telefone
+                    except: pass
                 telefones = d.get('contatos', {}).get('telefones', [])
-                processed_result['telefone'] = [
-                    {
-                        'ddi': '',
-                        'ddd': phone.get('ddd', '').strip('()'),
-                        'numero': phone.get('numero', '')
-                    }
-                    for phone in telefones
-                ]
-                if not processed_result['telefone']:
-                    processed_result['telefone'] = [{'ddi': '', 'ddd': '', 'numero': ''}]
-                # Enderecos
+                processed_result['telefone'] = [{'ddi': '', 'ddd': phone.get('ddd', '').strip('()'), 'numero': phone.get('numero', '')} for phone in telefones]
                 endereco = d.get('endereco', {})
-                if endereco:
-                    if 'municipio_residencia' in endereco:
-                        parts = endereco['municipio_residencia'].split(' - ')
-                        if len(parts) > 0:
-                            endereco['cidade'] = parts[0]
-                        if len(parts) > 1:
-                            endereco['uf'] = parts[1]
-                    processed_result['enderecos'] = [endereco]
+                if endereco and 'municipio_residencia' in endereco:
+                    parts = endereco['municipio_residencia'].split(' - ')
+                    endereco['cidade'] = parts[0] if len(parts) > 0 else 'SEM INFORMAÇÃO'
+                    endereco['uf'] = parts[1] if len(parts) > 1 else 'SEM INFORMAÇÃO'
+                processed_result['enderecos'] = [endereco] if endereco else []
                 return processed_result
             result = generic_api_call(url, 'cpfdata', process)
-    return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+    return render_template('cpf4.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+
 @app.route('/modulos/cpf3', methods=['GET', 'POST'])
 @jwt_required
 def cpf3():
@@ -1068,21 +966,22 @@ def cpf3():
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
-    cpf = ""
+    cpf_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-        cpf = request.form.get('cpf', '').strip()
-        if not cpf:
+                return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+        cpf_input = request.form.get('cpf', '').strip()
+        if not cpf_input:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=cpffull"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf_input}&tipo=cpffull"
             process = lambda d: d if isinstance(d, dict) and 'CPF' in d and d['CPF'] else None
             result = generic_api_call(url, 'cpf3', process)
-    return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+    return render_template('cpf3.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+
 @app.route('/modulos/cpflv', methods=['GET', 'POST'])
 @jwt_required
 def cpflv():
@@ -1092,21 +991,22 @@ def cpflv():
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
-    cpf = ""
+    cpf_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
-        cpf = request.form.get('cpf', '').strip()
-        if not cpf:
+                return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+        cpf_input = request.form.get('cpf', '').strip()
+        if not cpf_input:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
+            url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf_input}"
             process = lambda d: d.get('resultado') if isinstance(d, dict) and d.get('resultado') and d['resultado'].get('status') == 'success' and 'data' in d['resultado'] and 'pessoa' in d['resultado']['data'] and 'identificacao' in d['resultado']['data']['pessoa'] and 'cpf' in d['resultado']['data']['pessoa']['identificacao'] else None
             result = generic_api_call(url, 'cpflv', process)
-    return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+    return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 @jwt_required
 def vacinas():
@@ -1116,21 +1016,22 @@ def vacinas():
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     results = []
-    cpf = ""
+    cpf_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
-        cpf = request.form.get('cpf', '').strip().replace('.', '').replace('-', '')
-        if not cpf or len(cpf) != 11 or not cpf.isdigit():
-            flash('Por favor, insira um CPF válido com 11 dígitos.', 'error')
+                return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf_input)
+        cpf_input = request.form.get('cpf', '').strip().replace('.', '').replace('-', '')
+        if not cpf_input or len(cpf_input) != 11 or not cpf_input.isdigit():
+            flash('CPF inválido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf}&tipo=vacina"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf_input}&tipo=vacina"
             process = lambda d: d.get('response', {}).get('dados', []) if isinstance(d, dict) and d.get('status') else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d else []
             results = generic_api_call(url, 'vacinas', process) or []
-    return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf)
+    return render_template('vacinas.html', is_admin=is_admin, notifications=unread_count, results=results, cpf=cpf_input)
+
 @app.route('/modulos/datanome', methods=['GET', 'POST'])
 @jwt_required
 def datanome():
@@ -1151,7 +1052,7 @@ def datanome():
         nome = request.form.get('nome', '').strip()
         datanasc = request.form.get('datanasc', '').strip()
         if not nome or not datanasc:
-            flash('Nome e data de nascimento são obrigatórios.', 'error')
+            flash('Nome e data são obrigatórios.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
             def process(d):
@@ -1173,6 +1074,7 @@ def datanome():
                 return filtered
             results = generic_api_call(url, 'datanome', process) or []
     return render_template('datanome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome, datanasc=datanasc)
+
 @app.route('/modulos/placalv', methods=['GET', 'POST'])
 @jwt_required
 def placalv():
@@ -1191,12 +1093,13 @@ def placalv():
                 return render_template('placalv.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
         placa = request.form.get('placa', '').strip().upper().replace(' ', '')
         if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
-            flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
+            flash('Placa inválida.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placacompleta"
             process = lambda d: d.get('response', {}).get('dados') if isinstance(d, dict) and d.get('status') and 'response' in d and 'dados' in d['response'] and d['response']['dados'].get('veiculo', {}).get('placa') else None
             result = generic_api_call(url, 'placalv', process)
     return render_template('placalv.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
+
 @app.route('/modulos/telLv', methods=['GET', 'POST'])
 @jwt_required
 def telLv():
@@ -1215,12 +1118,13 @@ def telLv():
                 return render_template('tellv.html', is_admin=is_admin, notifications=unread_count, result=result, telefone=telefone)
         telefone = ''.join(c for c in request.form.get('telefone', '').strip() if c.isdigit())
         if not telefone or len(telefone) < 10 or len(telefone) > 11:
-            flash('Por favor, insira um telefone válido (10 ou 11 dígitos).', 'error')
+            flash('Telefone inválido.', 'error')
         else:
             url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={telefone}&tipo=telefonev2"
             process = lambda d: d.get('response') if isinstance(d, dict) and d.get('status') and 'response' in d and d['response'].get('CPF') and d['response']['CPF'] != 'SEM RESULTADO' else None
             result = generic_api_call(url, 'telLv', process)
     return render_template('tellv.html', is_admin=is_admin, notifications=unread_count, result=result, telefone=telefone)
+
 @app.route('/modulos/teldual', methods=['GET', 'POST'])
 @jwt_required
 def teldual():
@@ -1245,6 +1149,7 @@ def teldual():
             process = lambda d: d.get('resultado') if isinstance(d, dict) and 'resultado' in d and d['resultado'] and any('cpf' in item for item in d['resultado']) else None
             results = generic_api_call(url, 'teldual', process)
     return render_template('teldual.html', is_admin=is_admin, notifications=unread_count, results=results, telefone=telefone)
+
 @app.route('/modulos/tel', methods=['GET', 'POST'])
 @jwt_required
 def tel():
@@ -1269,6 +1174,7 @@ def tel():
             process = lambda d: d.get('resultado') if isinstance(d, dict) and 'resultado' in d and 'cpf' in d['resultado'] else None
             results = generic_api_call(url, 'tel', process)
     return render_template('tel.html', is_admin=is_admin, notifications=unread_count, results=results, tel=tel_input)
+
 @app.route('/modulos/placa', methods=['GET', 'POST'])
 @jwt_required
 def placa():
@@ -1278,21 +1184,22 @@ def placa():
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
-    placa = ""
+    placa_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('placa.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
-        placa = request.form.get('placa', '').strip().upper().replace(' ', '')
-        if not placa or len(placa) != 7 or not (placa[:3].isalpha() and placa[3:].isdigit()):
-            flash('Por favor, insira uma placa válida no formato AAA1234.', 'error')
+                return render_template('placa.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa_input)
+        placa_input = request.form.get('placa', '').strip().upper().replace(' ', '')
+        if not placa_input or len(placa_input) != 7 or not (placa_input[:3].isalpha() and placa_input[3:].isdigit()):
+            flash('Placa inválida.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa}&tipo=placanormal"
-            process = lambda d: d if isinstance(d, dict) and d.get('PLACA') == placa else None
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={placa_input}&tipo=placanormal"
+            process = lambda d: d if isinstance(d, dict) and d.get('PLACA') == placa_input else None
             result = generic_api_call(url, 'placa', process)
-    return render_template('placa.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa)
+    return render_template('placa.html', is_admin=is_admin, notifications=unread_count, result=result, placa=placa_input)
+
 @app.route('/modulos/placaestadual', methods=['GET', 'POST'])
 @jwt_required
 def placaestadual():
@@ -1317,6 +1224,7 @@ def placaestadual():
             process = lambda d: d.get('resultado') if isinstance(d, dict) and 'resultado' in d and isinstance(d['resultado'], list) and len(d['resultado']) > 0 and d['resultado'][0].get('retorno') == 'ok' else None
             results = generic_api_call(url, 'placaestadual', process)
     return render_template('placaestadual.html', is_admin=is_admin, notifications=unread_count, results=results, placa=placa)
+
 @app.route('/modulos/pix', methods=['GET', 'POST'])
 @jwt_required
 def pix():
@@ -1326,21 +1234,22 @@ def pix():
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
-    chave = ""
+    chave_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('pix.html', is_admin=is_admin, notifications=unread_count, result=result, chave=chave)
-        chave = request.form.get('chave', '').strip()
-        if not chave or len(chave) < 11:
-            flash('Por favor, insira uma chave válida (CPF, telefone ou e-mail).', 'error')
+                return render_template('pix.html', is_admin=is_admin, notifications=unread_count, result=result, chave=chave_input)
+        chave_input = request.form.get('chave', '').strip()
+        if not chave_input or len(chave_input) < 11:
+            flash('Chave inválida.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave}&tipo=pix"
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={chave_input}&tipo=pix"
             process = lambda d: d if isinstance(d, dict) and d.get('Status') == 'Sucesso' and 'nome' in d else None
             result = generic_api_call(url, 'pix', process)
-    return render_template('pix.html', is_admin=is_admin, notifications=unread_count, result=result, chave=chave)
+    return render_template('pix.html', is_admin=is_admin, notifications=unread_count, result=result, chave=chave_input)
+
 @app.route('/modulos/fotor', methods=['GET', 'POST'])
 @jwt_required
 def fotor():
@@ -1352,76 +1261,41 @@ def fotor():
     results = None
     documento = ""
     selected_option = ""
-
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('fotor.html', is_admin=is_admin, notifications=unread_count,
-                                      results=results, documento=documento, selected_option=selected_option)
-
+                return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
         documento = request.form.get('documento', '').strip().replace('.', '').replace('-', '')
         selected_option = request.form.get('estado', '')
-
-        if not documento:
-            flash('Documento não fornecido.', 'error')
-        elif len(documento) != 11:
-            flash('CPF deve ter 11 dígitos.', 'error')
-        elif selected_option not in ['fotorj', 'fotoce', 'fotosp', 'fotoes', 'fotoma', 'fotoro']:
-            flash('Estado inválido.', 'error')
+        if not documento or len(documento) != 11 or selected_option not in ['fotorj', 'fotoce', 'fotosp', 'fotoes', 'fotoma', 'fotoro']:
+            flash('Dados inválidos.', 'error')
         else:
-            base_url = "http://br1.stormhost.online:10004/api/token=@signficativo/consulta"
-            tipo = selected_option  # já é o tipo correto
-            url = f"{base_url}?dado={documento}&tipo={tipo}"
-
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={documento}&tipo={selected_option}"
             def process(data):
                 try:
-                    # Verifica estrutura mínima
                     response_outer = data.get("response")
                     if not isinstance(response_outer, dict):
                         return {"foto_base64": "", "cpf": documento, "found": False}
-
                     response_inner = response_outer.get("response")
                     if not isinstance(response_inner, list) or len(response_inner) == 0:
                         return {"foto_base64": "", "cpf": documento, "found": False}
-
                     item = response_inner[0]
-                    if not isinstance(item, dict):
-                        return {"foto_base64": "", "cpf": documento, "found": False}
-
                     fotob64 = item.get("fotob64", "").strip()
                     cpf_retornado = item.get("cpf", "").strip()
-
-                    # Usa CPF retornado se válido, senão usa o informado
                     cpf_final = cpf_retornado if cpf_retornado and len(cpf_retornado) == 11 else documento
-
                     if fotob64 and fotob64.startswith('/9j/'):
-                        return {
-                            "foto_base64": fotob64,
-                            "cpf": cpf_final,
-                            "found": True
-                        }
+                        return {"foto_base64": fotob64, "cpf": cpf_final, "found": True}
                     else:
-                        return {
-                            "foto_base64": "",
-                            "cpf": cpf_final,
-                            "found": False
-                        }
-
-                except Exception as e:
-                    print(f"[ERRO] Falha no processamento da foto: {e}")
+                        return {"foto_base64": "", "cpf": cpf_final, "found": False}
+                except:
                     return {"foto_base64": "", "cpf": documento, "found": False}
-
             results = generic_api_call(url, 'fotor', process)
-
-            # Garante que results nunca seja None
             if results is None:
                 results = {"foto_base64": "", "cpf": documento, "found": False}
+    return render_template('fotor.html', is_admin=is_admin, notifications=unread_count, results=results, documento=documento, selected_option=selected_option)
 
-    return render_template('fotor.html', is_admin=is_admin, notifications=unread_count,
-                           results=results, documento=documento, selected_option=selected_option)
-   
 @app.route('/modulos/nomelv', methods=['GET', 'POST'])
 @jwt_required
 def nomelv():
@@ -1442,10 +1316,11 @@ def nomelv():
         if not nome:
             flash('Nome não fornecido.', 'error')
         else:
-            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
+            url = f"http://br1.stormhost.online:100.org10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev2"
             process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else d if isinstance(d, list) else None
             results = generic_api_call(url, 'nomelv', process)
     return render_template('nomelv.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
+
 @app.route('/modulos/nome', methods=['GET', 'POST'])
 @jwt_required
 def nome():
@@ -1470,6 +1345,7 @@ def nome():
             process = lambda d: d if isinstance(d, list) and len(d) > 0 else d.get('resultado', []) if isinstance(d, dict) and 'resultado' in d else None
             results = generic_api_call(url, 'nome', process)
     return render_template('nome.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
+
 @app.route('/modulos/ip', methods=['GET', 'POST'])
 @jwt_required
 def ip():
@@ -1491,18 +1367,61 @@ def ip():
             flash('IP não fornecido.', 'error')
         else:
             url = f"https://ipwho.is/{ip_address}"
-            process = lambda d: {
-                'ip': d.get('ip'),
-                'continent': d.get('continent'),
-                'country': d.get('country'),
-                'region': d.get('region'),
-                'city': d.get('city'),
-                'latitude': d.get('latitude'),
-                'longitude': d.get('longitude'),
-                'provider': d.get('connection', {}).get('isp', 'Não disponível')
-            } if isinstance(d, dict) and d.get('success') else None
+            def process(d):
+                if not isinstance(d, dict) or not d.get('success', False):
+                    return None
+                return {
+                    'ip': d.get('ip'),
+                    'continent': d.get('continent'),
+                    'continent_code': d.get('continent_code'),
+                    'country': d.get('country'),
+                    'country_code': d.get('country_code'),
+                    'region': d.get('region'),
+                    'region_code': d.get('region_code'),
+                    'city': d.get('city'),
+                    'district': d.get('district'),
+                    'zip': d.get('zip'),
+                    'lat': d.get('latitude'),
+                    'lon': d.get('longitude'),
+                    'timezone': d.get('timezone'),
+                    'offset': d.get('offset'),
+                    'currency': d.get('currency'),
+                    'isp': d.get('isp'),
+                    'org': d.get('org'),
+                    'as': d.get('as'),
+                    'asname': d.get('asname'),
+                    'mobile': d.get('mobile'),
+                    'proxy': d.get('proxy'),
+                    'hosting': d.get('hosting')
+                }
             results = generic_api_call(url, 'ip', process)
     return render_template('ip.html', is_admin=is_admin, notifications=unread_count, results=results, ip_address=ip_address)
+
+@app.route('/modulos/likeff', methods=['GET', 'POST'])
+@jwt_required
+def likeff():
+    users = load_data('users.json')
+    user = users[g.user_id]
+    is_admin = user['role'] == 'admin'
+    notifications = load_data('notifications.json')
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
+    result = None
+    uid = ""
+    if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
+        uid = request.form.get('uid', '').strip()
+        if not uid or not uid.isdigit():
+            flash('UID inválido.', 'error')
+        else:
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={uid}&tipo=likeff"
+            process = lambda d: d if isinstance(d, dict) and d.get('status') == 'success' and 'data' in d else None
+            result = generic_api_call(url, 'likeff', process)
+    return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
+
 @app.route('/modulos/nome2', methods=['GET', 'POST'])
 @jwt_required
 def nome2():
@@ -1523,204 +1442,138 @@ def nome2():
         if not nome:
             flash('Nome não fornecido.', 'error')
         else:
-            url = f"https://api.bygrower.online/core/?token={chave}&base=nomeData&query={nome}"
-            process = lambda d: d.get('resultado', {}).get('itens') if isinstance(d, dict) and d.get('resultado') and 'itens' in d['resultado'] else None
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={nome}&tipo=nomev3"
+            process = lambda d: d.get('response', []) if isinstance(d, dict) and d.get('status') else None
             results = generic_api_call(url, 'nome2', process)
     return render_template('nome2.html', is_admin=is_admin, notifications=unread_count, results=results, nome=nome)
-@app.route('/modulos/likeff', methods=['GET', 'POST'])
+
+@app.route('/modulos/cpf5', methods=['GET', 'POST'])
 @jwt_required
-def likeff():
+def cpf5():
     users = load_data('users.json')
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
-    uid = ""
+    cpf_input = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
-        uid = request.form.get('uid', '').strip()
-        server_name = 'br'
-        if not uid:
-            flash('UID não fornecido.', 'error')
+                return render_template('cpf5.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+        cpf_input = request.form.get('cpf', '').strip()
+        if not cpf_input:
+            flash('CPF não fornecido.', 'error')
         else:
-            token_url = "http://teamxcutehack.serv00.net/like/token_ind.json"
-            ffinfo_url = f"https://lk-team-ffinfo-five.vercel.app/ffinfo?id={uid}"
-            like_api_url = f"https://likeapiff.thory.in/like?uid={uid}&server_name={server_name}&token_url={requests.utils.quote(token_url)}"
-            try:
-                ffinfo_response = requests.get(ffinfo_url, timeout=30)
-                ffinfo_response.raise_for_status()
-                ffinfo_data = json.loads(ffinfo_response.text.lstrip('\ufeff'))
-                if not ffinfo_data or "account_info" not in ffinfo_data or "├ Likes" not in ffinfo_data["account_info"]:
-                    flash('Resposta inválida da API ffinfo.', 'error')
-                    return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
-                likes_before = int(str(ffinfo_data["account_info"]["├ Likes"]).replace(',', ''))
-                like_response = requests.get(like_api_url, timeout=30, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
-                like_response.raise_for_status()
-                like_data = json.loads(like_response.text.lstrip('\ufeff'))
-                if not like_data or "LikesafterCommand" not in like_data:
-                    flash('Resposta inválida da API de likes.', 'error')
-                    return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
-                likes_after = int(like_data["LikesafterCommand"])
-                likes_sended = likes_after - likes_before
-                result = {
-                    "LikesafterCommand": likes_after,
-                    "LikesbeforeCommand": likes_before,
-                    "likeSended": likes_sended,
-                    "PlayerNickname": like_data.get("PlayerNickname", "Unknown"),
-                    "UID": like_data.get("UID", uid),
-                    "credit": "@thoryxff",
-                    "status": 1,
-                    "thanks": "super thanks to thoryxff for providing this like source code!",
-                    "owner": "cutehack Chx 💀"
-                }
-                if not manage_module_usage(g.user_id, 'likeff'):
-                    flash('Limite de uso atingido para LIKEFF.', 'error')
-                    result = None
-            except Exception:
-                flash('Algo deu errado.', 'error')
-    return render_template('likeff.html', is_admin=is_admin, notifications=unread_count, result=result, uid=uid)
-# Atestado
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={cpf_input}&tipo=cpfextra"
+            process = lambda d: d if isinstance(d, dict) and 'CPF' in d else None
+            result = generic_api_call(url, 'cpf5', process)
+    return render_template('cpf5.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf_input)
+
+@app.route('/modulos/visitas', methods=['GET', 'POST'])
+@jwt_required
+def visitas():
+    users = load_data('users.json')
+    user = users[g.user_id]
+    is_admin = user['role'] == 'admin'
+    notifications = load_data('notifications.json')
+    unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
+    result = None
+    url_input = ""
+    if request.method == 'POST':
+        if not is_admin:
+            token = request.form.get('token')
+            if not token or token != user.get('token'):
+                flash('Token inválido.', 'error')
+                return render_template('visitas.html', is_admin=is_admin, notifications=unread_count, result=result, url=url_input)
+        url_input = request.form.get('url', '').strip()
+        if not url_input:
+            flash('URL não fornecida.', 'error')
+        else:
+            url = f"http://br1.stormhost.online:10004/api/token=@signficativo/consulta?dado={url_input}&tipo=visitas"
+            process = lambda d: d if isinstance(d, dict) and 'visits' in d else None
+            result = generic_api_call(url, 'visitas', process)
+    return render_template('visitas.html', is_admin=is_admin, notifications=unread_count, result=result, url=url_input)
+
 @app.route('/modulos/atestado', methods=['GET', 'POST'])
 @jwt_required
 def atestado():
     users = load_data('users.json')
     user = users[g.user_id]
     is_admin = user['role'] == 'admin'
-    role = user['role']
-    if not is_admin and role not in ['user_mensal', 'user_anual']:
-        flash('Acesso negado.', 'error')
-        return redirect('/dashboard')
     notifications = load_data('notifications.json')
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
-    edited_pdf_path = None
+    pdf_path = None
+    nome = ""
+    cpf = ""
+    data = ""
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
-                return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
-        if not manage_module_usage(g.user_id, 'atestado'):
-            flash('Limite atingido.', 'error')
-            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
-        nome_paciente = request.form.get('nome_paciente', 'ERICK GABRIEL COTA').strip().upper()
-        cpf = request.form.get('cpf', '413.759.068-01').strip()
-        profissional = request.form.get('profissional', 'CAROLINA SAAD HASSEM').strip().upper()
-        crm = request.form.get('crm', '191662').strip()
-        data_atendimento_input = request.form.get('data_atendimento', '').strip()
-        cidade = request.form.get('cidade', 'Guaratinguetá').strip().title()
-        uf = request.form.get('uf', 'SP').strip().upper()
-        cid = request.form.get('cid', 'J11').strip().upper()
-        dias_afastamento = request.form.get('dias_afastamento', '01 (UM)').strip().upper()
-       
-        # Generate automatic numbers
-        import random
-        n_atend = str(random.randint(1000000, 9999999)) # 7 digits
-        n_pront = f"{random.randint(0, 9999999999):010d}" # 10 digits with leading zeros
-       
-        # Generate data_assinatura
-        data_assinatura = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-       
-        # Generate data_atendimento if not provided
-        if not data_atendimento_input:
-            months = {
-                1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
-                5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
-                9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
-            }
-            month_name = months[datetime.now().month]
-            data_atendimento = f"{datetime.now().day} de {month_name} de {datetime.now().year}"
+                return render_template('atestado.html', is_admin=is_admin, notifications=unread_count, pdf_path=pdf_path, nome=nome, cpf=cpf, data=data)
+        nome = request.form.get('nome', '').strip()
+        cpf = request.form.get('cpf', '').strip()
+        data = request.form.get('data', '').strip()
+        if not nome or not cpf or not data:
+            flash('Todos os campos são obrigatórios.', 'error')
         else:
-            data_atendimento = data_atendimento_input
-       
-        original_pdf = 'atestado.pdf'
-        if not os.path.exists(original_pdf):
-            flash('Template não encontrado.', 'error')
-            return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
-        edited_pdf = f'static/edited_atestado_{uuid.uuid4().hex}.pdf'
-        try:
-            doc = fitz.open(original_pdf)
-            page = doc[0]
-            # Register fonts
-            font_normal = page.insert_font(fontfile='fonts/DejaVuSans.ttf', fontname='DejaNormal')
-            font_bold = page.insert_font(fontfile='fonts/DejaVuSans-Bold.ttf', fontname='DejaBold')
-            def insert_text(text, point, font_size=10, bold=False):
-                page.insert_text(
-                    point,
-                    text,
-                    fontsize=font_size,
-                    fontname='DejaBold' if bold else 'DejaNormal',
-                    color=(0, 0, 0)
-                )
-            # Do not clear areas to avoid white blocks
-            # for rect in [...]: clear_area(rect) # Removed
-            positions = {
-                "nome_paciente": (70, 105),
-                "cpf": (70, 120),
-                "profissional": (70, 135),
-                "n_atend": (380, 105),
-                "n_pront": (380, 120),
-                "data_assinatura": (380, 135),
-                "cidade_data": (180, 260),
-                "cid": (70, 360),
-                "dias_afastamento": (70, 410),
-                "profissional_assinatura": (300, 460),
-                "crm_assinatura": (300, 475),
-            }
-            insert_text(nome_paciente, positions["nome_paciente"], bold=True)
-            insert_text(cpf, positions["cpf"])
-            insert_text(profissional, positions["profissional"])
-            insert_text(n_atend, positions["n_atend"])
-            insert_text(n_pront, positions["n_pront"])
-            insert_text(data_assinatura, positions["data_assinatura"])
-            insert_text(f"{cidade}, {uf} - {data_atendimento}", positions["cidade_data"])
-            insert_text(cid, positions["cid"], bold=True)
-            insert_text(dias_afastamento, positions["dias_afastamento"], bold=True)
-            insert_text(f"Dr(a). {profissional}", positions["profissional_assinatura"])
-            insert_text(f"{crm} CRM", positions["crm_assinatura"])
-            corpo = f"Atesto para os devidos fins que {nome_paciente} foi atendido(a) neste serviço, necessitando de afastamento por {dias_afastamento} dia(s) das suas atividades profissionais."
-            page.insert_textbox(
-                fitz.Rect(65, 300, 520, 350),
-                corpo,
-                fontsize=11,
-                fontname='DejaNormal',
-                align=fitz.TEXT_ALIGN_JUSTIFY
-            )
-            doc.save(edited_pdf, garbage=4, deflate=True, clean=True)
-            doc.close()
-            edited_pdf_path = edited_pdf
-        except Exception as e:
-            print(f"Error generating atestado: {e}")
-            flash('Algo deu errado ao gerar atestado.', 'error')
-    return render_template('atestado_c.html', is_admin=is_admin, notifications=unread_count, edited_pdf=edited_pdf_path)
-   
-@app.route('/download_edited/<path:filename>')
-@jwt_required
-def download_edited(filename):
-    return send_from_directory(app.root_path, filename, as_attachment=True)
-# Logout
+            try:
+                doc = fitz.open("atestado.pdf")
+                page = doc[0]
+                font_path = os.path.join('fonts', 'DejaVuSans.ttf')
+                bold_path = os.path.join('fonts', 'DejaVuSans-Bold.ttf')
+                page.insert_text((100, 200), nome, fontsize=14, fontname="helv", fontfile=font_path)
+                page.insert_text((100, 230), f"CPF: {cpf}", fontsize=12, fontname="helv", fontfile=font_path)
+                page.insert_text((100, 260), f"Data: {data}", fontsize=12, fontname="helv", fontfile=font_path)
+                output_path = f"static/atestado_{secrets.token_hex(8)}.pdf"
+                doc.save(output_path)
+                doc.close()
+                pdf_path = f"/{output_path}"
+                flash('Atestado gerado com sucesso!', 'success')
+            except Exception as e:
+                flash(f'Erro ao gerar PDF: {str(e)}', 'error')
+    return render_template('atestado.html', is_admin=is_admin, notifications=unread_count, pdf_path=pdf_path, nome=nome, cpf=cpf, data=data)
+
+@app.route('/static/atestado_<filename>')
+def serve_atestado(filename):
+    return send_from_directory('static', f'atestado_{filename}')
+
+# === LOGOUT ===
 @app.route('/logout')
 @jwt_required
 def logout():
     resp = make_response(redirect('/'))
     resp.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Strict')
+    resp.set_cookie('js_enabled', '', expires=0)
+    resp.set_cookie('canvas_fp', '', expires=0)
+    resp.set_cookie('webgl_fp', '', expires=0)
     return resp
-# Credits
+
+# === ESTÁTICO ===
+@app.route('/preview.jpg')
+def preview():
+    return send_from_directory('.', 'preview.jpg')
+
 @app.route('/@A30')
 def creditos():
     return "@enfurecido - {'0x106a90000'}"
-# Preview
-@app.route('/preview.jpg')
-def preview():
-    return send_from_directory(app.root_path, 'preview.jpg', mimetype='image/jpeg')
+
+# === 404 ===
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html'), 403
+
+# === EXECUÇÃO ===
 if __name__ == '__main__':
-    initialize_json('users.json')
-    initialize_json('notifications.json', {})
-    initialize_json('gifts.json')
-    initialize_json('news.json', [])
+    colorama.init()
+    print(f"{Fore.GREEN}[+] Servidor iniciado com segurança máxima em https://0.0.0.0:8855{Style.RESET_ALL}")
     from waitress import serve
-    serve(app, host='0.0.0.0', port=8855)
+    serve(app, host='0.0.0.0', port=8855, threads=16, connection_limit=1000, cleanup_interval=30)
