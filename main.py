@@ -113,7 +113,7 @@ def is_real_browser():
         return False
 
     if not re.search(r'chrome|firefox|safari|edge', ua):
-        return False
+        return True
 
     return True
 
