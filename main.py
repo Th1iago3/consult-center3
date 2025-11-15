@@ -31,7 +31,7 @@ login_attempts = {}
 # Module status
 module_status = {
     'cpfdata': 'ON',
-    'cpflv': 'OFF',
+    'cpflv': 'ON',
     'cpf': 'ON',
     'cpf2': 'ON',
     'vacinas': 'ON',
