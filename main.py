@@ -1091,20 +1091,86 @@ def cpflv():
     unread_count = len([n for n in notifications.get(g.user_id, []) if n['id'] not in user.get('read_notifications', [])])
     result = None
     cpf = ""
+
     if request.method == 'POST':
         if not is_admin:
             token = request.form.get('token')
             if not token or token != user.get('token'):
                 flash('Token inválido.', 'error')
                 return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+
         cpf = request.form.get('cpf', '').strip()
         if not cpf:
             flash('CPF não fornecido.', 'error')
         else:
-            url = f"https://api.bygrower.online/core/?token={chave}&base=cpfLv&query={cpf}"
-            process = lambda d: d.get('resultado') if isinstance(d, dict) and d.get('resultado') and d['resultado'].get('status') == 'success' and 'data' in d['resultado'] and 'pessoa' in d['resultado']['data'] and 'identificacao' in d['resultado']['data']['pessoa'] and 'cpf' in d['resultado']['data']['pessoa']['identificacao'] else None
+            url = f"https://iseek.pro/api/dados?token=signficativoaoksdkoaskotop&cpf={cpf}"
+
+            def process(d):
+                if not isinstance(d, dict):
+                    return None
+                resultado = d.get('resultado')
+                if not resultado or resultado.get('status') != 'success':
+                    return None
+                data = resultado.get('data')
+                if not data:
+                    return None
+
+                pessoa = data.get('pessoa', {})
+                identificacao = pessoa.get('identificacao', {})
+                dados_basicos = data.get('dadosBasicos', {})
+
+                # Extrair telefones
+                telefones = []
+                for tel in data.get('telefonesHistorico', []):
+                    ddd = tel.get('ddd', '')
+                    num = tel.get('telefone', '')
+                    if ddd and num:
+                        telefones.append(f"({ddd}) {num}")
+
+                # Extrair emails
+                emails = [e['email'] for e in data.get('emails', []) if e.get('email')]
+
+                # Extrair endereços principais (o primeiro com logradouro válido)
+                endereco_principal = {}
+                for end in data.get('enderecos', []):
+                    if end.get('logradouro'):
+                        endereco_principal = end
+                        break
+
+                # Extrair veículos
+                veiculos = data.get('veiculos', [])
+
+                # Extrair relacionados (parentes, etc.)
+                relacionados = data.get('relacionados', [])
+
+                return {
+                    'data': {
+                        'dadosBasicos': {
+                            'cpf': dados_basicos.get('cpf', 'Não informado'),
+                            'nome': dados_basicos.get('nome', 'Não informado'),
+                            'dataNasc': dados_basicos.get('dataNasc', 'Não informado'),
+                            'sexo': dados_basicos.get('sexo', 'Não informado'),
+                            'nomeMae': dados_basicos.get('filiacao', {}).get('nomeMae', 'Não informado'),
+                            'nomePai': dados_basicos.get('filiacao', {}).get('nomePai', 'Não informado'),
+                            'situacaoCadastral': dados_basicos.get('situacaoCadastral', {}).get('descricaoSit', 'Não informado'),
+                        },
+                        'registroGeral': data.get('registroGeral', {}),
+                        'carteriaHabilitacao': data.get('carteriaHabilitacao', {}),
+                        'telefones': telefones,
+                        'emails': emails,
+                        'endereco': endereco_principal,
+                        'veiculos': veiculos,
+                        'relacionados': relacionados,
+                        'empregos': data.get('empregos', []),
+                        'irpf': data.get('irpf', []),
+                        'vacinas': data.get('vacinas', []),
+                    }
+                }
+
             result = generic_api_call(url, 'cpflv', process)
+
     return render_template('cpflv.html', is_admin=is_admin, notifications=unread_count, result=result, cpf=cpf)
+    
 @app.route('/modulos/vacinas', methods=['GET', 'POST'])
 @jwt_required
 def vacinas():
